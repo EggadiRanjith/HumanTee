@@ -1,20 +1,21 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
 import "./globals.css";
+import SplashScreen from "./components/ui/SplashScreen";
 
 export const metadata: Metadata = {
   title: "Frontend",
   description: "Minimal blank page",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" className="h-full">
+      <body className="min-h-screen flex flex-col">
+        <SplashScreen />
+        <main className="flex-grow">
+          {children}
+        </main>
+      </body>
     </html>
   );
 }
