@@ -35,10 +35,7 @@ export function PageTransitionProvider({
 
   const startTransition = useCallback(
     (path: string) => {
-      if (!path || path === pathname || phase === "closing") {
-        return;
-      }
-
+      if (!path || path === pathname || phase === "closing") return;
       targetPathRef.current = path;
       setPhase("closing");
     },
@@ -68,23 +65,23 @@ export function PageTransitionProvider({
   return (
     <PageTransitionContext.Provider value={value}>
       {children}
-      <TransitionOverlay
-        phase={phase}
-        onClosed={handleClosed}
-        onOpened={handleOpened}
-      />
+      {phase !== "idle" && (
+        <TransitionOverlay
+          phase={phase}
+          onClosed={handleClosed}
+          onOpened={handleOpened}
+        />
+      )}
     </PageTransitionContext.Provider>
   );
 }
 
 export function usePageTransitionContext() {
   const context = useContext(PageTransitionContext);
-
   if (!context) {
     throw new Error(
       "usePageTransitionContext must be used within PageTransitionProvider",
     );
   }
-
   return context;
 }
