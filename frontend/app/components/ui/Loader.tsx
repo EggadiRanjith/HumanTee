@@ -10,20 +10,15 @@ interface LoaderProps {
     onComplete?: () => void;
 }
 
-export default function Loader({
-    duration = 3500,
-    children,
-    onComplete,
-}: LoaderProps) {
+const Loader = ({ duration = 3500, children, onComplete }: LoaderProps) => {
     const [isVisible, setIsVisible] = useState(true);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
+        const timer = window.setTimeout(() => {
             setIsVisible(false);
             onComplete?.();
         }, duration);
-
-        return () => clearTimeout(timer);
+        return () => window.clearTimeout(timer);
     }, [duration, onComplete]);
 
     return (
@@ -36,15 +31,11 @@ export default function Loader({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.6, ease: "easeOut" }}
-                        className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden 
-                                   bg-gradient-to-br from-[#050505] via-[#0c0f25] via-[#221135] to-[#050505]"
+                        className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-[#050505] via-[#0c0f25] via-[#221135] to-[#050505]"
                     >
-                        {/* Atmospheric moving light fields */}
                         <motion.div
                             className="absolute inset-0 opacity-35"
-                            animate={{
-                                backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"],
-                            }}
+                            animate={{ backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"] }}
                             transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
                             style={{
                                 backgroundImage:
@@ -52,8 +43,6 @@ export default function Loader({
                                 backgroundSize: "200% 200%",
                             }}
                         />
-
-                        {/* Soft glow blobs */}
                         <motion.div
                             className="absolute -top-16 -left-20 h-72 w-72 rounded-full bg-fuchsia-500/25 blur-[120px]"
                             animate={{ scale: [1, 1.2, 1] }}
@@ -64,11 +53,7 @@ export default function Loader({
                             animate={{ scale: [1.1, 0.9, 1.1] }}
                             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
                         />
-
-                        {/* MAIN CONTENT SEQUENCE */}
-                        <div className="relative flex flex-col items-center gap-6 text-center text-white px-4">
-
-                            {/* 1. TOP LABEL — Reveal Mask */}
+                        <div className="relative flex flex-col items-center gap-6 px-4 text-center text-white sm:gap-7">
                             <motion.span
                                 className="text-[0.6rem] uppercase tracking-[0.7em] text-white/70 sm:text-[0.7rem]"
                                 style={{ fontFamily: "'Geist', sans-serif" }}
@@ -146,13 +131,11 @@ export default function Loader({
             </AnimatePresence>
 
             {/* Fade-in of the page content */}
-            <div
-                className={`transition-opacity duration-700 ${
-                    isVisible ? "opacity-0" : "opacity-100"
-                }`}
-            >
+            <div className={`transition-opacity duration-700 ${isVisible ? "opacity-0" : "opacity-100"}`}>
                 {children}
             </div>
         </div>
     );
-}
+};
+
+export default Loader;
