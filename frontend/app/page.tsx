@@ -1,4 +1,4 @@
-import Loader from "./components/ui/Loader";
+import Loader from "./components/ui/IntroLoader";
 import Intro from "./components/ui/Intro";
 
 export default function Home() {

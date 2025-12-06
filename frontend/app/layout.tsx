@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Loader from "./components/ui/Loader";
 import { PageTransitionProvider } from "./components/transition/PageTransitionProvider";
 import localFont from "next/font/local";
 
@@ -27,9 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${geist.variable} ${tanPearl.variable}`}>
       <body className="min-h-screen bg-brand-bg text-brand-text antialiased font-geist">
-        <Loader duration={3500} variant="cinematic">
-          <PageTransitionProvider>{children}</PageTransitionProvider>
-        </Loader>
+        <PageTransitionProvider>{children}</PageTransitionProvider>
       </body>
     </html>
   );

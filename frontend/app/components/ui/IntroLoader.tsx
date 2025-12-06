@@ -41,24 +41,6 @@ function HumanteeTitle() {
         },
       }}
     >
-      {/* ✦ GLOBAL VOLUMETRIC LIGHT SWEEP */}
-      <motion.div
-        className="
-          absolute inset-0 
-          bg-gradient-to-r 
-          from-transparent 
-          via-white/25 
-          to-transparent 
-          blur-[36px] 
-          mix-blend-screen
-          pointer-events-none
-        "
-        animate={{ x: ["-35%", "140%"] }}
-        transition={{
-          duration: 2.8,
-          ease: [0.23, 1, 0.32, 1],
-        }}
-      />
 
       {letters.map((char, i) => (
         <motion.span
@@ -110,7 +92,7 @@ const Title = () => <HumanteeTitle />;
 
 type LoaderVariant = "minimal" | "cinematic" | "ultra";
 
-export default function Loader({
+export default function IntroLoader({
   duration = 3500,
   children,
   onComplete,
@@ -172,7 +154,7 @@ function MinimalLoader() {
 
       <div className="absolute inset-0 cinematic-aurora-animated opacity-40 blur-3xl" />
 
-      <div className="relative luxury-glass px-10 py-10 rounded-xl shadow-floating border brand-border-subtle">
+      <div className="relative luxury-glass px-10 py-10 rounded-xl border brand-border-subtle">
         <Title />
         <div className="h-px w-24 mt-4 bg-gradient-to-r from-transparent via-brand-primary/50 to-transparent" />
         <p className="text-step--1 uppercase brand-text-muted tracking-wide font-geist">
@@ -235,7 +217,7 @@ function UltraLoader() {
         }}
       />
 
-      <div className="luxury-glass px-12 py-10 rounded-2xl shadow-floating border brand-border-strong text-center">
+      <div className="luxury-glass px-12 py-10 rounded-2xl border brand-border-strong text-center">
         <span className="text-step--1 tracking-[0.6em] brand-text-muted uppercase">
           Maison Digitale
         </span>
