@@ -1,11 +1,22 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./app/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}"],
+  content: [
+    "./app/**/*.{js,ts,jsx,tsx}",
+    "./app/components/**/*.{js,ts,jsx,tsx}"
+  ],
+
   theme: {
     extend: {
+      /* ----------------------------------------
+         FONT FAMILY
+      ---------------------------------------- */
       fontFamily: {
         geist: ["var(--font-geist)", "sans-serif"],
       },
+
+      /* ----------------------------------------
+         TYPOGRAPHY SCALE
+      ---------------------------------------- */
       fontSize: {
         "step--2": "var(--step--2)",
         "step--1": "var(--step--1)",
@@ -18,42 +29,78 @@ module.exports = {
         "step-6": "var(--step-6)",
         "step-7": "var(--step-7)",
       },
+
+      /* ----------------------------------------
+         TRACKING / LETTER SPACING
+      ---------------------------------------- */
       letterSpacing: {
         tight: "var(--track-tight)",
-        normal: "var(--track-normal)",
         wide: "var(--track-wide)",
         wider: "var(--track-wider)",
       },
+
+      /* ----------------------------------------
+         LINE HEIGHT
+      ---------------------------------------- */
       lineHeight: {
         tight: "var(--leading-tight)",
         normal: "var(--leading-normal)",
         relaxed: "var(--leading-relaxed)",
       },
+
+      /* ----------------------------------------
+         FONT WEIGHTS
+      ---------------------------------------- */
       fontWeight: {
         body: "var(--weight-body)",
         heading: "var(--weight-heading)",
         hero: "var(--weight-hero)",
       },
+
+      /* ----------------------------------------
+         COLOR SYSTEM (MATCHES globals.css EXACTLY)
+      ---------------------------------------- */
       colors: {
         brand: {
-          bg: "var(--color-bg)",
-          "bg-soft": "var(--color-bg-soft)",
-          surface: "var(--color-surface)",
-          "surface-elevated": "var(--color-surface-elevated)",
-          primary: "var(--color-primary)",
-          secondary: "var(--color-secondary)",
-          "accent-cyan": "var(--color-accent-cyan)",
-          "accent-fuchsia": "var(--color-accent-fuchsia)",
-          "border-subtle": "var(--color-border-subtle)",
-          "border-strong": "var(--color-border-strong)",
-          text: "var(--color-text-primary)",
-          "text-muted": "var(--color-text-muted)",
+          void: "var(--bg-void)",
+          dusk: "var(--bg-dusk)",
+          oblivion: "var(--bg-oblivion)",
+          eclipse: "var(--bg-eclipse)",
+
+          primary: "var(--brand-primary)",
+          secondary: "var(--brand-secondary)",
+
+          text: {
+            primary: "var(--text-primary)",
+            muted: "var(--text-muted)",
+            dim: "var(--text-dim)",
+          },
+
+          accent: {
+            cyan: "var(--accent-cyan)",
+            fuchsia: "var(--accent-fuchsia)",
+            violet: "var(--accent-violet)",
+          },
+        },
+
+        semantic: {
+          success: "var(--success)",
+          warning: "var(--warning)",
+          error: "var(--error)",
+          info: "var(--info)",
         },
       },
+
+      /* ----------------------------------------
+         GRADIENTS / BACKGROUNDS
+      ---------------------------------------- */
       backgroundImage: {
-        "brand-aurora": "var(--gradient-aurora)",
-        "brand-card": "var(--gradient-card)",
+        aurora: "var(--gradient-aurora)",
       },
+
+      /* ----------------------------------------
+         SPACING SCALE
+      ---------------------------------------- */
       spacing: {
         xs: "var(--space-xs)",
         sm: "var(--space-sm)",
@@ -65,17 +112,11 @@ module.exports = {
         "4xl": "var(--space-4xl)",
         "5xl": "var(--space-5xl)",
         "6xl": "var(--space-6xl)",
-        "space-1": "var(--space-1)",
-        "space-2": "var(--space-2)",
-        "space-3": "var(--space-3)",
-        "space-4": "var(--space-4)",
-        "space-5": "var(--space-5)",
-        "space-6": "var(--space-6)",
-        "space-7": "var(--space-7)",
-        "space-8": "var(--space-8)",
-        "space-9": "var(--space-9)",
-        "space-10": "var(--space-10)",
       },
+
+      /* ----------------------------------------
+         RADII
+      ---------------------------------------- */
       borderRadius: {
         xs: "var(--radius-xs)",
         sm: "var(--radius-sm)",
@@ -85,23 +126,50 @@ module.exports = {
         "2xl": "var(--radius-2xl)",
         max: "var(--radius-max)",
       },
+
+      /* ----------------------------------------
+         SHADOWS — ONLY REAL EXISTING VARIABLES
+      ---------------------------------------- */
       boxShadow: {
-        "ambient-soft": "var(--shadow-ambient-soft)",
-        elevated: "var(--shadow-elevated)",
-        "border-soft": "var(--shadow-border-soft)",
-        "glow-cyan": "var(--glow-cyan)",
-        "glow-fuchsia": "var(--glow-fuchsia)",
-        "ring-soft": "var(--glow-ring-soft)",
+        base: "var(--shadow-base)",
+        surface: "var(--shadow-surface)",
+        floating: "var(--shadow-floating)",
+
+        "glow-cyan-subtle": "0 0 8px var(--glow-cyan-subtle)",
+        "glow-cyan-medium": "0 0 16px var(--glow-cyan-medium)",
+        "glow-cyan-intense": "0 0 24px var(--glow-cyan-intense)",
+
+        "glow-fuchsia-subtle": "0 0 8px var(--glow-fuchsia-subtle)",
+        "glow-fuchsia-medium": "0 0 16px var(--glow-fuchsia-medium)",
+        "glow-fuchsia-intense": "0 0 24px var(--glow-fuchsia-intense)",
+
+        "glow-violet-subtle": "0 0 8px var(--glow-violet-subtle)",
+        "glow-violet-medium": "0 0 16px var(--glow-violet-medium)",
+        "glow-violet-intense": "0 0 24px var(--glow-violet-intense)",
       },
-      maxWidth: {
-        "page-max": "var(--layout-page-max)",
-        "container-sm": "var(--container-sm)",
-        "container-md": "var(--container-md)",
-        "container-lg": "var(--container-lg)",
-        "container-xl": "var(--container-xl)",
+
+      /* ----------------------------------------
+         ANIMATIONS
+      ---------------------------------------- */
+      animation: {
+        "aurora-move": "auroraMove 20s ease infinite",
+        "pulse-text": "pulseText 2s ease-in-out infinite",
+        "glow-pulse": "glowPulse var(--glow-pulse-duration) ease-in-out infinite",
+      },
+
+      transitionTimingFunction: {
+        cinematic: "var(--ease-cinematic-out)",
+      },
+
+      transitionDuration: {
+        luxury: "var(--luxury-medium)",
       },
     },
   },
+
+  /* ----------------------------------------
+     BREAKPOINTS (YOUR CUSTOM SET)
+  ---------------------------------------- */
   screens: {
     xs: "20rem",
     sm: "24rem",
