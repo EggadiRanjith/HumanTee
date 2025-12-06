@@ -20,12 +20,19 @@ function HumanteeTitle() {
       className="
         relative
         inline-flex 
-        text-step-6 
+        text-[clamp(1.5rem,8vw,4.5rem)]
+        xs:text-[clamp(1.75rem,10vw,4.5rem)]
+        sm:text-[clamp(2rem,11vw,4.5rem)]
         uppercase 
-        tracking-[0.18em] 
+        tracking-[clamp(0.04em,0.6vw,0.22em)]
+        xs:tracking-[clamp(0.06em,0.8vw,0.22em)]
+        sm:tracking-[clamp(0.06em,0.9vw,0.22em)]
         font-bold 
         brand-text-primary
         select-none
+        leading-tight
+        break-words
+        px-2 xs:px-3 sm:px-4
       "
       style={{ fontFamily: "var(--font-tan-pearl)" }}
       initial="hidden"
@@ -114,7 +121,15 @@ export default function IntroLoader({
   }, [duration, onComplete]);
 
   return (
-    <div className="relative min-h-[100svh] brand-bg-dusk">
+    <div className="relative h-[100dvh] w-screen overflow-hidden brand-bg-dusk">
+      <style jsx global>{`
+        body, html {
+          overflow: hidden;
+          height: 100dvh;
+          width: 100vw;
+          touch-action: none;
+        }
+      `}</style>
       <AnimatePresence>
         {visible && (
           <motion.div
@@ -150,14 +165,14 @@ export default function IntroLoader({
 
 function MinimalLoader() {
   return (
-    <div className="relative flex flex-col items-center justify-center h-full w-full text-center">
+    <div className="relative flex flex-col items-center justify-center h-full w-full text-center px-2 xs:px-3 sm:px-4 md:px-6">
 
       <div className="absolute inset-0 cinematic-aurora-animated opacity-40 blur-3xl" />
 
-      <div className="relative luxury-glass px-10 py-10 rounded-xl border brand-border-subtle">
+      <div className="relative luxury-glass px-[clamp(0.75rem,4vw,2.5rem)] xs:px-[clamp(1rem,5vw,2.5rem)] py-[clamp(1.25rem,5vw,2.5rem)] xs:py-[clamp(1.5rem,6vw,2.5rem)] rounded-xl border brand-border-subtle max-w-[92vw] xs:max-w-[95vw] sm:max-w-md w-full">
         <Title />
-        <div className="h-px w-24 mt-4 bg-gradient-to-r from-transparent via-brand-primary/50 to-transparent" />
-        <p className="text-step--1 uppercase brand-text-muted tracking-wide font-geist">
+        <div className="h-px w-[clamp(3rem,18vw,6rem)] xs:w-[clamp(4rem,20vw,6rem)] mt-2 xs:mt-3 sm:mt-4 bg-gradient-to-r from-transparent via-brand-primary/50 to-transparent mx-auto" />
+        <p className="text-[clamp(0.65rem,3vw,0.875rem)] xs:text-[clamp(0.7rem,3.5vw,0.875rem)] uppercase brand-text-muted tracking-[clamp(0.04em,1vw,0.15em)] xs:tracking-[clamp(0.05em,1.2vw,0.15em)] font-geist mt-2 xs:mt-3">
           crafted experiences
         </p>
       </div>
@@ -171,7 +186,7 @@ function MinimalLoader() {
 
 function CinematicLoader() {
   return (
-    <div className="relative flex flex-col items-center justify-center h-full w-full overflow-hidden cinematic-gradient-aurora">
+    <div className="relative flex flex-col items-center justify-center h-full w-full overflow-hidden cinematic-gradient-aurora px-2 xs:px-3 sm:px-4 md:px-6">
 
       {/* Aurora animation */}
       <motion.div
@@ -184,14 +199,14 @@ function CinematicLoader() {
         }}
       />
 
-      <div className="flex flex-col items-center gap-6 text-center">
-        <span className="text-step--1 uppercase tracking-[0.55em] brand-text-muted">
+      <div className="flex flex-col items-center gap-3 xs:gap-4 sm:gap-6 text-center max-w-[92vw] xs:max-w-[95vw] sm:max-w-md w-full">
+        <span className="text-[clamp(0.65rem,3vw,0.875rem)] xs:text-[clamp(0.7rem,3.5vw,0.875rem)] uppercase tracking-[clamp(0.25em,2vw,0.55em)] xs:tracking-[clamp(0.3em,2.5vw,0.55em)] brand-text-muted">
           Maison Digitale
         </span>
 
         <Title />
 
-        <p className="text-step--1 uppercase brand-text-muted tracking-wide">
+        <p className="text-[clamp(0.65rem,3vw,0.875rem)] xs:text-[clamp(0.7rem,3.5vw,0.875rem)] uppercase brand-text-muted tracking-[clamp(0.04em,1vw,0.15em)] xs:tracking-[clamp(0.05em,1.2vw,0.15em)] mt-1 xs:mt-2">
           crafted experiences
         </p>
       </div>
@@ -205,7 +220,7 @@ function CinematicLoader() {
 
 function UltraLoader() {
   return (
-    <div className="relative flex items-center justify-center h-full w-full overflow-hidden cinematic-gradient-aurora">
+    <div className="relative flex items-center justify-center h-full w-full overflow-hidden cinematic-gradient-aurora px-2 xs:px-3 sm:px-4 md:px-6">
 
       <motion.div
         className="absolute inset-0 opacity-[0.4]"
@@ -217,14 +232,16 @@ function UltraLoader() {
         }}
       />
 
-      <div className="luxury-glass px-12 py-10 rounded-2xl border brand-border-strong text-center">
-        <span className="text-step--1 tracking-[0.6em] brand-text-muted uppercase">
+      <div className="luxury-glass px-[clamp(1rem,5vw,3rem)] xs:px-[clamp(1.5rem,6vw,3rem)] py-[clamp(1.5rem,6vw,2.5rem)] xs:py-[clamp(2rem,7vw,2.5rem)] rounded-2xl border brand-border-strong text-center max-w-[92vw] xs:max-w-[95vw] sm:max-w-md w-full">
+        <span className="text-[clamp(0.65rem,3vw,0.875rem)] xs:text-[clamp(0.7rem,3.5vw,0.875rem)] tracking-[clamp(0.25em,2vw,0.6em)] xs:tracking-[clamp(0.3em,2.5vw,0.6em)] brand-text-muted uppercase">
           Maison Digitale
         </span>
 
-        <Title />
+        <div className="my-3 xs:my-4">
+          <Title />
+        </div>
 
-        <span className="text-step--1 uppercase brand-text-muted tracking-wider">
+        <span className="text-[clamp(0.65rem,3vw,0.875rem)] xs:text-[clamp(0.7rem,3.5vw,0.875rem)] uppercase brand-text-muted tracking-[clamp(0.04em,1vw,0.2em)] xs:tracking-[clamp(0.05em,1.2vw,0.2em)]">
           crafted experiences
         </span>
       </div>

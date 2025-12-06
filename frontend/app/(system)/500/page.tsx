@@ -14,11 +14,13 @@ function Big500() {
     <motion.div
       className="
         flex 
-        gap-4 
-        text-step-9 
+        gap-2 xs:gap-3 sm:gap-4 
+        text-[clamp(3rem,20vw,8rem)] 
+        xs:text-[clamp(4rem,22vw,8rem)]
+        sm:text-step-9 
         font-bold 
         text-white/90 
-        tracking-[0.15em]
+        tracking-[0.10em] xs:tracking-[0.12em] sm:tracking-[0.15em]
         select-none
       "
       style={{ fontFamily: "var(--font-tan-pearl)" }}
@@ -103,7 +105,7 @@ export default function ServerError() {
         />
 
         {/* Content */}
-        <div className="relative z-20 flex flex-col items-center text-center px-6 max-w-3xl">
+        <div className="relative z-20 flex flex-col items-center text-center px-4 xs:px-5 sm:px-6 max-w-3xl w-full">
 
           {/* BIG 500 */}
           <Big500 />
@@ -111,11 +113,13 @@ export default function ServerError() {
           {/* Subtitle */}
           <motion.h2
             className="
-              text-step-3
+              text-[clamp(1.125rem,4vw,1.953rem)]
+              xs:text-step-3
               uppercase
-              tracking-[0.18em]
+              tracking-[0.12em] xs:tracking-[0.15em] sm:tracking-[0.18em]
               text-white/90
-              mt-10
+              mt-6 xs:mt-8 sm:mt-10
+              px-2
             "
             style={{ fontFamily: "var(--font-tan-pearl)" }}
             initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
@@ -140,8 +144,8 @@ export default function ServerError() {
             }}
             className="
               h-px
-              w-40
-              my-6
+              w-24 xs:w-32 sm:w-40
+              my-4 xs:my-5 sm:my-6
               bg-gradient-to-r
               from-transparent
               via-white/40
@@ -153,11 +157,13 @@ export default function ServerError() {
           {/* Description */}
           <motion.p
             className="
-              text-step-0
+              text-[clamp(0.8125rem,2vw,1rem)]
+              xs:text-step-0
               brand-text-muted
               max-w-lg
               leading-relaxed
-              mb-12
+              mb-8 xs:mb-10 sm:mb-12
+              px-2
             "
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -189,24 +195,24 @@ export default function ServerError() {
                 inline-flex
                 items-center
                 justify-center
-                px-12
-                py-4
+                px-6 xs:px-8 sm:px-10 md:px-12
+                py-3 xs:py-3.5 sm:py-4
                 rounded-xl
-                text-step-0
-                tracking-[0.12em]
+                text-[13px] xs:text-step-0
+                tracking-[0.10em] xs:tracking-[0.12em]
                 uppercase
                 font-geist
                 text-white/90
-
+                min-h-[44px] xs:min-h-[48px]
                 border border-white/15
                 luxury-glass
                 shadow-floating
-
                 transition-all
                 duration-[700ms]
                 ease-[cubic-bezier(0.25,1,0.3,1)]
                 overflow-hidden
                 backdrop-blur-xl
+                touch-target
               "
             >
               <span className="

@@ -70,7 +70,7 @@ const Intro = ({ children, onComplete }: IntroProps) => {
                 <div className="fixed inset-0 z-[100] overflow-hidden bg-gradient-to-br from-black via-[#0b0310] to-black">
                     <div className="relative h-full w-full">
                         <div
-                            className="absolute left-[-32%] top-[-30%] h-[170%] w-[170%] sm:left-[-24%] sm:top-[-26%] sm:h-[160%] sm:w-[160%] md:left-[-18%] md:top-[-22%] md:h-[150%] md:w-[140%] lg:left-[-12%] lg:top-[-18%] lg:h-[140%] lg:w-[130%] xl:left-[-10%] xl:top-[-14%] xl:h-[130%] xl:w-[120%]"
+                            className="absolute left-[-35%] top-[-32%] h-[180%] w-[180%] xs:left-[-32%] xs:top-[-30%] xs:h-[170%] xs:w-[170%] sm:left-[-24%] sm:top-[-26%] sm:h-[160%] sm:w-[160%] md:left-[-18%] md:top-[-22%] md:h-[150%] md:w-[140%] lg:left-[-12%] lg:top-[-18%] lg:h-[140%] lg:w-[130%] xl:left-[-10%] xl:top-[-14%] xl:h-[130%] xl:w-[120%]"
                         >
                             <iframe
                                 src="https://my.spline.design/3dcirculartextcopy-kdwFXa4agwAXjm3DpV4Jg0Jm-kI6/"
