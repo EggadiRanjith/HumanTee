@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FiUser, FiShoppingBag, FiHome, FiList } from "react-icons/fi";
+import { useLoading } from "../context/LoadingContext";
 
 const navItems = [
   { href: "/", icon: FiHome, label: "Home" },
@@ -14,6 +15,12 @@ const navItems = [
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const { isLoading } = useLoading();
+
+  // Hide bottom nav during intro loading
+  if (isLoading) {
+    return null;
+  }
 
   return (
     <motion.nav

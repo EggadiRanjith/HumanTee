@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { PageTransitionProvider } from "./components/transition/PageTransitionProvider";
 import { HeaderProvider } from "./components/layout/useHeaderContext";
+import { LoadingProvider } from "./components/context/LoadingContext";
 import Header from "./components/layout/Header";
 import BottomNav from "./components/layout/BottomNav";
 import Footer from "./components/layout/Footer";
@@ -37,16 +38,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${geist.variable} ${tanPearl.variable}`}>
       <body className="min-h-screen bg-brand-bg text-brand-text antialiased font-geist overflow-x-hidden">
-        <HeaderProvider>
-          <Header />
-          <PageTransitionProvider>
-            <div style={{ paddingTop: "var(--header-height)" }}>
-              {children}
-            </div>
-          </PageTransitionProvider>
-          <BottomNav />
-          <Footer />
-        </HeaderProvider>
+        <LoadingProvider>
+          <HeaderProvider>
+            <Header />
+            <PageTransitionProvider>
+              <div style={{ paddingTop: "var(--header-height)" }}>
+                {children}
+              </div>
+            </PageTransitionProvider>
+            <BottomNav />
+            <Footer />
+          </HeaderProvider>
+        </LoadingProvider>
       </body>
     </html>
   );
