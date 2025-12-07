@@ -1,13 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { PageTransitionProvider } from "./components/transition/PageTransitionProvider";
-import { HeaderProvider } from "./components/layout/useHeaderContext";
-import { LoadingProvider } from "./components/context/LoadingContext";
+
+import { Providers } from "./providers"; // client providers isolated
+
 import Header from "./components/layout/Header";
 import BottomNav from "./components/layout/BottomNav";
 import Footer from "./components/layout/Footer";
+
 import localFont from "next/font/local";
 
+/* ------------------------------------------------------------
+   Fonts (loaded once, on server)
+------------------------------------------------------------ */
 const geist = localFont({
   src: [
     { path: "../public/fonts/geist/Geist-Light.woff2", weight: "300" },
@@ -22,6 +26,9 @@ const tanPearl = localFont({
   variable: "--font-tan-pearl",
 });
 
+/* ------------------------------------------------------------
+   Metadata
+------------------------------------------------------------ */
 export const metadata: Metadata = {
   title: "Humantee",
   description: "Cinematic luxury experiences",
@@ -34,22 +41,29 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+/* ------------------------------------------------------------
+   Root Layout (SERVER COMPONENT — FAST)
+------------------------------------------------------------ */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${geist.variable} ${tanPearl.variable}`}>
       <body className="min-h-screen bg-brand-bg text-brand-text antialiased font-geist overflow-x-hidden">
-        <LoadingProvider>
-          <HeaderProvider>
-            <Header />
-            <PageTransitionProvider>
-              <div style={{ paddingTop: "var(--header-height)" }}>
-                {children}
-              </div>
-            </PageTransitionProvider>
-            <BottomNav />
-            <Footer />
-          </HeaderProvider>
-        </LoadingProvider>
+
+        {/* Client providers moved OUT of layout for performance */}
+        <Providers>
+
+          <Header />
+
+          {/* Page Content */}
+          <div style={{ paddingTop: "var(--header-height)" }}>
+            {children}
+          </div>
+
+          <BottomNav />
+          <Footer />
+
+        </Providers>
+
       </body>
     </html>
   );
