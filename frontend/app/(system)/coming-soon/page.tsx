@@ -88,6 +88,8 @@ export default function ComingSoon() {
           justify-center
           overflow-hidden
           cinematic-bg-void
+          -mt-[var(--header-height)]
+          pt-[var(--header-height)]
         "
       >
         {/* Monochrome Fog Layer */}

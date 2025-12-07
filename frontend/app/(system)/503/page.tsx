@@ -82,6 +82,8 @@ export default function ServiceUnavailable() {
           justify-center
           overflow-hidden
           cinematic-bg-dusk
+          -mt-[var(--header-height)]
+          pt-[var(--header-height)]
         "
       >
         {/* Soft monochrome fog */}

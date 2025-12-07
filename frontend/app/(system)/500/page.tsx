@@ -82,6 +82,8 @@ export default function ServerError() {
           justify-center
           overflow-hidden
           cinematic-bg-eclipse
+          -mt-[var(--header-height)]
+          pt-[var(--header-height)]
         "
       >
         {/* Soft monochrome fog */}

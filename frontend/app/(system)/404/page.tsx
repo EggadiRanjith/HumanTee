@@ -82,6 +82,8 @@ export default function NotFound() {
           justify-center
           overflow-hidden
           cinematic-bg-oblivion
+          -mt-[var(--header-height)]
+          pt-[var(--header-height)]
         "
       >
         {/* Soft white atmospheric fog */}
