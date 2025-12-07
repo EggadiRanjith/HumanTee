@@ -1,154 +1,174 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useEffect, useRef } from "react";
-import NavLink from "./NavLink";
+import { useEffect, useRef, useState } from "react";
+import { FiHeart, FiMenu, FiX } from "react-icons/fi";
+import Link from "next/link";
 import Navbar from "./Navbar";
-import { FiHeart } from "react-icons/fi";
 import { useHeaderContext } from "./useHeaderContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Header() {
-  const headerRef = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const { setHeaderHeight } = useHeaderContext();
+  const [open, setOpen] = useState(false);
 
-  // Update header height on mount and resize
+  // Sync header height to global CSS var
   useEffect(() => {
-    const updateHeight = () => {
-      if (headerRef.current) {
-        const height = headerRef.current.offsetHeight;
-        setHeaderHeight(height);
-        document.documentElement.style.setProperty("--header-height", `${height}px`);
-      }
+    const update = () => {
+      if (!ref.current) return;
+      const h = ref.current.offsetHeight;
+      setHeaderHeight(h);
+      document.documentElement.style.setProperty("--header-height", `${h}px`);
     };
-
-    updateHeight();
-    window.addEventListener("resize", updateHeight);
-    return () => window.removeEventListener("resize", updateHeight);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
   }, [setHeaderHeight]);
 
+  // Auto-close menu when tapping outside
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, [open]);
+
+  const stop = (e: any) => e.stopPropagation(); // Prevent closing when touching inside menu
+
   return (
-    <motion.div
-      ref={headerRef}
-      initial={{ y: -26, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.7, ease: [0.25, 1, 0.3, 1] }}
+    <div
+      ref={ref}
+      id="site-header"
       className="
-        fixed
-        top-3 xs:top-4 sm:top-4 md:top-5 lg:top-6
-        left-1/2 -translate-x-1/2
-        w-full
-        max-w-screen-2xl
-        px-3 xs:px-4 sm:px-4 md:px-6
-        z-[5000]
-        safe-area-top
+        fixed top-3 left-1/2 -translate-x-1/2
+        w-full max-w-screen-2xl z-[9000]
+        px-4 sm:px-6
       "
     >
       <header
         className="
-          relative
-          h-12 xs:h-13 sm:h-14 md:h-16 lg:h-[72px]
-          px-3 xs:px-4 sm:px-5 md:px-6
-          flex items-center justify-between
-          rounded-full
-          luxury-glass
-          border border-white/12
-          shadow-[0_0_40px_-10px_rgba(0,0,0,0.55)]
-          backdrop-blur-2xl
-          overflow-hidden
-          min-h-[48px]
+          h-[56px] sm:h-[62px] md:h-[68px] lg:h-[74px]
+          rounded-full luxury-glass backdrop-blur-xl
+          border border-white/10
+          shadow-[0_8px_24px_-12px_rgba(0,0,0,0.45)]
+          flex items-center justify-between px-5
+          relative z-[9500]
         "
       >
-        {/* Light sweep animation (desktop/tablet only) */}
-        <div className="hidden md:block absolute inset-0 pointer-events-none">
-          <motion.div
-            style={{
-              background:
-                "linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent)",
-              filter: "blur(32px)",
-            }}
-            animate={{ x: ["-40%", "140%"] }}
-            transition={{ duration: 4.4, repeat: Infinity, ease: [0.25, 1, 0.3, 1] }}
-            className="absolute inset-0"
-          />
+        {/* MOBILE LEFT — MENU BUTTON */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen(!open);
+          }}
+          className="md:hidden p-2 text-white/80 active:scale-95"
+        >
+          {open ? <FiX size={22} /> : <FiMenu size={22} />}
+        </button>
+
+        {/* BRAND LEFT */}
+        <Link
+          href="/"
+          onClick={(e) => e.stopPropagation()}
+          className="
+            text-white font-semibold uppercase tracking-[0.14em]
+            text-[14px] sm:text-[15px]
+            select-none
+          "
+          style={{ fontFamily: "var(--font-tan-pearl)" }}
+        >
+          HUMANTEE
+        </Link>
+
+        {/* RIGHT ICON (MOBILE ONLY) */}
+        <div className="md:hidden">
+          <Link href="/wishlist" onClick={(e) => e.stopPropagation()}>
+            <FiHeart size={22} className="text-white/90" />
+          </Link>
         </div>
 
-        {/* Soft inner glow */}
-        <div
-          className="absolute inset-0 rounded-full pointer-events-none"
-          style={{ boxShadow: "inset 0 0 26px rgba(255,255,255,0.06)" }}
-        />
-
-        {/* DESKTOP NAV (lg+) */}
-        <nav className="hidden lg:flex items-center justify-between w-full">
-          {/* Brand left */}
-          <motion.h1
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.25, 1, 0.3, 1] }}
-            className="
-              text-[14px] lg:text-[16px] xl:text-[17px]
-              font-semibold
-              tracking-[0.10em] sm:tracking-[0.12em] lg:tracking-[0.14em]
-              uppercase brand-text-primary select-none
-            "
-            style={{ fontFamily: "var(--font-tan-pearl)" }}
-          >
-            HUMANTEE
-          </motion.h1>
-
-          {/* Navigation right */}
-          <Navbar />
-        </nav>
-
-        {/* TABLET NAV (768px - 1023px) */}
-        <nav className="hidden md:flex lg:hidden w-full items-center justify-between">
-          <motion.h1
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.25, 1, 0.3, 1] }}
-            className="
-              text-[13px] sm:text-[14px]
-              font-semibold
-              tracking-[0.10em] sm:tracking-[0.12em]
-              uppercase brand-text-primary select-none
-            "
-            style={{ fontFamily: "var(--font-tan-pearl)" }}
-          >
-            HUMANTEE
-          </motion.h1>
-
-          <Navbar />
-        </nav>
-
-        {/* MOBILE NAV (< 768px) - Brand left, Wishlist icon right */}
-        <div className="md:hidden flex items-center justify-between w-full">
-          {/* Brand left */}
-          <motion.h1
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.25, 1, 0.3, 1] }}
-            className="
-              text-[13px] xs:text-[14px] sm:text-[15px]
-              font-semibold
-              tracking-[0.08em] xs:tracking-[0.10em]
-              uppercase brand-text-primary select-none
-            "
-            style={{ fontFamily: "var(--font-tan-pearl)" }}
-          >
-            HUMANTEE
-          </motion.h1>
-
-          {/* Wishlist icon right */}
-          <NavLink href="/wishlist">
-            <motion.div
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center justify-center touch-target"
-            >
-              <FiHeart size={22} className="text-brand-primary" />
-            </motion.div>
-          </NavLink>
+        {/* DESKTOP NAV */}
+        <div className="hidden md:flex items-center gap-10">
+          <Navbar large />
         </div>
       </header>
-    </motion.div>
+
+      {/* MOBILE OVERLAY + SLIDE MENU */}
+      <AnimatePresence>
+        {open && (
+          <>
+            {/* DARK DIM OVERLAY — NO BLUR */}
+            <motion.div
+              key="overlay"
+              onClick={() => setOpen(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="
+                fixed inset-0 
+                bg-black/60 
+                z-[4000]
+                md:hidden
+              "
+            />
+
+            {/* SLIDE DOWN MENU */}
+            <motion.div
+              key="drawer"
+              onClick={stop}
+              initial={{ opacity: 0, y: -24 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -24 }}
+              transition={{ duration: 0.35, ease: [0.25, 1, 0.3, 1] }}
+              className="
+                absolute top-[80px] left-0 right-0 mx-4
+                md:hidden z-[5001]
+                p-4 rounded-2xl
+                luxury-glass backdrop-blur-xl 
+                border border-white/10
+                bg-brand-bg/90
+              "
+            >
+              <nav className="flex flex-col gap-2 text-white/85">
+
+                <Link
+                  href="/"
+                  onClick={() => setOpen(false)}
+                  className="px-3 py-3 text-sm hover:text-white hover:bg-white/5 rounded-lg"
+                >
+                  Home
+                </Link>
+
+                <Link
+                  href="/shop"
+                  onClick={() => setOpen(false)}
+                  className="px-3 py-3 text-sm hover:text-white hover:bg-white/5 rounded-lg"
+                >
+                  Shop
+                </Link>
+
+                <Link
+                  href="/orders"
+                  onClick={() => setOpen(false)}
+                  className="px-3 py-3 text-sm hover:text-white hover:bg-white/5 rounded-lg"
+                >
+                  Orders
+                </Link>
+
+                <Link
+                  href="/profile"
+                  onClick={() => setOpen(false)}
+                  className="px-3 py-3 text-sm hover:text-white hover:bg-white/5 rounded-lg"
+                >
+                  Profile
+                </Link>
+
+              </nav>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

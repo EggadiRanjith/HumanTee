@@ -4,7 +4,6 @@ import "./globals.css";
 import { Providers } from "./providers"; // client providers isolated
 
 import Header from "./components/layout/Header";
-import BottomNav from "./components/layout/BottomNav";
 import Footer from "./components/layout/Footer";
 
 import localFont from "next/font/local";
@@ -58,8 +57,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div style={{ paddingTop: "var(--header-height)" }}>
             {children}
           </div>
-
-          <BottomNav />
           <Footer />
 
         </Providers>

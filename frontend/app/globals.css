@@ -650,7 +650,7 @@ body.drawer-open {
 /* Add padding to body on mobile to account for bottom nav */
 @media (max-width: 767px) {
   body {
-    padding-bottom: 80px;
+    padding-bottom: 10px;
   }
 }
 

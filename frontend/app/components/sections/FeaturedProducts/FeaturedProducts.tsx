@@ -1,137 +1,175 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 
 interface Product {
   id: number;
-  name: string;
+  title: string;
+  subtitle: string;
   price: string;
+  image: string;
 }
 
 const FeaturedProducts = () => {
   const products: Product[] = [
-    { id: 1, name: "Luxury Watch", price: "$2,499" },
-    { id: 2, name: "Designer Bag", price: "$1,899" },
-    { id: 3, name: "Premium Sunglasses", price: "$599" },
-    { id: 4, name: "Silk Scarf", price: "$349" },
+    {
+      id: 1,
+      title: "Midnight Core Tee",
+      subtitle: "Heavyweight 280 GSM",
+      price: "$58",
+      image:
+        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format",
+    },
+    {
+      id: 2,
+      title: "Quantum Crest Tee",
+      subtitle: "Embroidered Crest Edition",
+      price: "$62",
+      image:
+        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format",
+    },
+    {
+      id: 3,
+      title: "Obsidian Logo Tee",
+      subtitle: "Structured Fit",
+      price: "$54",
+      image:
+        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format",
+    },
+    {
+      id: 4,
+      title: "Storm Fade Tee",
+      subtitle: "Reactive Dye Wash",
+      price: "$68",
+      image:
+        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format",
+    },
   ];
 
   return (
-    <section className="py-24 px-6 md:px-10 lg:px-16 relative overflow-hidden">
+    <section className="relative w-full pt-10 pb-14 px-4 sm:px-6 md:px-10 lg:px-14">
 
-      {/* SUBTLE CINEMATIC BACKGROUND */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div
-          className="absolute inset-0 opacity-[0.16]"
-          style={{
-            background:
-              "radial-gradient(circle at 50% 20%, rgba(180,170,255,0.12), transparent 70%)",
-            filter: "blur(120px)",
-          }}
-        />
-      </div>
+      {/* Ambient glow */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none opacity-20"
+        style={{
+          background:
+            "radial-gradient(circle at 50% 15%, rgba(160,150,255,0.10), transparent 70%)",
+          filter: "blur(70px)",
+        }}
+        animate={{ opacity: [0.2, 0.32, 0.2] }}
+        transition={{ duration: 7, repeat: Infinity }}
+      />
 
-      <div className="relative z-10 max-w-7xl mx-auto">
-        
-        {/* ---- TITLE ---- */}
-        <div className="text-center mb-16">
-          <h2
-            className="
-              text-[32px] sm:text-[40px] md:text-[52px] lg:text-[64px]
-              font-geist font-light
-              tracking-wide leading-tight
-              text-white
-            "
-          >
-            Featured Collection
+      <div className="relative max-w-screen-xl mx-auto">
+
+        {/* HEADER ROW */}
+        <div className="flex items-center justify-between mb-7 sm:mb-10">
+          <h2 className="text-[18px] sm:text-[28px] md:text-[34px] font-light tracking-wide text-white">
+            Featured Pieces
           </h2>
 
-          <motion.div
-            className="h-[1px] w-32 mx-auto mt-4 bg-white/20"
-            initial={{ scaleX: 0 }}
-            whileInView={{ scaleX: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1, ease: [0.25, 1, 0.3, 1] }}
-          />
+          <Link
+            href="/shop"
+            className="
+              text-white/70 text-[10px] sm:text-[12px]
+              uppercase tracking-[0.22em]
+              border border-white/15 rounded-full
+              px-3 py-1.5 sm:px-4 sm:py-2
+              hover:text-white hover:border-white/30
+              transition-all luxury-glass
+            "
+          >
+            View All
+          </Link>
         </div>
 
-        {/* ---- PRODUCT GRID ---- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-14">
-          {products.map((product, index) => (
-            <div
-              key={product.id}
+        {/* GRID — MOBILE SUPER COMPACT */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
+          {products.map((item) => (
+            <Link
+              key={item.id}
+              href={`/product/${item.id}`}
               className="
-                luxury-glass rounded-3xl
+                group block overflow-hidden 
+                rounded-lg sm:rounded-2xl luxury-glass
                 border border-white/10 backdrop-blur-xl
-                overflow-hidden
-                group cursor-pointer
-                transition-all duration-700
               "
             >
-              <div className="flex flex-col sm:flex-row h-full">
+              {/* IMAGE — NOW MUCH SHORTER */}
+              <div
+                className="
+                  relative w-full 
+                  aspect-[4/3] sm:aspect-[4/5] 
+                  overflow-hidden rounded-lg sm:rounded-xl
+                "
+              >
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  fill
+                  className="
+                    object-cover 
+                    transition-transform duration-700
+                    group-hover:scale-[1.04]
+                  "
+                />
 
-                {/* ---- IMAGE AREA (CINEMATIC PLACEHOLDER) ---- */}
-                <div className="sm:w-2/5 h-52 sm:h-auto relative overflow-hidden bg-black/20">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-20 h-20 rounded-full border border-white/20 flex items-center justify-center">
-                      <div className="w-10 h-10 rounded-full bg-white/10"></div>
-                    </div>
-                  </div>
-
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30" />
-                </div>
-
-                {/* ---- TEXT AREA ---- */}
-                <div className="sm:w-3/5 p-6 md:p-8 lg:p-10 flex flex-col justify-center">
-                  <h3
-                    className="
-                      text-xl md:text-2xl lg:text-3xl
-                      text-white font-medium font-geist
-                      tracking-wide mb-2
-                    "
-                  >
-                    {product.name}
-                  </h3>
-
-                  <p
-                    className="
-                      text-white/60 font-geist text-sm md:text-base
-                      leading-relaxed mb-6
-                    "
-                  >
-                    Refined craftsmanship designed for those who appreciate true elegance.
-                  </p>
-
-                  <div className="flex items-center justify-between mt-auto">
-                    <span
-                      className="
-                        text-lg md:text-xl lg:text-2xl
-                        font-semibold text-white tracking-wide
-                      "
-                    >
-                      {product.price}
-                    </span>
-
-                    {/* CTA BUTTON */}
-                    <button
-                      className="
-                        px-5 py-2 rounded-full
-                        border border-white/20
-                        text-xs md:text-sm
-                        tracking-[0.18em] uppercase font-semibold
-                        text-white/80
-                        luxury-glass
-                      "
-                    >
-                      Discover
-                    </button>
-                  </div>
+                <div className="absolute bottom-1 left-1 text-[8px] uppercase tracking-[0.2em] text-white/70">
+                  {String(item.id).padStart(2, "0")}
                 </div>
               </div>
-            </div>
+
+              {/* TEXT CONTENT — TIGHTER */}
+              <div className="p-3 sm:p-5 flex flex-col">
+
+                <h3 className="text-white font-light text-[13px] sm:text-[18px] tracking-wide">
+                  {item.title}
+                </h3>
+
+                <p className="text-white/60 text-[10px] sm:text-[12px] mt-0.5 tracking-wide">
+                  {item.subtitle}
+                </p>
+
+                <div className="flex items-center justify-between mt-3 sm:mt-5">
+                  <span className="text-white font-light text-[13px] sm:text-[17px]">
+                    {item.price}
+                  </span>
+
+                  <span
+                    className="
+                      px-3 py-1 sm:px-4 sm:py-1.5
+                      rounded-full border border-white/14 
+                      text-white/80 text-[9px] sm:text-[10px]
+                      tracking-[0.22em] uppercase luxury-glass
+                    "
+                  >
+                    View
+                  </span>
+                </div>
+              </div>
+            </Link>
           ))}
         </div>
 
+        {/* MOBILE VIEW ALL */}
+        <div className="sm:hidden mt-7 flex justify-center">
+          <Link
+            href="/shop"
+            className="
+              text-white/70 text-[11px]
+              uppercase tracking-[0.22em]
+              border border-white/15 rounded-full
+              px-6 py-2
+              hover:text-white hover:border-white/30
+              transition-all luxury-glass
+            "
+          >
+            View All
+          </Link>
+        </div>
       </div>
     </section>
   );
