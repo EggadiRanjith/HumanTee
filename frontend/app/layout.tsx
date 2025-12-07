@@ -4,6 +4,7 @@ import { PageTransitionProvider } from "./components/transition/PageTransitionPr
 import { HeaderProvider } from "./components/layout/useHeaderContext";
 import Header from "./components/layout/Header";
 import BottomNav from "./components/layout/BottomNav";
+import Footer from "./components/layout/Footer";
 import localFont from "next/font/local";
 
 const geist = localFont({
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </PageTransitionProvider>
           <BottomNav />
+          <Footer />
         </HeaderProvider>
       </body>
     </html>
