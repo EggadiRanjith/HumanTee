@@ -1,7 +1,8 @@
 "use client";
 
-import { FiPackage, FiTruck, FiCheckCircle, FiClock } from "react-icons/fi";
+import Image from "next/image";
 import Link from "next/link";
+import { FiPackage, FiTruck, FiCheckCircle, FiClock } from "react-icons/fi";
 
 export default function OrdersPage() {
   const orders = [
@@ -11,7 +12,11 @@ export default function OrdersPage() {
       status: "delivered",
       total: "$258.00",
       items: 2,
-      tracking: "TRK123456789"
+      tracking: "TRK123456789",
+      images: [
+        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=60&w=600",
+        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=60&w=600",
+      ],
     },
     {
       id: "ORD-002",
@@ -19,7 +24,10 @@ export default function OrdersPage() {
       status: "shipped",
       total: "$129.00",
       items: 1,
-      tracking: "TRK987654321"
+      tracking: "TRK987654321",
+      images: [
+        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=60&w=600",
+      ],
     },
     {
       id: "ORD-003",
@@ -27,8 +35,13 @@ export default function OrdersPage() {
       status: "processing",
       total: "$387.00",
       items: 3,
-      tracking: null
-    }
+      tracking: null,
+      images: [
+        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=60&w=600",
+        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=60&w=600",
+        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=60&w=600",
+      ],
+    },
   ];
 
   const getStatusConfig = (status: string) => {
@@ -38,126 +51,100 @@ export default function OrdersPage() {
       case "shipped":
         return { icon: FiTruck, label: "Shipped", class: "text-brand-primary" };
       case "processing":
-        return { icon: FiClock, label: "Processing", class: "text-brand-text-muted" };
+        return { icon: FiClock, label: "Processing", class: "text-white/60" };
       default:
-        return { icon: FiPackage, label: "Unknown", class: "text-brand-text-dim" };
+        return { icon: FiPackage, label: "Unknown", class: "text-white/40" };
     }
   };
 
   return (
-    <div className="min-h-screen brand-bg pb-24">
+    <div className="min-h-screen brand-bg pb-24 pt-[var(--header-height)]">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
 
         {/* PAGE TITLE */}
-        <div className="pt-24 sm:pt-28 lg:pt-36 mb-8">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-wide text-white">
+        <div className="mb-10">
+          <h1 className="text-[26px] sm:text-[34px] lg:text-[42px] font-light uppercase tracking-[0.14em] text-white">
             Orders
           </h1>
-          <p className="text-white/50 text-sm sm:text-base mt-1">
+          <p className="text-white/45 text-[11px] uppercase tracking-[0.22em] mt-2">
             Track and manage your previous purchases
           </p>
         </div>
 
-        {/* SUMMARY → MOVED TO TOP */}
-        <div className="grid grid-cols-3 gap-3 mb-10">
-
-          <div className="
-            p-4 rounded-xl luxury-glass border border-white/10 text-center 
-            flex flex-col justify-center
-          ">
-            <p className="text-lg sm:text-xl text-white font-light">3</p>
-            <p className="text-white/50 text-[10px] sm:text-xs tracking-wide mt-1">Total Orders</p>
-          </div>
-
-          <div className="
-            p-4 rounded-xl luxury-glass border border-white/10 text-center 
-            flex flex-col justify-center
-          ">
-            <p className="text-lg sm:text-xl text-white font-light">1</p>
-            <p className="text-white/50 text-[10px] sm:text-xs tracking-wide mt-1">Delivered</p>
-          </div>
-
-          <div className="
-            p-4 rounded-xl luxury-glass border border-white/10 text-center 
-            flex flex-col justify-center
-          ">
-            <p className="text-lg sm:text-xl text-white font-light">$774</p>
-            <p className="text-white/50 text-[10px] sm:text-xs tracking-wide mt-1">Total Spent</p>
-          </div>
-
-        </div>
-
-        {/* ORDERS LIST */}
-        <div className="space-y-4">
+        {/* ORDER CARDS */}
+        <div className="space-y-5">
           {orders.map((order) => {
             const status = getStatusConfig(order.status);
-            const StatusIcon = status.icon;
+            const Icon = status.icon;
 
             return (
               <div
                 key={order.id}
                 className="
-                  p-5 sm:p-6 
-                  rounded-2xl luxury-glass border border-white/10 
+                  p-6 rounded-2xl luxury-glass border border-white/10 
                   bg-white/5 backdrop-blur-xl
+                  flex flex-col sm:flex-row justify-between gap-6
                 "
               >
-                <div className="flex flex-col sm:flex-row justify-between gap-4">
-
-                  {/* LEFT */}
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-3">
-                      <h3 className="text-lg text-white font-light tracking-wide">
+                {/* LEFT CONTENT */}
+                <div className="flex-1 flex flex-col justify-between">
+                  
+                  <div>
+                    <div className="flex items-center gap-3 mb-1">
+                      <h3 className="text-white text-lg font-light tracking-wide">
                         {order.id}
                       </h3>
 
-                      <div
-                        className="
-                          flex items-center gap-1.5 
-                          px-2 py-1 rounded-md 
-                          bg-white/5 border border-white/10
-                        "
-                      >
-                        <StatusIcon className={`w-3.5 h-3.5 ${status.class}`} />
+                      <span className="flex items-center gap-1.5 px-2 py-1 bg-white/5 border border-white/10 rounded-md">
+                        <Icon className={`w-3.5 h-3.5 ${status.class}`} />
                         <span className="text-[10px] uppercase tracking-[0.18em] text-white/70">
                           {status.label}
                         </span>
-                      </div>
+                      </span>
                     </div>
 
-                    <p className="text-white/50 text-sm">
+                    <p className="text-white/50 text-sm mb-1">
                       {order.date} • {order.items} items
                     </p>
 
                     {order.tracking && (
-                      <p className="text-white/40 text-xs">
-                        Tracking: {order.tracking}
-                      </p>
+                      <p className="text-white/40 text-xs">Tracking: {order.tracking}</p>
                     )}
                   </div>
 
-                  {/* RIGHT */}
-                  <div className="flex items-center gap-4 sm:gap-8 justify-between sm:justify-end">
-
-                    <p className="text-xl text-white font-light tracking-wide">
-                      {order.total}
-                    </p>
+                  {/* Amount + CTA */}
+                  <div className="flex items-center gap-6 mt-4">
+                    <p className="text-white text-xl font-light">{order.total}</p>
 
                     <Link
                       href={`/orders/${order.id}`}
                       className="
-                        px-4 py-2 
-                        rounded-xl luxury-glass 
-                        border border-white/10 
-                        text-white/80 text-xs uppercase tracking-[0.2em]
-                        hover:text-white transition-colors
+                        px-4 py-2 rounded-xl border border-white/10 
+                        text-white/80 text-xs uppercase tracking-[0.18em]
+                        hover:text-white hover:border-white/20 transition-colors
                       "
                     >
                       View Details
                     </Link>
-
                   </div>
+                </div>
 
+                {/* RIGHT IMAGE CLUSTER */}
+                <div className="flex-shrink-0 flex gap-2 sm:gap-3">
+                  {order.images.slice(0, 3).map((img, i) => (
+                    <div
+                      key={i}
+                      className="relative w-16 h-20 sm:w-20 sm:h-24 rounded-lg overflow-hidden border border-white/10"
+                    >
+                      <Image
+                        src={img}
+                        fill
+                        alt=""
+                        className="object-cover"
+                        sizes="120px"
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
             );

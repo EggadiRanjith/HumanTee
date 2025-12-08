@@ -1,8 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Link from "next/link";
-import { PageTransitionProvider } from "@/app/components/transition/PageTransitionProvider";
+import { useEffect } from "react";
 
 /* ------------------------------------------------------------
    Cinematic "COMING SOON" Typographic Block
@@ -13,7 +12,7 @@ function ComingSoonTitle() {
   return (
     <div className="flex flex-col items-center gap-2 select-none">
       {words.map((word, wi) => (
-        <motion.div
+        <div
           key={wi}
           className="
             inline-flex 
@@ -27,44 +26,16 @@ function ComingSoonTitle() {
             px-1 xs:px-2
           "
           style={{ fontFamily: "var(--font-tan-pearl)" }}
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: { opacity: 0 },
-            visible: {
-              opacity: 1,
-              transition: {
-                staggerChildren: 0.09,
-                delayChildren: wi === 0 ? 0.2 : 0.5,
-              },
-            },
-          }}
         >
           {word.split("").map((char, i) => (
-            <motion.span
+            <span
               key={i}
               className="relative inline-block"
-              variants={{
-                hidden: {
-                  opacity: 0,
-                  y: 28,
-                  filter: "blur(18px)",
-                },
-                visible: {
-                  opacity: 1,
-                  y: 0,
-                  filter: "blur(0px)",
-                  transition: {
-                    duration: 0.9,
-                    ease: [0.25, 1, 0.3, 1],
-                  },
-                },
-              }}
             >
               {char}
-            </motion.span>
+            </span>
           ))}
-        </motion.div>
+        </div>
       ))}
     </div>
   );
@@ -74,31 +45,29 @@ function ComingSoonTitle() {
    Main Page — Cinematic Coming Soon (Monochrome)
 ------------------------------------------------------------ */
 export default function ComingSoon() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
-    <PageTransitionProvider>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, ease: [0.25, 1, 0.3, 1] }}
-        className="
-          relative
-          min-h-screen
-          flex
-          items-center
-          justify-center
-          overflow-hidden
-          cinematic-bg-void
-          -mt-[var(--header-height)]
-          pt-[var(--header-height)]
-        "
-      >
+    <div
+      className="
+        relative
+        min-h-screen
+        flex
+        items-center
+        justify-center
+        overflow-hidden
+        cinematic-bg-void
+      "
+    >
         {/* Monochrome Fog Layer */}
         <div className="absolute inset-0 opacity-[0.13] pointer-events-none">
           <div className="absolute inset-0 blur-[180px] bg-white/10" />
         </div>
 
         {/* Dramatic Center Light Beam */}
-        <motion.div
+        <div
           className="
             absolute h-[200%] w-[50%]
             left-1/2 top-1/2
@@ -111,8 +80,6 @@ export default function ComingSoon() {
             to-white/10
             pointer-events-none
           "
-          animate={{ opacity: [0.12, 0.18, 0.12] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "linear" }}
         />
 
         {/* Content */}
@@ -122,14 +89,7 @@ export default function ComingSoon() {
           <ComingSoonTitle />
 
           {/* Underline */}
-          <motion.div
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{
-              duration: 1,
-              delay: 1.0,
-              ease: [0.25, 1, 0.3, 1],
-            }}
+          <div
             className="
               h-px
               w-24 xs:w-32 sm:w-40
@@ -143,7 +103,7 @@ export default function ComingSoon() {
           />
 
           {/* Description */}
-          <motion.p
+          <p
             className="
               text-[clamp(0.8125rem,2vw,1rem)]
               xs:text-step-0
@@ -153,27 +113,12 @@ export default function ComingSoon() {
               mb-8 xs:mb-10 sm:mb-12
               px-2
             "
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.7,
-              delay: 1.3,
-              ease: [0.25, 1, 0.3, 1],
-            }}
           >
             A new chapter of digital luxury is being crafted — with precision, elegance, and vision.
-          </motion.p>
+          </p>
 
           {/* CTA — Luxury Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.7,
-              delay: 1.6,
-              ease: [0.25, 1, 0.3, 1],
-            }}
-          >
+          <div>
             <Link
               href="/"
               className="
@@ -238,10 +183,9 @@ export default function ComingSoon() {
                 Notify Me
               </span>
             </Link>
-          </motion.div>
+          </div>
 
         </div>
-      </motion.div>
-    </PageTransitionProvider>
+      </div>
   );
 }

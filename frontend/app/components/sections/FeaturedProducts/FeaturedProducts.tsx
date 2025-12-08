@@ -18,23 +18,21 @@ const FeaturedProducts = () => {
       id: 1,
       title: "Midnight Core Tee",
       subtitle: "Heavyweight 280 GSM",
-      price: "$58",
-      image:
-        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format",
+      price: "₹1,299",
+      image: "/images/products/drive-front.jpg",
     },
     {
       id: 2,
       title: "Quantum Crest Tee",
       subtitle: "Embroidered Crest Edition",
-      price: "$62",
-      image:
-        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format",
+      price: "₹1,499",
+      image: "/images/products/wild-beginings-front.jpg",
     },
     {
       id: 3,
       title: "Obsidian Logo Tee",
       subtitle: "Structured Fit",
-      price: "$54",
+      price: "₹1,199",
       image:
         "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format",
     },
@@ -42,29 +40,28 @@ const FeaturedProducts = () => {
       id: 4,
       title: "Storm Fade Tee",
       subtitle: "Reactive Dye Wash",
-      price: "$68",
+      price: "₹1,699",
       image:
         "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format",
     },
   ];
 
   return (
-    <section className="relative w-full pt-10 pb-14 px-4 sm:px-6 md:px-10 lg:px-14">
+    <section className="relative w-full pt-12 pb-20 px-4 sm:px-6 md:px-10 lg:px-14 cinematic-bg-dusk">
 
-      {/* Ambient glow */}
+      {/* Ambient Aurora Glow */}
       <motion.div
-        className="absolute inset-0 pointer-events-none opacity-20"
+        className="absolute inset-0 pointer-events-none opacity-40"
         style={{
           background:
-            "radial-gradient(circle at 50% 15%, rgba(160,150,255,0.10), transparent 70%)",
-          filter: "blur(70px)",
+            "radial-gradient(circle at 50% 10%, rgba(183,164,255,0.18), transparent 70%)",
+          filter: "blur(120px)",
         }}
-        animate={{ opacity: [0.2, 0.32, 0.2] }}
-        transition={{ duration: 7, repeat: Infinity }}
+        animate={{ opacity: [0.25, 0.45, 0.25] }}
+        transition={{ duration: 8, repeat: Infinity }}
       />
 
       <div className="relative max-w-screen-xl mx-auto">
-
         {/* HEADER ROW */}
         <div className="flex items-center justify-between mb-7 sm:mb-10">
           <h2 className="text-[18px] sm:text-[28px] md:text-[34px] font-light tracking-wide text-white">
@@ -86,24 +83,24 @@ const FeaturedProducts = () => {
           </Link>
         </div>
 
-        {/* GRID — MOBILE SUPER COMPACT */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
+        {/* GRID — NEW LAYOUT, OLD STYLES */}
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {products.map((item) => (
-            <Link
+            <motion.div
               key={item.id}
-              href={`/product/${item.id}`}
-              className="
-                group block overflow-hidden 
-                rounded-lg sm:rounded-2xl luxury-glass
-                border border-white/10 backdrop-blur-xl
-              "
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="group relative"
             >
-              {/* IMAGE — NOW MUCH SHORTER */}
-              <div
+              {/* IMAGE WRAPPER — luxury glass, floating, cinematic */}
+              <Link
+                href={`/product/${item.id}`}
                 className="
-                  relative w-full 
-                  aspect-[4/3] sm:aspect-[4/5] 
-                  overflow-hidden rounded-lg sm:rounded-xl
+                  block relative w-full aspect-[4/5]
+                  overflow-hidden rounded-md 
+                  luxury-glass shadow-floating motion-cinematic
+                  hover:shadow-glow-violet-medium
                 "
               >
                 <Image
@@ -111,65 +108,79 @@ const FeaturedProducts = () => {
                   alt={item.title}
                   fill
                   className="
-                    object-cover 
-                    transition-transform duration-700
-                    group-hover:scale-[1.04]
+                    object-cover motion-luxury-slow 
+                    group-hover:scale-[1.05] 
                   "
                 />
 
-                <div className="absolute bottom-1 left-1 text-[8px] uppercase tracking-[0.2em] text-white/70">
-                  {String(item.id).padStart(2, "0")}
+                {/* Quick View — premium version */}
+                <div
+                  className="
+                    absolute bottom-0 left-0 right-0 
+                    translate-y-full group-hover:translate-y-0 
+                    transition-transform duration-500 ease-cinematic
+                    backdrop-blur-xl bg-brand-oblivion/60
+                    border-t border-white/10
+                  "
+                >
+                  <button className="w-full py-3 text-step--1 tracking-wide brand-text-primary">
+                    QUICK VIEW
+                  </button>
                 </div>
-              </div>
+              </Link>
 
-              {/* TEXT CONTENT — TIGHTER */}
-              <div className="p-3 sm:p-5 flex flex-col">
+              {/* TEXT AREA */}
+              <div className="mt-3 sm:mt-4 text-center">
 
-                <h3 className="text-white font-light text-[13px] sm:text-[18px] tracking-wide">
-                  {item.title}
-                </h3>
+                {/* TITLE */}
+                <Link href={`/product/${item.id}`}>
+                  <h3 className="brand-text-primary text-step-0 tracking-tight font-heading">
+                    {item.title}
+                  </h3>
+                </Link>
 
-                <p className="text-white/60 text-[10px] sm:text-[12px] mt-0.5 tracking-wide">
+                {/* SUBTITLE */}
+                <p className="brand-text-muted text-step--1 tracking-wide mt-0.5">
                   {item.subtitle}
                 </p>
 
-                <div className="flex items-center justify-between mt-3 sm:mt-5">
-                  <span className="text-white font-light text-[13px] sm:text-[17px]">
+                {/* PRICE AREA */}
+                <div className="flex items-center justify-center gap-2 mt-2 mb-1">
+                  <span className="brand-text-dim text-step--1 line-through">
+                    ₹1,999
+                  </span>
+                  <span className="brand-text-primary text-step-0 font-heading">
                     {item.price}
                   </span>
+                </div>
 
-                  <span
-                    className="
-                      px-3 py-1 sm:px-4 sm:py-1.5
-                      rounded-full border border-white/14 
-                      text-white/80 text-[9px] sm:text-[10px]
-                      tracking-[0.22em] uppercase luxury-glass
-                    "
-                  >
-                    View
+                {/* STOCK — replaced orange trash with premium glow pulse */}
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-brand-secondary animate-glowPulse shadow-glow-violet-medium"></div>
+                  <span className="text-step--1 brand-text-secondary tracking-wide">
+                    4 in stock
                   </span>
                 </div>
               </div>
-            </Link>
+            </motion.div>
           ))}
         </div>
 
-        {/* MOBILE VIEW ALL */}
-        <div className="sm:hidden mt-7 flex justify-center">
+        {/* MOBILE VIEW ALL (styled correctly now) */}
+        <div className="sm:hidden mt-10 flex justify-center">
           <Link
             href="/shop"
             className="
-              text-white/70 text-[11px]
-              uppercase tracking-[0.22em]
-              border border-white/15 rounded-full
-              px-6 py-2
-              hover:text-white hover:border-white/30
-              transition-all luxury-glass
+              brand-text-muted text-step--1 tracking-wide 
+              border border-white/10 rounded-full
+              px-6 py-2 motion-cinematic luxury-glass
+              hover:border-white/20 hover:brand-text-primary
             "
           >
-            View All
+            VIEW ALL
           </Link>
         </div>
+
       </div>
     </section>
   );

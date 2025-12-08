@@ -10,10 +10,12 @@
 
 @import "tailwindcss";
 
+
 /* ----------------------------------------
    1. ROOT TOKENS — COLOR, MOTION, DEPTH
 ---------------------------------------- */
 :root {
+  
   /* Header height - dynamically updated by Header component */
   --header-height: 72px;
 

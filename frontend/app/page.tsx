@@ -6,21 +6,21 @@ import { useState, useEffect } from "react";
 import { useLoading } from "./components/context/LoadingContext";
 
 export default function Home() {
-    const [showIntro, setShowIntro] = useState(true);
+    const [showIntro, setShowIntro] = useState(false);
     const { setLoading } = useLoading();
 
     useEffect(() => {
-        // For testing: clear sessionStorage and always show loader
-        sessionStorage.removeItem('has-visited-homepage');
+        // STRICT RULE: Only show intro on absolute first visit to domain
+        const hasVisitedDomain = sessionStorage.getItem('has-visited-domain');
         
-        // Check if this is the first visit or refresh
-        const hasVisited = sessionStorage.getItem('has-visited-homepage');
-        
-        if (hasVisited) {
+        if (hasVisitedDomain) {
+            // User has visited before - NEVER show intro again
             setShowIntro(false);
             setLoading(false);
         } else {
-            sessionStorage.setItem('has-visited-homepage', 'true');
+            // First time ever visiting this domain - show intro once
+            sessionStorage.setItem('has-visited-domain', 'true');
+            setShowIntro(true);
         }
     }, [setLoading]);
 

@@ -1,8 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Link from "next/link";
-import { PageTransitionProvider } from "@/app/components/transition/PageTransitionProvider";
+import { useEffect } from "react";
 
 /* ------------------------------------------------------------
    Aesthetic 404 Numeral — Cinematic White/Black
@@ -11,7 +10,7 @@ function Big404() {
   const digits = ["4", "0", "4"];
 
   return (
-    <motion.div
+    <div
       className="
         flex 
         gap-2 xs:gap-3 sm:gap-4 
@@ -24,43 +23,13 @@ function Big404() {
         select-none
       "
       style={{ fontFamily: "var(--font-tan-pearl)" }}
-      initial="hidden"
-      animate="visible"
-      variants={{
-        hidden: { opacity: 0 },
-        visible: {
-          opacity: 1,
-          transition: {
-            staggerChildren: 0.12,
-            delayChildren: 0.2,
-          },
-        },
-      }}
     >
       {digits.map((d, i) => (
-        <motion.span
-          key={i}
-          variants={{
-            hidden: {
-              opacity: 0,
-              y: 40,
-              filter: "blur(20px)",
-            },
-            visible: {
-              opacity: 1,
-              y: 0,
-              filter: "blur(0px)",
-              transition: {
-                duration: 1,
-                ease: [0.25, 1, 0.3, 1],
-              },
-            },
-          }}
-        >
+        <span key={i}>
           {d}
-        </motion.span>
+        </span>
       ))}
-    </motion.div>
+    </div>
   );
 }
 
@@ -68,31 +37,29 @@ function Big404() {
    Main Page
 ------------------------------------------------------------ */
 export default function NotFound() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
-    <PageTransitionProvider>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, ease: [0.25, 1, 0.3, 1] }}
-        className="
-          relative
-          min-h-screen
-          flex
-          items-center
-          justify-center
-          overflow-hidden
-          cinematic-bg-oblivion
-          -mt-[var(--header-height)]
-          pt-[var(--header-height)]
-        "
-      >
+    <div
+      className="
+        relative
+        min-h-screen
+        flex
+        items-center
+        justify-center
+        overflow-hidden
+        cinematic-bg-oblivion
+      "
+    >
         {/* Soft white atmospheric fog */}
         <div className="absolute inset-0 opacity-[0.10] pointer-events-none">
           <div className="absolute inset-0 blur-[160px] bg-white/10" />
         </div>
 
         {/* Vertical cinematic light beam */}
-        <motion.div
+        <div
           className="
             absolute w-[60%] h-[160%]
             left-1/2 top-1/2
@@ -102,8 +69,6 @@ export default function NotFound() {
             pointer-events-none
             bg-gradient-to-b from-white/15 via-transparent to-white/10
           "
-          animate={{ opacity: [0.09, 0.13, 0.09] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "linear" }}
         />
 
         {/* Content */}
@@ -113,7 +78,7 @@ export default function NotFound() {
           <Big404 />
 
           {/* Subtitle */}
-          <motion.h2
+          <h2
             className="
               text-[clamp(1.125rem,4vw,1.953rem)]
               xs:text-step-3
@@ -124,26 +89,12 @@ export default function NotFound() {
               px-2
             "
             style={{ fontFamily: "var(--font-tan-pearl)" }}
-            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{
-              duration: 0.9,
-              delay: 0.4,
-              ease: [0.25, 1, 0.3, 1],
-            }}
           >
             Lost in the Void
-          </motion.h2>
+          </h2>
 
           {/* Cinematic Line */}
-          <motion.div
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{
-              duration: 0.9,
-              delay: 1.0,
-              ease: [0.25, 1, 0.3, 1],
-            }}
+          <div
             className="
               h-px
               w-24 xs:w-32 sm:w-40
@@ -157,7 +108,7 @@ export default function NotFound() {
           />
 
           {/* Description */}
-          <motion.p
+          <p
             className="
               text-[clamp(0.8125rem,2vw,1rem)]
               xs:text-step-0
@@ -167,27 +118,12 @@ export default function NotFound() {
               mb-8 xs:mb-10 sm:mb-12
               px-2
             "
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.7,
-              delay: 1.2,
-              ease: [0.25, 1, 0.3, 1],
-            }}
           >
             The page you're looking for no longer exists — or drifted somewhere unreachable.
-          </motion.p>
+          </p>
 
           {/* CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.7,
-              delay: 1.5,
-              ease: [0.25, 1, 0.3, 1],
-            }}
-          >
+          <div>
 <Link
   href="/"
   className="
@@ -257,10 +193,9 @@ export default function NotFound() {
 
 </Link>
 
-          </motion.div>
+          </div>
 
         </div>
-      </motion.div>
-    </PageTransitionProvider>
+      </div>
   );
 }

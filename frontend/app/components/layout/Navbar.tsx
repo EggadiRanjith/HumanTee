@@ -12,7 +12,6 @@ export default function Navbar({ large = false }: NavbarProps) {
 
   const items = [
     { href: "/shop", label: "SHOP" },
-    { href: "/wishlist", label: "WISHLIST" },
     { href: "/orders", label: "ORDERS" },
     { href: "/profile", label: "PROFILE" },
   ];

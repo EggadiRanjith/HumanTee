@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FiHeart, FiMenu, FiX } from "react-icons/fi";
+import { FiUser, FiMenu, FiX } from "react-icons/fi";
 import Link from "next/link";
 import Navbar from "./Navbar";
 import { useHeaderContext } from "./useHeaderContext";
@@ -82,8 +82,8 @@ export default function Header() {
 
         {/* RIGHT ICON (MOBILE ONLY) */}
         <div className="md:hidden">
-          <Link href="/wishlist" onClick={(e) => e.stopPropagation()}>
-            <FiHeart size={22} className="text-white/90" />
+          <Link href="/profile" onClick={(e) => e.stopPropagation()}>
+            <FiUser size={22} className="text-white/90" />
           </Link>
         </div>
 
@@ -97,21 +97,22 @@ export default function Header() {
       <AnimatePresence>
         {open && (
           <>
-            {/* DARK DIM OVERLAY — NO BLUR */}
             <motion.div
               key="overlay"
               onClick={() => setOpen(false)}
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25 }}
               className="
                 fixed inset-0 
-                bg-black/60 
                 z-[4000]
                 md:hidden
+                bg-transparent
+                pointer-events-auto
               "
             />
+
 
             {/* SLIDE DOWN MENU */}
             <motion.div

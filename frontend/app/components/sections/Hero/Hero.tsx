@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 
 // Type definitions for hero slides
 type VideoSlide = {
@@ -171,9 +172,9 @@ const Hero = () => {
         <motion.div
           key={`content-${index}`}
           initial={{ opacity: index === 0 ? 1 : 0 }}
-          animate={{ opacity: currentImageIndex === index ? 1 : 0 }}
+          animate={{ opacity: currentImageIndex === index ? 1 : 0, pointerEvents: currentImageIndex === index ? 'auto' : 'none' }}
           transition={{
-            duration: 1.5,
+            duration: 0.8,
             ease: "easeInOut"
           }}
           className="absolute inset-0 z-10 flex items-center"
@@ -313,68 +314,71 @@ const Hero = () => {
 
               {/* Luxury Button - only show if buttonText exists */}
               {slide.buttonText && (
-                <button
-                  className="
-                    relative
-                    px-6 sm:px-8 md:px-10 lg:px-12
-                    py-2.5 sm:py-3 md:py-4
-                    font-geist font-semibold
-                    text-[11px] sm:text-[12px] md:text-[14px] tracking-[0.15em] uppercase
-                    rounded-full
-                    border border-white/20
-                    luxury-glass
-                    shadow-floating
-                    backdrop-blur-xl
-                    overflow-hidden
-                    transition-all duration-700
-                    ease-[cubic-bezier(0.25,1,0.3,1)]
-                    hover:scale-105
-                    hover:shadow-glow-cyan
-                    text-white
-                    min-h-[44px] sm:min-h-[48px] md:min-h-[56px]
-                    touch-target
-                    mx-2 sm:px-4 md:mx-6
-                  "
-                >
-                  {/* Subtle Inner Glow */}
-                  <span className="
-                    absolute inset-0 
-                    rounded-full 
-                    bg-white/10
-                    opacity-0
-                    group-hover:opacity-20
-                    transition-opacity
-                    duration-700
-                  " />
-
-                  {/* Aurora Line Sweep */}
-                  <span
+                <Link href="/shop" className="inline-block">
+                  <button
                     className="
-                      pointer-events-none
-                      absolute
-                      top-0 left-0
-                      h-full w-[90px]
-                      bg-gradient-to-r
-                      from-transparent
-                      via-white/40
-                      to-transparent
-                      opacity-0
-                      group-hover:opacity-60
-                      blur-[22px]
-                      translate-x-[-120%]
-                      group-hover:translate-x-[180%]
-
-                      transition-all
-                      duration-[1200ms]
+                      relative
+                      px-6 sm:px-8 md:px-10 lg:px-12
+                      py-2.5 sm:py-3 md:py-4
+                      font-geist font-semibold
+                      text-[11px] sm:text-[12px] md:text-[14px] tracking-[0.15em] uppercase
+                      rounded-full
+                      border border-white/20
+                      luxury-glass
+                      shadow-floating
+                      backdrop-blur-xl
+                      overflow-hidden
+                      transition-all duration-700
                       ease-[cubic-bezier(0.25,1,0.3,1)]
+                      hover:scale-105
+                      hover:shadow-glow-cyan
+                      text-white
+                      min-h-[44px] sm:min-h-[48px] md:min-h-[56px]
+                      touch-target
+                      mx-2 sm:px-4 md:mx-6
                     "
-                  />
+                    type="button"
+                  >
+                    {/* Subtle Inner Glow */}
+                    <span className="
+                      absolute inset-0 
+                      rounded-full 
+                      bg-white/10
+                      opacity-0
+                      group-hover:opacity-20
+                      transition-opacity
+                      duration-700
+                    " />
 
-                  {/* Button Text */}
-                  <span className="relative z-10 tracking-wider">
-                    {slide.buttonText}
-                  </span>
-                </button>
+                    {/* Aurora Line Sweep */}
+                    <span
+                      className="
+                        pointer-events-none
+                        absolute
+                        top-0 left-0
+                        h-full w-[90px]
+                        bg-gradient-to-r
+                        from-transparent
+                        via-white/40
+                        to-transparent
+                        opacity-0
+                        group-hover:opacity-60
+                        blur-[22px]
+                        translate-x-[-120%]
+                        group-hover:translate-x-[180%]
+
+                        transition-all
+                        duration-[1200ms]
+                        ease-[cubic-bezier(0.25,1,0.3,1)]
+                      "
+                    />
+
+                    {/* Button Text */}
+                    <span className="relative z-10 tracking-wider">
+                      {slide.buttonText}
+                    </span>
+                  </button>
+                </Link>
               )}
             </div>
           </div>

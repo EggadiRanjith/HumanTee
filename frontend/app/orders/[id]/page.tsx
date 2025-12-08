@@ -1,6 +1,15 @@
 "use client";
 
-import { FiTruck, FiCheckCircle, FiClock, FiPackage } from "react-icons/fi";
+import { 
+  FiTruck, 
+  FiCheckCircle, 
+  FiClock, 
+  FiPackage, 
+  FiHelpCircle, 
+  FiShoppingBag 
+} from "react-icons/fi";
+
+import Link from "next/link";
 import PageContainer from "@/app/components/PageContainer";
 
 type Order = {
@@ -85,17 +94,34 @@ export default function OrderDetailsPage() {
 
   return (
     <PageContainer className="brand-bg-dusk">
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10 pb-8">
+      <div className="max-w-screen-lg mx-auto px-4 sm:px-6 lg:px-10 pb-10">
 
-        {/* HEADER */}
-        <div className="mb-10 space-y-2">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-wide text-white">
-            Order Details
-          </h1>
-          <p className="text-white/60 text-sm">Review your order summary</p>
-        </div>
+      <div className="mb-10 space-y-1">
+        <h1
+          className="
+            text-[28px] sm:text-[36px] lg:text-[44px]
+            font-light
+            tracking-[0.14em]
+            uppercase
+            text-white
+            leading-tight
+          "
+        >
+          Order Details
+        </h1>
 
-        {/* ORDER RECEIPT HEADER */}
+        <p className="
+            text-white/45
+            text-[11px] sm:text-[12px]
+            uppercase tracking-[0.22em]
+          "
+        >
+          Review your purchase summary
+        </p>
+      </div>
+
+
+        {/* ORDER HEADER CARD */}
         <div className="p-5 rounded-2xl luxury-glass border border-white/10 bg-white/5 backdrop-blur-xl mb-8">
           <div className="flex justify-between items-center">
             <div>
@@ -116,10 +142,10 @@ export default function OrderDetailsPage() {
           </div>
         </div>
 
-        {/* SUMMARY GRID */}
+        {/* GRID SUMMARY */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
 
-          {/* Shipping */}
+          {/* SHIPPING */}
           <div className="p-5 rounded-xl luxury-glass border border-white/10 bg-white/5">
             <h3 className="text-white/70 text-xs uppercase tracking-[0.18em] mb-2">
               Shipping Address
@@ -132,7 +158,7 @@ export default function OrderDetailsPage() {
             </p>
           </div>
 
-          {/* Payment */}
+          {/* PAYMENT */}
           <div className="p-5 rounded-xl luxury-glass border border-white/10 bg-white/5">
             <h3 className="text-white/70 text-xs uppercase tracking-[0.18em] mb-2">
               Payment Method
@@ -140,7 +166,7 @@ export default function OrderDetailsPage() {
             <p className="text-white/90 text-sm">{order.paymentMethod}</p>
           </div>
 
-          {/* Tracking */}
+          {/* TRACKING */}
           <div className="p-5 rounded-xl luxury-glass border border-white/10 bg-white/5">
             <h3 className="text-white/70 text-xs uppercase tracking-[0.18em] mb-2">
               Tracking
@@ -161,20 +187,26 @@ export default function OrderDetailsPage() {
             >
               <img
                 src={item.image}
-                className="w-20 h-24 rounded-lg object-cover"
+                className="w-20 h-20 rounded-lg object-cover"
               />
               <div className="flex-1">
                 <h4 className="text-white text-sm tracking-wide">{item.title}</h4>
                 <p className="text-white/60 text-xs mt-1">Size: {item.size}</p>
-                <p className="text-white/90 text-sm mt-2">{item.price}</p>
+
+                <p className="text-white/70 text-xs mt-1">
+                  {item.price} × {item.quantity}
+                </p>
+
+                <p className="text-white text-sm font-light mt-2">
+                  {(Number(item.price.replace("$", "")) * item.quantity).toFixed(2)}$
+                </p>
               </div>
-              <p className="text-white/60 text-sm">×{item.quantity}</p>
             </div>
           ))}
         </div>
 
         {/* PRICE BREAKDOWN */}
-        <div className="p-6 rounded-2xl luxury-glass border border-white/10 bg-white/5 space-y-3">
+        <div className="p-6 rounded-2xl luxury-glass border border-white/10 bg-white/5 space-y-3 mb-8">
           <div className="flex justify-between text-white/70 text-sm">
             <span>Subtotal</span>
             <span>{order.subtotal}</span>
@@ -194,6 +226,39 @@ export default function OrderDetailsPage() {
             <span>Total</span>
             <span>{order.total}</span>
           </div>
+        </div>
+
+        {/* ACTION BUTTONS */}
+        <div className="flex flex-col gap-3">
+
+          {/* REORDER */}
+          <Link
+            href="/shop"
+            className="
+              w-full flex items-center justify-center gap-2
+              px-6 py-3 rounded-xl
+              luxury-glass border border-white/15
+              text-white/90 hover:text-white hover:bg-white/10
+              transition-all text-sm uppercase tracking-[0.18em]
+            "
+          >
+            <FiShoppingBag className="w-4 h-4" /> Reorder Items
+          </Link>
+
+          {/* SUPPORT */}
+          <Link
+            href="/support"
+            className="
+              w-full flex items-center justify-center gap-2
+              px-6 py-3 rounded-xl
+              luxury-glass border border-white/10 
+              text-white/70 hover:text-white hover:bg-white/10
+              transition-all text-sm uppercase tracking-[0.18em]
+            "
+          >
+            <FiHelpCircle className="w-4 h-4" /> Need Help?
+          </Link>
+
         </div>
 
       </div>

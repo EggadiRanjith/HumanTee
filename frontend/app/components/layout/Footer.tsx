@@ -1,123 +1,202 @@
 "use client";
 
 import Link from "next/link";
-import { FiInstagram, FiTwitter, FiGithub } from "react-icons/fi";
-import { motion } from "framer-motion";
+import { FiInstagram } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useRef, useEffect } from "react";
 
 export default function Footer() {
+  const [shopOpen, setShopOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  const shopRef = useRef<HTMLDivElement | null>(null);
+  const supportRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Auto-scroll when dropdown opens
+  const scrollToView = (ref: HTMLDivElement | null) => {
+    if (!ref) return;
+    setTimeout(() => {
+      ref.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 350);
+  };
+
+  useEffect(() => {
+    if (shopOpen) {
+      scrollToView(shopRef.current);
+    }
+  }, [shopOpen]);
+  useEffect(() => {
+    if (supportOpen) {
+      scrollToView(supportRef.current);
+    }
+  }, [supportOpen]);
+
+  // Apple dropdown animation
+  const dropdownAnim = {
+    hidden: { opacity: 0, height: 0, y: -8, filter: "blur(8px)" },
+    visible: {
+      opacity: 1,
+      height: "auto",
+      y: 0,
+      filter: "blur(0px)",
+      transition: { duration: 0.35, ease: [0.25, 0.8, 0.25, 1] as const },
+    },
+    exit: {
+      opacity: 0,
+      height: 0,
+      y: -6,
+      filter: "blur(6px)",
+      transition: { duration: 0.28, ease: [0.4, 0, 1, 1] as const },
+    },
+  };
+
   return (
     <footer
       className="
-        relative w-full
-        pt-8 pb-5
+        relative w-full 
+        pt-6 pb-6 
         px-5 sm:px-6 md:px-10 lg:px-12
         border-t border-white/10
         bg-brand-bg
-        overflow-hidden
       "
     >
-      {/* Subtle Glow */}
+      {/* Glow */}
       <motion.div
-        className="absolute inset-0 pointer-events-none opacity-20"
+        className="absolute inset-0 opacity-20 pointer-events-none"
         style={{
-          background:
-            "radial-gradient(circle at 50% 15%, rgba(160,140,255,0.10), transparent 70%)",
-          filter: "blur(55px)",
+          background: "radial-gradient(circle at 40% 10%, rgba(140,120,255,0.12), transparent 70%)",
+          filter: "blur(80px)",
         }}
-        animate={{ opacity: [0.18, 0.32, 0.18] }}
-        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+        animate={{ opacity: [0.15, 0.28, 0.15] }}
+        transition={{ duration: 10, repeat: Infinity }}
       />
 
-      {/* GRID — MOBILE: CENTERED 2 COL | DESKTOP: 4 COL */}
-      <div
-        className="
-          relative max-w-screen-xl mx-auto
-          grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4
-          gap-8 sm:gap-10
-        "
-      >
-        {/* BRAND COLUMN — CENTERED ON MOBILE */}
-        <div
-          className="
-            flex flex-col gap-3 col-span-2 sm:col-span-1
-            text-center sm:text-left 
-            items-center sm:items-start
-          "
-        >
+      {/* CONTENT GRID */}
+      <div className="relative max-w-screen-xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-8">
+
+        {/* ---------- BRAND COLUMN ---------- */}
+        <div className="flex flex-col gap-2 items-center sm:items-start text-center sm:text-left">
           <h2
-            className="
-              text-white tracking-[0.14em] uppercase
-              text-[14px] sm:text-[15px]
-              font-semibold
-            "
+            className="text-[14px] text-white tracking-[0.15em] uppercase font-semibold"
             style={{ fontFamily: "var(--font-tan-pearl)" }}
           >
             HUMANTEE
           </h2>
 
-          <p className="text-white/60 text-[12px] max-w-xs leading-relaxed">
+          <p className="text-white/60 text-[12px] leading-relaxed max-w-xs">
             A luxury shopping experience crafted with minimalist precision.
           </p>
 
-          {/* SOCIAL ICONS */}
-          <div className="flex items-center justify-center sm:justify-start gap-2 mt-1">
-            {[FiInstagram, FiTwitter, FiGithub].map((Icon, i) => (
-              <Link
-                key={i}
-                href="#"
-                className="
-                  w-8 h-8 flex items-center justify-center
-                  rounded-full border border-white/10
-                  hover:border-white/20 hover:bg-white/5
-                  transition-all
-                "
-              >
-                <Icon size={15} className="text-white/70" />
-              </Link>
-            ))}
+          <div className="flex items-center gap-3 mt-2">
+            <span className="text-white/50 text-[11px] tracking-[0.2em] uppercase">
+              Follow Us
+            </span>
+
+            <Link
+              href="#"
+              className="
+                w-8 h-8 flex items-center justify-center 
+                rounded-full border border-white/10 
+                hover:border-white/30 hover:bg-white/5 
+                transition-all
+              "
+            >
+              <FiInstagram size={15} className="text-white/75" />
+            </Link>
           </div>
         </div>
 
-        {/* SHOP COLUMN */}
-        <div className="text-center sm:text-left">
-          <h3 className="text-white text-[12px] uppercase tracking-[0.12em] mb-3">
+        {/* ---------- SHOP COLUMN ---------- */}
+        <div ref={shopRef}>
+          <button
+            onClick={() => setShopOpen(!shopOpen)}
+            className="lg:hidden flex justify-between items-center w-full text-white text-[12px] tracking-[0.12em] uppercase"
+          >
+            Shop <span>{shopOpen ? "−" : "+"}</span>
+          </button>
+
+          <h3 className="hidden lg:block text-[12px] text-white uppercase tracking-[0.12em] mb-2">
             Shop
           </h3>
-          <ul className="space-y-1.5 text-white/60 text-[12px]">
-            <li><Link href="/shop">All Products</Link></li>
-            <li><Link href="/wishlist">Wishlist</Link></li>
-            <li><Link href="/orders">Orders</Link></li>
-            <li><Link href="/coming-soon">Coming Soon</Link></li>
-          </ul>
+
+          <AnimatePresence>
+            {(shopOpen || (isClient && window.innerWidth >= 1024)) && (
+              <motion.div
+                variants={dropdownAnim}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="text-[12px] text-white/60"
+              >
+                {[
+                  { name: "Orders", url: "/orders" },
+                  { name: "Profile", url: "/profile" },
+                  { name: "All Products", url: "/shop" },
+                  { name: "Featured Projects", url: "/featured" },
+                ].map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.url}
+                    className="block py-2 border-b border-white/10 hover:text-white"
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* SUPPORT COLUMN */}
-        <div className="text-center sm:text-left">
-          <h3 className="text-white text-[12px] uppercase tracking-[0.12em] mb-3">
+        {/* ---------- SUPPORT COLUMN ---------- */}
+        <div ref={supportRef}>
+          <button
+            onClick={() => setSupportOpen(!supportOpen)}
+            className="lg:hidden flex justify-between items-center w-full text-white text-[12px] tracking-[0.12em] uppercase"
+          >
+            Support <span>{supportOpen ? "−" : "+"}</span>
+          </button>
+
+          <h3 className="hidden lg:block text-[12px] text-white uppercase tracking-[0.12em] mb-2">
             Support
           </h3>
-          <ul className="space-y-1.5 text-white/60 text-[12px]">
-            <li><Link href="/contact">Contact</Link></li>
-            <li><Link href="/faq">FAQs</Link></li>
-            <li><Link href="/returns">Returns</Link></li>
-            <li><Link href="/shipping">Shipping</Link></li>
-          </ul>
-        </div>
 
-        {/* Desktop Balancer */}
-        <div className="hidden lg:block"></div>
+          <AnimatePresence>
+            {(supportOpen || (isClient && window.innerWidth >= 1024)) && (
+              <motion.div
+                variants={dropdownAnim}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="text-[12px] text-white/60"
+              >
+                {[
+                  { name: "Shipping", url: "/shipping" },
+                  { name: "Terms & Privacy", url: "/terms-privacy" },
+                  { name: "+91 7780-661493", url: "tel:+917780661493" },
+                  { name: "humanteeofficial@gmail.com", url: "mailto:humanteeofficial@gmail.com" },
+                ].map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.url}
+                    className="block py-2 border-b border-white/10 hover:text-white"
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
-      {/* BOTTOM — CENTERED, CLEAN, MINIMAL */}
-      <div
-        className="
-          relative max-w-screen-xl mx-auto
-          mt-6 pt-3
-          border-t border-white/10
-          flex justify-center
-        "
-      >
-        <p className="text-white/50 text-[11px] tracking-widest text-center">
+      {/* COPYRIGHT */}
+      <div className="relative max-w-screen-xl mx-auto mt-6 pt-3 border-t border-white/10 text-center">
+        <p className="text-white/50 text-[11px] tracking-[0.2em]">
           © {new Date().getFullYear()} HUMANTEE
         </p>
       </div>
