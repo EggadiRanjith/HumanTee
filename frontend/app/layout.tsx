@@ -7,6 +7,7 @@ import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 
 import localFont from "next/font/local";
+import { Darker_Grotesque, Meddon, Bonheur_Royale } from "next/font/google";
 
 /* ------------------------------------------------------------
    Fonts (loaded once, on server)
@@ -23,6 +24,24 @@ const geist = localFont({
 const tanPearl = localFont({
   src: [{ path: "../public/fonts/tan-pearl/TAN-PEARL.ttf", weight: "400" }],
   variable: "--font-tan-pearl",
+});
+
+const zalandoSans = Darker_Grotesque({
+  weight: "300",
+  subsets: ["latin"],
+  variable: "--font-zalando-sans",
+});
+
+const meddon = Meddon({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-meddon",
+});
+
+const bonheurRoyale = Bonheur_Royale({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-bonheur-royale",
 });
 
 /* ------------------------------------------------------------
@@ -45,7 +64,7 @@ export const viewport: Viewport = {
 ------------------------------------------------------------ */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geist.variable} ${tanPearl.variable}`}>
+    <html lang="en" className={`${geist.variable} ${tanPearl.variable} ${zalandoSans.variable} ${meddon.variable} ${bonheurRoyale.variable}`}>
       <body className="min-h-screen bg-brand-bg text-brand-text antialiased font-geist overflow-x-hidden">
 
         {/* Client providers moved OUT of layout for performance */}
