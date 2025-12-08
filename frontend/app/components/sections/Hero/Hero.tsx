@@ -191,13 +191,13 @@ const Hero = () => {
                           text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 
                           text-white mb-2
                           tracking-wide leading-[1.1]
-                          font-light
+                          font-bold
                           px-2 sm:px-4 md:px-6
                         "
                         style={{
                           fontFamily: "var(--font-zalando-sans)",
                           fontOpticalSizing: 'auto',
-                          fontWeight: 300
+                          fontWeight: 700
                         }}
                       >
                         {slide.heading}
@@ -207,13 +207,13 @@ const Hero = () => {
                           text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 
                           text-white mb-6
                           tracking-wide leading-[1.1]
-                          font-light
+                          font-bold
                           px-2 sm:px-4 md:px-6
                         "
                         style={{
                           fontFamily: "var(--font-zalando-sans)",
                           fontOpticalSizing: 'auto',
-                          fontWeight: 300
+                          fontWeight: 700
                         }}
                       >
                         {slide.subheading1}
@@ -223,16 +223,13 @@ const Hero = () => {
                         <h3
                           className="
                             text-base sm:text-lg md:text-xl lg:text-2xl 
-                            text-white/90 mb-8 sm:mb-12 
-                            font-geist font-light
-                            tracking-[0.08em]
+                            text-white mb-8 sm:mb-12 
+                            font-semibold
+                            tracking-[0.20em]
                             leading-relaxed
+                            uppercase
                             px-2 sm:px-4 md:px-6
                           "
-                          style={{
-                            fontFamily: "var(--font-tan-pearl)",
-                            fontOpticalSizing: 'auto'
-                          }}
                         >
                           {slide.subheading2}
                         </h3>
@@ -262,16 +259,12 @@ const Hero = () => {
                           className="
                             text-base sm:text-lg md:text-xl lg:text-2xl 
                             text-white mb-4 sm:mb-6
-                            font-bold
-                            tracking-[0.08em]
+                            font-semibold
+                            tracking-[0.20em]
                             leading-relaxed
+                            uppercase
                             px-2 sm:px-4 md:px-6
                           "
-                          style={{
-                            fontFamily: "var(--font-tan-pearl)",
-                            fontOpticalSizing: 'auto',
-                            fontWeight: 700
-                          }}
                         >
                           {slide.subheading1}
                         </h2>
