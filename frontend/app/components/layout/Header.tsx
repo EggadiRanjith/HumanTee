@@ -82,24 +82,146 @@ export default function Header() {
           HUMANTEE
         </Link>
 
-        {/* RIGHT ICONS (MOBILE ONLY) */}
-        <div className="md:hidden flex items-center gap-4">
-          <Link href="/cart" onClick={(e) => e.stopPropagation()} className="relative">
-            <FiShoppingBag size={22} className="text-white/90" />
-            {totalItems > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand-secondary text-black text-[10px] font-bold rounded-full flex items-center justify-center">
-                {totalItems}
-              </span>
-            )}
+        {/* MIDDLE NAV (DESKTOP ONLY) - Shop, Orders, Contact */}
+        <div className="hidden md:flex items-center gap-10 absolute left-1/2 -translate-x-1/2">
+          <Link
+            href="/shop"
+            className="
+              relative
+              uppercase
+              tracking-[0.20em]
+              transition-all duration-300
+              text-white/60 hover:text-white
+              text-[14px] xl:text-[15px]
+              py-1.5
+              group
+              after:content-['']
+              after:absolute
+              after:bottom-0
+              after:left-0
+              after:w-0
+              after:h-[2px]
+              after:bg-gradient-to-r
+              after:from-brand-secondary
+              after:to-white
+              after:transition-all
+              after:duration-300
+              hover:after:w-full
+              hover:scale-105
+            "
+          >
+            SHOP
           </Link>
-          <Link href="/profile" onClick={(e) => e.stopPropagation()}>
-            <FiUser size={22} className="text-white/90" />
+          <Link
+            href="/orders"
+            className="
+              relative
+              uppercase
+              tracking-[0.20em]
+              transition-all duration-300
+              text-white/60 hover:text-white
+              text-[14px] xl:text-[15px]
+              py-1.5
+              group
+              after:content-['']
+              after:absolute
+              after:bottom-0
+              after:left-0
+              after:w-0
+              after:h-[2px]
+              after:bg-gradient-to-r
+              after:from-brand-secondary
+              after:to-white
+              after:transition-all
+              after:duration-300
+              hover:after:w-full
+              hover:scale-105
+            "
+          >
+            ORDERS
+          </Link>
+          <Link
+            href="/contact"
+            className="
+              relative
+              uppercase
+              tracking-[0.20em]
+              transition-all duration-300
+              text-white/60 hover:text-white
+              text-[14px] xl:text-[15px]
+              py-1.5
+              group
+              after:content-['']
+              after:absolute
+              after:bottom-0
+              after:left-0
+              after:w-0
+              after:h-[2px]
+              after:bg-gradient-to-r
+              after:from-brand-secondary
+              after:to-white
+              after:transition-all
+              after:duration-300
+              hover:after:w-full
+              hover:scale-105
+            "
+          >
+            CONTACT US
           </Link>
         </div>
 
-        {/* DESKTOP NAV */}
-        <div className="hidden md:flex items-center gap-10">
-          <Navbar large />
+        {/* RIGHT SECTION - Profile & Cart */}
+        <div className="flex items-center gap-6">
+          {/* Mobile Icons */}
+          <div className="md:hidden flex items-center gap-4">
+            <Link href="/profile" onClick={(e) => e.stopPropagation()}>
+              <FiUser size={22} className="text-white/90" />
+            </Link>
+            <Link href="/cart" onClick={(e) => e.stopPropagation()} className="relative">
+              <FiShoppingBag size={22} className="text-white/90" />
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand-secondary text-black text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {totalItems}
+                </span>
+              )}
+            </Link>
+          </div>
+
+          {/* Desktop Nav - Profile & Cart Icons */}
+          <div className="hidden md:flex items-center gap-6">
+            <Link
+              href="/profile"
+              className="
+                transition-all duration-300
+                text-white/70 hover:text-white
+                hover:scale-110
+                hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]
+                p-1
+              "
+              title="Profile"
+            >
+              <FiUser size={28} />
+            </Link>
+            <Link
+              href="/cart"
+              className="
+                relative
+                transition-all duration-300
+                text-white/70 hover:text-white
+                hover:scale-110
+                hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]
+                p-1
+              "
+              title="Cart"
+            >
+              <FiShoppingBag size={28} />
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-brand-secondary text-black text-[11px] font-bold rounded-full flex items-center justify-center animate-pulse">
+                  {totalItems}
+                </span>
+              )}
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -165,6 +287,14 @@ export default function Header() {
                   className="px-3 py-3 text-sm hover:text-white hover:bg-white/5 rounded-lg"
                 >
                   Orders
+                </Link>
+
+                <Link
+                  href="/contact"
+                  onClick={() => setOpen(false)}
+                  className="px-3 py-3 text-sm hover:text-white hover:bg-white/5 rounded-lg"
+                >
+                  Contact Us
                 </Link>
 
                 <Link
