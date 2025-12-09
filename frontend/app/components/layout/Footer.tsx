@@ -25,6 +25,23 @@ export default function Footer() {
     setSupportOpen(false);
   }, [pathname]);
 
+  // Close dropdowns when switching to desktop view
+  useEffect(() => {
+    const handleResize = () => {
+      // 1024px is the lg breakpoint in tailwind
+      if (window.innerWidth >= 1024) {
+        setShopOpen(false);
+        setSupportOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    // Also check on mount
+    handleResize();
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   // Auto-scroll when dropdown opens
   const scrollToView = (ref: HTMLDivElement | null) => {
     if (!ref) return;
