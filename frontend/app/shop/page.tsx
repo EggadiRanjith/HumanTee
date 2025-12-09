@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import PageContainer from "@/app/components/PageContainer";
-import { motion } from "framer-motion";
+
 
 type TShirt = {
   id: number;
@@ -99,15 +99,13 @@ export default function ShopPage() {
     <PageContainer className="cinematic-bg-dusk relative">
 
       {/* Ambient Glow Behind Page */}
-      <motion.div
+      <div
         className="absolute inset-0 pointer-events-none opacity-40"
         style={{
           background:
             "radial-gradient(circle at 50% 10%, rgba(183,164,255,0.20), transparent 70%)",
           filter: "blur(120px)",
         }}
-        animate={{ opacity: [0.25, 0.45, 0.25] }}
-        transition={{ duration: 8, repeat: Infinity }}
       />
 
       <div className="relative max-w-screen-xl mx-auto px-4 sm:px-6 md:px-10 lg:px-14 pb-12">
@@ -138,11 +136,8 @@ export default function ShopPage() {
         {/* GRID — NEW LAYOUT + CINEMATIC STYLING */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {tshirts.map((item, index) => (
-            <motion.div
+            <div
               key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.05 }}
               className="group relative"
             >
               {/* IMAGE WRAPPER */}
@@ -226,7 +221,7 @@ export default function ShopPage() {
                 </div>
 
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
