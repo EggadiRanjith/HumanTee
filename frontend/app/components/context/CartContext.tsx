@@ -14,7 +14,7 @@ export interface CartItem {
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (item: Omit<CartItem, "quantity">) => void;
+  addToCart: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
   removeFromCart: (id: number) => void;
   updateQuantity: (id: number, quantity: number) => void;
   clearCart: () => void;
@@ -44,17 +44,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("humantee-cart", JSON.stringify(items));
   }, [items]);
 
-  const addToCart = (item: Omit<CartItem, "quantity">) => {
+  const addToCart = (item: Omit<CartItem, "quantity"> & { quantity?: number }) => {
+    const qtyToAdd = item.quantity || 1;
+    // We remove quantity from the item object before spreading it, to avoid issues if it was passed in "item"
+    // although Omit<CartItem, "quantity"> should theoretically handle type, at runtime "item" might have it.
+    // actually, item is just the argument.
+
+    // Create the base item without the quantity property from the argument
+    const { quantity: _, ...itemWithoutQty } = item;
+
     setItems((prev) => {
       const existing = prev.find((i) => i.id === item.id && i.size === item.size);
       if (existing) {
         return prev.map((i) =>
           i.id === item.id && i.size === item.size
-            ? { ...i, quantity: i.quantity + 1 }
+            ? { ...i, quantity: i.quantity + qtyToAdd }
             : i
         );
       }
-      return [...prev, { ...item, quantity: 1 }];
+      return [...prev, { ...itemWithoutQty, quantity: qtyToAdd }];
     });
   };
 

@@ -53,6 +53,9 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string>("");
 
+  const { addToCart } = useCart();
+  const [addedToCart, setAddedToCart] = useState(false);
+
   if (!product) notFound();
 
   const handleAddToCart = () => {
@@ -68,6 +71,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       price: product.price,
       image: product.image,
       size: selectedSize,
+      quantity: quantity,
     });
 
     setAddedToCart(true);
@@ -140,129 +144,130 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                     key={size}
                     onClick={() => setSelectedSize(size)}
                     className={`
-                    onClick={() => setSelectedSize(size)}
-                    className={`
-                      py-2.5 rounded - lg 
-                      border transition - all
-                      border transition - all
-                      text - [0.75rem] uppercase tracking - [0.15em]
-                      ${ selectedSize === size
-                  ? 'bg-white text-black border-white'
-                  : 'border-white/10 luxury-glass text-white/75 hover:border-white/30'
+                      py-2.5 rounded-lg 
+                      border transition-all
+                      text-[0.75rem] uppercase tracking-[0.15em]
+                      ${selectedSize === size
+                        ? 'bg-white text-black border-white'
+                        : 'border-white/10 luxury-glass text-white/75 hover:border-white/30'
                       }
                     `}
                   >
-                {size}
-              </button>
+                    {size}
+                  </button>
                 ))}
+              </div>
             </div>
-          </div>
 
-          {/* QUANTITY SELECTOR */}
-          <div className="space-y-3">
-            <p className="text-white/70 text-xs tracking-[0.2em] uppercase">
-              Quantity
-            </p>
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="p-2.5 rounded-lg border border-white/10 luxury-glass text-white/75 hover:bg-white/5 transition-colors"
-                disabled={quantity <= 1}
-              >
-                <FiMinus className="h-4 w-4" />
-              </button>
-
-              <span className="text-white text-lg font-light min-w-[3rem] text-center">
-                {quantity}
-              </span>
-
-              <button
-                onClick={() => setQuantity(quantity + 1)}
-                className="p-2.5 rounded-lg border border-white/10 luxury-glass text-white/75 hover:bg-white/5 transition-colors"
-              >
-                <FiPlus className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* ADD TO CART BUTTON */}
-          <div className="pt-2">
-            <button
-              className="
-                  w-full py-3.5 sm:py-4 
-                  rounded-full bg-white text-black 
-                  text-[0.8rem] uppercase tracking-[0.18em] font-medium
-                  hover:bg-white/90 transition-colors
-                "
-            >
-              Add to Cart
-            </button>
-          </div>
-
-          {/* DESCRIPTION */}
-          <div className="pt-2 space-y-4">
-            <div>
-              <h3 className="text-white/70 text-xs uppercase tracking-[0.15em] mb-2">
-                Description
-              </h3>
-              <p className="text-white/65 text-[0.9rem] leading-relaxed">
-                {product!.description}
+            {/* QUANTITY SELECTOR */}
+            <div className="space-y-3">
+              <p className="text-white/70 text-xs tracking-[0.2em] uppercase">
+                Quantity
               </p>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="p-2.5 rounded-lg border border-white/10 luxury-glass text-white/75 hover:bg-white/5 transition-colors"
+                  disabled={quantity <= 1}
+                >
+                  <FiMinus className="h-4 w-4" />
+                </button>
+
+                <span className="text-white text-lg font-light min-w-[3rem] text-center">
+                  {quantity}
+                </span>
+
+                <button
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="p-2.5 rounded-lg border border-white/10 luxury-glass text-white/75 hover:bg-white/5 transition-colors"
+                >
+                  <FiPlus className="h-4 w-4" />
+                </button>
+              </div>
             </div>
 
-            {/* KEY DETAILS */}
-            <div>
-              <h3 className="text-white/70 text-xs uppercase tracking-[0.15em] mb-2">
-                Key Details
-              </h3>
+            {/* ADD TO CART BUTTON */}
+            <div className="pt-2">
+              <button
+                onClick={handleAddToCart}
+                className={`
+                  w-full py-3.5 sm:py-4 
+                  rounded-full transition-all duration-300
+                  text-[0.8rem] uppercase tracking-[0.18em] font-medium
+                  ${addedToCart
+                    ? 'bg-green-500 text-white'
+                    : 'bg-white text-black hover:bg-white/90'
+                  }
+                `}
+              >
+                {addedToCart ? "Added to Cart" : "Add to Cart"}
+              </button>
+            </div>
 
-              <ul className="space-y-1.5">
-                {product!.details.map((detail, i) => (
-                  <li
-                    key={i}
-                    className="text-white/60 text-[0.9rem] flex gap-2"
-                  >
-                    <span className="text-white/30">•</span>
-                    {detail}
-                  </li>
-                ))}
-              </ul>
+            {/* DESCRIPTION */}
+            <div className="pt-2 space-y-4">
+              <div>
+                <h3 className="text-white/70 text-xs uppercase tracking-[0.15em] mb-2">
+                  Description
+                </h3>
+                <p className="text-white/65 text-[0.9rem] leading-relaxed">
+                  {product!.description}
+                </p>
+              </div>
+
+              {/* KEY DETAILS */}
+              <div>
+                <h3 className="text-white/70 text-xs uppercase tracking-[0.15em] mb-2">
+                  Key Details
+                </h3>
+
+                <ul className="space-y-1.5">
+                  {product!.details.map((detail, i) => (
+                    <li
+                      key={i}
+                      className="text-white/60 text-[0.9rem] flex gap-2"
+                    >
+                      <span className="text-white/30">•</span>
+                      {detail}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      {/* ZOOM MODAL */}
+      {
+        isZoomed && (
+          <div
+            className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+            onClick={() => setIsZoomed(false)}
+          >
+            {/* Close Button */}
+            <button
+              className="absolute top-4 right-4 p-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-colors"
+              onClick={() => setIsZoomed(false)}
+            >
+              <FiX className="h-6 w-6" />
+            </button>
+
+            {/* Zoomed Image */}
+            <div className="relative w-full h-full max-w-5xl max-h-[90vh]">
+              <Image
+                src={product!.image}
+                alt={product!.title}
+                fill
+                className="object-contain"
+              />
             </div>
           </div>
-
-        </div>
-      </div>
-
-    </div>
-
-      {/* ZOOM MODAL */ }
-  {
-    isZoomed && (
-      <div
-        className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
-        onClick={() => setIsZoomed(false)}
-      >
-        {/* Close Button */}
-        <button
-          className="absolute top-4 right-4 p-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-colors"
-          onClick={() => setIsZoomed(false)}
-        >
-          <FiX className="h-6 w-6" />
-        </button>
-
-        {/* Zoomed Image */}
-        <div className="relative w-full h-full max-w-5xl max-h-[90vh]">
-          <Image
-            src={product!.image}
-            alt={product!.title}
-            fill
-            className="object-contain"
-          />
-        </div>
-      </div>
-    )
-  }
+        )
+      }
     </PageContainer >
   );
 }
