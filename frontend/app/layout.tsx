@@ -44,6 +44,11 @@ const bonheurRoyale = Bonheur_Royale({
   variable: "--font-bonheur-royale",
 });
 
+const benzin = localFont({
+  src: [{ path: "../public/fonts/benzin/Benzin-ExtraBold.ttf", weight: "900" }],
+  variable: "--font-benzin",
+});
+
 /* ------------------------------------------------------------
    Metadata
 ------------------------------------------------------------ */
@@ -64,7 +69,7 @@ export const viewport: Viewport = {
 ------------------------------------------------------------ */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geist.variable} ${tanPearl.variable} ${zalandoSans.variable} ${meddon.variable} ${bonheurRoyale.variable}`}>
+    <html lang="en" className={`${geist.variable} ${tanPearl.variable} ${zalandoSans.variable} ${meddon.variable} ${bonheurRoyale.variable} ${benzin.variable}`}>
       <body className="min-h-screen bg-brand-bg text-brand-text antialiased font-geist overflow-x-hidden">
 
         {/* Client providers moved OUT of layout for performance */}

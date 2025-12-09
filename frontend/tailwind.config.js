@@ -12,6 +12,7 @@ module.exports = {
       ---------------------------------------- */
       fontFamily: {
         geist: ["var(--font-geist)", "sans-serif"],
+        benzin: ["var(--font-benzin)", "sans-serif"],
       },
 
       /* ----------------------------------------

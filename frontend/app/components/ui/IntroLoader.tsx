@@ -201,13 +201,13 @@ function CinematicLoader() {
 
       <div className="flex flex-col items-center gap-3 xs:gap-4 sm:gap-6 text-center max-w-[92vw] xs:max-w-[95vw] sm:max-w-md w-full">
         <span className="text-[clamp(0.65rem,3vw,0.875rem)] xs:text-[clamp(0.7rem,3.5vw,0.875rem)] uppercase tracking-[clamp(0.25em,2vw,0.55em)] xs:tracking-[clamp(0.3em,2.5vw,0.55em)] brand-text-muted">
-          Maison Digitale
+          Wear
         </span>
 
         <Title />
 
         <p className="text-[clamp(0.65rem,3vw,0.875rem)] xs:text-[clamp(0.7rem,3.5vw,0.875rem)] uppercase brand-text-muted tracking-[clamp(0.04em,1vw,0.15em)] xs:tracking-[clamp(0.05em,1.2vw,0.15em)] mt-1 xs:mt-2">
-          crafted experiences
+          Wear Confidence
         </p>
       </div>
     </div>

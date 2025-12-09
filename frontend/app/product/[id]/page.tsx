@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FiHeart } from "react-icons/fi";
-import { notFound, useRouter } from "next/navigation";
+import { FiZoomIn, FiX, FiMinus, FiPlus } from "react-icons/fi";
+import { notFound } from "next/navigation";
 import { use, useState } from "react";
 import PageContainer from "@/app/components/PageContainer";
 import { useCart } from "@/app/components/context/CartContext";
@@ -49,11 +49,9 @@ const products: Product[] = [
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const product = products.find((p) => p.id === parseInt(resolvedParams.id));
-  const { addToCart } = useCart();
-  const router = useRouter();
-
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string>("");
-  const [addedToCart, setAddedToCart] = useState(false);
 
   if (!product) notFound();
 
@@ -84,14 +82,23 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
 
           {/* IMAGE SECTION */}
-          <div className="w-full">
-            <div className="relative aspect-[4/5] sm:aspect-[4/5] lg:aspect-[5/6] rounded-[28px] overflow-hidden luxury-glass border border-white/10 shadow-floating">
+          <div className="w-full max-w-md mx-auto lg:mx-0">
+            <div
+              className="relative aspect-[3/4] overflow-hidden luxury-glass border border-white/10 shadow-floating cursor-zoom-in rounded-sm"
+              onClick={() => setIsZoomed(true)}
+            >
               <Image
                 src={product!.image}
                 alt={product!.title}
                 fill
                 className="object-cover"
               />
+
+              {/* ZOOM BADGE - TOP LEFT */}
+              <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-black/40 backdrop-blur-sm border border-white/10">
+                <FiZoomIn className="h-3.5 w-3.5 text-white/90" />
+                <span className="text-[10px] uppercase tracking-wider text-white/90 font-medium">Zoom</span>
+              </div>
 
               {/* CAPTION */}
               <div className="absolute bottom-3 left-3 right-3 flex justify-between text-[10px] uppercase tracking-[0.2em] text-white/75">
@@ -133,86 +140,129 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                     key={size}
                     onClick={() => setSelectedSize(size)}
                     className={`
-                      py-2.5 rounded-lg 
-                      border transition-all
-                      text-[0.75rem] uppercase tracking-[0.15em]
-                      ${selectedSize === size
-                        ? "border-white bg-white/10 text-white"
-                        : "border-white/10 luxury-glass text-white/75 hover:border-white/30"
+                    onClick={() => setSelectedSize(size)}
+                    className={`
+                      py-2.5 rounded - lg 
+                      border transition - all
+                      border transition - all
+                      text - [0.75rem] uppercase tracking - [0.15em]
+                      ${ selectedSize === size
+                  ? 'bg-white text-black border-white'
+                  : 'border-white/10 luxury-glass text-white/75 hover:border-white/30'
                       }
                     `}
                   >
-                    {size}
-                  </button>
+                {size}
+              </button>
                 ))}
-              </div>
             </div>
-
-            {/* ACTION BUTTONS */}
-            <div className="flex items-center gap-3 pt-2">
-
-              <button
-                onClick={handleAddToCart}
-                className={`
-                  flex-1 py-3.5 sm:py-4 
-                  rounded-full transition-all
-                  text-[0.8rem] uppercase tracking-[0.18em] font-medium
-                  ${addedToCart
-                    ? "bg-green-500 text-white"
-                    : "bg-white text-black hover:bg-white/90"
-                  }
-                `}
-              >
-                {addedToCart ? "Added to Cart ✓" : "Add to Cart"}
-              </button>
-
-              <button
-                className="
-                  p-3 rounded-full luxury-glass 
-                  border border-white/10 text-white/60
-                  hover:text-white hover:bg-white/10 transition-colors
-                "
-              >
-                <FiHeart className="h-5 w-5" />
-              </button>
-
-            </div>
-
-            {/* DESCRIPTION */}
-            <div className="pt-2 space-y-4">
-              <div>
-                <h3 className="text-white/70 text-xs uppercase tracking-[0.15em] mb-2">
-                  Description
-                </h3>
-                <p className="text-white/65 text-[0.9rem] leading-relaxed">
-                  {product!.description}
-                </p>
-              </div>
-
-              {/* KEY DETAILS */}
-              <div>
-                <h3 className="text-white/70 text-xs uppercase tracking-[0.15em] mb-2">
-                  Key Details
-                </h3>
-
-                <ul className="space-y-1.5">
-                  {product!.details.map((detail, i) => (
-                    <li
-                      key={i}
-                      className="text-white/60 text-[0.9rem] flex gap-2"
-                    >
-                      <span className="text-white/30">•</span>
-                      {detail}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
           </div>
-        </div>
 
+          {/* QUANTITY SELECTOR */}
+          <div className="space-y-3">
+            <p className="text-white/70 text-xs tracking-[0.2em] uppercase">
+              Quantity
+            </p>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="p-2.5 rounded-lg border border-white/10 luxury-glass text-white/75 hover:bg-white/5 transition-colors"
+                disabled={quantity <= 1}
+              >
+                <FiMinus className="h-4 w-4" />
+              </button>
+
+              <span className="text-white text-lg font-light min-w-[3rem] text-center">
+                {quantity}
+              </span>
+
+              <button
+                onClick={() => setQuantity(quantity + 1)}
+                className="p-2.5 rounded-lg border border-white/10 luxury-glass text-white/75 hover:bg-white/5 transition-colors"
+              >
+                <FiPlus className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* ADD TO CART BUTTON */}
+          <div className="pt-2">
+            <button
+              className="
+                  w-full py-3.5 sm:py-4 
+                  rounded-full bg-white text-black 
+                  text-[0.8rem] uppercase tracking-[0.18em] font-medium
+                  hover:bg-white/90 transition-colors
+                "
+            >
+              Add to Cart
+            </button>
+          </div>
+
+          {/* DESCRIPTION */}
+          <div className="pt-2 space-y-4">
+            <div>
+              <h3 className="text-white/70 text-xs uppercase tracking-[0.15em] mb-2">
+                Description
+              </h3>
+              <p className="text-white/65 text-[0.9rem] leading-relaxed">
+                {product!.description}
+              </p>
+            </div>
+
+            {/* KEY DETAILS */}
+            <div>
+              <h3 className="text-white/70 text-xs uppercase tracking-[0.15em] mb-2">
+                Key Details
+              </h3>
+
+              <ul className="space-y-1.5">
+                {product!.details.map((detail, i) => (
+                  <li
+                    key={i}
+                    className="text-white/60 text-[0.9rem] flex gap-2"
+                  >
+                    <span className="text-white/30">•</span>
+                    {detail}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+        </div>
       </div>
-    </PageContainer>
+
+    </div>
+
+      {/* ZOOM MODAL */ }
+  {
+    isZoomed && (
+      <div
+        className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+        onClick={() => setIsZoomed(false)}
+      >
+        {/* Close Button */}
+        <button
+          className="absolute top-4 right-4 p-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-colors"
+          onClick={() => setIsZoomed(false)}
+        >
+          <FiX className="h-6 w-6" />
+        </button>
+
+        {/* Zoomed Image */}
+        <div className="relative w-full h-full max-w-5xl max-h-[90vh]">
+          <Image
+            src={product!.image}
+            alt={product!.title}
+            fill
+            className="object-contain"
+          />
+        </div>
+      </div>
+    )
+  }
+    </PageContainer >
   );
 }
