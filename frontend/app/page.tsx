@@ -1,6 +1,6 @@
 "use client";
 
-import { Hero, FeaturedProducts, Reviews } from "./components/sections";
+import { Hero, FeaturedProducts, ScrollingBanner, Reviews } from "./components/sections";
 import IntroLoader from "./components/ui/IntroLoader";
 import { useState, useEffect } from "react";
 import { useLoading } from "./components/context/LoadingContext";
@@ -44,6 +44,7 @@ export default function Home() {
                 <>
                     <Hero />
                     <FeaturedProducts />
+                    <ScrollingBanner />
                     <Reviews />
                 </>
             )}

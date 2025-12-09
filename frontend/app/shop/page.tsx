@@ -11,6 +11,7 @@ type TShirt = {
   subtitle: string;
   price: string;
   image: string;
+  badge?: "sale" | "bestseller" | "new";
 };
 
 const tshirts: TShirt[] = [
@@ -21,6 +22,7 @@ const tshirts: TShirt[] = [
     price: "₹1,299",
     image:
       "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1200&auto=format",
+    badge: "bestseller",
   },
   {
     id: 2,
@@ -29,6 +31,7 @@ const tshirts: TShirt[] = [
     price: "₹1,499",
     image:
       "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1200&auto=format",
+    badge: "sale",
   },
   {
     id: 3,
@@ -37,6 +40,7 @@ const tshirts: TShirt[] = [
     price: "₹1,199",
     image:
       "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1200&auto=format",
+    badge: "new",
   },
   {
     id: 4,
@@ -63,6 +67,32 @@ const tshirts: TShirt[] = [
       "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1200&auto=format",
   },
 ];
+
+const getBadgeStyles = (badge?: TShirt["badge"]) => {
+  switch (badge) {
+    case "sale":
+      return "bg-red-500 text-white shadow-red-500/40";
+    case "bestseller":
+      return "bg-amber-300 text-black shadow-amber-300/50";
+    case "new":
+      return "bg-emerald-400 text-black shadow-emerald-400/40";
+    default:
+      return "";
+  }
+};
+
+const getBadgeLabel = (badge?: TShirt["badge"]) => {
+  switch (badge) {
+    case "sale":
+      return "SALE";
+    case "bestseller":
+      return "BESTSELLER";
+    case "new":
+      return "NEW";
+    default:
+      return "";
+  }
+};
 
 export default function ShopPage() {
   return (
@@ -133,6 +163,19 @@ export default function ShopPage() {
                     group-hover:scale-[1.05]
                   "
                 />
+
+                {item.badge && (
+                  <span
+                    className={`
+                      absolute top-3 left-3
+                      rounded-full px-3 py-1
+                      text-[10px] uppercase tracking-wider font-medium
+                      ${getBadgeStyles(item.badge)}
+                    `}
+                  >
+                    {getBadgeLabel(item.badge)}
+                  </span>
+                )}
 
                 {/* Quick View — Premium Version */}
                 <div

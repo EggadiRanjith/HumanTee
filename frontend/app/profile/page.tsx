@@ -10,7 +10,7 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="min-h-screen brand-bg pb-24">
+    <div className="min-h-screen brand-bg pb-24 pt-[var(--header-height)]">
       <div className="max-w-screen-md mx-auto px-4 sm:px-6 md:px-8">
 
         {/* PAGE TITLE */}

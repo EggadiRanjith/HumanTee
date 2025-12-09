@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { FiInstagram } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
@@ -12,10 +13,16 @@ export default function Footer() {
 
   const shopRef = useRef<HTMLDivElement | null>(null);
   const supportRef = useRef<HTMLDivElement | null>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  useEffect(() => {
+    setShopOpen(false);
+    setSupportOpen(false);
+  }, [pathname]);
 
   // Auto-scroll when dropdown opens
   const scrollToView = (ref: HTMLDivElement | null) => {
@@ -143,6 +150,7 @@ export default function Footer() {
                     key={item.name}
                     href={item.url}
                     className="block py-2 border-b border-white/10 hover:text-white"
+                    onClick={() => setShopOpen(false)}
                   >
                     {item.name}
                   </Link>
@@ -184,6 +192,7 @@ export default function Footer() {
                     key={item.name}
                     href={item.url}
                     className="block py-2 border-b border-white/10 hover:text-white"
+                    onClick={() => setSupportOpen(false)}
                   >
                     {item.name}
                   </Link>

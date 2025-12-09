@@ -10,6 +10,7 @@ interface Product {
   subtitle: string;
   price: string;
   image: string;
+  badge?: "sale" | "bestseller" | "new";
 }
 
 const FeaturedProducts = () => {
@@ -20,6 +21,7 @@ const FeaturedProducts = () => {
       subtitle: "Heavyweight 280 GSM",
       price: "₹1,299",
       image: "/images/products/drive-front.jpg",
+      badge: "bestseller",
     },
     {
       id: 2,
@@ -27,6 +29,7 @@ const FeaturedProducts = () => {
       subtitle: "Embroidered Crest Edition",
       price: "₹1,499",
       image: "/images/products/wild-beginings-front.jpg",
+      badge: "sale",
     },
     {
       id: 3,
@@ -35,6 +38,7 @@ const FeaturedProducts = () => {
       price: "₹1,199",
       image:
         "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format",
+      badge: "new",
     },
     {
       id: 4,
@@ -45,6 +49,32 @@ const FeaturedProducts = () => {
         "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format",
     },
   ];
+
+  const getBadgeStyles = (badge?: Product["badge"]) => {
+    switch (badge) {
+      case "sale":
+        return "bg-red-500 text-white shadow-red-500/40";
+      case "bestseller":
+        return "bg-amber-300 text-black shadow-amber-300/50";
+      case "new":
+        return "bg-emerald-400 text-black shadow-emerald-400/40";
+      default:
+        return "";
+    }
+  };
+
+  const getBadgeLabel = (badge?: Product["badge"]) => {
+    switch (badge) {
+      case "sale":
+        return "SALE";
+      case "bestseller":
+        return "BESTSELLER";
+      case "new":
+        return "NEW";
+      default:
+        return "";
+    }
+  };
 
   return (
     <section className="relative w-full pt-12 pb-20 px-4 sm:px-6 md:px-10 lg:px-14 cinematic-bg-dusk">
@@ -62,6 +92,7 @@ const FeaturedProducts = () => {
       />
 
       <div className="relative max-w-screen-xl mx-auto">
+
         {/* HEADER ROW */}
         <div className="flex items-center justify-between mb-7 sm:mb-10">
           <h2 className="text-[18px] sm:text-[28px] md:text-[34px] font-light tracking-wide text-white">
@@ -83,7 +114,7 @@ const FeaturedProducts = () => {
           </Link>
         </div>
 
-        {/* GRID — NEW LAYOUT, OLD STYLES */}
+        {/* GRID */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {products.map((item) => (
             <motion.div
@@ -93,7 +124,7 @@ const FeaturedProducts = () => {
               transition={{ duration: 0.5 }}
               className="group relative"
             >
-              {/* IMAGE WRAPPER — luxury glass, floating, cinematic */}
+
               <Link
                 href={`/product/${item.id}`}
                 className="
@@ -109,11 +140,25 @@ const FeaturedProducts = () => {
                   fill
                   className="
                     object-cover motion-luxury-slow 
-                    group-hover:scale-[1.05] 
+                    group-hover:scale-[1.05]
                   "
                 />
 
-                {/* Quick View — premium version */}
+                {/* BADGE */}
+                {item.badge && (
+                  <span
+                    className={`
+                      absolute top-3 left-3
+                      rounded-full px-3 py-1
+                      text-[10px] uppercase tracking-wider font-medium
+                      ${getBadgeStyles(item.badge)}
+                    `}
+                  >
+                    {getBadgeLabel(item.badge)}
+                  </span>
+                )}
+
+                {/* Quick View */}
                 <div
                   className="
                     absolute bottom-0 left-0 right-0 
@@ -132,19 +177,14 @@ const FeaturedProducts = () => {
               {/* TEXT AREA */}
               <div className="mt-3 sm:mt-4 text-center">
 
-                {/* TITLE */}
-                <Link href={`/product/${item.id}`}>
-                  <h3 className="brand-text-primary text-step-0 tracking-tight font-heading">
-                    {item.title}
-                  </h3>
-                </Link>
+                <h3 className="brand-text-primary text-step-0 tracking-tight font-heading">
+                  {item.title}
+                </h3>
 
-                {/* SUBTITLE */}
                 <p className="brand-text-muted text-step--1 tracking-wide mt-0.5">
                   {item.subtitle}
                 </p>
 
-                {/* PRICE AREA */}
                 <div className="flex items-center justify-center gap-2 mt-2 mb-1">
                   <span className="brand-text-dim text-step--1 line-through">
                     ₹1,999
@@ -154,7 +194,6 @@ const FeaturedProducts = () => {
                   </span>
                 </div>
 
-                {/* STOCK — replaced orange trash with premium glow pulse */}
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-brand-secondary animate-glowPulse shadow-glow-violet-medium"></div>
                   <span className="text-step--1 brand-text-secondary tracking-wide">
@@ -166,7 +205,7 @@ const FeaturedProducts = () => {
           ))}
         </div>
 
-        {/* MOBILE VIEW ALL (styled correctly now) */}
+        {/* MOBILE VIEW ALL */}
         <div className="sm:hidden mt-10 flex justify-center">
           <Link
             href="/shop"
