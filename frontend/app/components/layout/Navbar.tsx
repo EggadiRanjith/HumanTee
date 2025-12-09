@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useCart } from "../context/CartContext";
 
 interface NavbarProps {
   large?: boolean;
@@ -9,9 +10,11 @@ interface NavbarProps {
 
 export default function Navbar({ large = false }: NavbarProps) {
   const pathname = usePathname();
+  const { totalItems } = useCart();
 
   const items = [
     { href: "/shop", label: "SHOP" },
+    { href: "/cart", label: "CART", badge: totalItems },
     { href: "/orders", label: "ORDERS" },
     { href: "/profile", label: "PROFILE" },
   ];
@@ -38,6 +41,11 @@ export default function Navbar({ large = false }: NavbarProps) {
             `}
           >
             {item.label}
+            {item.badge !== undefined && item.badge > 0 && (
+              <span className="absolute -top-1 -right-3 w-4 h-4 bg-brand-secondary text-black text-[9px] font-bold rounded-full flex items-center justify-center">
+                {item.badge}
+              </span>
+            )}
           </Link>
         );
       })}

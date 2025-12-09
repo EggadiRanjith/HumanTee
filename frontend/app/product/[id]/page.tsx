@@ -3,9 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FiHeart } from "react-icons/fi";
-import { notFound } from "next/navigation";
-import { use } from "react";
+import { notFound, useRouter } from "next/navigation";
+import { use, useState } from "react";
 import PageContainer from "@/app/components/PageContainer";
+import { useCart } from "@/app/components/context/CartContext";
 
 /* ---------------------------------------------
    HUMANTEE — ULTRA-LUXURY T-SHIRT PDP (FINAL)
@@ -28,7 +29,7 @@ const products: Product[] = [
     id: 1,
     title: "Midnight Core Tee",
     subtitle: "Heavyweight 280 GSM • Signature Drop",
-    price: "$58",
+    price: "₹1,299",
     description:
       "Crafted from premium heavyweight cotton, this essential tee embodies the Humantee philosophy of understated luxury. A modern boxy silhouette, exceptional hand feel, and precise structure define this wardrobe staple.",
     details: [
@@ -48,8 +49,32 @@ const products: Product[] = [
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const product = products.find((p) => p.id === parseInt(resolvedParams.id));
+  const { addToCart } = useCart();
+  const router = useRouter();
+
+  const [selectedSize, setSelectedSize] = useState<string>("");
+  const [addedToCart, setAddedToCart] = useState(false);
 
   if (!product) notFound();
+
+  const handleAddToCart = () => {
+    if (!selectedSize) {
+      alert("Please select a size");
+      return;
+    }
+
+    addToCart({
+      id: product.id,
+      title: product.title,
+      subtitle: product.subtitle,
+      price: product.price,
+      image: product.image,
+      size: selectedSize,
+    });
+
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 2000);
+  };
 
   return (
     <PageContainer className="brand-bg-dusk">
@@ -106,12 +131,16 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 {product!.sizes.map((size) => (
                   <button
                     key={size}
-                    className="
+                    onClick={() => setSelectedSize(size)}
+                    className={`
                       py-2.5 rounded-lg 
-                      border border-white/10 
-                      luxury-glass text-white/75 
+                      border transition-all
                       text-[0.75rem] uppercase tracking-[0.15em]
-                    "
+                      ${selectedSize === size
+                        ? "border-white bg-white/10 text-white"
+                        : "border-white/10 luxury-glass text-white/75 hover:border-white/30"
+                      }
+                    `}
                   >
                     {size}
                   </button>
@@ -123,19 +152,25 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             <div className="flex items-center gap-3 pt-2">
 
               <button
-                className="
+                onClick={handleAddToCart}
+                className={`
                   flex-1 py-3.5 sm:py-4 
-                  rounded-full bg-white text-black 
+                  rounded-full transition-all
                   text-[0.8rem] uppercase tracking-[0.18em] font-medium
-                "
+                  ${addedToCart
+                    ? "bg-green-500 text-white"
+                    : "bg-white text-black hover:bg-white/90"
+                  }
+                `}
               >
-                Add to Cart
+                {addedToCart ? "Added to Cart ✓" : "Add to Cart"}
               </button>
 
               <button
                 className="
                   p-3 rounded-full luxury-glass 
                   border border-white/10 text-white/60
+                  hover:text-white hover:bg-white/10 transition-colors
                 "
               >
                 <FiHeart className="h-5 w-5" />

@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FiUser, FiMenu, FiX } from "react-icons/fi";
+import { FiUser, FiMenu, FiX, FiShoppingBag } from "react-icons/fi";
 import Link from "next/link";
 import Navbar from "./Navbar";
 import { useHeaderContext } from "./useHeaderContext";
+import { useCart } from "../context/CartContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Header() {
+  const { totalItems } = useCart();
   const ref = useRef<HTMLDivElement>(null);
   const { setHeaderHeight } = useHeaderContext();
   const [open, setOpen] = useState(false);
@@ -80,8 +82,16 @@ export default function Header() {
           HUMANTEE
         </Link>
 
-        {/* RIGHT ICON (MOBILE ONLY) */}
-        <div className="md:hidden">
+        {/* RIGHT ICONS (MOBILE ONLY) */}
+        <div className="md:hidden flex items-center gap-4">
+          <Link href="/cart" onClick={(e) => e.stopPropagation()} className="relative">
+            <FiShoppingBag size={22} className="text-white/90" />
+            {totalItems > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand-secondary text-black text-[10px] font-bold rounded-full flex items-center justify-center">
+                {totalItems}
+              </span>
+            )}
+          </Link>
           <Link href="/profile" onClick={(e) => e.stopPropagation()}>
             <FiUser size={22} className="text-white/90" />
           </Link>
