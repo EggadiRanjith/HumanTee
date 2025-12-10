@@ -3,22 +3,25 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/app/components/context/CartContext";
+import { useLoading } from "@/app/components/context/LoadingContext";
 import { motion } from "framer-motion";
 
 export default function CheckoutPage() {
     const router = useRouter();
     const { items } = useCart();
+    const { setLoading } = useLoading();
 
     useEffect(() => {
         // Redirect to shipping page as the entry point
         if (items.length > 0) {
+            setLoading(true);
             router.push("/checkout/shipping");
         }
-    }, [items, router]);
+    }, [items, router, setLoading]);
 
     if (items.length === 0) {
         return (
-            <div className="min-h-screen brand-bg pt-[var(--header-height)] flex items-center justify-center">
+            <div className="min-h-screen brand-bg pt-[calc(var(--header-height)+3rem)] flex items-center justify-center">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -32,7 +35,10 @@ export default function CheckoutPage() {
                         <h2 className="text-white text-2xl font-light mb-2 uppercase tracking-wide">Your Cart is Empty</h2>
                         <p className="text-white/60 text-sm mb-6">Add some premium pieces to get started with your order</p>
                         <button
-                            onClick={() => router.push("/shop")}
+                            onClick={() => {
+                                setLoading(true);
+                                router.push("/shop");
+                            }}
                             className="px-8 py-3 bg-white text-black rounded-full text-sm uppercase tracking-wider hover:bg-white/90 transition-colors"
                         >
                             Continue Shopping

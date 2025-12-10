@@ -2,41 +2,20 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import Lottie from "lottie-react";
+import comingSoonAnimation from "@/public/animation/lottie/system-animation/comingsoon.json";
 
 /* ------------------------------------------------------------
-   Cinematic "COMING SOON" Typographic Block
+   Lottie Coming Soon Animation
 ------------------------------------------------------------ */
 function ComingSoonTitle() {
-  const words = ["COMING", "SOON"];
-
   return (
-    <div className="flex flex-col items-center gap-2 select-none">
-      {words.map((word, wi) => (
-        <div
-          key={wi}
-          className="
-            inline-flex 
-            text-[clamp(2rem,12vw,4.768rem)]
-            xs:text-[clamp(2.5rem,13vw,4.768rem)]
-            sm:text-step-7 
-            uppercase 
-            tracking-[0.12em] xs:tracking-[0.16em] sm:tracking-[0.20em] 
-            font-bold 
-            text-white/90
-            px-1 xs:px-2
-          "
-          style={{ fontFamily: "var(--font-tan-pearl)" }}
-        >
-          {word.split("").map((char, i) => (
-            <span
-              key={i}
-              className="relative inline-block"
-            >
-              {char}
-            </span>
-          ))}
-        </div>
-      ))}
+    <div className="w-full max-w-lg mx-auto">
+      <Lottie
+        animationData={comingSoonAnimation}
+        loop={true}
+        className="w-full h-auto"
+      />
     </div>
   );
 }
@@ -61,14 +40,14 @@ export default function ComingSoon() {
         cinematic-bg-void
       "
     >
-        {/* Monochrome Fog Layer */}
-        <div className="absolute inset-0 opacity-[0.13] pointer-events-none">
-          <div className="absolute inset-0 blur-[180px] bg-white/10" />
-        </div>
+      {/* Monochrome Fog Layer */}
+      <div className="absolute inset-0 opacity-[0.13] pointer-events-none">
+        <div className="absolute inset-0 blur-[180px] bg-white/10" />
+      </div>
 
-        {/* Dramatic Center Light Beam */}
-        <div
-          className="
+      {/* Dramatic Center Light Beam */}
+      <div
+        className="
             absolute h-[200%] w-[50%]
             left-1/2 top-1/2
             -translate-x-1/2 -translate-y-1/2
@@ -80,17 +59,17 @@ export default function ComingSoon() {
             to-white/10
             pointer-events-none
           "
-        />
+      />
 
-        {/* Content */}
-        <div className="relative z-20 flex flex-col items-center text-center px-4 xs:px-5 sm:px-6 max-w-3xl w-full">
+      {/* Content */}
+      <div className="relative z-20 flex flex-col items-center text-center px-4 xs:px-5 sm:px-6 max-w-3xl w-full">
 
-          {/* Cinematic COMING SOON */}
-          <ComingSoonTitle />
+        {/* Cinematic COMING SOON */}
+        <ComingSoonTitle />
 
-          {/* Underline */}
-          <div
-            className="
+        {/* Underline */}
+        <div
+          className="
               h-px
               w-24 xs:w-32 sm:w-40
               my-6 xs:my-7 sm:my-8
@@ -100,11 +79,11 @@ export default function ComingSoon() {
               to-transparent
               origin-center
             "
-          />
+        />
 
-          {/* Description */}
-          <p
-            className="
+        {/* Description */}
+        <p
+          className="
               text-[clamp(0.8125rem,2vw,1rem)]
               xs:text-step-0
               brand-text-muted
@@ -113,15 +92,15 @@ export default function ComingSoon() {
               mb-8 xs:mb-10 sm:mb-12
               px-2
             "
-          >
-            A new chapter of digital luxury is being crafted — with precision, elegance, and vision.
-          </p>
+        >
+          A new chapter of digital luxury is being crafted — with precision, elegance, and vision.
+        </p>
 
-          {/* CTA — Luxury Button */}
-          <div>
-            <Link
-              href="/"
-              className="
+        {/* CTA — Luxury Button */}
+        <div>
+          <Link
+            href="/"
+            className="
                 group
                 relative
                 inline-flex
@@ -146,8 +125,8 @@ export default function ComingSoon() {
                 ease-[cubic-bezier(0.25,1,0.3,1)]
                 touch-target
               "
-            >
-              <span className="
+          >
+            <span className="
                 absolute inset-0 
                 rounded-xl 
                 bg-white/5
@@ -157,8 +136,8 @@ export default function ComingSoon() {
                 duration-700
               " />
 
-              <span
-                className="
+            <span
+              className="
                   pointer-events-none
                   absolute
                   top-0 left-0
@@ -177,15 +156,15 @@ export default function ComingSoon() {
                   duration-[1200ms]
                   ease-[cubic-bezier(0.25,1,0.3,1)]
                 "
-              />
+            />
 
-              <span className="relative z-10 tracking-wider font-medium">
-                Notify Me
-              </span>
-            </Link>
-          </div>
-
+            <span className="relative z-10 tracking-wider font-medium">
+              Notify Me
+            </span>
+          </Link>
         </div>
+
       </div>
+    </div>
   );
 }

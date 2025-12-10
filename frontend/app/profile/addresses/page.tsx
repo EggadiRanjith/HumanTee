@@ -151,7 +151,7 @@ export default function ShippingAddressesPage() {
   };
 
   return (
-    <div className="min-h-screen brand-bg px-4 sm:px-6 md:px-8 pb-20 pt-[var(--header-height)]">
+    <div className="min-h-screen brand-bg px-4 sm:px-6 md:px-8 pb-24 pt-[calc(var(--header-height)+3rem)]">
       <div className="max-w-screen-md mx-auto">
         {/* HEADER */}
         <div className="mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -219,10 +219,10 @@ export default function ShippingAddressesPage() {
                     {a.phone}
                   </p>
                 </div>
-                
+
                 {/* ACTION BAR — CENTER ON MOBILE, RIGHT ON DESKTOP */}
                 <div
-                className="
+                  className="
                     flex flex-wrap items-center justify-center
                     sm:justify-end
                     gap-4
@@ -231,34 +231,34 @@ export default function ShippingAddressesPage() {
                     pt-2
                 "
                 >
-                <button
+                  <button
                     onClick={() => openEditModal(a)}
                     className="hover:text-white transition-colors"
-                >
+                  >
                     Edit
-                </button>
+                  </button>
 
-                <span className="opacity-25">•</span>
+                  <span className="opacity-25">•</span>
 
-                <button
+                  <button
                     onClick={() => deleteAddress(a.id)}
                     className="text-red-400 hover:text-red-300 transition-colors"
-                >
+                  >
                     Delete
-                </button>
+                  </button>
 
-                {!a.isDefault && (
+                  {!a.isDefault && (
                     <>
-                    <span className="opacity-25">•</span>
+                      <span className="opacity-25">•</span>
 
-                    <button
+                      <button
                         onClick={() => setDefault(a.id)}
                         className="hover:text-white transition-colors"
-                    >
+                      >
                         Set Default
-                    </button>
+                      </button>
                     </>
-                )}
+                  )}
                 </div>
               </div>
             </div>

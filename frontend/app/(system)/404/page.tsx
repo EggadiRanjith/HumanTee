@@ -2,33 +2,20 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import Lottie from "lottie-react";
+import error404Animation from "@/public/animation/lottie/system-animation/Error404.json";
 
 /* ------------------------------------------------------------
-   Aesthetic 404 Numeral — Cinematic White/Black
+   Lottie 404 Animation
 ------------------------------------------------------------ */
 function Big404() {
-  const digits = ["4", "0", "4"];
-
   return (
-    <div
-      className="
-        flex 
-        gap-2 xs:gap-3 sm:gap-4 
-        text-[clamp(3rem,20vw,8rem)] 
-        xs:text-[clamp(4rem,22vw,8rem)]
-        sm:text-step-9 
-        font-bold 
-        text-white/90 
-        tracking-[0.10em] xs:tracking-[0.12em] sm:tracking-[0.15em]
-        select-none
-      "
-      style={{ fontFamily: "var(--font-tan-pearl)" }}
-    >
-      {digits.map((d, i) => (
-        <span key={i}>
-          {d}
-        </span>
-      ))}
+    <div className="w-full max-w-md mx-auto">
+      <Lottie
+        animationData={error404Animation}
+        loop={true}
+        className="w-full h-auto"
+      />
     </div>
   );
 }
@@ -53,14 +40,14 @@ export default function NotFound() {
         cinematic-bg-oblivion
       "
     >
-        {/* Soft white atmospheric fog */}
-        <div className="absolute inset-0 opacity-[0.10] pointer-events-none">
-          <div className="absolute inset-0 blur-[160px] bg-white/10" />
-        </div>
+      {/* Soft white atmospheric fog */}
+      <div className="absolute inset-0 opacity-[0.10] pointer-events-none">
+        <div className="absolute inset-0 blur-[160px] bg-white/10" />
+      </div>
 
-        {/* Vertical cinematic light beam */}
-        <div
-          className="
+      {/* Vertical cinematic light beam */}
+      <div
+        className="
             absolute w-[60%] h-[160%]
             left-1/2 top-1/2
             -translate-x-1/2 -translate-y-1/2
@@ -69,17 +56,17 @@ export default function NotFound() {
             pointer-events-none
             bg-gradient-to-b from-white/15 via-transparent to-white/10
           "
-        />
+      />
 
-        {/* Content */}
-        <div className="relative z-20 flex flex-col items-center text-center px-4 xs:px-5 sm:px-6 max-w-3xl w-full">
+      {/* Content */}
+      <div className="relative z-20 flex flex-col items-center text-center px-4 xs:px-5 sm:px-6 max-w-3xl w-full">
 
-          {/* BIG CINEMATIC 404 */}
-          <Big404 />
+        {/* BIG CINEMATIC 404 */}
+        <Big404 />
 
-          {/* Subtitle */}
-          <h2
-            className="
+        {/* Subtitle */}
+        <h2
+          className="
               text-[clamp(1.125rem,4vw,1.953rem)]
               xs:text-step-3
               uppercase
@@ -88,14 +75,14 @@ export default function NotFound() {
               mt-6 xs:mt-8 sm:mt-10
               px-2
             "
-            style={{ fontFamily: "var(--font-tan-pearl)" }}
-          >
-            Lost in the Void
-          </h2>
+          style={{ fontFamily: "var(--font-tan-pearl)" }}
+        >
+          Lost in the Void
+        </h2>
 
-          {/* Cinematic Line */}
-          <div
-            className="
+        {/* Cinematic Line */}
+        <div
+          className="
               h-px
               w-24 xs:w-32 sm:w-40
               my-4 xs:my-5 sm:my-6
@@ -105,11 +92,11 @@ export default function NotFound() {
               to-transparent
               origin-center
             "
-          />
+        />
 
-          {/* Description */}
-          <p
-            className="
+        {/* Description */}
+        <p
+          className="
               text-[clamp(0.8125rem,2vw,1rem)]
               xs:text-step-0
               brand-text-muted
@@ -118,15 +105,15 @@ export default function NotFound() {
               mb-8 xs:mb-10 sm:mb-12
               px-2
             "
-          >
-            The page you're looking for no longer exists — or drifted somewhere unreachable.
-          </p>
+        >
+          The page you're looking for no longer exists — or drifted somewhere unreachable.
+        </p>
 
-          {/* CTA */}
-          <div>
-<Link
-  href="/"
-  className="
+        {/* CTA */}
+        <div>
+          <Link
+            href="/"
+            className="
     group
     relative
     inline-flex
@@ -151,9 +138,9 @@ export default function NotFound() {
     backdrop-blur-xl
     touch-target
   "
->
-  {/* Subtle Inner Glow */}
-  <span className="
+          >
+            {/* Subtle Inner Glow */}
+            <span className="
     absolute inset-0 
     rounded-xl 
     bg-white/5
@@ -163,9 +150,9 @@ export default function NotFound() {
     duration-700
   " />
 
-  {/* Aurora Line Sweep */}
-  <span
-    className="
+            {/* Aurora Line Sweep */}
+            <span
+              className="
       pointer-events-none
       absolute
       top-0 left-0
@@ -184,18 +171,18 @@ export default function NotFound() {
       duration-[1200ms]
       ease-[cubic-bezier(0.25,1,0.3,1)]
     "
-  />
+            />
 
-  {/* Button Text */}
-  <span className="relative z-10 tracking-wider font-medium">
-    Return Home
-  </span>
+            {/* Button Text */}
+            <span className="relative z-10 tracking-wider font-medium">
+              Return Home
+            </span>
 
-</Link>
-
-          </div>
+          </Link>
 
         </div>
+
       </div>
+    </div>
   );
 }

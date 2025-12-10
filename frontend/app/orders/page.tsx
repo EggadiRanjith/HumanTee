@@ -59,7 +59,7 @@ export default function OrdersPage() {
 
   return (
     <div className="min-h-screen brand-bg pb-24 pt-[var(--header-height)]">
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 pt-12">
 
         {/* PAGE TITLE */}
         <div className="mb-10">
@@ -88,7 +88,7 @@ export default function OrdersPage() {
               >
                 {/* LEFT CONTENT */}
                 <div className="flex-1 flex flex-col justify-between">
-                  
+
                   <div>
                     <div className="flex items-center gap-3 mb-1">
                       <h3 className="text-white text-lg font-light tracking-wide">

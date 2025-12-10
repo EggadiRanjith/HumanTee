@@ -130,11 +130,11 @@ const termsSections = [
 
 export default function TermsPrivacyPage() {
   return (
-    <div className="min-h-screen brand-bg pb-24">
+    <div className="min-h-screen brand-bg pb-24 pt-[var(--header-height)]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-12">
 
         {/* HEADER */}
-        <header className="pt-24 sm:pt-28 lg:pt-36 mb-16">
+        <header className="pt-12 sm:pt-16 lg:pt-24 mb-16">
           <p className="text-white/40 text-[10px] uppercase tracking-[0.28em] mb-3">
             Effective Date: 25/09/2025
           </p>
@@ -248,9 +248,9 @@ export default function TermsPrivacyPage() {
           </h2>
 
           <p className="text-white/65 text-[13px] sm:text-[14px] leading-[1.8]">
-            For questions regarding these policies, contact us at  
-            <span className="text-white"> humanteeofficial@gmail.com</span>  
-            or call  
+            For questions regarding these policies, contact us at
+            <span className="text-white"> humanteeofficial@gmail.com</span>
+            or call
             <span className="text-white"> +91 7780-661493</span>.
           </p>
         </section>

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import PageContainer from "@/app/components/PageContainer";
+
 
 
 type TShirt = {
@@ -125,7 +125,7 @@ const getStockColor = (stock: number) => {
 
 export default function ShopPage() {
   return (
-    <PageContainer className="cinematic-bg-dusk relative">
+    <div className="min-h-screen cinematic-bg-dusk relative pt-[var(--header-height)]">
 
       {/* Ambient Glow Behind Page */}
       <div
@@ -137,7 +137,7 @@ export default function ShopPage() {
         }}
       />
 
-      <div className="relative max-w-screen-xl mx-auto px-4 sm:px-6 md:px-10 lg:px-14 pb-12">
+      <div className="relative max-w-screen-xl mx-auto px-4 sm:px-6 md:px-10 lg:px-14 pb-12 pt-12">
 
         {/* PAGE TITLE */}
         <div className="mb-8 sm:mb-10">
@@ -257,6 +257,6 @@ export default function ShopPage() {
         </div>
 
       </div>
-    </PageContainer>
+    </div>
   );
 }

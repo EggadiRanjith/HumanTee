@@ -78,7 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Header />
 
           {/* Page Content */}
-          <div style={{ paddingTop: "calc(var(--header-height) - 24px)" }}>
+          <div>
             {children}
           </div>
           <Footer />

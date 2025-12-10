@@ -2,33 +2,20 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import Lottie from "lottie-react";
+import error503Animation from "@/public/animation/lottie/system-animation/503.json";
 
 /* ------------------------------------------------------------
-   Aesthetic 503 Numeral — Cinematic White/Black
+   Lottie 503 Animation
 ------------------------------------------------------------ */
 function Big503() {
-  const digits = ["5", "0", "3"];
-
   return (
-    <div
-      className="
-        flex 
-        gap-2 xs:gap-3 sm:gap-4 
-        text-[clamp(3rem,20vw,8rem)] 
-        xs:text-[clamp(4rem,22vw,8rem)]
-        sm:text-step-9 
-        font-bold 
-        text-white/90 
-        tracking-[0.10em] xs:tracking-[0.12em] sm:tracking-[0.15em]
-        select-none
-      "
-      style={{ fontFamily: "var(--font-tan-pearl)" }}
-    >
-      {digits.map((d, i) => (
-        <span key={i}>
-          {d}
-        </span>
-      ))}
+    <div className="w-full max-w-md mx-auto">
+      <Lottie
+        animationData={error503Animation}
+        loop={true}
+        className="w-full h-auto"
+      />
     </div>
   );
 }
@@ -53,14 +40,14 @@ export default function ServiceUnavailable() {
         cinematic-bg-dusk
       "
     >
-        {/* Soft monochrome fog */}
-        <div className="absolute inset-0 opacity-[0.11] pointer-events-none">
-          <div className="absolute inset-0 blur-[170px] bg-white/10" />
-        </div>
+      {/* Soft monochrome fog */}
+      <div className="absolute inset-0 opacity-[0.11] pointer-events-none">
+        <div className="absolute inset-0 blur-[170px] bg-white/10" />
+      </div>
 
-        {/* Gentle vertical repair-mode light beam */}
-        <div
-          className="
+      {/* Gentle vertical repair-mode light beam */}
+      <div
+        className="
             absolute w-[60%] h-[160%]
             left-1/2 top-1/2
             -translate-x-1/2 -translate-y-1/2
@@ -69,17 +56,17 @@ export default function ServiceUnavailable() {
             pointer-events-none
             bg-gradient-to-b from-white/16 via-transparent to-white/10
           "
-        />
+      />
 
-        {/* Content */}
-        <div className="relative z-20 flex flex-col items-center text-center px-4 xs:px-5 sm:px-6 max-w-3xl w-full">
+      {/* Content */}
+      <div className="relative z-20 flex flex-col items-center text-center px-4 xs:px-5 sm:px-6 max-w-3xl w-full">
 
-          {/* BIG 503 */}
-          <Big503 />
+        {/* BIG 503 */}
+        <Big503 />
 
-          {/* Subtitle */}
-          <h2
-            className="
+        {/* Subtitle */}
+        <h2
+          className="
               text-[clamp(1.125rem,4vw,1.953rem)]
               xs:text-step-3
               uppercase
@@ -89,13 +76,13 @@ export default function ServiceUnavailable() {
               font-geist
               px-2
             "
-          >
-            Maintenance Mode
-          </h2>
+        >
+          Maintenance Mode
+        </h2>
 
-          {/* Cinematic Line */}
-          <div
-            className="
+        {/* Cinematic Line */}
+        <div
+          className="
               h-px
               w-24 xs:w-32 sm:w-40
               my-4 xs:my-5 sm:my-6
@@ -105,11 +92,11 @@ export default function ServiceUnavailable() {
               to-transparent
               origin-center
             "
-          />
+        />
 
-          {/* Description */}
-          <p
-            className="
+        {/* Description */}
+        <p
+          className="
               text-[clamp(0.8125rem,2vw,1rem)]
               xs:text-step-0
               brand-text-muted
@@ -118,16 +105,16 @@ export default function ServiceUnavailable() {
               mb-8 xs:mb-10 sm:mb-12
               px-2
             "
-          >
-            We're currently performing system enhancements.  
-            The experience will return shortly, better than ever.
-          </p>
+        >
+          We're currently performing system enhancements.
+          The experience will return shortly, better than ever.
+        </p>
 
-          {/* Luxury CTA */}
-          <div>
-            <Link
-              href="/"
-              className="
+        {/* Luxury CTA */}
+        <div>
+          <Link
+            href="/"
+            className="
                 group
                 relative
                 inline-flex
@@ -152,8 +139,8 @@ export default function ServiceUnavailable() {
                 backdrop-blur-xl
                 touch-target
               "
-            >
-              <span className="
+          >
+            <span className="
                 absolute inset-0 
                 rounded-xl 
                 bg-white/5
@@ -163,8 +150,8 @@ export default function ServiceUnavailable() {
                 duration-700
               " />
 
-              <span
-                className="
+            <span
+              className="
                   pointer-events-none
                   absolute
                   top-0 left-0
@@ -182,15 +169,15 @@ export default function ServiceUnavailable() {
                   duration-[1200ms]
                   ease-[cubic-bezier(0.25,1,0.3,1)]
                 "
-              />
+            />
 
-              <span className="relative z-10 tracking-wider font-medium">
-                Check Status
-              </span>
-            </Link>
-          </div>
-
+            <span className="relative z-10 tracking-wider font-medium">
+              Check Status
+            </span>
+          </Link>
         </div>
+
       </div>
+    </div>
   );
 }

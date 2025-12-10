@@ -16,7 +16,7 @@ export default function PersonalInformationPage() {
   });
 
   return (
-    <div className="min-h-screen brand-bg px-4 sm:px-6 md:px-8 pb-20 pt-[var(--header-height)]">
+    <div className="min-h-screen brand-bg px-4 sm:px-6 md:px-8 pb-24 pt-[calc(var(--header-height)+3rem)]">
 
       <div className="max-w-screen-sm mx-auto">
 

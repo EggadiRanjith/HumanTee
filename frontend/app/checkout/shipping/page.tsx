@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/app/components/context/CartContext";
 import { useCheckout } from "@/app/components/context/CheckoutContext";
+import { useLoading } from "@/app/components/context/LoadingContext";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
@@ -11,6 +12,7 @@ export default function ShippingPage() {
     const router = useRouter();
     const { items, totalPrice } = useCart();
     const { shippingData, setShippingData } = useCheckout();
+    const { setLoading } = useLoading();
 
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -32,6 +34,7 @@ export default function ShippingPage() {
 
     const handleContinueToPayment = () => {
         if (validateShipping()) {
+            setLoading(true);
             router.push("/checkout/payment");
         }
     };
@@ -55,7 +58,7 @@ export default function ShippingPage() {
     return (
         <div className="min-h-screen brand-bg pt-[var(--header-height)] pb-8 sm:pb-16">
             <div className="max-w-screen-xl mx-auto px-3 sm:px-6 md:px-8 lg:px-10">
-                <div className="py-3 sm:py-6 md:py-8">
+                <div className="py-8 sm:py-10 md:py-12">
                     {/* Progress Indicator - Elite Mobile Responsive */}
                     <div className="mb-4 sm:mb-6">
                         <div className="flex items-center justify-between sm:justify-center gap-1 sm:gap-4 max-w-2xl mx-auto">
@@ -201,6 +204,18 @@ export default function ShippingPage() {
                             >
                                 Continue to Payment
                             </motion.button>
+
+                            <div className="mt-4 text-center">
+                                <button
+                                    onClick={() => {
+                                        setLoading(true);
+                                        router.push("/cart");
+                                    }}
+                                    className="text-white/40 hover:text-white text-xs uppercase tracking-wider transition-colors"
+                                >
+                                    Back to Cart
+                                </button>
+                            </div>
                         </motion.div>
 
                         {/* Order Summary - Sticky on Desktop, Fixed on Mobile */}

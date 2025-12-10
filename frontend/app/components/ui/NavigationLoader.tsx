@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
+import { useLoading } from "../context/LoadingContext";
 
 const TShirtIcon = () => (
     <svg
@@ -19,13 +20,13 @@ const TShirtIcon = () => (
 );
 
 export default function NavigationLoader() {
-    const [isLoading, setIsLoading] = useState(false);
+    const { isLoading, setLoading } = useLoading();
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
     useEffect(() => {
-        setIsLoading(false);
-    }, [pathname, searchParams]);
+        setLoading(false);
+    }, [pathname, searchParams, setLoading]);
 
     useEffect(() => {
         const handleClick = (e: MouseEvent) => {
@@ -37,14 +38,14 @@ export default function NavigationLoader() {
                 const current = new URL(window.location.href);
 
                 if (url.origin === current.origin && url.pathname !== current.pathname) {
-                    setIsLoading(true);
+                    setLoading(true);
                 }
             }
         };
 
         document.addEventListener("click", handleClick);
         return () => document.removeEventListener("click", handleClick);
-    }, []);
+    }, [setLoading]);
 
     if (!isLoading) return null;
 

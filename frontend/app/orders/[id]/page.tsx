@@ -1,16 +1,16 @@
 "use client";
 
-import { 
-  FiTruck, 
-  FiCheckCircle, 
-  FiClock, 
-  FiPackage, 
-  FiHelpCircle, 
-  FiShoppingBag 
+import {
+  FiTruck,
+  FiCheckCircle,
+  FiClock,
+  FiPackage,
+  FiHelpCircle,
+  FiShoppingBag
 } from "react-icons/fi";
 
 import Link from "next/link";
-import PageContainer from "@/app/components/PageContainer";
+
 
 type Order = {
   id: string;
@@ -93,12 +93,12 @@ export default function OrderDetailsPage() {
   const StatusIcon = Status.icon;
 
   return (
-    <PageContainer className="brand-bg-dusk">
-      <div className="max-w-screen-lg mx-auto px-4 sm:px-6 lg:px-10 pb-10">
+    <div className="min-h-screen brand-bg-dusk pt-[var(--header-height)]">
+      <div className="max-w-screen-lg mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-8">
 
-      <div className="mb-10 space-y-1">
-        <h1
-          className="
+        <div className="mb-10 space-y-1">
+          <h1
+            className="
             text-[28px] sm:text-[36px] lg:text-[44px]
             font-light
             tracking-[0.14em]
@@ -106,19 +106,19 @@ export default function OrderDetailsPage() {
             text-white
             leading-tight
           "
-        >
-          Order Details
-        </h1>
+          >
+            Order Details
+          </h1>
 
-        <p className="
+          <p className="
             text-white/45
             text-[11px] sm:text-[12px]
             uppercase tracking-[0.22em]
           "
-        >
-          Review your purchase summary
-        </p>
-      </div>
+          >
+            Review your purchase summary
+          </p>
+        </div>
 
 
         {/* ORDER HEADER CARD */}
@@ -262,6 +262,6 @@ export default function OrderDetailsPage() {
         </div>
 
       </div>
-    </PageContainer>
+    </div>
   );
 }

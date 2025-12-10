@@ -5,12 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FiTrash2, FiMinus, FiPlus } from "react-icons/fi";
 import { useCart } from "@/app/components/context/CartContext";
+import { useLoading } from "@/app/components/context/LoadingContext";
 import { motion } from "framer-motion";
 import { EmptyCart } from "@/app/components/ui/EmptyState";
 
 export default function CartPage() {
     const router = useRouter();
     const { items, removeFromCart, updateQuantity, totalPrice, totalItems } = useCart();
+    const { setLoading } = useLoading();
 
     if (items.length === 0) {
         return (
@@ -24,7 +26,7 @@ export default function CartPage() {
 
     return (
         <div className="min-h-screen brand-bg pb-24 pt-[var(--header-height)]">
-            <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10">
+            <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10 pt-12">
 
                 {/* PAGE TITLE */}
                 <div className="mb-10">
@@ -80,7 +82,7 @@ export default function CartPage() {
                                         )}
                                     </div>
 
-                                    <div className="flex items-center justify-between mt-4">
+                                    <div className="flex flex-wrap items-center justify-start mt-4 gap-6 sm:gap-10">
                                         {/* QUANTITY CONTROLS */}
                                         <div className="flex items-center gap-3">
                                             <button
@@ -110,14 +112,14 @@ export default function CartPage() {
                                             </button>
                                         </div>
 
-                                        {/* PRICE */}
-                                        <div className="text-right">
+                                        {/* PRICE BLOCK - Adjusted to show Line Total left aligned next to quantity */}
+                                        <div className="flex items-center gap-3 text-left">
                                             <p className="text-white text-base sm:text-lg font-light">
-                                                {item.price}
+                                                ₹ {(parseFloat(item.price.replace(/[^0-9.]/g, "")) * item.quantity).toFixed(2)}
                                             </p>
                                             {item.quantity > 1 && (
-                                                <p className="text-white/50 text-xs">
-                                                    {item.price} each
+                                                <p className="text-yellow-400/80 text-xs sm:text-sm font-light">
+                                                    ({item.price} each)
                                                 </p>
                                             )}
                                         </div>
@@ -178,7 +180,10 @@ export default function CartPage() {
                             </div>
 
                             <button
-                                onClick={() => router.push("/checkout")}
+                                onClick={() => {
+                                    setLoading(true);
+                                    router.push("/checkout");
+                                }}
                                 className="
                   w-full py-4 rounded-full
                   bg-white text-black

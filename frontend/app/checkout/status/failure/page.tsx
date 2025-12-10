@@ -14,25 +14,19 @@ export default function FailurePage() {
     const [showSplash, setShowSplash] = useState(true);
 
     useEffect(() => {
-        // Hide splash screen after 3 seconds
-        const timer = setTimeout(() => {
-            setShowSplash(false);
-        }, 3000);
-
-        return () => clearTimeout(timer);
-    }, []);
-
-    useEffect(() => {
         // Lock scroll when splash is visible
         if (showSplash) {
             document.body.style.overflow = 'hidden';
+            document.body.style.paddingRight = '15px';
         } else {
-            document.body.style.overflow = 'unset';
+            document.body.style.overflow = 'auto';
+            document.body.style.paddingRight = '0px';
         }
 
         // Cleanup on unmount
         return () => {
-            document.body.style.overflow = 'unset';
+            document.body.style.overflow = 'auto';
+            document.body.style.paddingRight = '0px';
         };
     }, [showSplash]);
 
@@ -58,6 +52,7 @@ export default function FailurePage() {
                                 animationData={failureAnimation}
                                 loop={false}
                                 autoplay
+                                onComplete={() => setTimeout(() => setShowSplash(false), 500)}
                                 className="w-[200px] h-[200px] sm:w-[250px] sm:h-[250px] md:w-[300px] md:h-[300px]"
                             />
                         </motion.div>
@@ -85,7 +80,7 @@ export default function FailurePage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: showSplash ? 0 : 1 }}
                 transition={{ duration: 0.5 }}
-                className="min-h-screen brand-bg pt-[var(--header-height)] pb-12 sm:pb-20"
+                className="min-h-screen brand-bg pt-[calc(var(--header-height)+3rem)] pb-12 sm:pb-20"
             >
                 <div className="max-w-screen-xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
                     <div className="py-6 sm:py-10 md:py-12 max-w-3xl mx-auto">

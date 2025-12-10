@@ -5,7 +5,7 @@ import Link from "next/link";
 import { FiZoomIn, FiX, FiMinus, FiPlus } from "react-icons/fi";
 import { notFound } from "next/navigation";
 import { use, useState, useEffect } from "react";
-import PageContainer from "@/app/components/PageContainer";
+
 import { useCart } from "@/app/components/context/CartContext";
 
 /* ---------------------------------------------
@@ -163,11 +163,12 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   };
 
   return (
-    <PageContainer className="brand-bg-dusk">
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10 pb-4 sm:pb-6 lg:pb-8">
+    <div className="min-h-screen brand-bg-dusk pt-[var(--header-height)]">
+      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10 pb-4 sm:pb-6 lg:pb-8 pt-8">
 
         {/* GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+
 
           {/* IMAGE SECTION */}
           <div className="w-full max-w-md mx-auto lg:mx-0 space-y-4">
@@ -458,6 +459,6 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
           </div>
         )
       }
-    </PageContainer >
+    </div>
   );
 }
