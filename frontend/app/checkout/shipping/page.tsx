@@ -53,12 +53,12 @@ export default function ShippingPage() {
     }
 
     return (
-        <div className="min-h-screen brand-bg pt-[var(--header-height)] pb-12 sm:pb-20">
-            <div className="max-w-screen-xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
-                <div className="py-4 sm:py-6 md:py-8">
+        <div className="min-h-screen brand-bg pt-[var(--header-height)] pb-8 sm:pb-16">
+            <div className="max-w-screen-xl mx-auto px-3 sm:px-6 md:px-8 lg:px-10">
+                <div className="py-3 sm:py-6 md:py-8">
                     {/* Progress Indicator - Elite Mobile Responsive */}
-                    <div className="mb-6 sm:mb-8">
-                        <div className="flex items-center justify-between sm:justify-center gap-1.5 sm:gap-4 max-w-2xl mx-auto">
+                    <div className="mb-4 sm:mb-6">
+                        <div className="flex items-center justify-between sm:justify-center gap-1 sm:gap-4 max-w-2xl mx-auto">
                             {/* Step 1 - Active */}
                             <div className="flex items-center flex-shrink-0">
                                 <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white text-black flex items-center justify-center text-xs sm:text-sm md:text-base font-medium shadow-lg">
@@ -85,18 +85,18 @@ export default function ShippingPage() {
                         </div>
                     </div>
 
-                    <h1 className="text-white text-lg sm:text-xl md:text-2xl lg:text-3xl font-light mb-5 sm:mb-7 uppercase tracking-wide text-center sm:text-left">Shipping Address</h1>
+                    <h1 className="text-white text-base sm:text-lg md:text-xl lg:text-2xl font-light mb-3 sm:mb-5 uppercase tracking-wide text-center sm:text-left">Shipping Address</h1>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                         {/* Shipping Form */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5 }}
-                            className="lg:col-span-2 space-y-4 sm:space-y-6"
+                            className="lg:col-span-2 space-y-3 sm:space-y-5"
                         >
-                            <div className="p-4 sm:p-5 md:p-7 rounded-xl sm:rounded-2xl luxury-glass border border-white/10">
-                                <div className="space-y-4">
+                            <div className="p-3 sm:p-5 md:p-7 rounded-lg sm:rounded-xl luxury-glass border border-white/10">
+                                <div className="space-y-3">
                                     {/* Full Name */}
                                     <div>
                                         <input
@@ -110,7 +110,7 @@ export default function ShippingPage() {
                                     </div>
 
                                     {/* Email & Phone */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div>
                                             <input
                                                 type="email"
@@ -146,7 +146,7 @@ export default function ShippingPage() {
                                     </div>
 
                                     {/* City, State, Postal Code */}
-                                    <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3">
                                         <div className="xs:col-span-2 sm:col-span-1">
                                             <input
                                                 type="text"
@@ -210,7 +210,7 @@ export default function ShippingPage() {
                             transition={{ duration: 0.5, delay: 0.1 }}
                             className="lg:col-span-1"
                         >
-                            <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl luxury-glass border border-white/10 lg:sticky lg:top-24">
+                            <div className="p-3 sm:p-5 rounded-lg sm:rounded-xl luxury-glass border border-white/10 lg:sticky lg:top-24">
                                 <h2 className="text-white text-sm sm:text-base font-light mb-3 sm:mb-4 uppercase tracking-wide">Order Summary</h2>
 
                                 <div className="space-y-3 mb-6 max-h-[200px] sm:max-h-60 overflow-y-auto">

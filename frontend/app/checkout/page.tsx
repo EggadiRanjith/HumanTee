@@ -43,13 +43,6 @@ export default function CheckoutPage() {
         );
     }
 
-    // Show loading state while redirecting
-    return (
-        <div className="min-h-screen brand-bg pt-[var(--header-height)] flex items-center justify-center">
-            <div className="text-center">
-                <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-white/60 text-sm">Loading checkout...</p>
-            </div>
-        </div>
-    );
+    // NavigationLoader will handle the transition
+    return null;
 }

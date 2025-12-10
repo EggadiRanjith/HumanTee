@@ -11,6 +11,7 @@ interface Product {
   price: string;
   image: string;
   badge?: "sale" | "bestseller" | "new";
+  stock: number;
 }
 
 const FeaturedProducts = () => {
@@ -22,6 +23,7 @@ const FeaturedProducts = () => {
       price: "₹1,299",
       image: "/images/products/drive-front.jpg",
       badge: "bestseller",
+      stock: 12,
     },
     {
       id: 2,
@@ -30,6 +32,7 @@ const FeaturedProducts = () => {
       price: "₹1,499",
       image: "/images/products/wild-beginings-front.jpg",
       badge: "sale",
+      stock: 3,
     },
     {
       id: 3,
@@ -39,6 +42,7 @@ const FeaturedProducts = () => {
       image:
         "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format",
       badge: "new",
+      stock: 8,
     },
     {
       id: 4,
@@ -47,6 +51,7 @@ const FeaturedProducts = () => {
       price: "₹1,699",
       image:
         "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format",
+      stock: 15,
     },
   ];
 
@@ -73,6 +78,28 @@ const FeaturedProducts = () => {
         return "NEW";
       default:
         return "";
+    }
+  };
+
+  const getStockColor = (stock: number) => {
+    if (stock <= 3) {
+      return {
+        dot: "bg-red-400/70",
+        text: "text-red-400/80",
+        label: "Low Stock"
+      };
+    } else if (stock <= 8) {
+      return {
+        dot: "bg-amber-400/70",
+        text: "text-amber-400/80",
+        label: "Limited Stock"
+      };
+    } else {
+      return {
+        dot: "bg-emerald-400/70",
+        text: "text-emerald-400/80",
+        label: "In Stock"
+      };
     }
   };
 
@@ -153,17 +180,18 @@ const FeaturedProducts = () => {
                   </span>
                 )}
 
-                {/* Quick View */}
+                {/* Quick View - Desktop Only */}
                 <div
                   className="
                     absolute bottom-0 left-0 right-0 
                     translate-y-full group-hover:translate-y-0 
                     transition-transform duration-500 ease-cinematic
-                    backdrop-blur-xl bg-brand-oblivion/60
+                    bg-[#050512]
                     border-t border-white/10
+                    hidden md:block
                   "
                 >
-                  <button className="w-full py-3 text-step--1 tracking-wide brand-text-primary">
+                  <button className="w-full py-3 text-step--1 tracking-wide text-white font-bold">
                     QUICK VIEW
                   </button>
                 </div>
@@ -176,12 +204,10 @@ const FeaturedProducts = () => {
                   {item.title}
                 </h3>
 
-                <p className="brand-text-muted text-step--1 tracking-wide mt-0.5">
-                  {item.subtitle}
-                </p>
+
 
                 <div className="flex items-center justify-center gap-2 mt-2 mb-1">
-                  <span className="brand-text-dim text-step--1 line-through">
+                  <span className="text-red-400/70 text-step--1 line-through">
                     ₹1,999
                   </span>
                   <span className="brand-text-primary text-step-0 font-heading">
@@ -190,9 +216,12 @@ const FeaturedProducts = () => {
                 </div>
 
                 <div className="flex items-center justify-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-brand-secondary animate-glowPulse shadow-glow-violet-medium"></div>
-                  <span className="text-step--1 brand-text-secondary tracking-wide">
-                    4 in stock
+                  <div className="relative">
+                    <div className={`w-2 h-2 rounded-full ${getStockColor(item.stock).dot} animate-pulse`}></div>
+                    <div className={`absolute inset-0 w-2 h-2 rounded-full ${getStockColor(item.stock).dot} animate-ping opacity-75`}></div>
+                  </div>
+                  <span className={`text-step--1 ${getStockColor(item.stock).text} tracking-wide font-medium`}>
+                    {item.stock} in stock
                   </span>
                 </div>
               </div>

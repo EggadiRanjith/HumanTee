@@ -45,12 +45,12 @@ export default function PaymentPage() {
     };
 
     return (
-        <div className="min-h-screen brand-bg pt-[var(--header-height)] pb-12 sm:pb-20">
-            <div className="max-w-screen-xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
-                <div className="py-4 sm:py-6 md:py-8">
+        <div className="min-h-screen brand-bg pt-[var(--header-height)] pb-8 sm:pb-16">
+            <div className="max-w-screen-xl mx-auto px-3 sm:px-6 md:px-8 lg:px-10">
+                <div className="py-3 sm:py-6 md:py-8">
                     {/* Progress Indicator - Elite Mobile Responsive */}
-                    <div className="mb-6 sm:mb-8">
-                        <div className="flex items-center justify-between sm:justify-center gap-1.5 sm:gap-4 max-w-2xl mx-auto">
+                    <div className="mb-4 sm:mb-6">
+                        <div className="flex items-center justify-between sm:justify-center gap-1 sm:gap-4 max-w-2xl mx-auto">
                             {/* Step 1 - Completed */}
                             <div className="flex items-center flex-shrink-0">
                                 <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center text-xs sm:text-sm md:text-base font-medium">
@@ -83,14 +83,14 @@ export default function PaymentPage() {
                         transition={{ duration: 0.5 }}
                         className="max-w-4xl mx-auto"
                     >
-                        <h1 className="text-white text-lg sm:text-xl md:text-2xl lg:text-3xl font-light mb-5 sm:mb-7 uppercase tracking-wide text-center sm:text-left">Payment Method</h1>
+                        <h1 className="text-white text-base sm:text-lg md:text-xl lg:text-2xl font-light mb-3 sm:mb-5 uppercase tracking-wide text-center sm:text-left">Payment Method</h1>
 
-                        <div className="space-y-4 sm:space-y-6">
+                        <div className="space-y-3 sm:space-y-5">
                             {/* Payment Methods */}
-                            <div className="p-4 sm:p-5 md:p-7 rounded-xl sm:rounded-2xl luxury-glass border border-white/10">
-                                <h2 className="text-white text-sm sm:text-base md:text-lg font-light mb-3 sm:mb-5 uppercase tracking-wide">Select Payment Method</h2>
+                            <div className="p-3 sm:p-5 md:p-7 rounded-lg sm:rounded-xl luxury-glass border border-white/10">
+                                <h2 className="text-white text-xs sm:text-sm md:text-base font-light mb-2.5 sm:mb-4 uppercase tracking-wide">Select Payment Method</h2>
 
-                                <div className="space-y-3">
+                                <div className="space-y-2.5">
                                     {/* Card Payment */}
                                     <motion.button
                                         whileHover={{ scale: 1.01 }}
@@ -151,7 +151,7 @@ export default function PaymentPage() {
                             </div>
 
                             {/* Shipping Info Summary */}
-                            <div className="p-4 sm:p-5 md:p-7 rounded-xl sm:rounded-2xl luxury-glass border border-white/10">
+                            <div className="p-3 sm:p-5 md:p-7 rounded-lg sm:rounded-xl luxury-glass border border-white/10">
                                 <h3 className="text-white text-sm sm:text-base font-light mb-2.5 sm:mb-3 uppercase tracking-wide">Shipping To</h3>
                                 <div className="text-white/70 text-[11px] sm:text-xs space-y-0.5 sm:space-y-1">
                                     <p className="text-white font-medium text-xs sm:text-sm">{shippingData.fullName}</p>
@@ -170,13 +170,13 @@ export default function PaymentPage() {
                             </div>
 
                             {/* Order Total */}
-                            <div className="p-4 sm:p-5 md:p-7 rounded-xl sm:rounded-2xl luxury-glass border border-white/10">
+                            <div className="p-3 sm:p-5 md:p-7 rounded-lg sm:rounded-xl luxury-glass border border-white/10">
                                 <h3 className="text-white text-sm sm:text-base font-light mb-2.5 sm:mb-3">Order Total</h3>
                                 <p className="text-white text-xl sm:text-2xl md:text-3xl font-light">₹{totalPrice.toFixed(2)}</p>
                             </div>
 
                             {/* Action Buttons */}
-                            <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4">
+                            <div className="grid grid-cols-1 xs:grid-cols-2 gap-2.5 sm:gap-3">
                                 <motion.button
                                     whileHover={{ scale: 1.01 }}
                                     whileTap={{ scale: 0.99 }}

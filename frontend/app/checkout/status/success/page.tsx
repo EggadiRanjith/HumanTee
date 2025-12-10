@@ -6,7 +6,7 @@ import { FiCheck } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import Lottie from "lottie-react";
-import successAnimation from "@/public/animation/lottie/success_order_placed.json";
+import successAnimation from "@/public/animation/lottie/order-status/success_order_placed.json";
 
 export default function SuccessPage() {
     const router = useRouter();

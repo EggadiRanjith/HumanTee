@@ -6,7 +6,7 @@ import { FiX, FiAlertCircle } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import Lottie from "lottie-react";
-import failureAnimation from "@/public/animation/lottie/order_falure.json";
+import failureAnimation from "@/public/animation/lottie/order-status/order_falure.json";
 
 export default function FailurePage() {
     const router = useRouter();

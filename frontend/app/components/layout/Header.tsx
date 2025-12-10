@@ -27,12 +27,18 @@ export default function Header() {
     return () => window.removeEventListener("resize", update);
   }, [setHeaderHeight]);
 
-  // Auto-close menu when tapping outside
+  // Auto-close menu when tapping outside or scrolling
   useEffect(() => {
     if (!open) return;
     const close = () => setOpen(false);
     window.addEventListener("click", close);
-    return () => window.removeEventListener("click", close);
+    window.addEventListener("scroll", close, true); // Capture phase to catch all scroll events
+    window.addEventListener("touchmove", close); // Also close on touch scroll
+    return () => {
+      window.removeEventListener("click", close);
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("touchmove", close);
+    };
   }, [open]);
 
   const stop = (e: any) => e.stopPropagation(); // Prevent closing when touching inside menu
