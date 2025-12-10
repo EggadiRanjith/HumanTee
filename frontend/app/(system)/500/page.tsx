@@ -74,8 +74,8 @@ export default function ServerError() {
               text-white/90
               mt-6 xs:mt-8 sm:mt-10
               px-2
+              font-geist
             "
-          style={{ fontFamily: "var(--font-tan-pearl)" }}
         >
           System Breakdown
         </h2>
