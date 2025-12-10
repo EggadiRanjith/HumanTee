@@ -141,7 +141,43 @@ export default function Loader({
 
 // Additional preset loaders for common use cases
 export function PageLoader() {
-    return <Loader size="lg" variant="spinner" fullScreen message="Loading..." />;
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--bg-dusk)]/98 backdrop-blur-md">
+            <div className="relative">
+                {/* Rotating circle border */}
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+
+                {/* T-shirt icon in center - counter-rotating */}
+                <motion.div
+                    className="absolute inset-0 flex items-center justify-center"
+                    animate={{ rotate: -360 }}
+                    transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "linear"
+                    }}
+                >
+                    <svg
+                        viewBox="0 0 100 100"
+                        className="w-12 h-12 sm:w-14 sm:h-14 text-white"
+                        fill="currentColor"
+                    >
+                        <path d="M30 15 L20 20 L5 35 L15 45 L25 35 L25 85 L75 85 L75 35 L85 45 L95 35 L80 20 L70 15 L60 25 C55 30 45 30 40 25 Z" />
+                    </svg>
+                </motion.div>
+            </div>
+
+            {/* Optional loading text */}
+            <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="absolute bottom-1/3 text-white/80 text-sm sm:text-base uppercase tracking-[0.3em] font-light"
+            >
+                Loading
+            </motion.p>
+        </div>
+    );
 }
 
 export function ButtonLoader() {

@@ -53,8 +53,8 @@ export default function ShippingPage() {
     }
 
     return (
-        <div className="min-h-screen brand-bg pt-[var(--header-height)] pb-20 sm:pb-24">
-            <div className="max-w-screen-xl mx-auto px-3 sm:px-4 md:px-6 lg:px-10">
+        <div className="min-h-screen brand-bg pt-[var(--header-height)] pb-12 sm:pb-20">
+            <div className="max-w-screen-xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
                 <div className="py-4 sm:py-6 md:py-8">
                     {/* Progress Indicator - Elite Mobile Responsive */}
                     <div className="mb-6 sm:mb-8">
@@ -85,7 +85,7 @@ export default function ShippingPage() {
                         </div>
                     </div>
 
-                    <h1 className="text-white text-xl sm:text-2xl md:text-3xl lg:text-4xl font-light mb-6 sm:mb-8 uppercase tracking-wide text-center sm:text-left">Shipping Address</h1>
+                    <h1 className="text-white text-lg sm:text-xl md:text-2xl lg:text-3xl font-light mb-5 sm:mb-7 uppercase tracking-wide text-center sm:text-left">Shipping Address</h1>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
                         {/* Shipping Form */}
@@ -95,7 +95,7 @@ export default function ShippingPage() {
                             transition={{ duration: 0.5 }}
                             className="lg:col-span-2 space-y-4 sm:space-y-6"
                         >
-                            <div className="p-4 sm:p-6 md:p-8 rounded-2xl luxury-glass border border-white/10">
+                            <div className="p-4 sm:p-5 md:p-7 rounded-xl sm:rounded-2xl luxury-glass border border-white/10">
                                 <div className="space-y-4">
                                     {/* Full Name */}
                                     <div>
@@ -104,9 +104,9 @@ export default function ShippingPage() {
                                             placeholder="Full Name"
                                             value={shippingData.fullName}
                                             onChange={(e) => setShippingData({ ...shippingData, fullName: e.target.value })}
-                                            className="w-full px-4 py-3.5 sm:py-3 md:py-4 rounded-lg bg-white/5 border border-white/10 text-white text-sm sm:text-base placeholder:text-white/40 focus:border-white/30 focus:outline-none transition-colors min-h-[48px]"
+                                            className="w-full px-3 sm:px-4 py-3 sm:py-3.5 rounded-lg bg-white/5 border border-white/10 text-white text-sm sm:text-base placeholder:text-white/40 focus:border-white/30 focus:outline-none transition-colors min-h-[44px] sm:min-h-[48px]"
                                         />
-                                        {errors.fullName && <p className="text-red-400 text-xs sm:text-sm mt-1.5">{errors.fullName}</p>}
+                                        {errors.fullName && <p className="text-red-400 text-[10px] sm:text-xs mt-1">{errors.fullName}</p>}
                                     </div>
 
                                     {/* Email & Phone */}
@@ -117,9 +117,9 @@ export default function ShippingPage() {
                                                 placeholder="Email"
                                                 value={shippingData.email}
                                                 onChange={(e) => setShippingData({ ...shippingData, email: e.target.value })}
-                                                className="w-full px-4 py-3.5 sm:py-3 md:py-4 rounded-lg bg-white/5 border border-white/10 text-white text-sm sm:text-base placeholder:text-white/40 focus:border-white/30 focus:outline-none transition-colors min-h-[48px]"
+                                                className="w-full px-3 sm:px-4 py-3 sm:py-3.5 rounded-lg bg-white/5 border border-white/10 text-white text-sm sm:text-base placeholder:text-white/40 focus:border-white/30 focus:outline-none transition-colors min-h-[44px] sm:min-h-[48px]"
                                             />
-                                            {errors.email && <p className="text-red-400 text-xs sm:text-sm mt-1.5">{errors.email}</p>}
+                                            {errors.email && <p className="text-red-400 text-[10px] sm:text-xs mt-1">{errors.email}</p>}
                                         </div>
                                         <div>
                                             <input
@@ -127,9 +127,9 @@ export default function ShippingPage() {
                                                 placeholder="Phone Number"
                                                 value={shippingData.phone}
                                                 onChange={(e) => setShippingData({ ...shippingData, phone: e.target.value })}
-                                                className="w-full px-4 py-3.5 sm:py-3 md:py-4 rounded-lg bg-white/5 border border-white/10 text-white text-sm sm:text-base placeholder:text-white/40 focus:border-white/30 focus:outline-none transition-colors min-h-[48px]"
+                                                className="w-full px-3 sm:px-4 py-3 sm:py-3.5 rounded-lg bg-white/5 border border-white/10 text-white text-sm sm:text-base placeholder:text-white/40 focus:border-white/30 focus:outline-none transition-colors min-h-[44px] sm:min-h-[48px]"
                                             />
-                                            {errors.phone && <p className="text-red-400 text-xs sm:text-sm mt-1.5">{errors.phone}</p>}
+                                            {errors.phone && <p className="text-red-400 text-[10px] sm:text-xs mt-1">{errors.phone}</p>}
                                         </div>
                                     </div>
 
@@ -140,9 +140,9 @@ export default function ShippingPage() {
                                             placeholder="Address"
                                             value={shippingData.address}
                                             onChange={(e) => setShippingData({ ...shippingData, address: e.target.value })}
-                                            className="w-full px-4 py-3.5 sm:py-3 md:py-4 rounded-lg bg-white/5 border border-white/10 text-white text-sm sm:text-base placeholder:text-white/40 focus:border-white/30 focus:outline-none transition-colors min-h-[48px]"
+                                            className="w-full px-3 sm:px-4 py-3 sm:py-3.5 rounded-lg bg-white/5 border border-white/10 text-white text-sm sm:text-base placeholder:text-white/40 focus:border-white/30 focus:outline-none transition-colors min-h-[44px] sm:min-h-[48px]"
                                         />
-                                        {errors.address && <p className="text-red-400 text-xs sm:text-sm mt-1.5">{errors.address}</p>}
+                                        {errors.address && <p className="text-red-400 text-[10px] sm:text-xs mt-1">{errors.address}</p>}
                                     </div>
 
                                     {/* City, State, Postal Code */}
@@ -153,9 +153,9 @@ export default function ShippingPage() {
                                                 placeholder="City"
                                                 value={shippingData.city}
                                                 onChange={(e) => setShippingData({ ...shippingData, city: e.target.value })}
-                                                className="w-full px-4 py-3.5 sm:py-3 md:py-4 rounded-lg bg-white/5 border border-white/10 text-white text-sm sm:text-base placeholder:text-white/40 focus:border-white/30 focus:outline-none transition-colors min-h-[48px]"
+                                                className="w-full px-3 sm:px-4 py-3 sm:py-3.5 rounded-lg bg-white/5 border border-white/10 text-white text-sm sm:text-base placeholder:text-white/40 focus:border-white/30 focus:outline-none transition-colors min-h-[44px] sm:min-h-[48px]"
                                             />
-                                            {errors.city && <p className="text-red-400 text-xs sm:text-sm mt-1.5">{errors.city}</p>}
+                                            {errors.city && <p className="text-red-400 text-[10px] sm:text-xs mt-1">{errors.city}</p>}
                                         </div>
                                         <div>
                                             <input
@@ -163,9 +163,9 @@ export default function ShippingPage() {
                                                 placeholder="State"
                                                 value={shippingData.state}
                                                 onChange={(e) => setShippingData({ ...shippingData, state: e.target.value })}
-                                                className="w-full px-4 py-3.5 sm:py-3 md:py-4 rounded-lg bg-white/5 border border-white/10 text-white text-sm sm:text-base placeholder:text-white/40 focus:border-white/30 focus:outline-none transition-colors min-h-[48px]"
+                                                className="w-full px-3 sm:px-4 py-3 sm:py-3.5 rounded-lg bg-white/5 border border-white/10 text-white text-sm sm:text-base placeholder:text-white/40 focus:border-white/30 focus:outline-none transition-colors min-h-[44px] sm:min-h-[48px]"
                                             />
-                                            {errors.state && <p className="text-red-400 text-xs sm:text-sm mt-1.5">{errors.state}</p>}
+                                            {errors.state && <p className="text-red-400 text-[10px] sm:text-xs mt-1">{errors.state}</p>}
                                         </div>
                                         <div>
                                             <input
@@ -173,9 +173,9 @@ export default function ShippingPage() {
                                                 placeholder="Postal Code"
                                                 value={shippingData.postalCode}
                                                 onChange={(e) => setShippingData({ ...shippingData, postalCode: e.target.value })}
-                                                className="w-full px-4 py-3.5 sm:py-3 md:py-4 rounded-lg bg-white/5 border border-white/10 text-white text-sm sm:text-base placeholder:text-white/40 focus:border-white/30 focus:outline-none transition-colors min-h-[48px]"
+                                                className="w-full px-3 sm:px-4 py-3 sm:py-3.5 rounded-lg bg-white/5 border border-white/10 text-white text-sm sm:text-base placeholder:text-white/40 focus:border-white/30 focus:outline-none transition-colors min-h-[44px] sm:min-h-[48px]"
                                             />
-                                            {errors.postalCode && <p className="text-red-400 text-xs sm:text-sm mt-1.5">{errors.postalCode}</p>}
+                                            {errors.postalCode && <p className="text-red-400 text-[10px] sm:text-xs mt-1">{errors.postalCode}</p>}
                                         </div>
                                     </div>
 
@@ -186,7 +186,7 @@ export default function ShippingPage() {
                                             placeholder="Country"
                                             value={shippingData.country}
                                             onChange={(e) => setShippingData({ ...shippingData, country: e.target.value })}
-                                            className="w-full px-4 py-3.5 sm:py-3 md:py-4 rounded-lg bg-white/5 border border-white/10 text-white text-sm sm:text-base placeholder:text-white/40 focus:border-white/30 focus:outline-none transition-colors min-h-[48px]"
+                                            className="w-full px-3 sm:px-4 py-3 sm:py-3.5 rounded-lg bg-white/5 border border-white/10 text-white text-sm sm:text-base placeholder:text-white/40 focus:border-white/30 focus:outline-none transition-colors min-h-[44px] sm:min-h-[48px]"
                                         />
                                     </div>
                                 </div>
@@ -197,7 +197,7 @@ export default function ShippingPage() {
                                 whileHover={{ scale: 1.01 }}
                                 whileTap={{ scale: 0.99 }}
                                 onClick={handleContinueToPayment}
-                                className="w-full py-4 sm:py-5 bg-white text-black rounded-full text-sm sm:text-base uppercase tracking-wider font-medium hover:bg-white/90 transition-colors min-h-[52px] sm:min-h-[56px]"
+                                className="w-full py-3.5 sm:py-4 bg-white text-black rounded-full text-sm sm:text-base uppercase tracking-wider font-medium hover:bg-white/90 transition-colors min-h-[48px] sm:min-h-[52px]"
                             >
                                 Continue to Payment
                             </motion.button>
@@ -210,8 +210,8 @@ export default function ShippingPage() {
                             transition={{ duration: 0.5, delay: 0.1 }}
                             className="lg:col-span-1"
                         >
-                            <div className="p-4 sm:p-6 rounded-2xl luxury-glass border border-white/10 lg:sticky lg:top-24">
-                                <h2 className="text-white text-base sm:text-lg font-light mb-4 uppercase tracking-wide">Order Summary</h2>
+                            <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl luxury-glass border border-white/10 lg:sticky lg:top-24">
+                                <h2 className="text-white text-sm sm:text-base font-light mb-3 sm:mb-4 uppercase tracking-wide">Order Summary</h2>
 
                                 <div className="space-y-3 mb-6 max-h-[200px] sm:max-h-60 overflow-y-auto">
                                     {items.map((item) => (

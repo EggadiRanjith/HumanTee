@@ -319,8 +319,9 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               </div>
             )}
 
-            {/* ADD TO CART BUTTON */}
-            <div className="pt-2">
+            {/* ACTION BUTTONS */}
+            <div className="pt-2 space-y-3">
+              {/* Add to Cart Button */}
               <button
                 onClick={handleAddToCart}
                 className={`
@@ -335,6 +336,21 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               >
                 {addedToCart ? "Added to Cart" : "Add to Cart"}
               </button>
+
+              {/* Go to Cart Button */}
+              <Link
+                href="/cart"
+                className="
+                  w-full py-3.5 sm:py-4 
+                  rounded-full transition-all duration-300
+                  text-[0.8rem] uppercase tracking-[0.18em] font-medium
+                  border-2 border-white/20 text-white
+                  hover:bg-white/5 hover:border-white/30
+                  flex items-center justify-center
+                "
+              >
+                Go to Cart
+              </Link>
             </div>
 
             {/* DESCRIPTION */}

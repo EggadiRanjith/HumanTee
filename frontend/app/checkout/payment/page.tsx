@@ -45,8 +45,8 @@ export default function PaymentPage() {
     };
 
     return (
-        <div className="min-h-screen brand-bg pt-[var(--header-height)] pb-20 sm:pb-24">
-            <div className="max-w-screen-xl mx-auto px-3 sm:px-4 md:px-6 lg:px-10">
+        <div className="min-h-screen brand-bg pt-[var(--header-height)] pb-12 sm:pb-20">
+            <div className="max-w-screen-xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
                 <div className="py-4 sm:py-6 md:py-8">
                     {/* Progress Indicator - Elite Mobile Responsive */}
                     <div className="mb-6 sm:mb-8">
@@ -83,12 +83,12 @@ export default function PaymentPage() {
                         transition={{ duration: 0.5 }}
                         className="max-w-4xl mx-auto"
                     >
-                        <h1 className="text-white text-xl sm:text-2xl md:text-3xl lg:text-4xl font-light mb-6 sm:mb-8 uppercase tracking-wide text-center sm:text-left">Payment Method</h1>
+                        <h1 className="text-white text-lg sm:text-xl md:text-2xl lg:text-3xl font-light mb-5 sm:mb-7 uppercase tracking-wide text-center sm:text-left">Payment Method</h1>
 
                         <div className="space-y-4 sm:space-y-6">
                             {/* Payment Methods */}
-                            <div className="p-4 sm:p-6 md:p-8 rounded-2xl luxury-glass border border-white/10">
-                                <h2 className="text-white text-base sm:text-lg md:text-xl font-light mb-4 sm:mb-6 uppercase tracking-wide">Select Payment Method</h2>
+                            <div className="p-4 sm:p-5 md:p-7 rounded-xl sm:rounded-2xl luxury-glass border border-white/10">
+                                <h2 className="text-white text-sm sm:text-base md:text-lg font-light mb-3 sm:mb-5 uppercase tracking-wide">Select Payment Method</h2>
 
                                 <div className="space-y-3">
                                     {/* Card Payment */}
@@ -96,12 +96,12 @@ export default function PaymentPage() {
                                         whileHover={{ scale: 1.01 }}
                                         whileTap={{ scale: 0.99 }}
                                         onClick={() => setPaymentMethod("card")}
-                                        className={`w-full p-4 sm:p-5 rounded-xl border-2 transition-all flex items-center gap-3 sm:gap-4 min-h-[60px] sm:min-h-[68px] ${paymentMethod === "card"
-                                                ? "border-white bg-white/10 shadow-lg"
-                                                : "border-white/10 hover:border-white/30"
+                                        className={`w-full p-3.5 sm:p-4 rounded-xl border-2 transition-all flex items-center gap-2.5 sm:gap-3 min-h-[56px] sm:min-h-[60px] ${paymentMethod === "card"
+                                            ? "border-white bg-white/10 shadow-lg"
+                                            : "border-white/10 hover:border-white/30"
                                             }`}
                                     >
-                                        <FiCreditCard className="text-white text-xl sm:text-2xl flex-shrink-0" />
+                                        <FiCreditCard className="text-white text-lg sm:text-xl flex-shrink-0" />
                                         <span className="text-white text-sm sm:text-base font-medium">Credit/Debit Card</span>
                                         {paymentMethod === "card" && (
                                             <div className="ml-auto w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white flex items-center justify-center flex-shrink-0">
@@ -115,12 +115,12 @@ export default function PaymentPage() {
                                         whileHover={{ scale: 1.01 }}
                                         whileTap={{ scale: 0.99 }}
                                         onClick={() => setPaymentMethod("upi")}
-                                        className={`w-full p-4 sm:p-5 rounded-xl border-2 transition-all flex items-center gap-3 sm:gap-4 min-h-[60px] sm:min-h-[68px] ${paymentMethod === "upi"
-                                                ? "border-white bg-white/10 shadow-lg"
-                                                : "border-white/10 hover:border-white/30"
+                                        className={`w-full p-3.5 sm:p-4 rounded-xl border-2 transition-all flex items-center gap-2.5 sm:gap-3 min-h-[56px] sm:min-h-[60px] ${paymentMethod === "upi"
+                                            ? "border-white bg-white/10 shadow-lg"
+                                            : "border-white/10 hover:border-white/30"
                                             }`}
                                     >
-                                        <span className="text-white text-xl sm:text-2xl flex-shrink-0">💳</span>
+                                        <span className="text-white text-lg sm:text-xl flex-shrink-0">💳</span>
                                         <span className="text-white text-sm sm:text-base font-medium">UPI</span>
                                         {paymentMethod === "upi" && (
                                             <div className="ml-auto w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white flex items-center justify-center flex-shrink-0">
@@ -134,12 +134,12 @@ export default function PaymentPage() {
                                         whileHover={{ scale: 1.01 }}
                                         whileTap={{ scale: 0.99 }}
                                         onClick={() => setPaymentMethod("cod")}
-                                        className={`w-full p-4 sm:p-5 rounded-xl border-2 transition-all flex items-center gap-3 sm:gap-4 min-h-[60px] sm:min-h-[68px] ${paymentMethod === "cod"
-                                                ? "border-white bg-white/10 shadow-lg"
-                                                : "border-white/10 hover:border-white/30"
+                                        className={`w-full p-3.5 sm:p-4 rounded-xl border-2 transition-all flex items-center gap-2.5 sm:gap-3 min-h-[56px] sm:min-h-[60px] ${paymentMethod === "cod"
+                                            ? "border-white bg-white/10 shadow-lg"
+                                            : "border-white/10 hover:border-white/30"
                                             }`}
                                     >
-                                        <FiTruck className="text-white text-xl sm:text-2xl flex-shrink-0" />
+                                        <FiTruck className="text-white text-lg sm:text-xl flex-shrink-0" />
                                         <span className="text-white text-sm sm:text-base font-medium">Cash on Delivery</span>
                                         {paymentMethod === "cod" && (
                                             <div className="ml-auto w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white flex items-center justify-center flex-shrink-0">
@@ -151,10 +151,10 @@ export default function PaymentPage() {
                             </div>
 
                             {/* Shipping Info Summary */}
-                            <div className="p-4 sm:p-6 md:p-8 rounded-2xl luxury-glass border border-white/10">
-                                <h3 className="text-white text-base sm:text-lg font-light mb-3 sm:mb-4 uppercase tracking-wide">Shipping To</h3>
-                                <div className="text-white/70 text-xs sm:text-sm space-y-1">
-                                    <p className="text-white font-medium text-sm sm:text-base">{shippingData.fullName}</p>
+                            <div className="p-4 sm:p-5 md:p-7 rounded-xl sm:rounded-2xl luxury-glass border border-white/10">
+                                <h3 className="text-white text-sm sm:text-base font-light mb-2.5 sm:mb-3 uppercase tracking-wide">Shipping To</h3>
+                                <div className="text-white/70 text-[11px] sm:text-xs space-y-0.5 sm:space-y-1">
+                                    <p className="text-white font-medium text-xs sm:text-sm">{shippingData.fullName}</p>
                                     <p>{shippingData.address}</p>
                                     <p>{shippingData.city}, {shippingData.state} {shippingData.postalCode}</p>
                                     <p>{shippingData.country}</p>
@@ -163,16 +163,16 @@ export default function PaymentPage() {
                                 </div>
                                 <button
                                     onClick={() => router.push("/checkout/shipping")}
-                                    className="mt-4 text-white/60 hover:text-white text-xs sm:text-sm uppercase tracking-wider transition-colors min-h-[44px] flex items-center"
+                                    className="mt-3 sm:mt-4 text-white/60 hover:text-white text-[10px] sm:text-xs uppercase tracking-wider transition-colors min-h-[40px] flex items-center"
                                 >
                                     Edit Shipping Address →
                                 </button>
                             </div>
 
                             {/* Order Total */}
-                            <div className="p-4 sm:p-6 md:p-8 rounded-2xl luxury-glass border border-white/10">
-                                <h3 className="text-white text-base sm:text-lg font-light mb-3 sm:mb-4">Order Total</h3>
-                                <p className="text-white text-2xl sm:text-3xl md:text-4xl font-light">₹{totalPrice.toFixed(2)}</p>
+                            <div className="p-4 sm:p-5 md:p-7 rounded-xl sm:rounded-2xl luxury-glass border border-white/10">
+                                <h3 className="text-white text-sm sm:text-base font-light mb-2.5 sm:mb-3">Order Total</h3>
+                                <p className="text-white text-xl sm:text-2xl md:text-3xl font-light">₹{totalPrice.toFixed(2)}</p>
                             </div>
 
                             {/* Action Buttons */}
@@ -182,7 +182,7 @@ export default function PaymentPage() {
                                     whileTap={{ scale: 0.99 }}
                                     onClick={() => router.push("/checkout/shipping")}
                                     disabled={isProcessing}
-                                    className="py-4 sm:py-5 border-2 border-white/20 text-white rounded-full text-sm sm:text-base uppercase tracking-wider hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[52px] sm:min-h-[56px] order-2 xs:order-1"
+                                    className="py-3.5 sm:py-4 border-2 border-white/20 text-white rounded-full text-sm sm:text-base uppercase tracking-wider hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] sm:min-h-[52px] order-2 xs:order-1"
                                 >
                                     Back
                                 </motion.button>
@@ -191,7 +191,7 @@ export default function PaymentPage() {
                                     whileTap={{ scale: 0.99 }}
                                     onClick={handlePlaceOrder}
                                     disabled={isProcessing}
-                                    className="py-4 sm:py-5 bg-white text-black rounded-full text-sm sm:text-base uppercase tracking-wider font-medium hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[52px] sm:min-h-[56px] order-1 xs:order-2"
+                                    className="py-3.5 sm:py-4 bg-white text-black rounded-full text-sm sm:text-base uppercase tracking-wider font-medium hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] sm:min-h-[52px] order-1 xs:order-2"
                                 >
                                     {isProcessing ? (
                                         <span className="flex items-center justify-center gap-2">

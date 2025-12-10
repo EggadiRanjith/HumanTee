@@ -132,13 +132,22 @@ export default function Header() {
             <Link href="/profile" onClick={(e) => e.stopPropagation()}>
               <FiUser size={22} className="text-white/90" />
             </Link>
-            <Link href="/cart" onClick={(e) => e.stopPropagation()} className="relative">
+            <Link href="/cart" onClick={(e) => e.stopPropagation()} className="relative p-1">
               <FiShoppingBag size={22} className="text-white/90" />
-              {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand-secondary text-black text-[10px] font-bold rounded-full flex items-center justify-center">
-                  {totalItems}
-                </span>
-              )}
+              <AnimatePresence>
+                {totalItems > 0 && (
+                  <motion.span
+                    key={totalItems}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-white text-black text-[10px] font-bold rounded-full flex items-center justify-center shadow-[0_0_8px_rgba(255,255,255,0.4)] border border-black/10 z-10 px-0.5"
+                  >
+                    {totalItems}
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </Link>
           </div>
 
@@ -170,11 +179,20 @@ export default function Header() {
               title="Cart"
             >
               <FiShoppingBag size={28} />
-              {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-brand-secondary text-black text-[11px] font-bold rounded-full flex items-center justify-center animate-pulse">
-                  {totalItems}
-                </span>
-              )}
+              <AnimatePresence>
+                {totalItems > 0 && (
+                  <motion.span
+                    key={totalItems}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    className="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px] bg-white text-black text-[11px] font-bold rounded-full flex items-center justify-center shadow-[0_0_12px_rgba(255,255,255,0.6)] border border-black/10 z-10 px-0.5"
+                  >
+                    {totalItems}
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </Link>
           </div>
         </div>
