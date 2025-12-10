@@ -87,27 +87,12 @@ export default function Header() {
           <Link
             href="/shop"
             className="
-              relative
               uppercase
               tracking-[0.20em]
               transition-all duration-300
               text-white/60 hover:text-white
               text-[14px] xl:text-[15px]
               py-1.5
-              group
-              after:content-['']
-              after:absolute
-              after:bottom-0
-              after:left-0
-              after:w-0
-              after:h-[2px]
-              after:bg-gradient-to-r
-              after:from-brand-secondary
-              after:to-white
-              after:transition-all
-              after:duration-300
-              hover:after:w-full
-              hover:scale-105
             "
           >
             SHOP
@@ -115,27 +100,12 @@ export default function Header() {
           <Link
             href="/orders"
             className="
-              relative
               uppercase
               tracking-[0.20em]
               transition-all duration-300
               text-white/60 hover:text-white
               text-[14px] xl:text-[15px]
               py-1.5
-              group
-              after:content-['']
-              after:absolute
-              after:bottom-0
-              after:left-0
-              after:w-0
-              after:h-[2px]
-              after:bg-gradient-to-r
-              after:from-brand-secondary
-              after:to-white
-              after:transition-all
-              after:duration-300
-              hover:after:w-full
-              hover:scale-105
             "
           >
             ORDERS
@@ -143,27 +113,12 @@ export default function Header() {
           <Link
             href="/contact"
             className="
-              relative
               uppercase
               tracking-[0.20em]
               transition-all duration-300
               text-white/60 hover:text-white
               text-[14px] xl:text-[15px]
               py-1.5
-              group
-              after:content-['']
-              after:absolute
-              after:bottom-0
-              after:left-0
-              after:w-0
-              after:h-[2px]
-              after:bg-gradient-to-r
-              after:from-brand-secondary
-              after:to-white
-              after:transition-all
-              after:duration-300
-              hover:after:w-full
-              hover:scale-105
             "
           >
             CONTACT US
@@ -289,13 +244,6 @@ export default function Header() {
                   Orders
                 </Link>
 
-                <Link
-                  href="/contact"
-                  onClick={() => setOpen(false)}
-                  className="px-3 py-3 text-sm hover:text-white hover:bg-white/5 rounded-lg"
-                >
-                  Contact Us
-                </Link>
 
                 <Link
                   href="/profile"

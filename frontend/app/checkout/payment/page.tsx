@@ -1,0 +1,213 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCart } from "@/app/components/context/CartContext";
+import { useCheckout } from "@/app/components/context/CheckoutContext";
+import { FiCreditCard, FiTruck } from "react-icons/fi";
+import { motion } from "framer-motion";
+
+export default function PaymentPage() {
+    const router = useRouter();
+    const { totalPrice, clearCart } = useCart();
+    const { paymentMethod, setPaymentMethod, setOrderNumber, shippingData } = useCheckout();
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    // Check if shipping data is complete
+    const hasShippingData = shippingData.fullName && shippingData.email && shippingData.address;
+
+    if (!hasShippingData) {
+        router.push("/checkout/shipping");
+        return null;
+    }
+
+    const handlePlaceOrder = async () => {
+        setIsProcessing(true);
+
+        // Simulate payment processing
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Generate order number
+        const orderNum = `ORD-${Date.now().toString().slice(-8)}`;
+        setOrderNumber(orderNum);
+
+        // Simulate payment result (60% success, 20% pending, 20% failure)
+        const random = Math.random();
+        if (random > 0.8) {
+            router.push("/checkout/status/failure");
+        } else if (random > 0.6) {
+            router.push("/checkout/status/pending");
+        } else {
+            // Clear cart only on success
+            clearCart();
+            router.push("/checkout/status/success");
+        }
+    };
+
+    return (
+        <div className="min-h-screen brand-bg pt-[var(--header-height)] pb-20 sm:pb-24">
+            <div className="max-w-screen-xl mx-auto px-3 sm:px-4 md:px-6 lg:px-10">
+                <div className="py-4 sm:py-6 md:py-8">
+                    {/* Progress Indicator - Elite Mobile Responsive */}
+                    <div className="mb-6 sm:mb-8">
+                        <div className="flex items-center justify-between sm:justify-center gap-1.5 sm:gap-4 max-w-2xl mx-auto">
+                            {/* Step 1 - Completed */}
+                            <div className="flex items-center flex-shrink-0">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center text-xs sm:text-sm md:text-base font-medium">
+                                    ✓
+                                </div>
+                                <span className="ml-1.5 sm:ml-2 text-white/60 text-[10px] xs:text-xs sm:text-sm uppercase tracking-wider">Ship</span>
+                            </div>
+                            <div className="flex-1 h-px bg-white/40 min-w-[20px] max-w-[60px] sm:max-w-[80px]"></div>
+                            {/* Step 2 - Active */}
+                            <div className="flex items-center flex-shrink-0">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white text-black flex items-center justify-center text-xs sm:text-sm md:text-base font-medium shadow-lg">
+                                    2
+                                </div>
+                                <span className="ml-1.5 sm:ml-2 text-white text-[10px] xs:text-xs sm:text-sm uppercase tracking-wider font-medium">Pay</span>
+                            </div>
+                            <div className="flex-1 h-px bg-white/20 min-w-[20px] max-w-[60px] sm:max-w-[80px]"></div>
+                            {/* Step 3 */}
+                            <div className="flex items-center flex-shrink-0">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/10 border border-white/20 text-white/40 flex items-center justify-center text-xs sm:text-sm md:text-base font-medium">
+                                    3
+                                </div>
+                                <span className="ml-1.5 sm:ml-2 text-white/40 text-[10px] xs:text-xs sm:text-sm uppercase tracking-wider">Done</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="max-w-4xl mx-auto"
+                    >
+                        <h1 className="text-white text-xl sm:text-2xl md:text-3xl lg:text-4xl font-light mb-6 sm:mb-8 uppercase tracking-wide text-center sm:text-left">Payment Method</h1>
+
+                        <div className="space-y-4 sm:space-y-6">
+                            {/* Payment Methods */}
+                            <div className="p-4 sm:p-6 md:p-8 rounded-2xl luxury-glass border border-white/10">
+                                <h2 className="text-white text-base sm:text-lg md:text-xl font-light mb-4 sm:mb-6 uppercase tracking-wide">Select Payment Method</h2>
+
+                                <div className="space-y-3">
+                                    {/* Card Payment */}
+                                    <motion.button
+                                        whileHover={{ scale: 1.01 }}
+                                        whileTap={{ scale: 0.99 }}
+                                        onClick={() => setPaymentMethod("card")}
+                                        className={`w-full p-4 sm:p-5 rounded-xl border-2 transition-all flex items-center gap-3 sm:gap-4 min-h-[60px] sm:min-h-[68px] ${paymentMethod === "card"
+                                                ? "border-white bg-white/10 shadow-lg"
+                                                : "border-white/10 hover:border-white/30"
+                                            }`}
+                                    >
+                                        <FiCreditCard className="text-white text-xl sm:text-2xl flex-shrink-0" />
+                                        <span className="text-white text-sm sm:text-base font-medium">Credit/Debit Card</span>
+                                        {paymentMethod === "card" && (
+                                            <div className="ml-auto w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+                                                <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-black"></div>
+                                            </div>
+                                        )}
+                                    </motion.button>
+
+                                    {/* UPI Payment */}
+                                    <motion.button
+                                        whileHover={{ scale: 1.01 }}
+                                        whileTap={{ scale: 0.99 }}
+                                        onClick={() => setPaymentMethod("upi")}
+                                        className={`w-full p-4 sm:p-5 rounded-xl border-2 transition-all flex items-center gap-3 sm:gap-4 min-h-[60px] sm:min-h-[68px] ${paymentMethod === "upi"
+                                                ? "border-white bg-white/10 shadow-lg"
+                                                : "border-white/10 hover:border-white/30"
+                                            }`}
+                                    >
+                                        <span className="text-white text-xl sm:text-2xl flex-shrink-0">💳</span>
+                                        <span className="text-white text-sm sm:text-base font-medium">UPI</span>
+                                        {paymentMethod === "upi" && (
+                                            <div className="ml-auto w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+                                                <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-black"></div>
+                                            </div>
+                                        )}
+                                    </motion.button>
+
+                                    {/* Cash on Delivery */}
+                                    <motion.button
+                                        whileHover={{ scale: 1.01 }}
+                                        whileTap={{ scale: 0.99 }}
+                                        onClick={() => setPaymentMethod("cod")}
+                                        className={`w-full p-4 sm:p-5 rounded-xl border-2 transition-all flex items-center gap-3 sm:gap-4 min-h-[60px] sm:min-h-[68px] ${paymentMethod === "cod"
+                                                ? "border-white bg-white/10 shadow-lg"
+                                                : "border-white/10 hover:border-white/30"
+                                            }`}
+                                    >
+                                        <FiTruck className="text-white text-xl sm:text-2xl flex-shrink-0" />
+                                        <span className="text-white text-sm sm:text-base font-medium">Cash on Delivery</span>
+                                        {paymentMethod === "cod" && (
+                                            <div className="ml-auto w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+                                                <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-black"></div>
+                                            </div>
+                                        )}
+                                    </motion.button>
+                                </div>
+                            </div>
+
+                            {/* Shipping Info Summary */}
+                            <div className="p-4 sm:p-6 md:p-8 rounded-2xl luxury-glass border border-white/10">
+                                <h3 className="text-white text-base sm:text-lg font-light mb-3 sm:mb-4 uppercase tracking-wide">Shipping To</h3>
+                                <div className="text-white/70 text-xs sm:text-sm space-y-1">
+                                    <p className="text-white font-medium text-sm sm:text-base">{shippingData.fullName}</p>
+                                    <p>{shippingData.address}</p>
+                                    <p>{shippingData.city}, {shippingData.state} {shippingData.postalCode}</p>
+                                    <p>{shippingData.country}</p>
+                                    <p className="pt-2 border-t border-white/10 mt-2">{shippingData.email}</p>
+                                    <p>{shippingData.phone}</p>
+                                </div>
+                                <button
+                                    onClick={() => router.push("/checkout/shipping")}
+                                    className="mt-4 text-white/60 hover:text-white text-xs sm:text-sm uppercase tracking-wider transition-colors min-h-[44px] flex items-center"
+                                >
+                                    Edit Shipping Address →
+                                </button>
+                            </div>
+
+                            {/* Order Total */}
+                            <div className="p-4 sm:p-6 md:p-8 rounded-2xl luxury-glass border border-white/10">
+                                <h3 className="text-white text-base sm:text-lg font-light mb-3 sm:mb-4">Order Total</h3>
+                                <p className="text-white text-2xl sm:text-3xl md:text-4xl font-light">₹{totalPrice.toFixed(2)}</p>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4">
+                                <motion.button
+                                    whileHover={{ scale: 1.01 }}
+                                    whileTap={{ scale: 0.99 }}
+                                    onClick={() => router.push("/checkout/shipping")}
+                                    disabled={isProcessing}
+                                    className="py-4 sm:py-5 border-2 border-white/20 text-white rounded-full text-sm sm:text-base uppercase tracking-wider hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[52px] sm:min-h-[56px] order-2 xs:order-1"
+                                >
+                                    Back
+                                </motion.button>
+                                <motion.button
+                                    whileHover={{ scale: 1.01 }}
+                                    whileTap={{ scale: 0.99 }}
+                                    onClick={handlePlaceOrder}
+                                    disabled={isProcessing}
+                                    className="py-4 sm:py-5 bg-white text-black rounded-full text-sm sm:text-base uppercase tracking-wider font-medium hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[52px] sm:min-h-[56px] order-1 xs:order-2"
+                                >
+                                    {isProcessing ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
+                                            <span className="hidden xs:inline">Processing...</span>
+                                            <span className="xs:hidden">Wait...</span>
+                                        </span>
+                                    ) : (
+                                        "Place Order"
+                                    )}
+                                </motion.button>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+            </div>
+        </div>
+    );
+}

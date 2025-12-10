@@ -2,42 +2,21 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FiTrash2, FiMinus, FiPlus, FiShoppingBag } from "react-icons/fi";
+import { useRouter } from "next/navigation";
+import { FiTrash2, FiMinus, FiPlus } from "react-icons/fi";
 import { useCart } from "@/app/components/context/CartContext";
 import { motion } from "framer-motion";
-import ColorBadge from "@/app/components/ui/ColorBadge";
+import { EmptyCart } from "@/app/components/ui/EmptyState";
 
 export default function CartPage() {
+    const router = useRouter();
     const { items, removeFromCart, updateQuantity, totalPrice, totalItems } = useCart();
 
     if (items.length === 0) {
         return (
             <div className="min-h-screen brand-bg pb-24 pt-[var(--header-height)]">
                 <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10">
-                    {/* EMPTY STATE */}
-                    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5 }}
-                            className="luxury-glass p-12 rounded-2xl border border-white/10"
-                        >
-                            <FiShoppingBag className="w-16 h-16 text-white/40 mx-auto mb-4" />
-                            <h2 className="text-white text-2xl font-light mb-2">Your cart is empty</h2>
-                            <p className="text-white/60 text-sm mb-6">Add some luxury pieces to get started</p>
-                            <Link
-                                href="/shop"
-                                className="
-                  inline-block px-8 py-3 rounded-full
-                  bg-white text-black
-                  text-xs uppercase tracking-[0.18em] font-medium
-                  hover:bg-white/90 transition-colors
-                "
-                            >
-                                Continue Shopping
-                            </Link>
-                        </motion.div>
-                    </div>
+                    <EmptyCart />
                 </div>
             </div>
         );
@@ -199,6 +178,7 @@ export default function CartPage() {
                             </div>
 
                             <button
+                                onClick={() => router.push("/checkout")}
                                 className="
                   w-full py-4 rounded-full
                   bg-white text-black
