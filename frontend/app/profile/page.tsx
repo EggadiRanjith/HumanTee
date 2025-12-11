@@ -1,7 +1,9 @@
 "use client";
 
-import { FiUser, FiMapPin, FiLogOut, FiChevronRight } from "react-icons/fi";
+import { FiMapPin, FiLogOut, FiChevronRight, FiUser } from "react-icons/fi";
 import Link from "next/link";
+import { ProfileHeader } from "@/app/components/ui/profile";
+import { GradientOverlay } from "@/app/components/ui/layout";
 
 export default function ProfilePage() {
   const menuItems = [
@@ -11,9 +13,11 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen brand-bg pb-24 pt-[var(--header-height)]">
-      <div className="max-w-screen-md mx-auto px-4 sm:px-6 md:px-8 pt-12">
+      <GradientOverlay variant="violet" />
 
-        {/* PAGE TITLE */}
+      <div className="relative max-w-screen-md mx-auto px-4 sm:px-6 md:px-8 pt-12">
+
+        {/* Page Title */}
         <div className="mb-12">
           <h1
             className="
@@ -36,52 +40,10 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        {/* USER CARD */}
-        <div
-          className="
-            p-5 sm:p-6 rounded-2xl luxury-glass
-            border border-white/10 bg-white/5 backdrop-blur-xl
-            flex items-center gap-5 mb-12
-          "
-        >
-          {/* Avatar */}
-          <div
-            className="
-              w-16 h-16 sm:w-20 sm:h-20 rounded-full luxury-glass
-              border border-white/10
-              bg-gradient-to-br from-brand-primary/40 to-brand-secondary/40
-              flex items-center justify-center
-            "
-          >
-            <FiUser className="w-7 h-7 text-white" />
-          </div>
+        {/* User Card */}
+        <ProfileHeader name="John Doe" memberSince="2024" />
 
-          {/* User Info */}
-          <div className="flex-1">
-            <h2 className="text-white text-[16px] sm:text-[18px] font-light">
-              John Doe
-            </h2>
-            <p className="text-white/50 text-[11px] sm:text-[12px] mt-1">
-              Premium Member · Since 2024
-            </p>
-          </div>
-
-          {/* Edit */}
-          <Link
-            href="/profile/personal"
-            className="
-              hidden sm:block px-5 py-2 text-[10px]
-              uppercase tracking-[0.22em]
-              rounded-xl luxury-glass border border-white/10
-              text-white/70 hover:text-white hover:bg-white/10
-              transition-colors
-            "
-          >
-            Edit
-          </Link>
-        </div>
-
-        {/* MENU LIST */}
+        {/* Menu List */}
         <div className="space-y-3">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -117,7 +79,7 @@ export default function ProfilePage() {
           })}
         </div>
 
-        {/* LOGOUT */}
+        {/* Logout */}
         <div className="mt-12">
           <button
             className="
