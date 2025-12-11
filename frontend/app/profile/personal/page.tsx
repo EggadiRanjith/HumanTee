@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { FiX } from "react-icons/fi";
 import Link from "next/link";
+import { GradientOverlay } from "@/app/components/ui/layout";
 
 export default function PersonalInformationPage() {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,6 +18,7 @@ export default function PersonalInformationPage() {
 
   return (
     <div className="min-h-screen brand-bg px-4 sm:px-6 md:px-8 pb-24 pt-[calc(var(--header-height)+3rem)]">
+      <GradientOverlay variant="violet" />
 
       <div className="max-w-screen-sm mx-auto">
 

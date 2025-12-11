@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { FiX } from "react-icons/fi";
+import { GradientOverlay } from "@/app/components/ui/layout";
 
 /* --------------------------
    ADDRESS TYPE
@@ -152,6 +153,7 @@ export default function ShippingAddressesPage() {
 
   return (
     <div className="min-h-screen brand-bg px-4 sm:px-6 md:px-8 pb-24 pt-[calc(var(--header-height)+3rem)]">
+      <GradientOverlay variant="violet" />
       <div className="max-w-screen-md mx-auto">
         {/* HEADER */}
         <div className="mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
