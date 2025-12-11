@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/app/components/context/CartContext";
 import { useCheckout } from "@/app/components/context/CheckoutContext";
 import { useLoading } from "@/app/components/context/LoadingContext";
+import { CheckoutProgress } from "@/app/components/ui/checkout";
+import { GradientOverlay } from "@/app/components/ui/layout";
 import { FiCreditCard, FiTruck } from "react-icons/fi";
 import { motion } from "framer-motion";
 
@@ -50,36 +52,12 @@ export default function PaymentPage() {
 
     return (
         <div className="min-h-screen brand-bg pt-[var(--header-height)] pb-8 sm:pb-16">
-            <div className="max-w-screen-xl mx-auto px-3 sm:px-6 md:px-8 lg:px-10">
+            <GradientOverlay variant="violet" />
+
+            <div className="relative max-w-screen-xl mx-auto px-3 sm:px-6 md:px-8 lg:px-10">
                 <div className="py-8 sm:py-10 md:py-12">
-                    {/* Progress Indicator - Elite Mobile Responsive */}
-                    <div className="mb-4 sm:mb-6">
-                        <div className="flex items-center justify-between sm:justify-center gap-1 sm:gap-4 max-w-2xl mx-auto">
-                            {/* Step 1 - Completed */}
-                            <div className="flex items-center flex-shrink-0">
-                                <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center text-xs sm:text-sm md:text-base font-medium">
-                                    ✓
-                                </div>
-                                <span className="ml-1.5 sm:ml-2 text-white/60 text-[10px] xs:text-xs sm:text-sm uppercase tracking-wider">Ship</span>
-                            </div>
-                            <div className="flex-1 h-px bg-white/40 min-w-[20px] max-w-[60px] sm:max-w-[80px]"></div>
-                            {/* Step 2 - Active */}
-                            <div className="flex items-center flex-shrink-0">
-                                <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white text-black flex items-center justify-center text-xs sm:text-sm md:text-base font-medium shadow-lg">
-                                    2
-                                </div>
-                                <span className="ml-1.5 sm:ml-2 text-white text-[10px] xs:text-xs sm:text-sm uppercase tracking-wider font-medium">Pay</span>
-                            </div>
-                            <div className="flex-1 h-px bg-white/20 min-w-[20px] max-w-[60px] sm:max-w-[80px]"></div>
-                            {/* Step 3 */}
-                            <div className="flex items-center flex-shrink-0">
-                                <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/10 border border-white/20 text-white/40 flex items-center justify-center text-xs sm:text-sm md:text-base font-medium">
-                                    3
-                                </div>
-                                <span className="ml-1.5 sm:ml-2 text-white/40 text-[10px] xs:text-xs sm:text-sm uppercase tracking-wider">Done</span>
-                            </div>
-                        </div>
-                    </div>
+                    {/* Progress Indicator */}
+                    <CheckoutProgress currentStep={2} />
 
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCheckout } from "@/app/components/context/CheckoutContext";
+import { GradientOverlay } from "@/app/components/ui/layout";
 import { FiCheck } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -94,6 +95,7 @@ export default function SuccessPage() {
                 transition={{ duration: 0.5 }}
                 className="min-h-screen brand-bg pt-[calc(var(--header-height)+3rem)] pb-12 sm:pb-20"
             >
+                <GradientOverlay variant="violet" />
                 <div className="max-w-screen-xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
                     <div className="py-6 sm:py-10 md:py-12 max-w-3xl mx-auto">
                         <motion.div
