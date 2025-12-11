@@ -298,6 +298,8 @@ export const LaserFlow: React.FC<Props> = ({
     const pausedRef = useRef<boolean>(false);
     const inViewRef = useRef<boolean>(true);
 
+    if (typeof window === 'undefined') return null;
+
     const hexToRGB = (hex: string) => {
         let c = hex.trim();
         if (c[0] === '#') c = c.slice(1);

@@ -2,26 +2,27 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
-import Lottie from "lottie-react";
+import dynamic from "next/dynamic";
 import comingSoonAnimation from "@/public/animation/lottie/system-animation/comingsoon.json";
+
+// Dynamic import to prevent SSR issues with lottie-react
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 /* ------------------------------------------------------------
    Lottie Coming Soon Animation
 ------------------------------------------------------------ */
-function ComingSoonTitle() {
+function BigComingSoon() {
   return (
-    <div className="w-full max-w-lg mx-auto">
-      <Lottie
-        animationData={comingSoonAnimation}
-        loop={true}
-        className="w-full h-auto"
-      />
-    </div>
+    <Lottie
+      animationData={comingSoonAnimation}
+      loop={true}
+      className="w-full h-auto max-w-2xl mx-auto"
+    />
   );
 }
 
 /* ------------------------------------------------------------
-   Main Page — Cinematic Coming Soon (Monochrome)
+   Main Page
 ------------------------------------------------------------ */
 export default function ComingSoon() {
   useEffect(() => {
@@ -65,7 +66,7 @@ export default function ComingSoon() {
       <div className="relative z-20 flex flex-col items-center text-center px-4 xs:px-5 sm:px-6 max-w-3xl w-full">
 
         {/* Cinematic COMING SOON */}
-        <ComingSoonTitle />
+        <BigComingSoon />
 
         {/* Underline */}
         <div

@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiMail, FiLock, FiEye, FiEyeOff, FiUser, FiArrowRight } from "react-icons/fi";
-import { LaserFlow } from "../components/ui/LaserFlow";
+import dynamic from "next/dynamic";
+
+// Dynamic import with ssr: false to prevent Three.js from loading on server
+const LaserFlow = dynamic(
+    () => import("../components/ui/LaserFlow").then(mod => ({ default: mod.LaserFlow })),
+    { ssr: false }
+);
 
 export default function LoginPage() {
     const [isLogin, setIsLogin] = useState(true);

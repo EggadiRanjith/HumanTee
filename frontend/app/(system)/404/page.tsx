@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
-import Lottie from "lottie-react";
+import dynamic from "next/dynamic";
 import error404Animation from "@/public/animation/lottie/system-animation/Error404.json";
+
+// Dynamic import to prevent SSR issues with lottie-react
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 /* ------------------------------------------------------------
    Lottie 404 Animation
