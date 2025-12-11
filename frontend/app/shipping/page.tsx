@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { GradientOverlay } from "@/app/components/ui/layout";
 
 const shippingSections = [
   {
@@ -60,7 +61,8 @@ const shippingSections = [
 export default function ShippingPolicyPage() {
   return (
     <div className="min-h-screen brand-bg pb-24 pt-[var(--header-height)]">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-12">
+      <GradientOverlay variant="violet" />
+      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-12">
 
         {/* PAGE HEADER */}
         <header className="pt-12 sm:pt-16 lg:pt-24 mb-14">
