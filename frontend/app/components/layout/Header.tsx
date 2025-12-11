@@ -70,6 +70,9 @@ export default function Header() {
             setOpen(!open);
           }}
           className="md:hidden p-2 text-white/80 active:scale-95"
+          aria-label="Navigation menu"
+          aria-expanded={open}
+          aria-controls="mobile-nav"
         >
           {open ? <FiX size={22} /> : <FiMenu size={22} />}
         </button>
@@ -138,7 +141,12 @@ export default function Header() {
             <Link href="/profile" onClick={(e) => e.stopPropagation()}>
               <FiUser size={22} className="text-white/90" />
             </Link>
-            <Link href="/cart" onClick={(e) => e.stopPropagation()} className="relative p-1">
+            <Link
+              href="/cart"
+              onClick={(e) => e.stopPropagation()}
+              className="relative p-1"
+              aria-label={`Shopping cart with ${totalItems} ${totalItems === 1 ? 'item' : 'items'}`}
+            >
               <FiShoppingBag size={22} className="text-white/90" />
               <AnimatePresence>
                 {totalItems > 0 && (
@@ -149,12 +157,19 @@ export default function Header() {
                     exit={{ scale: 0, opacity: 0 }}
                     transition={{ type: "spring", stiffness: 400, damping: 20 }}
                     className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-white text-black text-[10px] font-bold rounded-full flex items-center justify-center shadow-[0_0_8px_rgba(255,255,255,0.4)] border border-black/10 z-10 px-0.5"
+                    role="status"
+                    aria-live="polite"
                   >
                     {totalItems}
                   </motion.span>
                 )}
               </AnimatePresence>
             </Link>
+
+            {/* Screen reader announcement for cart updates */}
+            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+              {totalItems > 0 && `${totalItems} ${totalItems === 1 ? 'item' : 'items'} in shopping cart`}
+            </div>
           </div>
 
           {/* Desktop Nav - Profile & Cart Icons */}
@@ -228,6 +243,7 @@ export default function Header() {
             {/* SLIDE DOWN MENU */}
             <motion.div
               key="drawer"
+              id="mobile-nav"
               onClick={stop}
               initial={{ opacity: 0, y: -24 }}
               animate={{ opacity: 1, y: 0 }}
@@ -242,7 +258,7 @@ export default function Header() {
                 bg-brand-bg/90
               "
             >
-              <nav className="flex flex-col gap-2 text-white/85">
+              <nav className="flex flex-col gap-2 text-white/85" role="navigation" aria-label="Mobile navigation menu">
 
                 <Link
                   href="/"

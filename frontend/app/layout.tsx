@@ -117,6 +117,23 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${geist.variable} ${tanPearl.variable} ${zalandoSans.variable} ${meddon.variable} ${bonheurRoyale.variable} ${benzin.variable}`}>
+      <head>
+        {/* Preload critical fonts for faster FCP */}
+        <link
+          rel="preload"
+          href="/fonts/geist/Geist-Regular.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+
+        {/* Preconnect to external domains */}
+        <link rel="preconnect" href="https://images.unsplash.com" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+
+        {/* Preload hero video poster for better LCP */}
+        <link rel="preload" href="/images/hero-poster.jpg" as="image" />
+      </head>
       <body className="min-h-screen bg-brand-bg text-brand-text antialiased font-geist overflow-x-hidden">
 
         {/* Client providers moved OUT of layout for performance */}

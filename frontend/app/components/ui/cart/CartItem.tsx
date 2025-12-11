@@ -23,8 +23,8 @@ interface CartItemType {
 interface CartItemProps {
     item: CartItemType;
     index: number;
-    onUpdateQuantity: (id: number, quantity: number) => void;
-    onRemove: (id: number) => void;
+    onUpdateQuantity: (id: number, size: string, quantity: number) => void;
+    onRemove: (id: number, size?: string) => void;
 }
 
 export function CartItem({ item, index, onUpdateQuantity, onRemove }: CartItemProps) {
@@ -74,7 +74,7 @@ export function CartItem({ item, index, onUpdateQuantity, onRemove }: CartItemPr
                     {/* Quantity Controls */}
                     <div className="flex items-center gap-3">
                         <button
-                            onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                            onClick={() => onUpdateQuantity(item.id, item.size || '', item.quantity - 1)}
                             className="
                 w-8 h-8 rounded-lg luxury-glass border border-white/10
                 text-white/70 hover:text-white hover:bg-white/10
@@ -89,7 +89,7 @@ export function CartItem({ item, index, onUpdateQuantity, onRemove }: CartItemPr
                         </span>
 
                         <button
-                            onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                            onClick={() => onUpdateQuantity(item.id, item.size || '', item.quantity + 1)}
                             className="
                 w-8 h-8 rounded-lg luxury-glass border border-white/10
                 text-white/70 hover:text-white hover:bg-white/10
@@ -116,7 +116,7 @@ export function CartItem({ item, index, onUpdateQuantity, onRemove }: CartItemPr
 
             {/* Remove Button */}
             <button
-                onClick={() => onRemove(item.id)}
+                onClick={() => onRemove(item.id, item.size)}
                 className="
           self-start p-2 rounded-lg
           text-white/40 hover:text-red-400 hover:bg-red-500/10

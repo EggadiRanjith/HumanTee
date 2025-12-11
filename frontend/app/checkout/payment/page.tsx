@@ -26,25 +26,45 @@ export default function PaymentPage() {
     }
 
     const handlePlaceOrder = async () => {
+        if (!paymentMethod) {
+            alert("Please select a payment method");
+            return;
+        }
+
         setIsProcessing(true);
 
-        // Simulate payment processing
+        // Simulate payment processing delay
         await new Promise(resolve => setTimeout(resolve, 2000));
 
+        // Check demo mode
+        const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+
         // Generate order number
-        const orderNum = `ORD-${Date.now().toString().slice(-8)}`;
+        const orderNum = demoMode
+            ? `DEMO-${Date.now().toString().slice(-8)}`
+            : `ORD-${Date.now().toString().slice(-8)}`;
         setOrderNumber(orderNum);
 
-        // Simulate payment result (60% success, 20% pending, 20% failure)
-        const random = Math.random();
         setLoading(true); // Trigger global loader before redirect
 
+        if (demoMode) {
+            // ✅ DEMO MODE: Always succeed for client presentations
+            clearCart();
+            router.push("/checkout/status/success");
+            return;
+        }
+
+        // ✅ NORMAL MODE: Random outcomes (for testing)
+        const random = Math.random();
+
         if (random > 0.8) {
+            // 20% failure
             router.push("/checkout/status/failure");
         } else if (random > 0.6) {
+            // 20% pending
             router.push("/checkout/status/pending");
         } else {
-            // Clear cart only on success
+            // 60% success
             clearCart();
             router.push("/checkout/status/success");
         }

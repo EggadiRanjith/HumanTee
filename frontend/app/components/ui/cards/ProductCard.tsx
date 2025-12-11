@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { memo } from 'react';
 import { Product } from '@/app/types/product.types';
 import { Badge, StockIndicator } from '@/app/components/ui/primitives';
+import { getImagePlaceholder } from '@/app/lib/image-placeholders';
 
 
 interface ProductCardProps {
@@ -45,10 +46,12 @@ const ProductCard = ({
                     fill
                     priority={priority}
                     sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    placeholder="blur"
+                    blurDataURL={getImagePlaceholder(product.image)}
                     className="
-            object-cover motion-luxury-slow 
-            group-hover:scale-[1.05]
-          "
+                object-cover motion-luxury-slow
+                group-hover:scale-[1.05]
+                "
                 />
 
                 {/* Badge */}

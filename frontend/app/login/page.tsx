@@ -21,7 +21,7 @@ export default function LoginPage() {
 
         if (!formData.email.trim()) {
             newErrors.email = "Email is required";
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+        } else if (!/\S+@\S+\.\S/.test(formData.email)) {
             newErrors.email = "Invalid email format";
         }
 
@@ -47,7 +47,7 @@ export default function LoginPage() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (validateForm()) {
-            console.log("Form submitted:", formData);
+            // Form submitted - handle authentication here
             // Authentication logic will be added during integration
         }
     };

@@ -16,15 +16,18 @@ import { HERO_SLIDE_INTERVAL } from '@/app/constants/animations.constants';
 const Hero = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [videoHasPlayed, setVideoHasPlayed] = useState(false);
+  const [videoError, setVideoError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const shouldReduceMotion = useReducedMotion();
+  const shouldReducedMotion = useReducedMotion();
 
   // Restart video when slide becomes active
   useEffect(() => {
     if (currentImageIndex === 0 && videoRef.current && !videoHasPlayed) {
       const video = videoRef.current;
       video.currentTime = 0;
-      video.play().catch(e => console.log("Video play failed:", e));
+      video.play().catch(() => {
+        setVideoError(true);
+      });
     }
   }, [currentImageIndex, videoHasPlayed]);
 
@@ -60,7 +63,7 @@ const Hero = () => {
           initial={{ opacity: 0, scale: 1, filter: "blur(10px)" }}
           animate={{
             opacity: currentImageIndex === index ? 1 : 0,
-            scale: shouldReduceMotion ? 1 : (currentImageIndex === index ? (index % 2 === 0 ? 1.05 : 1) : (index % 2 === 0 ? 1 : 1.05)),
+            scale: shouldReducedMotion ? 1 : (currentImageIndex === index ? (index % 2 === 0 ? 1.05 : 1) : (index % 2 === 0 ? 1 : 1.05)),
             filter: currentImageIndex === index ? "blur(0px)" : "blur(10px)"
           }}
           transition={{
@@ -76,26 +79,38 @@ const Hero = () => {
           }}
         >
           {slide.type === "video" ? (
-            <video
-              ref={index === 0 ? videoRef : undefined}
-              src={slide.video}
-              autoPlay
-              muted
-              playsInline
-              className="w-full h-full object-cover object-center"
-              style={{
-                filter: "contrast(1.15) saturate(1.3) brightness(1.05) sharpness(1.1)",
-                transform: "scale(1.05) translateZ(0)",
-                willChange: "transform",
-                backfaceVisibility: "hidden",
-                WebkitFontSmoothing: "antialiased",
-                WebkitBackfaceVisibility: "hidden",
-              }}
-              preload="metadata"
-              onError={(e) => {
-                console.error("Video failed to load:", e);
-              }}
-            />
+            <>
+              <video
+                ref={index === 0 ? videoRef : undefined}
+                src={slide.video}
+                poster="/images/hero-poster.jpg"
+                autoPlay
+                muted
+                playsInline
+                className={`w-full h-full object-cover object-center ${videoError ? 'hidden' : ''}`}
+                style={{
+                  filter: "contrast(1.15) saturate(1.3) brightness(1.05) sharpness(1.1)",
+                  transform: "scale(1.05) translateZ(0)",
+                  willChange: "transform",
+                  backfaceVisibility: "hidden",
+                  WebkitFontSmoothing: "antialiased",
+                  WebkitBackfaceVisibility: "hidden",
+                }}
+                preload="metadata"
+                onError={() => {
+                  setVideoError(true);
+                }}
+              />
+              {videoError && (
+                <Image
+                  src="/images/hero-fallback.jpg"
+                  alt="HumanTee Collection"
+                  fill
+                  className="object-cover object-center"
+                  priority
+                />
+              )}
+            </>
           ) : (
             <>
               {/* Mobile Image - shown on screens < 768px */}
@@ -129,7 +144,7 @@ const Hero = () => {
             </>
           )}
           {/* Dark overlay for better text readability */}
-          <div className="absolute inset-0 bg-black/30" />
+          <div className="absolute inset-0 bg-black/50" />
         </motion.div>
       ))}
 
@@ -164,7 +179,8 @@ const Hero = () => {
                         style={{
                           fontFamily: "var(--font-zalando-sans)",
                           fontOpticalSizing: 'auto',
-                          fontWeight: 700
+                          fontWeight: 700,
+                          textShadow: '0 2px 8px rgba(0, 0, 0, 0.8), 0 4px 16px rgba(0, 0, 0, 0.6)'
                         }}
                       >
                         {slide.heading}
@@ -180,7 +196,8 @@ const Hero = () => {
                         style={{
                           fontFamily: "var(--font-zalando-sans)",
                           fontOpticalSizing: 'auto',
-                          fontWeight: 700
+                          fontWeight: 700,
+                          textShadow: '0 2px 8px rgba(0, 0, 0, 0.8), 0 4px 16px rgba(0, 0, 0, 0.6)'
                         }}
                       >
                         {slide.subheading1}

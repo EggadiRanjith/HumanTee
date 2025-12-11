@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/app/components/context/CartContext";
 import { useLoading } from "@/app/components/context/LoadingContext";
@@ -10,14 +10,18 @@ export default function CheckoutPage() {
     const router = useRouter();
     const { items } = useCart();
     const { setLoading } = useLoading();
+    const hasRedirected = useRef(false);
 
     useEffect(() => {
-        // Redirect to shipping page as the entry point
-        if (items.length > 0) {
+        // Redirect to shipping page ONCE on mount only
+        if (items.length > 0 && !hasRedirected.current) {
+            hasRedirected.current = true;
             setLoading(true);
             router.push("/checkout/shipping");
         }
-    }, [items, router, setLoading]);
+        // Only run on mount, not on items change
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     if (items.length === 0) {
         return (

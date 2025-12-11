@@ -1,10 +1,12 @@
 "use client";
 
 import { Hero } from "./components/sections";
-import { IntroLoader } from "./components/ui/loaders";
 import { useState, useEffect, lazy, Suspense } from "react";
 import { useLoading } from "./components/context/LoadingContext";
 import { INTRO_DURATION } from "./constants/animations.constants";
+
+// Lazy load IntroLoader (only loads on first visit)
+const IntroLoader = lazy(() => import('./components/ui/loaders').then(m => ({ default: m.IntroLoader })));
 
 // Lazy load below-fold sections for better performance
 const FeaturedProducts = lazy(() => import('./components/sections').then(m => ({ default: m.FeaturedProducts })));
@@ -43,11 +45,13 @@ export default function Home() {
     return (
         <>
             {showIntro && (
-                <IntroLoader
-                    duration={INTRO_DURATION}
-                    variant="cinematic"
-                    onComplete={handleIntroComplete}
-                />
+                <Suspense fallback={null}>
+                    <IntroLoader
+                        duration={INTRO_DURATION}
+                        variant="cinematic"
+                        onComplete={handleIntroComplete}
+                    />
+                </Suspense>
             )}
 
             {/* Hide all content until intro is complete */}

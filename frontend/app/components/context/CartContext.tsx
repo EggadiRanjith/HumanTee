@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect, useRef } from "react";
 
 export interface CartItem {
   id: number;
@@ -15,8 +15,8 @@ export interface CartItem {
 interface CartContextType {
   items: CartItem[];
   addToCart: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
-  removeFromCart: (id: number) => void;
-  updateQuantity: (id: number, quantity: number) => void;
+  removeFromCart: (id: number, size?: string) => void;
+  updateQuantity: (id: number, size: string, quantity: number) => void;
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
@@ -34,14 +34,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
       try {
         setItems(JSON.parse(savedCart));
       } catch (e) {
-        console.error("Failed to load cart from localStorage", e);
+        // Failed to load cart - start fresh
       }
     }
   }, []);
 
-  // Save cart to localStorage whenever it changes
+  // Debounced save to localStorage (batches writes every 500ms)
   useEffect(() => {
-    localStorage.setItem("humantee-cart", JSON.stringify(items));
+    const timeoutId = setTimeout(() => {
+      localStorage.setItem("humantee-cart", JSON.stringify(items));
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
   }, [items]);
 
   const addToCart = (item: Omit<CartItem, "quantity"> & { quantity?: number }) => {
@@ -66,17 +70,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const removeFromCart = (id: number) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+  const removeFromCart = (id: number, size?: string) => {
+    setItems((prev) => prev.filter((item) =>
+      !(item.id === id && (!size || item.size === size))
+    ));
   };
 
-  const updateQuantity = (id: number, quantity: number) => {
+  const updateQuantity = (id: number, size: string, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(id);
+      removeFromCart(id, size);
       return;
     }
     setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, quantity } : item))
+      prev.map((item) =>
+        (item.id === id && item.size === size)
+          ? { ...item, quantity }
+          : item
+      )
     );
   };
 

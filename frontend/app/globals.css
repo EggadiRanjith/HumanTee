@@ -669,3 +669,41 @@ body.drawer-open {
     display: none !important;
   }
 }
+/* ============================================
+   FOCUS STYLES (Accessibility - Keyboard Navigation)
+   ============================================ */
+
+/* Remove default outline */
+*:focus {
+  outline: none;
+}
+
+/* Visible focus indicator for keyboard navigation */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role='button']:focus-visible,
+[role='link']:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Special focus for form inputs */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline-color: var(--accent-violet);
+  outline-offset: 0;
+  border-radius: 8px;
+}
+
+/* Focus for custom styled elements */
+.luxury-glass:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(70, 230, 255, 0.15);
+}
