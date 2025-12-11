@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/app/components/context/CartContext";
 import { useCheckout } from "@/app/components/context/CheckoutContext";
 import { useLoading } from "@/app/components/context/LoadingContext";
-import Image from "next/image";
+import { CheckoutProgress, OrderSummaryCheckout } from "@/app/components/ui/checkout";
+import { GradientOverlay } from "@/app/components/ui/layout";
 import { motion } from "framer-motion";
 
 export default function ShippingPage() {
@@ -57,36 +58,12 @@ export default function ShippingPage() {
 
     return (
         <div className="min-h-screen brand-bg pt-[var(--header-height)] pb-8 sm:pb-16">
-            <div className="max-w-screen-xl mx-auto px-3 sm:px-6 md:px-8 lg:px-10">
+            <GradientOverlay variant="violet" />
+
+            <div className="relative max-w-screen-xl mx-auto px-3 sm:px-6 md:px-8 lg:px-10">
                 <div className="py-8 sm:py-10 md:py-12">
-                    {/* Progress Indicator - Elite Mobile Responsive */}
-                    <div className="mb-4 sm:mb-6">
-                        <div className="flex items-center justify-between sm:justify-center gap-1 sm:gap-4 max-w-2xl mx-auto">
-                            {/* Step 1 - Active */}
-                            <div className="flex items-center flex-shrink-0">
-                                <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white text-black flex items-center justify-center text-xs sm:text-sm md:text-base font-medium shadow-lg">
-                                    1
-                                </div>
-                                <span className="ml-1.5 sm:ml-2 text-white text-[10px] xs:text-xs sm:text-sm uppercase tracking-wider font-medium">Ship</span>
-                            </div>
-                            <div className="flex-1 h-px bg-white/20 min-w-[20px] max-w-[60px] sm:max-w-[80px]"></div>
-                            {/* Step 2 */}
-                            <div className="flex items-center flex-shrink-0">
-                                <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/10 border border-white/20 text-white/40 flex items-center justify-center text-xs sm:text-sm md:text-base font-medium">
-                                    2
-                                </div>
-                                <span className="ml-1.5 sm:ml-2 text-white/40 text-[10px] xs:text-xs sm:text-sm uppercase tracking-wider">Pay</span>
-                            </div>
-                            <div className="flex-1 h-px bg-white/20 min-w-[20px] max-w-[60px] sm:max-w-[80px]"></div>
-                            {/* Step 3 */}
-                            <div className="flex items-center flex-shrink-0">
-                                <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/10 border border-white/20 text-white/40 flex items-center justify-center text-xs sm:text-sm md:text-base font-medium">
-                                    3
-                                </div>
-                                <span className="ml-1.5 sm:ml-2 text-white/40 text-[10px] xs:text-xs sm:text-sm uppercase tracking-wider">Done</span>
-                            </div>
-                        </div>
-                    </div>
+                    {/* Progress Indicator */}
+                    <CheckoutProgress currentStep={1} />
 
                     <h1 className="text-white text-base sm:text-lg md:text-xl lg:text-2xl font-light mb-3 sm:mb-5 uppercase tracking-wide text-center sm:text-left">Shipping Address</h1>
 
@@ -218,48 +195,8 @@ export default function ShippingPage() {
                             </div>
                         </motion.div>
 
-                        {/* Order Summary - Sticky on Desktop, Fixed on Mobile */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.1 }}
-                            className="lg:col-span-1"
-                        >
-                            <div className="p-3 sm:p-5 rounded-lg sm:rounded-xl luxury-glass border border-white/10 lg:sticky lg:top-24">
-                                <h2 className="text-white text-sm sm:text-base font-light mb-3 sm:mb-4 uppercase tracking-wide">Order Summary</h2>
-
-                                <div className="space-y-3 mb-6 max-h-[200px] sm:max-h-60 overflow-y-auto">
-                                    {items.map((item) => (
-                                        <div key={`${item.id}-${item.size}`} className="flex gap-3">
-                                            <div className="relative w-14 h-16 sm:w-16 sm:h-20 rounded overflow-hidden flex-shrink-0">
-                                                <Image src={item.image} alt={item.title} fill className="object-cover" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-white text-xs sm:text-sm truncate">{item.title}</p>
-                                                <p className="text-white/60 text-[10px] sm:text-xs">Size: {item.size}</p>
-                                                <p className="text-white/60 text-[10px] sm:text-xs">Qty: {item.quantity}</p>
-                                            </div>
-                                            <p className="text-white text-xs sm:text-sm font-medium">{item.price}</p>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="border-t border-white/10 pt-4 space-y-2">
-                                    <div className="flex justify-between text-xs sm:text-sm">
-                                        <span className="text-white/60">Subtotal</span>
-                                        <span className="text-white">₹{totalPrice.toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex justify-between text-xs sm:text-sm">
-                                        <span className="text-white/60">Shipping</span>
-                                        <span className="text-white">Free</span>
-                                    </div>
-                                    <div className="flex justify-between text-base sm:text-lg font-light pt-2 border-t border-white/10">
-                                        <span className="text-white">Total</span>
-                                        <span className="text-white font-medium">₹{totalPrice.toFixed(2)}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
+                        {/* Order Summary */}
+                        <OrderSummaryCheckout items={items} totalPrice={totalPrice} />
                     </div>
                 </div>
             </div>
