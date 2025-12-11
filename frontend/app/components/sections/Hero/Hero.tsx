@@ -1,62 +1,23 @@
+/**
+ * Hero Section
+ * Main hero carousel with video and image slides
+ * Refactored to use centralized data and constants
+ */
+
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-
-// Type definitions for hero slides
-type VideoSlide = {
-  type: "video";
-  video: string;
-  heading?: string;
-  subheading?: string;
-  subheading1?: string;
-  buttonText?: string;
-};
-
-type ImageSlide = {
-  type: "image";
-  image: string;
-  mobileImage?: string; // Optional mobile-specific image
-  heading: string;
-  subheading1: string;
-  subheading2: string;
-  buttonText: string;
-};
-
-type HeroSlide = VideoSlide | ImageSlide;
-
-// Hero slide data with individual content for each image/video
-const heroSlides = [
-  {
-    type: "video" as const,
-    video: "/video/introvideo.mp4"
-  },
-  {
-    type: "image" as const,
-    image: "/images/banner1.png",
-    mobileImage: "/images/banner1-mobile.png",
-    heading: "Years Of Legacy",
-    subheading1: "Since 1931",
-    subheading2: "Available in all sizes",
-    buttonText: "Shop Now"
-  },
-  {
-    type: "image" as const,
-    image: "/images/banner2.png",
-    mobileImage: "/images/banner2mobile.png",
-    heading: "Apart from beginning",
-    subheading1: "Available in all sizes",
-    subheading2: "",
-    buttonText: "Shop Now"
-  }
-];
+import { heroSlides, HeroSlide } from '@/app/data/hero-slides.data';
+import { HERO_SLIDE_INTERVAL } from '@/app/constants/animations.constants';
 
 const Hero = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [videoHasPlayed, setVideoHasPlayed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const shouldReduceMotion = useReducedMotion();
 
   // Restart video when slide becomes active
   useEffect(() => {
@@ -67,13 +28,14 @@ const Hero = () => {
     }
   }, [currentImageIndex, videoHasPlayed]);
 
+  // Auto-advance slides
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => {
         // After video plays once, mark it as played and move to first banner
         if (prevIndex === 0 && !videoHasPlayed) {
           setVideoHasPlayed(true);
-          return 1; // Move to banner1
+          return 1;
         }
         // After video has played, alternate between banner1 (index 1) and banner2 (index 2)
         if (videoHasPlayed) {
@@ -81,12 +43,16 @@ const Hero = () => {
         }
         return prevIndex;
       });
-    }, 6000); // Change slide every 6 seconds
+    }, HERO_SLIDE_INTERVAL);
 
     return () => clearInterval(interval);
   }, [videoHasPlayed]);
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden -mt-[var(--header-height)] pt-[var(--header-height)] px-6">
+    <section
+      className="relative min-h-screen flex items-center justify-center overflow-hidden -mt-[var(--header-height)] pt-[var(--header-height)] px-6"
+      aria-label="Hero Carousel"
+    >
       {/* Media layers - crossfade transition with zoom effects */}
       {heroSlides.map((slide, index) => (
         <motion.div
@@ -94,7 +60,7 @@ const Hero = () => {
           initial={{ opacity: 0, scale: 1, filter: "blur(10px)" }}
           animate={{
             opacity: currentImageIndex === index ? 1 : 0,
-            scale: currentImageIndex === index ? (index % 2 === 0 ? 1.05 : 1) : (index % 2 === 0 ? 1 : 1.05),
+            scale: shouldReduceMotion ? 1 : (currentImageIndex === index ? (index % 2 === 0 ? 1.05 : 1) : (index % 2 === 0 ? 1 : 1.05)),
             filter: currentImageIndex === index ? "blur(0px)" : "blur(10px)"
           }}
           transition={{
@@ -139,21 +105,21 @@ const Hero = () => {
                   alt={`${slide.heading} - ${slide.subheading1}`}
                   fill
                   className="object-cover object-center w-full h-full md:hidden"
-                  priority={index === 0}
+                  priority={index === 1}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.onerror = null;
-                    target.src = slide.image; // Fallback to desktop image
+                    target.src = slide.image;
                   }}
                 />
               )}
               {/* Desktop Image - shown on screens >= 768px OR if no mobile image */}
               <Image
                 src={slide.image}
-                alt={`${slide.heading} - ${slide.subheading1}`}
+                alt={`${slide.heading} - Premium T-Shirt Collection`}
                 fill
                 className={`object-cover object-center w-full h-full ${slide.mobileImage ? 'hidden md:block' : ''}`}
-                priority={index === 0}
+                priority={index === 1}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.onerror = null;

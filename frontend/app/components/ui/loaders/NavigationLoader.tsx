@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { useLoading } from "../context/LoadingContext";
+import { useLoading } from "../../context/LoadingContext";
+
 
 const TShirtIcon = () => (
     <svg

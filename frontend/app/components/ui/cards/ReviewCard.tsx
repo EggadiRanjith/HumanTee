@@ -1,0 +1,73 @@
+/**
+ * ReviewCard Component
+ * Customer review card with avatar, rating, and testimonial
+ * 
+ * @example
+ * <ReviewCard review={review} />
+ */
+
+"use client";
+
+import { motion } from 'framer-motion';
+import { memo } from 'react';
+import { Review } from '@/app/types/review.types';
+
+interface ReviewCardProps {
+    review: Review;
+    className?: string;
+}
+
+const ReviewCard = ({ review, className = '' }: ReviewCardProps) => {
+    return (
+        <motion.div
+            className={`
+        bg-white/5 border border-white/10 backdrop-blur-xl
+        rounded-2xl p-6 sm:p-7 md:p-8
+        min-w-[260px] sm:min-w-[300px] md:min-w-[360px]
+        transition-all duration-300
+        ${className}
+      `}
+        >
+            {/* Avatar & User Info */}
+            <div className="flex items-center mb-4">
+                <img
+                    src={review.avatar}
+                    alt={`${review.name} avatar`}
+                    className="w-12 h-12 rounded-full border border-white/15"
+                    loading="lazy"
+                />
+                <div className="ml-3">
+                    <h3 className="font-geist text-white font-medium text-sm sm:text-base">
+                        {review.name}
+                    </h3>
+                    <p className="font-geist text-white/60 text-xs sm:text-sm">
+                        {review.role}
+                    </p>
+                </div>
+            </div>
+
+            {/* Rating Stars */}
+            <div className="flex mb-3" role="img" aria-label={`${review.rating} out of 5 stars`}>
+                {[...Array(5)].map((_, i) => (
+                    <span
+                        key={i}
+                        className={`text-lg ${i < review.rating ? 'text-yellow-400' : 'text-gray-600'}`}
+                        aria-hidden="true"
+                    >
+                        ★
+                    </span>
+                ))}
+            </div>
+
+            {/* Review Text */}
+            <p className="font-geist text-white/70 text-sm sm:text-[15px] leading-relaxed">
+                {review.text}
+            </p>
+        </motion.div>
+    );
+};
+
+// Memoize to prevent unnecessary re-renders
+export default memo(ReviewCard, (prevProps, nextProps) => {
+    return prevProps.review.id === nextProps.review.id;
+});
