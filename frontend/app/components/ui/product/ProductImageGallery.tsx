@@ -36,7 +36,7 @@ export function ProductImageGallery({ images, title, subtitle, productId }: Prod
 
     // Handle browser back button to close zoom
     useEffect(() => {
-        if (isZoomed) {
+        if (isZoomed && typeof window !== 'undefined') {
             window.history.pushState({ zoomOpen: true }, '');
 
             const handlePopState = () => setIsZoomed(false);
