@@ -43,19 +43,7 @@ export function ProfileHeader({ name, memberSince, editHref = '/profile/personal
                 </p>
             </div>
 
-            {/* Edit Button */}
-            <Link
-                href={editHref}
-                className="
-          hidden sm:block px-5 py-2 text-[10px]
-          uppercase tracking-[0.22em]
-          rounded-xl luxury-glass border border-white/10
-          text-white/70 hover:text-white hover:bg-white/10
-          transition-colors
-        "
-            >
-                Edit
-            </Link>
+            {/* Edit Button Removed as per request */}
         </div>
     );
 }

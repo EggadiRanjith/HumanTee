@@ -32,12 +32,9 @@ export default function Header() {
     if (!open) return;
     const close = () => setOpen(false);
     window.addEventListener("click", close);
-    window.addEventListener("scroll", close, true); // Capture phase to catch all scroll events
-    window.addEventListener("touchmove", close); // Also close on touch scroll
+    // Removed touchmove/scroll listeners as they were causing immediate closing sensitivity on mobile
     return () => {
       window.removeEventListener("click", close);
-      window.removeEventListener("scroll", close, true);
-      window.removeEventListener("touchmove", close);
     };
   }, [open]);
 

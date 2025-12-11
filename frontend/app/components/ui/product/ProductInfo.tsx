@@ -5,8 +5,10 @@
 
 "use client";
 
-import { useState } from 'react';
+import Lottie from 'lottie-react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/app/components/context/CartContext';
 import { ProductDetail } from '@/app/types/product.types';
 import { Badge, StockIndicator } from '@/app/components/ui/primitives';
@@ -23,7 +25,16 @@ export function ProductInfo({ product }: ProductInfoProps) {
     const [quantity, setQuantity] = useState(1);
     const [sizeError, setSizeError] = useState(false);
     const [addedToCart, setAddedToCart] = useState(false);
+    const [cartAnimation, setCartAnimation] = useState<any>(null); // State for Lottie JSON
     const { addToCart } = useCart();
+
+    // Fetch Lottie JSON on mount
+    useEffect(() => {
+        fetch('/animation/lottie/shopping/add_to_cart.json')
+            .then(res => res.json())
+            .then(data => setCartAnimation(data))
+            .catch(err => console.error("Failed to load Lottie animation", err));
+    }, []);
 
     const handleAddToCart = () => {
         if (!selectedSize) {
@@ -45,7 +56,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
         });
 
         setAddedToCart(true);
-        setTimeout(() => setAddedToCart(false), 2000);
+        setTimeout(() => setAddedToCart(false), 2600); // Extended for animation to play out
     };
 
     return (
@@ -95,17 +106,32 @@ export function ProductInfo({ product }: ProductInfoProps) {
             <div className="pt-2 space-y-3">
                 <button
                     onClick={handleAddToCart}
+                    disabled={addedToCart}
                     className={`
             w-full py-3.5 sm:py-4 
-            rounded-full transition-all duration-300
+            rounded-full transition-colors duration-300
             text-[0.8rem] uppercase tracking-[0.18em] font-medium
-            ${addedToCart
-                            ? 'bg-green-500 text-white'
-                            : 'bg-white text-black hover:bg-white/90'
-                        }
+            border border-transparent
+            hover:shadow-lg
+            relative overflow-hidden
+            flex items-center justify-center gap-2
+            ${addedToCart ? 'bg-[#22c55e] text-white pointer-events-none' : 'bg-white text-black hover:bg-white/90'}
           `}
                 >
-                    {addedToCart ? "Added to Cart" : "Add to Cart"}
+                    {addedToCart && cartAnimation ? (
+                        <div className="flex items-center justify-center gap-2">
+                            <div className="w-10 h-10 -my-2 transform scale-125">
+                                <Lottie
+                                    animationData={cartAnimation}
+                                    loop={false}
+                                    autoplay={true}
+                                />
+                            </div>
+                            <span>ADDED TO CART</span>
+                        </div>
+                    ) : (
+                        <span>ADD TO CART</span>
+                    )}
                 </button>
 
                 <Link

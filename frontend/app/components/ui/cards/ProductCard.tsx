@@ -10,7 +10,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { memo } from 'react';
+import { memo, useRef } from 'react';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { Product } from '@/app/types/product.types';
 import { Badge, StockIndicator } from '@/app/components/ui/primitives';
 import { getImagePlaceholder } from '@/app/lib/image-placeholders';
@@ -29,60 +30,111 @@ const ProductCard = ({
     priority = false,
     className = ''
 }: ProductCardProps) => {
+    // Magnetic / Tilt Logic
+    const ref = useRef<HTMLDivElement>(null);
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
+
+    // Smooth spring physics for the tilt
+    const springConfig = { damping: 20, stiffness: 300 };
+    const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [7, -7]), springConfig);
+    const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-7, 7]), springConfig);
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+        if (!ref.current) return;
+        const rect = ref.current.getBoundingClientRect();
+        const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+        const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
+
+        const width = rect.width;
+        const height = rect.height;
+        const mouseX = clientX - rect.left;
+        const mouseY = clientY - rect.top;
+        const xPct = mouseX / width - 0.5;
+        const yPct = mouseY / height - 0.5;
+
+        x.set(xPct);
+        y.set(yPct);
+    };
+
+    const handleMouseLeave = () => {
+        x.set(0);
+        y.set(0);
+    };
+
     return (
         <div className={`group relative ${className}`}>
-            <Link
-                href={`/product/${product.id}`}
-                className="
-          block relative w-full aspect-[4/5]
-          overflow-hidden rounded-md 
-          luxury-glass shadow-floating motion-cinematic
-          hover:shadow-glow-violet-medium
-        "
+            <motion.div
+                ref={ref}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+                onTouchStart={handleMouseMove}
+                onTouchMove={handleMouseMove}
+                onTouchEnd={handleMouseLeave}
+                style={{
+                    rotateX,
+                    rotateY,
+                    transformStyle: "preserve-3d"
+                }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                className="relative perspective-1000"
             >
-                <Image
-                    src={product.image}
-                    alt={`${product.title} - ${product.subtitle}`}
-                    fill
-                    priority={priority}
-                    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                    placeholder="blur"
-                    blurDataURL={getImagePlaceholder(product.image)}
+                <Link
+                    href={`/product/${product.id}`}
                     className="
-                object-cover motion-luxury-slow
-                group-hover:scale-[1.05]
-                "
-                />
-
-                {/* Badge */}
-                {product.badge && (
-                    <div className="absolute top-3 left-3">
-                        <Badge variant={product.badge} />
-                    </div>
-                )}
-
-                {/* Quick View - Desktop Only */}
-                <div
-                    className="
-            absolute bottom-0 left-0 right-0 
-            translate-y-full group-hover:translate-y-0 
-            transition-transform duration-500 ease-cinematic
-            bg-[#050512]
-            border-t border-white/10
-            hidden md:block
-          "
+              block relative w-full aspect-[4/5]
+              overflow-hidden rounded-md 
+              luxury-glass shadow-floating motion-cinematic
+              hover:shadow-glow-violet-medium
+              transform-gpu
+            "
                 >
-                    <button
-                        className="w-full py-3 text-step--1 tracking-wide text-white font-bold"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            onQuickView?.(product.id);
-                        }}
+                    <Image
+                        src={product.image}
+                        alt={`${product.title} - ${product.subtitle}`}
+                        fill
+                        priority={priority}
+                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        placeholder="blur"
+                        blurDataURL={getImagePlaceholder(product.image)}
+                        className="
+                    object-cover motion-luxury-slow
+                    group-hover:scale-[1.05]
+                    "
+                    />
+
+                    {/* Badge */}
+                    {product.badge && (
+                        <div className="absolute top-3 left-3 z-10 translate-z-10">
+                            <Badge variant={product.badge} />
+                        </div>
+                    )}
+
+                    {/* Quick View - Desktop Only */}
+                    <div
+                        className="
+                absolute bottom-0 left-0 right-0 
+                translate-y-full group-hover:translate-y-0 
+                transition-transform duration-500 ease-cinematic
+                bg-[#050512]
+                border-t border-white/10
+                hidden md:block
+                z-20
+              "
                     >
-                        QUICK VIEW
-                    </button>
-                </div>
-            </Link>
+                        <button
+                            className="w-full py-3 text-step--1 tracking-wide text-white font-bold"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                onQuickView?.(product.id);
+                            }}
+                        >
+                            QUICK VIEW
+                        </button>
+                    </div>
+                </Link>
+            </motion.div>
 
             {/* Product Info */}
             <div className="mt-3 sm:mt-4 text-center">

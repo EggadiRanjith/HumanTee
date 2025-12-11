@@ -1,11 +1,10 @@
 /**
  * SectionHeader Component
  * Reusable section header with title and optional action button
- * 
- * @example
- * <SectionHeader title="Featured Products" />
- * <SectionHeader title="Reviews" actionText="View All" actionHref="/reviews" />
+ * Static luxury typography (no stagger animation)
  */
+
+"use client";
 
 import Link from 'next/link';
 

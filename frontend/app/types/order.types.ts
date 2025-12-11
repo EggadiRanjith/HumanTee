@@ -3,7 +3,7 @@
  * Type definitions for order data
  */
 
-export type OrderStatus = 'delivered' | 'shipped' | 'processing' | 'pending';
+export type OrderStatus = 'delivered' | 'shipped' | 'processing' | 'pending' | 'cancelled';
 
 export interface Order {
     id: string;

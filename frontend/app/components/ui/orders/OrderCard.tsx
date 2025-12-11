@@ -15,13 +15,40 @@ interface OrderCardProps {
 function getStatusConfig(status: OrderStatus) {
     switch (status) {
         case "delivered":
-            return { icon: FiCheckCircle, label: "Delivered", class: "text-brand-primary" };
+            return {
+                icon: FiCheckCircle,
+                label: "Delivered",
+                class: "text-emerald-400",
+                bg: "bg-emerald-400/10 border-emerald-400/20"
+            };
         case "shipped":
-            return { icon: FiTruck, label: "Shipped", class: "text-brand-primary" };
+            return {
+                icon: FiTruck,
+                label: "Shipped",
+                class: "text-blue-400",
+                bg: "bg-blue-400/10 border-blue-400/20"
+            };
         case "processing":
-            return { icon: FiClock, label: "Processing", class: "text-white/60" };
+            return {
+                icon: FiClock,
+                label: "Processing",
+                class: "text-amber-400",
+                bg: "bg-amber-400/10 border-amber-400/20"
+            };
+        case "cancelled":
+            return {
+                icon: FiPackage,
+                label: "Cancelled",
+                class: "text-red-400",
+                bg: "bg-red-400/10 border-red-400/20"
+            };
         default:
-            return { icon: FiPackage, label: "Unknown", class: "text-white/40" };
+            return {
+                icon: FiPackage,
+                label: "Unknown",
+                class: "text-white/40",
+                bg: "bg-white/5 border-white/10"
+            };
     }
 }
 
@@ -45,9 +72,9 @@ export function OrderCard({ order }: OrderCardProps) {
                             {order.id}
                         </h3>
 
-                        <span className="flex items-center gap-1.5 px-2 py-1 bg-white/5 border border-white/10 rounded-md">
+                        <span className={`flex items-center gap-1.5 px-2 py-1 ${status.bg} rounded-md`}>
                             <Icon className={`w-3.5 h-3.5 ${status.class}`} />
-                            <span className="text-[10px] uppercase tracking-[0.18em] text-white/70">
+                            <span className={`text-[10px] uppercase tracking-[0.18em] ${status.class}`}>
                                 {status.label}
                             </span>
                         </span>

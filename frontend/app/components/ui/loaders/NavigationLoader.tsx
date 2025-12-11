@@ -26,7 +26,11 @@ function NavigationLoaderContent() {
     const searchParams = useSearchParams();
 
     useEffect(() => {
-        setLoading(false);
+        const timer = setTimeout(() => {
+            setLoading(false);
+        }, 1000); // 1-second delay added as requested
+
+        return () => clearTimeout(timer);
     }, [pathname, searchParams, setLoading]);
 
     useEffect(() => {
