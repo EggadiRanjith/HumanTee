@@ -1,0 +1,45 @@
+{
+    "framework": "nextjs",
+    "regions": [
+        "iad1"
+    ],
+    "github": {
+        "enabled": true,
+        "autoAlias": true,
+        "autoJobCancelation": true,
+        "silent": false
+    },
+    "git": {
+        "deploymentEnabled": {
+            "main": true,
+            "develop": true
+        }
+    },
+    "headers": [
+        {
+            "source": "/fonts/(.*)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=31536000, immutable"
+                }
+            ]
+        },
+        {
+            "source": "/(.*).webp",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=31536000, immutable"
+                }
+            ]
+        }
+    ],
+    "redirects": [
+        {
+            "source": "/home",
+            "destination": "/",
+            "permanent": true
+        }
+    ]
+}
