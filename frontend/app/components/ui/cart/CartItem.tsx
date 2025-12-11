@@ -16,7 +16,7 @@ interface CartItemType {
     subtitle: string;
     price: string;
     image: string;
-    size: string;
+    size?: string;
     quantity: number;
 }
 

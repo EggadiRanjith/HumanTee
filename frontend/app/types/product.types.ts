@@ -20,6 +20,8 @@ export interface StockInfo {
     level: 'low' | 'limited' | 'in-stock';
     count: number;
     label: string;
+    dotColor: string;
+    textColor: string;
 }
 
 export interface BadgeConfig {

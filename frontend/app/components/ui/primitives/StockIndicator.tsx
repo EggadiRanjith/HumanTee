@@ -66,7 +66,7 @@ export default function StockIndicator({
                 <div className={`absolute inset-0 ${dotSize} rounded-full ${stockInfo.dotColor} animate-ping opacity-75`} />
             </div>
             {showCount && (
-                <span className={`text-step--1 ${stockInfo.textColor} tracking-wide font-medium`}>
+                <span className={`text-xs ${stockInfo.textColor} tracking-wide font-medium`}>
                     {stockInfo.count} in stock
                 </span>
             )}

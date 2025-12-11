@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useLoading } from "../../context/LoadingContext";
@@ -20,7 +20,7 @@ const TShirtIcon = () => (
     </svg>
 );
 
-export default function NavigationLoader() {
+function NavigationLoaderContent() {
     const { isLoading, setLoading } = useLoading();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -79,21 +79,31 @@ export default function NavigationLoader() {
                 >
                     <TShirtIcon />
                 </motion.div>
+
             </div>
 
+            {/* Adaptive text */}
             <motion.p
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
                 className="
-                    mt-10 text-white/80 
-                    text-xs sm:text-sm lg:text-base 
-                    uppercase tracking-[0.3em] font-light
+                    mt-8 
+                    text-[3.5vw] sm:text-[2.5vw] lg:text-[1.2vw]
+                    max-text-base
+                    text-white/70 uppercase tracking-[0.14em] font-light
                 "
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
             >
                 Loading
             </motion.p>
-
         </div>
+    );
+}
+
+export default function NavigationLoader() {
+    return (
+        <Suspense fallback={null}>
+            <NavigationLoaderContent />
+        </Suspense>
     );
 }

@@ -14,7 +14,7 @@ interface CartItem {
     subtitle: string;
     price: string;
     image: string;
-    size: string;
+    size?: string;
     quantity: number;
 }
 
@@ -51,7 +51,7 @@ export function OrderSummaryCheckout({ items, totalPrice }: OrderSummaryCheckout
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-white text-xs sm:text-sm truncate">{item.title}</p>
-                                <p className="text-white/60 text-[10px] sm:text-xs">Size: {item.size}</p>
+                                {item.size && <p className="text-white/60 text-[10px] sm:text-xs">Size: {item.size}</p>}
                                 <p className="text-white/60 text-[10px] sm:text-xs">Qty: {item.quantity}</p>
                             </div>
                             <p className="text-white text-xs sm:text-sm font-medium">{item.price}</p>
