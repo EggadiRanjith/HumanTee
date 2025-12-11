@@ -6,8 +6,11 @@ import { GradientOverlay } from "@/app/components/ui/layout";
 import { FiCheck } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
-import Lottie from "lottie-react";
+import dynamic from "next/dynamic";
 import successAnimation from "@/public/animation/lottie/order-status/success_order_placed.json";
+
+// Dynamic import to prevent SSR issues
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 export default function SuccessPage() {
     const router = useRouter();

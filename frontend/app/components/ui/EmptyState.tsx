@@ -1,9 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Lottie from "lottie-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import emptyAnimation from "@/public/animation/lottie/empty.json";
+
+// Dynamic import to prevent SSR issues
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 interface ActionButton {
     label: string;

@@ -2,13 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Lottie from "lottie-react";
+import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/app/components/context/CartContext";
 import { useLoading } from "@/app/components/context/LoadingContext";
 import { CartItem, CartSummary } from "@/app/components/ui/cart";
 import { GradientOverlay } from "@/app/components/ui/layout";
 import { EmptyCart } from "@/app/components/ui/EmptyState";
+
+// Dynamic import to prevent SSR issues
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 export default function CartPage() {
     const router = useRouter();

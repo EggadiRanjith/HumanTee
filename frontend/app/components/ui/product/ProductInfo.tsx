@@ -5,7 +5,7 @@
 
 "use client";
 
-import Lottie from 'lottie-react';
+import dynamic from "next/dynamic";
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,6 +15,9 @@ import { Badge, StockIndicator } from '@/app/components/ui/primitives';
 import { SizeSelector } from './SizeSelector';
 import { QuantitySelector } from './QuantitySelector';
 import { ProductDetails } from './ProductDetails';
+
+// Dynamic import to prevent SSR issues
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 
 interface ProductInfoProps {
     product: ProductDetail;

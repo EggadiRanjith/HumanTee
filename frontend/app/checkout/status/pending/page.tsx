@@ -5,8 +5,11 @@ import { useCheckout } from "@/app/components/context/CheckoutContext";
 import { FiClock } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
-import Lottie from "lottie-react";
+import dynamic from "next/dynamic";
 import pendingAnimation from "@/public/animation/lottie/order-status/Pending_order.json";
+
+// Dynamic import to prevent SSR issues
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 export default function PendingPage() {
     const router = useRouter();
