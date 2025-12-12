@@ -281,6 +281,14 @@ export default function Header() {
                   Orders
                 </Link>
 
+                <Link
+                  href="/contact"
+                  onClick={() => setOpen(false)}
+                  className="px-3 py-3 text-sm hover:text-white hover:bg-white/5 rounded-lg"
+                >
+                  Contact Us
+                </Link>
+
 
                 <Link
                   href="/profile"
