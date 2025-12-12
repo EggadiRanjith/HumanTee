@@ -45,7 +45,7 @@ const ADD_TO_CART_MUTATION = `
  * This ensures cart persists across page refreshes and multiple items
  */
 export async function addToCart(variantId: string, quantity: number) {
-  const existingCartId = getCartId();
+  const existingCartId = await getCartId();
 
   if (existingCartId) {
     // Cart exists - add to existing cart
@@ -63,7 +63,7 @@ export async function addToCart(variantId: string, quantity: number) {
     });
 
     // Store cart ID in cookie for persistence
-    setCartId(data.cartCreate.cart.id);
+    await setCartId(data.cartCreate.cart.id);
 
     return data.cartCreate.cart;
   }

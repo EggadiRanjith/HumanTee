@@ -12,6 +12,7 @@ export interface CartItem {
   size?: string;
   variantId?: string;
   availableStock?: number;
+  subtitle?: string;
 }
 
 interface CartContextType {

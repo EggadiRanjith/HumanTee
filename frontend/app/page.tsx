@@ -1,6 +1,5 @@
 import { Hero, FeaturedProducts } from "./components/sections";
 import { Suspense } from "react";
-import { IntroWrapper } from "@/app/components/IntroWrapper";
 import dynamic from "next/dynamic";
 
 // Skeleton loader for lazy sections
@@ -21,8 +20,6 @@ const Reviews = dynamic(() => import("./components/sections/Reviews/Reviews"), {
 export default function Home() {
     return (
         <>
-            <IntroWrapper />
-
             {/* Above-fold - Load immediately */}
             <Hero />
 

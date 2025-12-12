@@ -3,15 +3,17 @@ import { cookies } from "next/headers";
 /**
  * Get the current cart ID from cookies
  */
-export function getCartId(): string | null {
-    return cookies().get("cartId")?.value || null;
+export async function getCartId(): Promise<string | null> {
+    const cookieStore = await cookies();
+    return cookieStore.get("cartId")?.value || null;
 }
 
 /**
  * Store cart ID in HTTP-only cookie
  */
-export function setCartId(id: string): void {
-    cookies().set("cartId", id, {
+export async function setCartId(id: string): Promise<void> {
+    const cookieStore = await cookies();
+    cookieStore.set("cartId", id, {
         path: "/",
         httpOnly: true,
         sameSite: "lax",
@@ -22,6 +24,7 @@ export function setCartId(id: string): void {
 /**
  * Clear cart ID from cookies
  */
-export function clearCartId(): void {
-    cookies().delete("cartId");
+export async function clearCartId(): Promise<void> {
+    const cookieStore = await cookies();
+    cookieStore.delete("cartId");
 }

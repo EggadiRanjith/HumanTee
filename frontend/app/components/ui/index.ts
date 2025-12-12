@@ -18,7 +18,7 @@ export { ProductCard, ReviewCard } from './cards';
 export { SectionHeader, GradientOverlay } from './layout';
 
 // Loaders (Universal)
-export { IntroLoader, Loader, NavigationLoader } from './loaders';
+export { Loader, NavigationLoader } from './loaders';
 
 // Legacy exports (remain in ui root)
 export { default as EmptyState } from './EmptyState';

@@ -133,7 +133,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* Preload critical assets */}
         <link rel="preload" href="/videos/hero-video.mp4" as="video" type="video/mp4" />
-        <link rel="preload" href="/fonts/GeistVF.woff" as="font" type="font/woff" crossOrigin="anonymous" />
+
       </head>
       <body className="min-h-screen bg-brand-bg text-brand-text antialiased font-geist overflow-x-hidden">
 

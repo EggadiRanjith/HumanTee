@@ -9,10 +9,10 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 
 interface CartItem {
-    id: number;
+    id: number | string;
     title: string;
-    subtitle: string;
-    price: string;
+    subtitle?: string;
+    price: number;
     image: string;
     size?: string;
     quantity: number;
@@ -51,10 +51,11 @@ export function OrderSummaryCheckout({ items, totalPrice }: OrderSummaryCheckout
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-white text-xs sm:text-sm truncate">{item.title}</p>
+                                {item.subtitle && <p className="text-white/60 text-[10px] sm:text-xs truncate">{item.subtitle}</p>}
                                 {item.size && <p className="text-white/60 text-[10px] sm:text-xs">Size: {item.size}</p>}
                                 <p className="text-white/60 text-[10px] sm:text-xs">Qty: {item.quantity}</p>
                             </div>
-                            <p className="text-white text-xs sm:text-sm font-medium">{item.price}</p>
+                            <p className="text-white text-xs sm:text-sm font-medium">₹{item.price.toFixed(2)}</p>
                         </div>
                     ))}
                 </div>
