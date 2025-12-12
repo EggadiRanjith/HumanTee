@@ -6,14 +6,17 @@
 export type BadgeVariant = 'sale' | 'bestseller' | 'new';
 
 export interface Product {
-    id: number;
+    id: number | string;
     title: string;
-    subtitle: string;
-    price: string;
-    originalPrice?: string;
+    subtitle?: string; // Optional - not provided by Shopify
+    price: number;
+    currency: string;
+    originalPrice?: number;
     image: string;
+    imageAlt?: string;
     badge?: BadgeVariant;
     stock: number;
+    handle?: string;
 }
 
 export interface StockInfo {
@@ -36,7 +39,10 @@ export interface BadgeConfig {
  */
 export interface ProductDetail extends Product {
     description: string;
+    descriptionHtml?: string;
     details: string[];
     sizes: string[];
     images: string[];
+    vendor?: string;
+    productType?: string;
 }

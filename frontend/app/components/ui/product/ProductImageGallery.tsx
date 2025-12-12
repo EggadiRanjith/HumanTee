@@ -22,6 +22,7 @@ export function ProductImageGallery({ images, title, subtitle, productId }: Prod
     const [isZoomed, setIsZoomed] = useState(false);
     const [touchStart, setTouchStart] = useState(0);
     const [touchEnd, setTouchEnd] = useState(0);
+    const [zoomScale, setZoomScale] = useState(100); // Zoom percentage
 
     // Auto-transition images every 3 seconds
     useEffect(() => {
@@ -46,6 +47,34 @@ export function ProductImageGallery({ images, title, subtitle, productId }: Prod
         }
     }, [isZoomed]);
 
+    // Keyboard navigation for zoom modal
+    useEffect(() => {
+        if (!isZoomed) return;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            switch (e.key) {
+                case 'Escape':
+                    setIsZoomed(false);
+                    break;
+                case 'ArrowLeft':
+                    if (currentImageIndex > 0) {
+                        setCurrentImageIndex(currentImageIndex - 1);
+                        setZoomScale(100);
+                    }
+                    break;
+                case 'ArrowRight':
+                    if (currentImageIndex < images.length - 1) {
+                        setCurrentImageIndex(currentImageIndex + 1);
+                        setZoomScale(100);
+                    }
+                    break;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isZoomed, currentImageIndex, images.length]);
+
     const handleImageSelect = (index: number) => {
         setCurrentImageIndex(index);
         setIsAutoPlaying(false);
@@ -54,6 +83,33 @@ export function ProductImageGallery({ images, title, subtitle, productId }: Prod
     const handleZoomOpen = () => {
         setIsAutoPlaying(false);
         setIsZoomed(true);
+        setZoomScale(100);
+    };
+
+    const handleZoomIn = () => {
+        setZoomScale(prev => Math.min(prev + 25, 200));
+    };
+
+    const handleZoomOut = () => {
+        setZoomScale(prev => Math.max(prev - 25, 50));
+    };
+
+    const handleZoomReset = () => {
+        setZoomScale(100);
+    };
+
+    const handlePrevImage = () => {
+        if (currentImageIndex > 0) {
+            setCurrentImageIndex(currentImageIndex - 1);
+            setZoomScale(100);
+        }
+    };
+
+    const handleNextImage = () => {
+        if (currentImageIndex < images.length - 1) {
+            setCurrentImageIndex(currentImageIndex + 1);
+            setZoomScale(100);
+        }
     };
 
     // Touch handlers for mobile swipe
@@ -120,10 +176,7 @@ export function ProductImageGallery({ images, title, subtitle, productId }: Prod
                     </div>
 
                     {/* Caption */}
-                    <div className="absolute bottom-3 left-3 right-3 flex justify-between text-[10px] uppercase tracking-[0.2em] text-white/75">
-                        <span className="truncate">{subtitle.split(" • ")[0]}</span>
-                        <span>{String(productId).padStart(2, "0")}</span>
-                    </div>
+
                 </div>
 
                 {/* Thumbnail Gallery */}
@@ -155,51 +208,137 @@ export function ProductImageGallery({ images, title, subtitle, productId }: Prod
                 )}
             </div>
 
-            {/* Zoom Modal */}
+            {/* Zoom Modal - Fullscreen */}
             {isZoomed && (
                 <div
-                    className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 pt-[calc(var(--header-height)+1rem)]"
+                    className="fixed inset-0 z-[9999] bg-black"
                     onClick={() => setIsZoomed(false)}
                 >
-                    {/* Close Button */}
-                    <button
-                        className="absolute right-4 p-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-colors z-10"
-                        style={{ top: 'calc(var(--header-height) + 1rem)' }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setIsZoomed(false);
-                        }}
-                    >
-                        <FiX className="h-6 w-6" />
-                    </button>
+                    {/* Modal Container */}
+                    <div className="h-full flex flex-col">
 
-                    {/* Swipe Indicator - Mobile Only */}
-                    <div
-                        className="absolute left-1/2 -translate-x-1/2 lg:hidden"
-                        style={{ top: 'calc(var(--header-height) + 1rem)' }}
-                    >
-                        <div className="w-12 h-1 rounded-full bg-white/30"></div>
-                    </div>
+                        {/* Header */}
+                        <div className="flex-shrink-0 flex items-center justify-between px-4 sm:px-6 lg:px-10 py-4 border-b border-white/10">
+                            <div className="flex-1 min-w-0 pr-4">
+                                <h2 className="text-white text-sm sm:text-base md:text-lg font-medium tracking-wide truncate">{title}</h2>
+                                <p className="text-white/60 text-xs sm:text-sm mt-0.5">
+                                    {currentImageIndex + 1} of {images.length}
+                                </p>
+                            </div>
+                            <button
+                                className="flex-shrink-0 p-2.5 sm:p-3 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white transition-colors"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsZoomed(false);
+                                }}
+                                aria-label="Close zoom"
+                            >
+                                <FiX className="h-5 w-5 sm:h-6 sm:w-6" />
+                            </button>
+                        </div>
 
-                    {/* Zoomed Image */}
-                    <div
-                        className="relative w-full h-full max-w-5xl max-h-[80vh]"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <Image
-                            src={images[currentImageIndex]}
-                            alt={title}
-                            fill
-                            className="object-contain"
-                            priority
-                        />
-                    </div>
+                        {/* Main Content Area */}
+                        <div className="flex-1 relative flex items-center justify-center px-4 sm:px-6 lg:px-10">
 
-                    {/* Image Info */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-black/60 backdrop-blur-sm border border-white/10">
-                        <p className="text-white/90 text-xs uppercase tracking-wider">
-                            {currentImageIndex + 1} / {images.length}
-                        </p>
+                            {/* Left Arrow - Large & Responsive */}
+                            <button
+                                className={`absolute left-2 sm:left-4 md:left-6 lg:left-8 p-3 text-white transition-all duration-200 z-30 ${currentImageIndex > 0
+                                    ? 'hover:scale-110 opacity-100'
+                                    : 'opacity-20 cursor-not-allowed'
+                                    }`}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (currentImageIndex > 0) handlePrevImage();
+                                }}
+                                disabled={currentImageIndex === 0}
+                                aria-label="Previous image"
+                            >
+                                <svg className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+
+                            {/* Image Container - Ultra Responsive */}
+                            <div
+                                className="relative w-full h-full px-14 sm:px-20 md:px-24 lg:px-28 xl:px-32"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div
+                                    className="relative w-full h-full transition-transform duration-300 ease-out"
+                                    style={{ transform: `scale(${zoomScale / 100})` }}
+                                >
+                                    <Image
+                                        src={images[currentImageIndex]}
+                                        alt={title}
+                                        fill
+                                        className="object-contain"
+                                        priority
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Right Arrow - Large & Responsive */}
+                            <button
+                                className={`absolute right-2 sm:right-4 md:right-6 lg:right-8 p-3 text-white transition-all duration-200 z-30 ${currentImageIndex < images.length - 1
+                                    ? 'hover:scale-110 opacity-100'
+                                    : 'opacity-20 cursor-not-allowed'
+                                    }`}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (currentImageIndex < images.length - 1) handleNextImage();
+                                }}
+                                disabled={currentImageIndex === images.length - 1}
+                                aria-label="Next image"
+                            >
+                                <svg className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Zoom Controls - Fixed Bottom */}
+                        <div className="flex-shrink-0 flex justify-center px-4 sm:px-6 lg:px-10 pb-4 sm:pb-6">
+                            <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-full bg-black border border-white/20 shadow-2xl">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleZoomOut();
+                                    }}
+                                    disabled={zoomScale <= 50}
+                                    className="p-2 sm:p-2.5 rounded-full hover:bg-white/10 active:bg-white/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-white"
+                                    aria-label="Zoom out"
+                                >
+                                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
+                                    </svg>
+                                </button>
+
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleZoomReset();
+                                    }}
+                                    className="px-3 sm:px-4 py-1 text-white text-xs sm:text-sm font-medium hover:bg-white/10 active:bg-white/20 rounded transition-colors min-w-[55px] sm:min-w-[65px]"
+                                    aria-label="Reset zoom to 100%"
+                                >
+                                    {zoomScale}%
+                                </button>
+
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleZoomIn();
+                                    }}
+                                    disabled={zoomScale >= 200}
+                                    className="p-2 sm:p-2.5 rounded-full hover:bg-white/10 active:bg-white/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-white"
+                                    aria-label="Zoom in"
+                                >
+                                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

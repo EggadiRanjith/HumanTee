@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@lottiefiles/react-lottie-player": "^3.6.0",
+    "@next/bundle-analyzer": "^16.0.10",
+    "@shopify/storefront-api-client": "^1.0.9",
     "@types/three": "^0.182.0",
     "framer-motion": "^12.23.25",
     "lottie-react": "^2.4.1",
@@ -17,6 +19,7 @@
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-icons": "^5.5.0",
+    "swr": "^2.3.7",
     "three": "^0.182.0"
   },
   "devDependencies": {

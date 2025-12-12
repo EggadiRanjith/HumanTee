@@ -8,18 +8,18 @@
 
 "use client";
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { memo, useRef } from 'react';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { m, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { Product } from '@/app/types/product.types';
 import { Badge, StockIndicator } from '@/app/components/ui/primitives';
+import { SafeImage } from '@/app/components/ui/primitives/SafeImage';
 import { getImagePlaceholder } from '@/app/lib/image-placeholders';
 
 
 interface ProductCardProps {
     product: Product;
-    onQuickView?: (productId: number) => void;
+    onQuickView?: (productId: number | string) => void;
     priority?: boolean;
     className?: string;
 }
@@ -64,7 +64,7 @@ const ProductCard = ({
 
     return (
         <div className={`group relative ${className}`}>
-            <motion.div
+            <m.div
                 ref={ref}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
@@ -81,7 +81,7 @@ const ProductCard = ({
                 className="relative perspective-1000"
             >
                 <Link
-                    href={`/product/${product.id}`}
+                    href={`/product/${(product as any).handle || product.id}`}
                     className="
               block relative w-full aspect-[4/5]
               overflow-hidden rounded-md 
@@ -90,14 +90,13 @@ const ProductCard = ({
               transform-gpu
             "
                 >
-                    <Image
+                    <SafeImage
                         src={product.image}
-                        alt={`${product.title} - ${product.subtitle}`}
+                        alt={(product as any).imageAlt || product.title}
                         fill
                         priority={priority}
                         sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                        placeholder="blur"
-                        blurDataURL={getImagePlaceholder(product.image)}
+                        fallbackType="product"
                         className="
                     object-cover motion-luxury-slow
                     group-hover:scale-[1.05]
@@ -134,7 +133,7 @@ const ProductCard = ({
                         </button>
                     </div>
                 </Link>
-            </motion.div>
+            </m.div>
 
             {/* Product Info */}
             <div className="mt-3 sm:mt-4 text-center">
@@ -143,16 +142,25 @@ const ProductCard = ({
                 </h3>
 
                 {/* Pricing */}
-                <div className="flex items-center justify-center gap-2 mt-2 mb-1">
+                <div className="flex items-center justify-center gap-2 mt-2 mb-1 flex-wrap">
                     {product.originalPrice && (
-                        <span className="text-red-400/70 text-step--1 line-through">
-                            {product.originalPrice}
+                        <span className="text-white/40 text-step--1 line-through">
+                            {product.currency} {product.originalPrice.toFixed(2)}
                         </span>
                     )}
                     <span className="brand-text-primary text-step-0 font-heading">
-                        {product.price}
+                        {product.currency} {product.price.toFixed(2)}
                     </span>
                 </div>
+
+                {/* Savings Display */}
+                {product.originalPrice && product.originalPrice > product.price && (
+                    <div className="mb-2">
+                        <span className="inline-block px-2.5 py-0.5 text-[0.7rem] font-bold tracking-wider uppercase bg-gradient-to-r from-violet-500 to-fuchsia-400 text-white rounded-full shadow-glow-violet-medium">
+                            Save {product.currency} {(product.originalPrice - product.price).toFixed(2)}
+                        </span>
+                    </div>
+                )}
 
                 {/* Stock Indicator */}
                 <div className="flex items-center justify-center">

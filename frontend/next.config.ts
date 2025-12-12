@@ -1,5 +1,10 @@
 import type { NextConfig } from "next";
 
+// Bundle analyzer for performance monitoring
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 const nextConfig: NextConfig = {
   // Production compiler optimizations
   compiler: {
@@ -18,6 +23,11 @@ const nextConfig: NextConfig = {
         hostname: 'images.unsplash.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'cdn.shopify.com',
+        pathname: '/**',
+      },
     ],
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60 * 60 * 24 * 365, // 1 year for production
@@ -28,14 +38,14 @@ const nextConfig: NextConfig = {
   },
   // Optimize for video delivery
   experimental: {
-    optimizeCss: true,
+    // optimizeCss: true, // Disabled - requires critters module
     optimizePackageImports: ['framer-motion', 'react-icons'],
   },
   // Headers for better video streaming
   async headers() {
     return [
       {
-        source: '/video/:path*',
+        source: '/videos/:path*',
         headers: [
           {
             key: 'Cache-Control',
@@ -56,8 +66,18 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
     ];
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);
+

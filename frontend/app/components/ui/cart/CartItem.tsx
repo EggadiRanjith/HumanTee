@@ -11,10 +11,10 @@ import { motion } from 'framer-motion';
 import { FiTrash2, FiMinus, FiPlus } from 'react-icons/fi';
 
 interface CartItemType {
-    id: number;
+    id: number | string;
     title: string;
-    subtitle: string;
-    price: string;
+    price: number;
+    currency: string;
     image: string;
     size?: string;
     quantity: number;
@@ -23,12 +23,12 @@ interface CartItemType {
 interface CartItemProps {
     item: CartItemType;
     index: number;
-    onUpdateQuantity: (id: number, size: string, quantity: number) => void;
-    onRemove: (id: number, size?: string) => void;
+    onUpdateQuantity: (id: number | string, size: string, quantity: number) => void;
+    onRemove: (id: number | string, size?: string) => void;
 }
 
 export function CartItem({ item, index, onUpdateQuantity, onRemove }: CartItemProps) {
-    const lineTotal = parseFloat(item.price.replace(/[^0-9.]/g, "")) * item.quantity;
+    const lineTotal = item.price * item.quantity;
 
     return (
         <motion.div
@@ -60,9 +60,6 @@ export function CartItem({ item, index, onUpdateQuantity, onRemove }: CartItemPr
                             {item.title}
                         </h3>
                     </Link>
-                    <p className="text-white/60 text-xs sm:text-sm mt-1">
-                        {item.subtitle}
-                    </p>
                     {item.size && (
                         <p className="text-white/50 text-xs mt-1">
                             Size: <span className="text-white/70">{item.size}</span>
@@ -103,11 +100,11 @@ export function CartItem({ item, index, onUpdateQuantity, onRemove }: CartItemPr
                     {/* Price */}
                     <div className="flex items-center gap-3 text-left">
                         <p className="text-white text-base sm:text-lg font-light">
-                            ₹ {lineTotal.toFixed(2)}
+                            {item.currency} {lineTotal.toFixed(2)}
                         </p>
                         {item.quantity > 1 && (
                             <p className="text-yellow-400/80 text-xs sm:text-sm font-light">
-                                ({item.price} each)
+                                ({item.currency} {item.price.toFixed(2)} each)
                             </p>
                         )}
                     </div>

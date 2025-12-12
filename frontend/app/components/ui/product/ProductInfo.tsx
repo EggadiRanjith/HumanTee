@@ -10,11 +10,14 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/app/components/context/CartContext';
+import { useToast } from '@/app/components/context/ToastContext';
 import { ProductDetail } from '@/app/types/product.types';
 import { Badge, StockIndicator } from '@/app/components/ui/primitives';
 import { SizeSelector } from './SizeSelector';
 import { QuantitySelector } from './QuantitySelector';
 import { ProductDetails } from './ProductDetails';
+import { SizeGuide } from '@/app/components/ui/modals/SizeGuide';
+import { FiInfo } from 'react-icons/fi';
 
 // Dynamic import to prevent SSR issues
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
@@ -27,9 +30,14 @@ export function ProductInfo({ product }: ProductInfoProps) {
     const [selectedSize, setSelectedSize] = useState("");
     const [quantity, setQuantity] = useState(1);
     const [sizeError, setSizeError] = useState(false);
+    const [stockError, setStockError] = useState<string | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
     const [addedToCart, setAddedToCart] = useState(false);
-    const [cartAnimation, setCartAnimation] = useState<any>(null); // State for Lottie JSON
-    const { addToCart } = useCart();
+    const [cartAnimation, setCartAnimation] = useState<any>(null);
+    const [showSizeGuide, setShowSizeGuide] = useState(false);
+    const { addToCart, getItemInCart } = useCart();
+    const { showToast } = useToast();
 
     // Fetch Lottie JSON on mount
     useEffect(() => {
@@ -39,27 +47,47 @@ export function ProductInfo({ product }: ProductInfoProps) {
             .catch(err => console.error("Failed to load Lottie animation", err));
     }, []);
 
-    const handleAddToCart = () => {
+    const handleAddToCart = async () => {
         if (!selectedSize) {
             setSizeError(true);
+            setStockError("Please select a size before adding to cart");
             setTimeout(() => setSizeError(false), 3000);
             return;
         }
 
-        setSizeError(false);
+        setIsLoading(true);
+        setStockError(null);
+        setSuccessMessage(null);
 
-        addToCart({
-            id: product.id,
-            title: product.title,
-            subtitle: product.subtitle,
-            price: product.price,
-            image: product.images[0],
-            size: selectedSize,
-            quantity: quantity,
-        });
+        const success = await addToCart(
+            {
+                id: product.id,
+                title: product.title,
+                price: product.price,
+                currency: product.currency,
+                image: product.images[0],
+                size: selectedSize,
+                quantity,
+                availableStock: product.stock,
+                variantId: product.id as string,
+            },
+            () => {
+                // Success callback - show inline message
+                setAddedToCart(true);
+                setStockError(null);
+                setSuccessMessage(`${product.title} (${selectedSize}) added to cart successfully!`);
+                setTimeout(() => {
+                    setAddedToCart(false);
+                    setSuccessMessage(null);
+                }, 3000);
+            },
+            (error) => {
+                // Error callback - show inline instead of toast
+                setStockError(error);
+            }
+        );
 
-        setAddedToCart(true);
-        setTimeout(() => setAddedToCart(false), 2600); // Extended for animation to play out
+        setIsLoading(false);
     };
 
     return (
@@ -70,19 +98,28 @@ export function ProductInfo({ product }: ProductInfoProps) {
                 <h1 className="text-white text-[1.7rem] sm:text-[2.2rem] lg:text-[2.6rem] font-light tracking-wide leading-tight">
                     {product.title}
                 </h1>
-                <p className="text-white/60 text-[0.85rem] sm:text-[0.95rem] tracking-wide">
-                    {product.subtitle}
-                </p>
+                {(product.vendor || product.productType) && (
+                    <p className="text-white/60 text-[0.85rem] sm:text-[0.95rem] tracking-wide">
+                        {product.vendor && product.productType ? `${product.vendor} • ${product.productType}` : product.vendor || product.productType}
+                    </p>
+                )}
             </div>
 
             {/* Price + Badge + Stock */}
             <div className="flex items-center gap-3 flex-wrap">
-                <div className="text-white text-[1.6rem] sm:text-[2rem] font-light tracking-wide">
-                    {product.price}
+                <div className="flex items-center gap-3">
+                    {product.originalPrice && (
+                        <div className="text-white/40 text-[1.2rem] sm:text-[1.4rem] line-through">
+                            {product.currency} {product.originalPrice.toFixed(2)}
+                        </div>
+                    )}
+                    <div className="text-white text-[1.6rem] sm:text-[2rem] font-light tracking-wide">
+                        {product.currency} {product.price.toFixed(2)}
+                    </div>
                 </div>
-                {product.originalPrice && (
-                    <div className="text-white/40 text-[1.2rem] line-through">
-                        {product.originalPrice}
+                {product.originalPrice && product.originalPrice > product.price && (
+                    <div className="inline-block px-3 py-1 text-[0.75rem] sm:text-[0.85rem] font-bold tracking-wider uppercase bg-gradient-to-r from-violet-500 to-fuchsia-400 text-white rounded-full shadow-glow-violet-medium">
+                        Save {product.currency} {(product.originalPrice - product.price).toFixed(2)}
                     </div>
                 )}
                 {product.badge && (
@@ -91,13 +128,34 @@ export function ProductInfo({ product }: ProductInfoProps) {
                 <StockIndicator stock={product.stock} />
             </div>
 
-            {/* Size Selector */}
-            <SizeSelector
-                sizes={product.sizes}
-                selected={selectedSize}
-                onChange={setSelectedSize}
-                error={sizeError}
-            />
+            {/* Size Selector with Guide */}
+            <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                    <label className="text-white/70 text-sm">Select Size</label>
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setShowSizeGuide(true);
+                        }}
+                        className="text-sm text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1"
+                    >
+                        <FiInfo className="w-4 h-4" />
+                        <span>Size Guide</span>
+                    </button>
+                </div>
+                <SizeSelector
+                    sizes={product.sizes}
+                    selected={selectedSize}
+                    onChange={setSelectedSize}
+                    error={sizeError}
+                />
+                {/* Stock Info */}
+                <p className="text-white/50 text-xs">
+                    {product.stock} {product.stock === 1 ? 'item' : 'items'} in stock (all sizes)
+                </p>
+            </div>
 
             {/* Quantity Selector */}
             <QuantitySelector
@@ -107,9 +165,27 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
             {/* Action Buttons */}
             <div className="pt-2 space-y-3">
+                {/* Success Message */}
+                {successMessage && (
+                    <div className="px-4 py-3 rounded-lg bg-green-500/10 border border-green-500/30 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <p className="text-green-400 text-sm font-medium text-center">
+                            {successMessage}
+                        </p>
+                    </div>
+                )}
+
+                {/* Stock Error Message */}
+                {stockError && (
+                    <div className="px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/30 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <p className="text-red-400 text-sm font-medium text-center">
+                            {stockError}
+                        </p>
+                    </div>
+                )}
+
                 <button
                     onClick={handleAddToCart}
-                    disabled={addedToCart}
+                    disabled={addedToCart || isLoading}
                     className={`
             w-full py-3.5 sm:py-4 
             rounded-full transition-colors duration-300
@@ -118,10 +194,22 @@ export function ProductInfo({ product }: ProductInfoProps) {
             hover:shadow-lg
             relative overflow-hidden
             flex items-center justify-center gap-2
-            ${addedToCart ? 'bg-[#22c55e] text-white pointer-events-none' : 'bg-white text-black hover:bg-white/90'}
+            ${addedToCart
+                            ? 'bg-[#22c55e] text-white pointer-events-none'
+                            : stockError
+                                ? 'bg-red-500 text-white hover:bg-red-600'
+                                : isLoading
+                                    ? 'bg-white/70 text-black/50'
+                                    : 'bg-white text-black hover:bg-white/90'
+                        }
           `}
                 >
-                    {addedToCart && cartAnimation ? (
+                    {isLoading ? (
+                        <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                            <span>ADDING...</span>
+                        </div>
+                    ) : addedToCart && cartAnimation ? (
                         <div className="flex items-center justify-center gap-2">
                             <div className="w-10 h-10 -my-2 transform scale-125">
                                 <Lottie
@@ -156,6 +244,12 @@ export function ProductInfo({ product }: ProductInfoProps) {
             <ProductDetails
                 description={product.description}
                 details={product.details}
+            />
+
+            {/* Size Guide Modal */}
+            <SizeGuide
+                isOpen={showSizeGuide}
+                onClose={() => setShowSizeGuide(false)}
             />
 
         </div>

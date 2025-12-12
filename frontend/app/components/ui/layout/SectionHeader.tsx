@@ -4,8 +4,6 @@
  * Static luxury typography (no stagger animation)
  */
 
-"use client";
-
 import Link from 'next/link';
 
 interface SectionHeaderProps {

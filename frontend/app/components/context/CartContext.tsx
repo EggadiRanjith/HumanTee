@@ -3,23 +3,26 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useRef } from "react";
 
 export interface CartItem {
-  id: number;
+  id: number | string;
   title: string;
-  subtitle: string;
-  price: string;
+  price: number;
+  currency: string;
   image: string;
   quantity: number;
   size?: string;
+  variantId?: string;
+  availableStock?: number;
 }
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
-  removeFromCart: (id: number, size?: string) => void;
-  updateQuantity: (id: number, size: string, quantity: number) => void;
+  addToCart: (item: Omit<CartItem, "quantity"> & { quantity?: number }, onSuccess?: () => void, onError?: (message: string) => void) => Promise<boolean>;
+  removeFromCart: (id: number | string, size?: string) => void;
+  updateQuantity: (id: number | string, size: string, quantity: number) => void;
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
+  getItemInCart: (id: number | string, size?: string) => CartItem | undefined;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -48,18 +51,39 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(timeoutId);
   }, [items]);
 
-  const addToCart = (item: Omit<CartItem, "quantity"> & { quantity?: number }) => {
+  const addToCart = async (
+    item: Omit<CartItem, "quantity"> & { quantity?: number },
+    onSuccess?: () => void,
+    onError?: (message: string) => void
+  ): Promise<boolean> => {
     const qtyToAdd = item.quantity || 1;
-    // We remove quantity from the item object before spreading it, to avoid issues if it was passed in "item"
-    // although Omit<CartItem, "quantity"> should theoretically handle type, at runtime "item" might have it.
-    // actually, item is just the argument.
-
-    // Create the base item without the quantity property from the argument
     const { quantity: _, ...itemWithoutQty } = item;
 
+    // Stock validation
+    if (item.availableStock !== undefined && qtyToAdd > item.availableStock) {
+      const errorMsg = `Only ${item.availableStock} items available`;
+      onError?.(errorMsg);
+      return false;
+    }
+
+    // Check for existing item
+    const existing = items.find((i) => i.id === item.id && i.size === item.size);
+
+    if (existing) {
+      // Check total quantity doesn't exceed stock
+      const totalQty = existing.quantity + qtyToAdd;
+      if (item.availableStock !== undefined && totalQty > item.availableStock) {
+        const remaining = item.availableStock - existing.quantity;
+        const errorMsg = `You already have ${existing.quantity} in cart. Only ${remaining} more available.`;
+        onError?.(errorMsg);
+        return false;
+      }
+    }
+
+    // Add to cart
     setItems((prev) => {
-      const existing = prev.find((i) => i.id === item.id && i.size === item.size);
-      if (existing) {
+      const existingItem = prev.find((i) => i.id === item.id && i.size === item.size);
+      if (existingItem) {
         return prev.map((i) =>
           i.id === item.id && i.size === item.size
             ? { ...i, quantity: i.quantity + qtyToAdd }
@@ -68,15 +92,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, { ...itemWithoutQty, quantity: qtyToAdd }];
     });
+
+    onSuccess?.();
+    return true;
   };
 
-  const removeFromCart = (id: number, size?: string) => {
+  const removeFromCart = (id: number | string, size?: string) => {
     setItems((prev) => prev.filter((item) =>
       !(item.id === id && (!size || item.size === size))
     ));
   };
 
-  const updateQuantity = (id: number, size: string, quantity: number) => {
+  const updateQuantity = (id: number | string, size: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(id, size);
       return;
@@ -97,9 +124,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const totalPrice = items.reduce((sum, item) => {
-    const price = parseFloat(item.price.replace(/[^0-9.]/g, ""));
-    return sum + price * item.quantity;
+    return sum + item.price * item.quantity;
   }, 0);
+
+  const getItemInCart = (id: number | string, size?: string) => {
+    return items.find((i) => i.id === id && (!size || i.size === size));
+  };
 
   return (
     <CartContext.Provider
@@ -111,6 +141,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         clearCart,
         totalItems,
         totalPrice,
+        getItemInCart,
       }}
     >
       {children}

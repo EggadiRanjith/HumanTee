@@ -1,28 +1,30 @@
-"use client";
-
+import { Suspense } from 'react';
 import { ProductCard } from '@/app/components/ui/cards';
-import { SectionHeader, GradientOverlay } from '@/app/components/ui/layout';
-import { shopProducts } from '@/app/data/shop.data';
+import { GradientOverlay } from '@/app/components/ui/layout';
+import { getShopProducts } from '@/app/data/shop.data';
+import { ShopErrorState } from './ShopErrorState';
+import { ShopEmptyState } from './ShopEmptyState';
+import { ProductCardSkeleton } from '@/app/components/ui/loaders/ProductCardSkeleton';
 import type { Metadata } from 'next';
-import dynamic from 'next/dynamic';
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
 
-// Dynamically import Lottie to avoid SSR issues
-const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
+// ISR: Revalidate every 5 minutes (300s) - shop changes less frequently
+export const revalidate = 300;
 
-export default function ShopPage() {
-  const [emptyShopAnimation, setEmptyShopAnimation] = useState(null);
+export const metadata: Metadata = {
+  title: 'Shop',
+  description: 'Explore our premium collection of handcrafted t-shirts',
+};
 
-  useEffect(() => {
-    // Load Lottie animation only on client side
-    if (shopProducts.length === 0) {
-      fetch('/animation/lottie/empty_shop.json')
-        .then(res => res.json())
-        .then(data => setEmptyShopAnimation(data))
-        .catch(err => console.error('Failed to load empty shop animation:', err));
-    }
-  }, []);
+export default async function ShopPage() {
+  let products = [];
+  let hasError = false;
+
+  try {
+    products = await getShopProducts();
+  } catch (error) {
+    console.error('Error loading shop products:', error);
+    hasError = true;
+  }
 
   return (
     <div className="min-h-screen cinematic-bg-dusk relative pt-[var(--header-height)]">
@@ -42,36 +44,16 @@ export default function ShopPage() {
           </p>
         </div>
 
-        {/* Empty State */}
-        {shopProducts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 sm:py-20 lg:py-24 min-h-[60vh]">
-            {emptyShopAnimation && (
-              <div className="w-[200px] sm:w-[280px] lg:w-[320px] mb-6">
-                <Lottie animationData={emptyShopAnimation} loop={true} />
-              </div>
-            )}
-            <h3 className="text-[18px] sm:text-[22px] lg:text-[26px] font-light uppercase tracking-[0.12em] brand-text-primary mb-3">
-              No Products Available
-            </h3>
-            <p className="brand-text-muted text-[11px] sm:text-[12px] uppercase tracking-[0.18em] mb-8 text-center max-w-md">
-              Our collection is being curated. Check back soon for premium pieces.
-            </p>
-            <Link
-              href="/"
-              className="
-                brand-text-muted text-step--1 tracking-wide 
-                border border-white/10 rounded-full
-                px-8 py-3 motion-cinematic luxury-glass
-                hover:border-white/20 hover:brand-text-primary
-              "
-            >
-              BACK TO HOME
-            </Link>
-          </div>
+        {/* Error State */}
+        {hasError ? (
+          <ShopErrorState />
+        ) : products.length === 0 ? (
+          /* Empty State */
+          <ShopEmptyState />
         ) : (
           /* Product Grid */
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mt-10">
-            {shopProducts.map((product, index) => (
+            {products.map((product: any, index: number) => (
               <ProductCard
                 key={product.id}
                 product={product}
@@ -85,4 +67,3 @@ export default function ShopPage() {
     </div>
   );
 }
-

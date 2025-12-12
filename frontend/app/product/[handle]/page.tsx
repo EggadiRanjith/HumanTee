@@ -1,12 +1,15 @@
 import { ProductImageGallery, ProductInfo } from '@/app/components/ui/product';
 import { GradientOverlay } from '@/app/components/ui/layout';
-import { getProductDetail } from '@/app/data/product-details.data';
+import { getProductByHandle } from '@/app/data/product-details.data';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const { id } = await params;
-  const product = getProductDetail(parseInt(id));
+// ISR: Revalidate every 60 seconds
+export const revalidate = 60;
+
+export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
+  const { handle } = await params;
+  const product = await getProductByHandle(handle);
 
   if (!product) return {};
 
@@ -17,14 +20,14 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     openGraph: {
       title: `${product.title} | HumanTee`,
       description: product.description,
-      images: product.images.map(img => ({ url: img })),
+      images: product.images.map((img: { url: string }) => ({ url: img.url })),
     },
   };
 }
 
-export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const product = getProductDetail(parseInt(id));
+export default async function ProductPage({ params }: { params: Promise<{ handle: string }> }) {
+  const { handle } = await params;
+  const product = await getProductByHandle(handle);
 
   if (!product) notFound();
 
@@ -39,7 +42,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           <ProductImageGallery
             images={product.images}
             title={product.title}
-            subtitle={product.subtitle}
+            subtitle={product.description?.substring(0, 50) || ''}
             productId={product.id}
           />
 

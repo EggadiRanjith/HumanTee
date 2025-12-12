@@ -153,7 +153,6 @@ const Hero = () => {
               <video
                 ref={index === 0 ? videoRef : undefined}
                 src={slide.video}
-                poster="/images/hero-poster.jpg"
                 autoPlay
                 muted
                 playsInline

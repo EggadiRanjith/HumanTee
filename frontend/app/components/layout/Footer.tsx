@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FiInstagram } from "react-icons/fi";
+import { FiInstagram, FiMapPin } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import ScrollingText from "./ScrollingText";
@@ -118,24 +118,51 @@ export default function Footer() {
               A luxury shopping experience crafted with minimalist precision.
             </p>
 
-            <div className="flex items-center gap-3 mt-2">
-              <span className="text-white/50 text-[11px] tracking-[0.2em] uppercase">
-                Follow Us
-              </span>
+            <div className="flex flex-wrap items-center gap-6 mt-4 sm:mt-2 justify-center sm:justify-start">
+              {/* Follow Us */}
+              <div className="flex items-center gap-3">
+                <span className="text-white/50 text-[11px] tracking-[0.2em] uppercase whitespace-nowrap">
+                  Follow Us
+                </span>
 
-              <Link
-                href="https://www.instagram.com/humanteeofficial/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="
+                <Link
+                  href="https://www.instagram.com/humanteeofficial/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="
                   w-8 h-8 flex items-center justify-center 
                   rounded-full border border-white/10 
                   hover:border-white/30 hover:bg-white/5 
                   transition-all
                 "
-              >
-                <FiInstagram size={15} className="text-white/75" />
-              </Link>
+                >
+                  <FiInstagram size={15} className="text-white/75" />
+                </Link>
+              </div>
+
+              {/* Separator for desktop */}
+              <div className="hidden sm:block w-px h-4 bg-white/10"></div>
+
+              {/* Location */}
+              <div className="flex items-center gap-3">
+                <span className="text-white/50 text-[11px] tracking-[0.2em] uppercase whitespace-nowrap">
+                  Location
+                </span>
+
+                <Link
+                  href="https://maps.google.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="
+                  w-8 h-8 flex items-center justify-center 
+                  rounded-full border border-white/10 
+                  hover:border-white/30 hover:bg-white/5 
+                  transition-all
+                "
+                >
+                  <FiMapPin size={15} className="text-white/75" />
+                </Link>
+              </div>
             </div>
           </div>
 
