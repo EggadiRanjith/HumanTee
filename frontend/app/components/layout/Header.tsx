@@ -1,18 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FiUser, FiMenu, FiX, FiShoppingBag } from "react-icons/fi";
+import { FiMenu, FiX, FiShoppingBag } from "react-icons/fi";
 import Link from "next/link";
 import Navbar from "./Navbar";
 import { useHeaderContext } from "./useHeaderContext";
 import { useCart } from "../context/CartContext";
 import { motion, AnimatePresence } from "framer-motion";
+import AuthStatus, { AuthStatusMobile } from "./AuthStatus";
 
 export default function Header() {
   const { totalItems } = useCart();
   const ref = useRef<HTMLDivElement>(null);
   const { setHeaderHeight } = useHeaderContext();
   const [open, setOpen] = useState(false);
+  const [authStatus, setAuthStatus] = useState<{ isAuthenticated: boolean; customerName?: string }>({ isAuthenticated: false });
 
   // Sync header height to global CSS var
   useEffect(() => {
@@ -26,6 +28,14 @@ export default function Header() {
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, [setHeaderHeight]);
+
+  // Check auth status
+  useEffect(() => {
+    fetch('/api/auth/status')
+      .then(res => res.json())
+      .then(data => setAuthStatus(data))
+      .catch(() => setAuthStatus({ isAuthenticated: false }));
+  }, []);
 
   // Auto-close menu when tapping outside or scrolling
   useEffect(() => {
@@ -135,9 +145,9 @@ export default function Header() {
         <div className="flex items-center gap-6">
           {/* Mobile Icons */}
           <div className="md:hidden flex items-center gap-4">
-            <Link href="/profile" onClick={(e) => e.stopPropagation()}>
-              <FiUser size={22} className="text-white/90" />
-            </Link>
+            <div onClick={(e) => e.stopPropagation()}>
+              <AuthStatusMobile {...authStatus} />
+            </div>
             <Link
               href="/cart"
               onClick={(e) => e.stopPropagation()}
@@ -171,19 +181,7 @@ export default function Header() {
 
           {/* Desktop Nav - Profile & Cart Icons */}
           <div className="hidden md:flex items-center gap-6">
-            <Link
-              href="/profile"
-              className="
-                transition-all duration-300
-                text-white/70 hover:text-white
-                hover:scale-110
-                hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]
-                p-1
-              "
-              title="Profile"
-            >
-              <FiUser size={28} />
-            </Link>
+            <AuthStatus {...authStatus} />
             <Link
               href="/cart"
               className="
