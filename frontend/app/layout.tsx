@@ -116,7 +116,7 @@ export const viewport: Viewport = {
 ------------------------------------------------------------ */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geist.variable} ${tanPearl.variable} ${zalandoSans.variable} ${meddon.variable} ${bonheurRoyale.variable} ${benzin.variable}`}>
+    <html lang="en" className={`${geist.variable} ${tanPearl.variable} ${zalandoSans.variable} ${meddon.variable} ${bonheurRoyale.variable} ${benzin.variable}`} suppressHydrationWarning>
       <head>
         {/* Preload critical fonts for faster FCP */}
         <link

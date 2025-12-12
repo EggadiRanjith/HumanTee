@@ -3,8 +3,26 @@
 import { OrderCard } from "@/app/components/ui/orders";
 import { GradientOverlay } from "@/app/components/ui/layout";
 import { mockOrders } from "@/app/data/orders.data";
+import dynamic from 'next/dynamic';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+
+// Dynamically import Lottie to avoid SSR issues
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 
 export default function OrdersPage() {
+  const [emptyOrderAnimation, setEmptyOrderAnimation] = useState(null);
+
+  useEffect(() => {
+    // Load Lottie animation only on client side
+    if (mockOrders.length === 0) {
+      fetch('/animation/lottie/Empty_order.json')
+        .then(res => res.json())
+        .then(data => setEmptyOrderAnimation(data))
+        .catch(err => console.error('Failed to load empty order animation:', err));
+    }
+  }, []);
+
   return (
     <div className="min-h-screen brand-bg pb-24 pt-[var(--header-height)]">
       <GradientOverlay variant="violet" />
@@ -21,14 +39,43 @@ export default function OrdersPage() {
           </p>
         </div>
 
-        {/* Order Cards */}
-        <div className="space-y-5">
-          {mockOrders.map((order) => (
-            <OrderCard key={order.id} order={order} />
-          ))}
-        </div>
+        {/* Empty State */}
+        {mockOrders.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 sm:py-20 lg:py-24 min-h-[60vh]">
+            {emptyOrderAnimation && (
+              <div className="w-[200px] sm:w-[280px] lg:w-[320px] mb-6">
+                <Lottie animationData={emptyOrderAnimation} loop={true} />
+              </div>
+            )}
+            <h3 className="text-[18px] sm:text-[22px] lg:text-[26px] font-light uppercase tracking-[0.12em] text-white mb-3">
+              No Orders Yet
+            </h3>
+            <p className="text-white/45 text-[11px] sm:text-[12px] uppercase tracking-[0.18em] mb-8 text-center max-w-md">
+              Start shopping to see your order history here
+            </p>
+            <Link
+              href="/shop"
+              className="
+                text-white/60 text-step--1 tracking-wide 
+                border border-white/10 rounded-full
+                px-8 py-3 motion-cinematic luxury-glass
+                hover:border-white/20 hover:text-white
+              "
+            >
+              START SHOPPING
+            </Link>
+          </div>
+        ) : (
+          /* Order Cards */
+          <div className="space-y-5">
+            {mockOrders.map((order) => (
+              <OrderCard key={order.id} order={order} />
+            ))}
+          </div>
+        )}
 
       </div>
     </div>
   );
 }
+
