@@ -46,8 +46,6 @@ export default function AuthStatus({ isAuthenticated, customerName }: AuthStatus
             title={customerName ? `Account - ${customerName}` : "Account"}
         >
             <FiUser size={28} />
-            {/* Logged in indicator */}
-            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-[#060010]" />
         </Link>
     );
 }
@@ -64,7 +62,6 @@ export function AuthStatusMobile({ isAuthenticated, customerName }: AuthStatusPr
     return (
         <Link href="/account" className="relative">
             <FiUser size={22} className="text-white/90" />
-            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-400 rounded-full border border-[#060010]" />
         </Link>
     );
 }

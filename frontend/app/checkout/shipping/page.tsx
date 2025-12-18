@@ -1,21 +1,48 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/app/components/context/CartContext";
 import { useCheckout } from "@/app/components/context/CheckoutContext";
 import { useLoading } from "@/app/components/context/LoadingContext";
+import { useAuth } from "@/app/context/AuthContext";
 import { CheckoutProgress, OrderSummaryCheckout } from "@/app/components/ui/checkout";
 import { GradientOverlay } from "@/app/components/ui/layout";
 import { motion } from "framer-motion";
+import apiClient from "@/lib/api-client";
 
 export default function ShippingPage() {
     const router = useRouter();
     const { items, totalPrice } = useCart();
     const { shippingData, setShippingData } = useCheckout();
     const { setLoading } = useLoading();
+    const { user } = useAuth();
 
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
+    const [isCheckingProfile, setIsCheckingProfile] = useState(true);
+
+    // Check profile completeness on mount
+    useEffect(() => {
+        const checkProfile = async () => {
+            if (!user) {
+                setIsCheckingProfile(false);
+                return;
+            }
+
+            try {
+                const response = await apiClient.get('/auth/me');
+                setProfileComplete(response.data.profileComplete);
+            } catch (error) {
+                console.error('Failed to check profile:', error);
+                setProfileComplete(false);
+            } finally {
+                setIsCheckingProfile(false);
+            }
+        };
+
+        checkProfile();
+    }, [user]);
 
     const validateShipping = () => {
         const newErrors: Record<string, string> = {};
@@ -39,6 +66,61 @@ export default function ShippingPage() {
             router.push("/checkout/payment");
         }
     };
+
+    // Loading state while checking profile
+    if (isCheckingProfile) {
+        return (
+            <div className="min-h-screen brand-bg pt-[var(--header-height)] flex items-center justify-center px-4">
+                <div className="text-center">
+                    <div className="w-12 h-12 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-white/60">Checking profile...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Profile incomplete - BLOCK CHECKOUT
+    if (profileComplete === false) {
+        return (
+            <div className="min-h-screen brand-bg pt-[var(--header-height)] flex items-center justify-center px-4">
+                <GradientOverlay variant="violet" />
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="relative text-center max-w-md w-full"
+                >
+                    <div className="p-8 rounded-2xl luxury-glass border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/10">
+                        <div className="w-20 h-20 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mx-auto mb-6">
+                            <span className="text-amber-400 text-4xl">⚠️</span>
+                        </div>
+                        <h2 className="text-white text-2xl font-light mb-3 uppercase tracking-wide">Profile Incomplete</h2>
+                        <p className="text-white/70 text-sm mb-6 leading-relaxed">
+                            Please complete your profile with your name and phone number before proceeding to checkout.
+                        </p>
+                        <button
+                            onClick={() => {
+                                setLoading(true);
+                                router.push("/account");
+                            }}
+                            className="w-full px-8 py-4 bg-white text-black rounded-full text-sm uppercase tracking-wider hover:bg-white/90 transition-colors font-semibold"
+                        >
+                            Complete Profile
+                        </button>
+                        <button
+                            onClick={() => {
+                                setLoading(true);
+                                router.push("/cart");
+                            }}
+                            className="w-full mt-3 px-8 py-3 bg-white/10 text-white rounded-full text-sm uppercase tracking-wider hover:bg-white/20 transition-colors"
+                        >
+                            Back to Cart
+                        </button>
+                    </div>
+                </motion.div>
+            </div>
+        );
+    }
 
     if (items.length === 0) {
         return (

@@ -6,15 +6,16 @@ import Link from "next/link";
 import Navbar from "./Navbar";
 import { useHeaderContext } from "./useHeaderContext";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "@/app/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import AuthStatus, { AuthStatusMobile } from "./AuthStatus";
 
 export default function Header() {
   const { totalItems } = useCart();
+  const { user, isAuthenticated } = useAuth();
   const ref = useRef<HTMLDivElement>(null);
   const { setHeaderHeight } = useHeaderContext();
   const [open, setOpen] = useState(false);
-  const [authStatus, setAuthStatus] = useState<{ isAuthenticated: boolean; customerName?: string }>({ isAuthenticated: false });
 
   // Sync header height to global CSS var
   useEffect(() => {
@@ -28,14 +29,6 @@ export default function Header() {
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, [setHeaderHeight]);
-
-  // Check auth status
-  useEffect(() => {
-    fetch('/api/auth/status')
-      .then(res => res.json())
-      .then(data => setAuthStatus(data))
-      .catch(() => setAuthStatus({ isAuthenticated: false }));
-  }, []);
 
   // Auto-close menu when tapping outside or scrolling
   useEffect(() => {
@@ -146,7 +139,7 @@ export default function Header() {
           {/* Mobile Icons */}
           <div className="md:hidden flex items-center gap-4">
             <div onClick={(e) => e.stopPropagation()}>
-              <AuthStatusMobile {...authStatus} />
+              <AuthStatusMobile isAuthenticated={isAuthenticated} customerName={user?.email} />
             </div>
             <Link
               href="/cart"
@@ -181,7 +174,7 @@ export default function Header() {
 
           {/* Desktop Nav - Profile & Cart Icons */}
           <div className="hidden md:flex items-center gap-6">
-            <AuthStatus {...authStatus} />
+            <AuthStatus isAuthenticated={isAuthenticated} customerName={user?.email} />
             <Link
               href="/cart"
               className="
