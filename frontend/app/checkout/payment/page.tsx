@@ -1,21 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/app/components/context/CartContext";
 import { useCheckout } from "@/app/components/context/CheckoutContext";
 import { useLoading } from "@/app/components/context/LoadingContext";
-import { CheckoutProgress } from "@/app/components/ui/checkout";
+import { useAuth } from "@/app/context/AuthContext";
+import { CheckoutProgress, OrderSummaryCheckout } from "@/app/components/ui/checkout";
 import { GradientOverlay } from "@/app/components/ui/layout";
 import { FiCreditCard, FiTruck } from "react-icons/fi";
 import { motion } from "framer-motion";
 
 export default function PaymentPage() {
     const router = useRouter();
-    const { totalPrice, clearCart } = useCart();
+    const { items, totalPrice, clearCart } = useCart();
     const { paymentMethod, setPaymentMethod, setOrderNumber, shippingData } = useCheckout();
     const { setLoading } = useLoading();
+    const { isAuthenticated, isLoading: authLoading } = useAuth();
     const [isProcessing, setIsProcessing] = useState(false);
+
+    // CRITICAL: Redirect to login if not authenticated
+    useEffect(() => {
+        if (!authLoading && !isAuthenticated) {
+            router.push('/login');
+        }
+    }, [authLoading, isAuthenticated, router]);
 
     // Check if shipping data is complete
     const hasShippingData = shippingData.fullName && shippingData.email && shippingData.address;
@@ -41,8 +50,8 @@ export default function PaymentPage() {
 
         // Generate order number
         const orderNum = demoMode
-            ? `DEMO-${Date.now().toString().slice(-8)}`
-            : `ORD-${Date.now().toString().slice(-8)}`;
+            ? `DEMO - ${Date.now().toString().slice(-8)} `
+            : `ORD - ${Date.now().toString().slice(-8)} `;
         setOrderNumber(orderNum);
 
         setLoading(true); // Trigger global loader before redirect
@@ -98,10 +107,10 @@ export default function PaymentPage() {
                                         whileHover={{ scale: 1.01 }}
                                         whileTap={{ scale: 0.99 }}
                                         onClick={() => setPaymentMethod("card")}
-                                        className={`w-full p-3.5 sm:p-4 rounded-xl border-2 transition-all flex items-center gap-2.5 sm:gap-3 min-h-[56px] sm:min-h-[60px] ${paymentMethod === "card"
-                                            ? "border-white bg-white/10 shadow-lg"
-                                            : "border-white/10 hover:border-white/30"
-                                            }`}
+                                        className={`w - full p - 3.5 sm: p - 4 rounded - xl border - 2 transition - all flex items - center gap - 2.5 sm: gap - 3 min - h - [56px] sm: min - h - [60px] ${paymentMethod === "card"
+                                                ? "border-white bg-white/10 shadow-lg"
+                                                : "border-white/10 hover:border-white/30"
+                                            } `}
                                     >
                                         <FiCreditCard className="text-white text-lg sm:text-xl flex-shrink-0" />
                                         <span className="text-white text-sm sm:text-base font-medium">Credit/Debit Card</span>
@@ -117,10 +126,10 @@ export default function PaymentPage() {
                                         whileHover={{ scale: 1.01 }}
                                         whileTap={{ scale: 0.99 }}
                                         onClick={() => setPaymentMethod("upi")}
-                                        className={`w-full p-3.5 sm:p-4 rounded-xl border-2 transition-all flex items-center gap-2.5 sm:gap-3 min-h-[56px] sm:min-h-[60px] ${paymentMethod === "upi"
-                                            ? "border-white bg-white/10 shadow-lg"
-                                            : "border-white/10 hover:border-white/30"
-                                            }`}
+                                        className={`w - full p - 3.5 sm: p - 4 rounded - xl border - 2 transition - all flex items - center gap - 2.5 sm: gap - 3 min - h - [56px] sm: min - h - [60px] ${paymentMethod === "upi"
+                                                ? "border-white bg-white/10 shadow-lg"
+                                                : "border-white/10 hover:border-white/30"
+                                            } `}
                                     >
                                         <span className="text-white text-lg sm:text-xl flex-shrink-0">💳</span>
                                         <span className="text-white text-sm sm:text-base font-medium">UPI</span>
@@ -136,10 +145,10 @@ export default function PaymentPage() {
                                         whileHover={{ scale: 1.01 }}
                                         whileTap={{ scale: 0.99 }}
                                         onClick={() => setPaymentMethod("cod")}
-                                        className={`w-full p-3.5 sm:p-4 rounded-xl border-2 transition-all flex items-center gap-2.5 sm:gap-3 min-h-[56px] sm:min-h-[60px] ${paymentMethod === "cod"
-                                            ? "border-white bg-white/10 shadow-lg"
-                                            : "border-white/10 hover:border-white/30"
-                                            }`}
+                                        className={`w - full p - 3.5 sm: p - 4 rounded - xl border - 2 transition - all flex items - center gap - 2.5 sm: gap - 3 min - h - [56px] sm: min - h - [60px] ${paymentMethod === "cod"
+                                                ? "border-white bg-white/10 shadow-lg"
+                                                : "border-white/10 hover:border-white/30"
+                                            } `}
                                     >
                                         <FiTruck className="text-white text-lg sm:text-xl flex-shrink-0" />
                                         <span className="text-white text-sm sm:text-base font-medium">Cash on Delivery</span>

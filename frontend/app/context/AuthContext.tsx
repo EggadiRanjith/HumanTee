@@ -57,9 +57,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         checkAuth();
     }, []);
 
-    const login = (accessToken: string, userData: User) => {
+    // PHASE 3: Merge guest cart on login
+    const mergeGuestCart = async () => {
+        const guestCart = localStorage.getItem('humantee-cart');
+        if (guestCart) {
+            try {
+                const items = JSON.parse(guestCart);
+                if (items.length > 0) {
+                    // Transform to backend format
+                    const backendItems = items.map((item: any) => ({
+                        productId: item.id.toString(),
+                        variantId: item.variantId,
+                        quantity: item.quantity,
+                        price: item.price,
+                        currency: item.currency || 'USD',
+                        productTitle: item.title,
+                        productImage: item.image,
+                        size: item.size,
+                    }));
+
+                    await apiClient.post('/cart/merge', { items: backendItems });
+                    localStorage.removeItem('humantee-cart');
+                }
+            } catch (error) {
+                console.error('Failed to merge guest cart:', error);
+            }
+        }
+    };
+
+    const login = async (accessToken: string, userData: User) => {
         setAccessToken(accessToken);
         setUser(userData);
+
+        // Merge guest cart after login
+        await mergeGuestCart();
     };
 
     const handleLogout = async () => {

@@ -6,6 +6,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { CartModule } from './cart/cart.module';
 import { ProtectedController } from './protected/protected.controller';
 
 @Module({
@@ -29,6 +30,7 @@ import { ProtectedController } from './protected/protected.controller';
       synchronize: process.env.NODE_ENV !== 'production', // Auto-sync in dev only
     }),
     AuthModule,
+    CartModule,
   ],
   controllers: [AppController, ProtectedController],
   providers: [AppService],

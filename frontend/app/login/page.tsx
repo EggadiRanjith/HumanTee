@@ -106,14 +106,14 @@ export default function LoginPage() {
 
             const data = await response.json();
 
-            // Use AuthContext to manage tokens (memory only)
-            authLogin(data.accessToken, data.user);
+            // Login with cart merge
+            await authLogin(data.accessToken, data.user);
 
             setSuccess("Login successful! Redirecting...");
 
-            // Redirect to home or dashboard
+            // Redirect to account page
             setTimeout(() => {
-                router.push('/');
+                router.push('/account');
             }, 1000);
         } catch (err) {
             setError("Invalid OTP. Please try again.");
@@ -143,14 +143,11 @@ export default function LoginPage() {
 
             const data = await response.json();
 
-            // Use AuthContext login method
-            authLogin(data.accessToken, data.user);
+            // Login with cart merge
+            await authLogin(data.accessToken, data.user);
 
-            setSuccess("Login successful! Redirecting...");
-
-            setTimeout(() => {
-                router.push('/');
-            }, 1000);
+            // Redirect to account page
+            router.push('/account');
         } catch (err: any) {
             console.error('Google login error:', err);
             setGoogleError(err.message || "Google login failed. Please try again.");

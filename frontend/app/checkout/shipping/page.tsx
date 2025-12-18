@@ -16,11 +16,18 @@ export default function ShippingPage() {
     const { items, totalPrice } = useCart();
     const { shippingData, setShippingData } = useCheckout();
     const { setLoading } = useLoading();
-    const { user } = useAuth();
+    const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
     const [isCheckingProfile, setIsCheckingProfile] = useState(true);
+
+    // CRITICAL: Redirect to login if not authenticated
+    useEffect(() => {
+        if (!authLoading && !isAuthenticated) {
+            router.push('/login');
+        }
+    }, [authLoading, isAuthenticated, router]);
 
     // Check profile completeness on mount
     useEffect(() => {
