@@ -21,6 +21,30 @@ export class AuthController {
         return this.authService.sendOtp(sendOtpDto.email, ipAddress);
     }
 
+    @Post('send-admin-otp')
+    @Throttle({ default: { limit: 5, ttl: 3600000 } })  // 5 requests per hour
+    async sendAdminOtp(
+        @Body() sendOtpDto: SendOtpDto,
+        @Req() req: Request,
+    ) {
+        const ipAddress = req.ip || req.socket.remoteAddress || 'unknown';
+
+        // Check if user exists
+        const user = await this.authService.findUserByEmail(sendOtpDto.email);
+
+        if (!user) {
+            throw new UnauthorizedException('Access denied. Admin account not found.');
+        }
+
+        // Check if user is admin
+        if (user.role?.toLowerCase() !== 'admin') {
+            throw new UnauthorizedException('Access denied. Admin privileges required.');
+        }
+
+        // User is admin - send OTP
+        return this.authService.sendOtp(sendOtpDto.email, ipAddress);
+    }
+
     @Post('verify-otp')
     @Throttle({ default: { limit: 10, ttl: 60000 } })  // 10 attempts per minute
     async verifyOtp(
@@ -46,9 +70,13 @@ export class AuthController {
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
+        // Phase 8: Role-based redirect (case-insensitive)
+        const redirectUrl = result.user.role?.toLowerCase() === 'admin' ? '/post-login' : '/';
+
         return {
             accessToken: result.accessToken,
             user: result.user,
+            redirectUrl,
         };
     }
 
@@ -75,10 +103,14 @@ export class AuthController {
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
 
+        // Phase 8: Role-based redirect (case-insensitive)
+        const redirectUrl = result.user.role?.toLowerCase() === 'admin' ? '/post-login' : '/';
+
         // Return access token and user info (NOT refresh token)
         return {
             accessToken: result.accessToken,
             user: result.user,
+            redirectUrl,
         };
     }
 

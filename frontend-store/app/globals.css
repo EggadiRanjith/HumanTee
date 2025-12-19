@@ -1,0 +1,746 @@
+/* ========================================
+   HUMANTEE — CINEMATIC LUXURY DARK THEME
+   ========================================
+   PREMIUM DESIGN SYSTEM — OPTION A
+   Cleaned, optimized, merged, non-duplicated.
+   ======================================== */
+
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:wght@300&family=Meddon&display=swap');
+
+@import "tailwindcss";
+
+
+/* ----------------------------------------
+   1. ROOT TOKENS — COLOR, MOTION, DEPTH
+---------------------------------------- */
+:root {
+
+  /* Header height - dynamically updated by Header component */
+  --header-height: 72px;
+
+  /* -----------------------------
+     BACKGROUND LAYER SYSTEM (A)
+  ----------------------------- */
+  --bg-void: #030308;
+  --bg-dusk: #050512;
+  --bg-oblivion: #0d0d1e;
+  --bg-eclipse: #121225;
+
+  /* BRAND COLORS */
+  --brand-primary: #f5f3ff;
+  --brand-secondary: #b7a4ff;
+
+  /* TEXT */
+  --text-primary: #f7f7ff;
+  --text-muted: rgba(247, 247, 255, 0.68);
+  --text-dim: rgba(247, 247, 255, 0.38);
+
+  /* ACCENTS — QUANTUM SYSTEM */
+  --accent-cyan: #46e6ff;
+  --accent-fuchsia: #ff4fd8;
+  --accent-violet: #b7a4ff;
+
+  /* GLOW SYSTEM */
+  --glow-cyan-subtle: rgba(70, 230, 255, 0.25);
+  --glow-cyan-medium: rgba(70, 230, 255, 0.35);
+  --glow-cyan-intense: rgba(70, 230, 255, 0.45);
+  --glow-fuchsia-subtle: rgba(255, 79, 216, 0.25);
+  --glow-fuchsia-medium: rgba(255, 79, 216, 0.35);
+  --glow-fuchsia-intense: rgba(255, 79, 216, 0.45);
+  --glow-violet-subtle: rgba(183, 164, 255, 0.25);
+  --glow-violet-medium: rgba(183, 164, 255, 0.35);
+  --glow-violet-intense: rgba(183, 164, 255, 0.45);
+
+  --glow-distance-subtle: 8px;
+  --glow-distance-medium: 16px;
+  --glow-distance-intense: 24px;
+
+  /* AURORA SYSTEM */
+  --gradient-aurora:
+    radial-gradient(circle at 20% 30%, rgba(70, 230, 255, 0.16), transparent 60%),
+    radial-gradient(circle at 80% 70%, rgba(255, 79, 216, 0.14), transparent 55%),
+    radial-gradient(circle at 50% 90%, rgba(183, 164, 255, 0.12), transparent 70%),
+    linear-gradient(135deg, #030308 0%, #0a0a18 50%, #121225 100%);
+
+  /* DEPTH / SHADOW */
+  --shadow-base: 0px 0px 12px rgba(0, 0, 0, 0.35);
+  --shadow-surface: 0px 0px 24px rgba(0, 0, 0, 0.45);
+  --shadow-floating: 0px 0px 40px rgba(0, 0, 0, 0.55);
+
+  /* SEMANTIC */
+  --success: #3dd6a7;
+  --warning: #f7c76a;
+  --error: #ff6b8b;
+  --info: #7ac7ff;
+
+  /* TYPOGRAPHY SCALE */
+  --step--2: clamp(0.625rem, 1.5vw, 0.687rem);
+  --step--1: clamp(0.75rem, 1.8vw, 0.812rem);
+  --step-0: clamp(0.875rem, 2vw, 1rem);
+  --step-1: clamp(1rem, 2.5vw, 1.25rem);
+  --step-2: clamp(1.25rem, 3.2vw, 1.563rem);
+  --step-3: clamp(1.5rem, 4vw, 1.953rem);
+  --step-4: clamp(1.875rem, 5vw, 2.441rem);
+  --step-5: clamp(2.25rem, 6vw, 3.052rem);
+  --step-6: clamp(2.75rem, 7.5vw, 3.815rem);
+  --step-7: clamp(3.5rem, 9vw, 4.768rem);
+
+  --weight-body: 400;
+  --weight-heading: 500;
+  --weight-hero: 300;
+
+  --track-tight: -0.01em;
+  --track-wide: 0.02em;
+  --track-wider: 0.08em;
+
+  /* MOTION + EASING */
+  --luxury-fast: 160ms;
+  --luxury-medium: 260ms;
+  --luxury-slow: 480ms;
+
+  --ease-cinematic-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-cinematic-in: cubic-bezier(0.32, 0, 0.67, 0);
+  --ease-cinematic-inout: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* SPACING SYSTEM */
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-3xl: 3rem;
+  --space-6xl: 6rem;
+  --space-7xl: 7rem;
+
+  /* CINEMATIC TRACKING */
+  --cinematic-hero-tracking: 0.05em;
+  --cinematic-heading-tracking: 0.03em;
+  --cinematic-label-tracking: 0.1em;
+
+  /* BLUR SYSTEM */
+  --max-blur-high: 120px;
+
+  /* MISSING TOKENS FIXED */
+  --glow-pulse-duration: 3s;
+
+  --ambient-light-subtle: rgba(255, 255, 255, 0.03);
+  --ambient-light-medium: rgba(255, 255, 255, 0.06);
+  --ambient-light-dramatic: rgba(255, 255, 255, 0.12);
+
+  --volumetric-light: radial-gradient(circle, rgba(255, 255, 255, 0.07), transparent);
+
+  --neon-refract-cyan: rgba(70, 230, 255, 0.18);
+  --neon-refract-fuchsia: rgba(255, 79, 216, 0.18);
+  --neon-refract-violet: rgba(183, 164, 255, 0.18);
+
+  --focus-ring-offset: 2px;
+  --focus-ring-width: 2px;
+  --focus-ring-blur: 8px;
+  --focus-ring-color-cyan: rgba(70, 230, 255, 0.55);
+  --focus-ring-color-fuchsia: rgba(255, 79, 216, 0.55);
+  --focus-ring-color-violet: rgba(183, 164, 255, 0.55);
+}
+
+/* ----------------------------------------
+   2. BASE ELEMENT STYLES
+---------------------------------------- */
+@layer base {
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--bg-dusk);
+    color: var(--text-primary);
+    font-family: var(--font-geist), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1 {
+    font-size: var(--step-7);
+    font-weight: var(--weight-hero);
+    letter-spacing: var(--track-wider);
+  }
+
+  h2 {
+    font-size: var(--step-5);
+    font-weight: var(--weight-heading);
+    letter-spacing: var(--track-wide);
+  }
+
+  h3 {
+    font-size: var(--step-3);
+    font-weight: var(--weight-heading);
+    letter-spacing: var(--track-wide);
+  }
+
+  p {
+    font-size: var(--step-0);
+    line-height: 1.6;
+  }
+}
+
+/* ----------------------------------------
+   3. UTILITIES — CLEAN, NON-DUPLICATED
+---------------------------------------- */
+@layer utilities {
+
+  /* BACKGROUND LAYER UTILITIES */
+  .cinematic-bg-void {
+    background: var(--bg-void);
+  }
+
+  .cinematic-bg-dusk {
+    background: var(--bg-dusk);
+  }
+
+  .cinematic-bg-oblivion {
+    background: var(--bg-oblivion);
+  }
+
+  .cinematic-bg-eclipse {
+    background: var(--bg-eclipse);
+  }
+
+  .cinematic-gradient-aurora {
+    background: var(--gradient-aurora);
+  }
+
+  .cinematic-aurora-animated {
+    background: var(--gradient-aurora);
+    background-size: 200% 200%;
+    animation: auroraMove 20s ease infinite;
+  }
+
+  /* GLOW UTILITIES */
+  .luxury-glow-cyan-subtle {
+    box-shadow: 0 0 var(--glow-distance-subtle) var(--glow-cyan-subtle);
+  }
+
+  .luxury-glow-cyan-medium {
+    box-shadow: 0 0 var(--glow-distance-medium) var(--glow-cyan-medium);
+  }
+
+  .luxury-glow-cyan-intense {
+    box-shadow: 0 0 var(--glow-distance-intense) var(--glow-cyan-intense);
+  }
+
+  .luxury-glow-fuchsia-subtle {
+    box-shadow: 0 0 var(--glow-distance-subtle) var(--glow-fuchsia-subtle);
+  }
+
+  .luxury-glow-fuchsia-medium {
+    box-shadow: 0 0 var(--glow-distance-medium) var(--glow-fuchsia-medium);
+  }
+
+  .luxury-glow-fuchsia-intense {
+    box-shadow: 0 0 var(--glow-distance-intense) var(--glow-fuchsia-intense);
+  }
+
+  .luxury-glow-violet-subtle {
+    box-shadow: 0 0 var(--glow-distance-subtle) var(--glow-violet-subtle);
+  }
+
+  .luxury-glow-violet-medium {
+    box-shadow: 0 0 var(--glow-distance-medium) var(--glow-violet-medium);
+  }
+
+  .luxury-glow-violet-intense {
+    box-shadow: 0 0 var(--glow-distance-intense) var(--glow-violet-intense);
+  }
+
+  /* SURFACE SYSTEM */
+  .surface-base {
+    background: var(--bg-oblivion);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: var(--shadow-surface);
+  }
+
+  .surface-elevated {
+    background: var(--bg-eclipse);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: var(--shadow-floating);
+  }
+
+  /* GLASS SYSTEM */
+  .luxury-glass {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-floating);
+  }
+
+  /* SHADOW ELEVATION SYSTEM */
+  .shadow-elevation-4 {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .shadow-elevation-6 {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  }
+
+  /* BRAND COLOR UTILITIES */
+  .brand-bg-void {
+    background: var(--bg-void);
+  }
+
+  .brand-bg-dusk {
+    background: var(--bg-dusk);
+  }
+
+  .brand-bg-oblivion {
+    background: var(--bg-oblivion);
+  }
+
+  .brand-bg-eclipse {
+    background: var(--bg-eclipse);
+  }
+
+  .brand-primary {
+    color: var(--brand-primary);
+  }
+
+  .brand-secondary {
+    color: var(--brand-secondary);
+  }
+
+  .brand-bg {
+    background: var(--bg-dusk);
+  }
+
+  .brand-border-subtle {
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .brand-border-strong {
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .brand-surface {
+    background: var(--bg-oblivion);
+  }
+
+  .brand-surface-elevated {
+    background: var(--bg-eclipse);
+  }
+
+  .shadow-brand-floating {
+    box-shadow: var(--shadow-floating);
+  }
+
+  .shadow-floating {
+    box-shadow: var(--shadow-floating);
+  }
+
+  .shadow-glow-cyan {
+    box-shadow: 0 0 var(--glow-distance-medium) var(--glow-cyan-medium);
+  }
+
+  .shadow-glow-fuchsia {
+    box-shadow: 0 0 var(--glow-distance-medium) var(--glow-fuchsia-medium);
+  }
+
+  .shadow-glow-violet {
+    box-shadow: 0 0 var(--glow-distance-medium) var(--glow-violet-medium);
+  }
+
+  /* TEXT UTILITIES */
+  .brand-text-primary {
+    color: var(--brand-primary);
+  }
+
+  .brand-text-muted {
+    color: var(--text-muted);
+  }
+
+  .brand-text-dim {
+    color: var(--text-dim);
+  }
+
+  .brand-text-cyan {
+    color: var(--accent-cyan);
+  }
+
+  .brand-text-fuchsia {
+    color: var(--accent-fuchsia);
+  }
+
+  .brand-text-violet {
+    color: var(--accent-violet);
+  }
+
+  /* MOTION UTILITIES */
+  .motion-cinematic {
+    transition: all var(--luxury-medium) var(--ease-cinematic-out);
+  }
+
+  .motion-luxury-slow {
+    transition: all var(--luxury-slow) var(--ease-cinematic-inout);
+  }
+
+  .motion-luxury-fast {
+    transition: all var(--luxury-fast) var(--ease-cinematic-out);
+  }
+
+  /* TEXT STEP SIZING */
+  .text-step--1 {
+    font-size: var(--step--1);
+    font-weight: var(--weight-body);
+  }
+
+  .text-step-0 {
+    font-size: var(--step-0);
+    font-weight: var(--weight-body);
+  }
+
+  .text-step-1 {
+    font-size: var(--step-1);
+    font-weight: var(--weight-heading);
+  }
+
+  .text-step-3 {
+    font-size: var(--step-3);
+    font-weight: var(--weight-heading);
+  }
+
+  .text-step-5 {
+    font-size: var(--step-5);
+    font-weight: var(--weight-heading);
+  }
+
+  .text-step-6 {
+    font-size: var(--step-6);
+    font-weight: var(--weight-hero);
+  }
+
+  .text-step-7 {
+    font-size: var(--step-7);
+    font-weight: var(--weight-hero);
+  }
+
+  /* FOCUS RINGS */
+  .focus-ring-cyan:focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 var(--focus-ring-offset) var(--bg-dusk),
+      0 0 0 var(--focus-ring-width) var(--focus-ring-color-cyan),
+      0 0 var(--focus-ring-blur) var(--focus-ring-color-cyan);
+  }
+
+  .focus-ring-fuchsia:focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 var(--focus-ring-offset) var(--bg-dusk),
+      0 0 0 var(--focus-ring-width) var(--focus-ring-color-fuchsia),
+      0 0 var(--focus-ring-blur) var(--focus-ring-color-fuchsia);
+  }
+
+  .focus-ring-violet:focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 var(--focus-ring-offset) var(--bg-dusk),
+      0 0 0 var(--focus-ring-width) var(--focus-ring-color-violet),
+      0 0 var(--focus-ring-blur) var(--focus-ring-color-violet);
+  }
+}
+
+/* ----------------------------------------
+   4. ANIMATIONS — CLEAN FINAL SET
+---------------------------------------- */
+
+/* AURORA ANIMATION */
+@keyframes auroraMove {
+  0% {
+    background-position: 0% 0%;
+  }
+
+  50% {
+    background-position: 100% 100%;
+  }
+
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+/* TEXT BREATHING */
+@keyframes pulseText {
+  0% {
+    opacity: 0.6;
+    letter-spacing: 0.35em;
+  }
+
+  50% {
+    opacity: 1;
+    letter-spacing: 0.45em;
+  }
+
+  100% {
+    opacity: 0.6;
+    letter-spacing: 0.35em;
+  }
+}
+
+.animate-pulseText {
+  animation: pulseText 2s ease-in-out infinite;
+}
+
+/* GLOW PULSE */
+@keyframes glowPulse {
+
+  0%,
+  100% {
+    opacity: 0.4;
+    filter: brightness(1);
+  }
+
+  50% {
+    opacity: 0.8;
+    filter: brightness(1.2);
+  }
+}
+
+.animate-glowPulse {
+  animation: glowPulse var(--glow-pulse-duration) ease-in-out infinite;
+}
+
+/* REDUCE MOTION SAFETY */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ----------------------------------------
+   5. RESPONSIVE UTILITIES
+---------------------------------------- */
+
+/* Mobile-first responsive containers */
+.container-responsive {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .container-responsive {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+
+/* Touch-friendly tap targets */
+.tap-target,
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 375px) {
+
+  .tap-target,
+  .touch-target {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
+/* Safe area insets for mobile devices */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-area-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Mobile optimizations */
+@media (max-width: 767px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+
+  .mobile-full {
+    width: 100% !important;
+  }
+
+  .mobile-center {
+    text-align: center !important;
+    justify-content: center !important;
+  }
+}
+
+/* Extra small devices (320px and up) */
+@media (min-width: 20rem) {
+  .container-responsive {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Small devices (375px and up) */
+@media (min-width: 23.4375rem) {
+  .container-responsive {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+}
+
+/* Prevent horizontal scroll on all devices */
+html,
+body {
+  overflow-x: hidden;
+  width: 100%;
+  position: relative;
+}
+
+/* Improve text rendering on mobile */
+@media (max-width: 767px) {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Smooth scrolling for mobile drawer */
+.overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Prevent body scroll when drawer is open */
+body.drawer-open {
+  overflow: hidden !important;
+  position: fixed;
+  width: 100%;
+}
+
+/* Add padding to body on mobile to account for bottom nav */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: 10px;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .tablet-hidden {
+    display: none !important;
+  }
+}
+
+/* Desktop optimizations */
+@media (min-width: 1024px) {
+  .desktop-hidden {
+    display: none !important;
+  }
+}
+
+/* ============================================
+   FOCUS STYLES (Accessibility - Keyboard Navigation)
+   ============================================ */
+
+/* Remove default outline */
+*:focus {
+  outline: none;
+}
+
+/* Visible focus indicator for keyboard navigation */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role='button']:focus-visible,
+[role='link']:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Special focus for form inputs */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline-color: var(--accent-violet);
+  outline-offset: 0;
+  border-radius: 8px;
+}
+
+/* Focus for custom styled elements */
+.luxury-glass:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(70, 230, 255, 0.15);
+}
+
+/* ----------------------------------------
+   LOADING & ANIMATION UTILITIES
+---------------------------------------- */
+
+/* Shimmer animation for skeletons */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+/* Slide in animation for toasts */
+@keyframes slide-in-right {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}

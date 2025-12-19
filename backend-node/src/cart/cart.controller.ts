@@ -2,7 +2,8 @@ import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Req } fro
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { CartService } from './cart.service';
 import { MergeCartDto } from './dto/merge-cart.dto';
-import { CartItemDto } from './dto/cart-item.dto';
+import { AddToCartDto } from './dto/add-to-cart.dto';
+import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 
 @Controller('cart')
 @UseGuards(JwtAuthGuard)
@@ -26,7 +27,7 @@ export class CartController {
                 currency: item.currency,
                 productTitle: item.product_title,
                 productImage: item.product_image,
-                size: item.size,
+                variantLabel: item.variant_label, // Phase 5: variant_label instead of size
             })) || [],
             totalItems: cart.items?.reduce((sum, item) => sum + item.quantity, 0) || 0,
             totalPrice: cart.items?.reduce((sum, item) => sum + parseFloat(item.price_snapshot.toString()) * item.quantity, 0) || 0,
@@ -39,12 +40,12 @@ export class CartController {
      */
     @Post('merge')
     async mergeCart(@Req() req: any, @Body() mergeCartDto: MergeCartDto) {
-        const cart = await this.cartService.mergeGuestCart(req.user.userId, mergeCartDto);
+        const result = await this.cartService.mergeGuestCart(req.user.userId, mergeCartDto);
         return {
             message: 'Cart merged successfully',
             cart: {
-                id: cart.id,
-                items: cart.items?.map((item) => ({
+                id: result.cart.id,
+                items: result.cart.items?.map((item) => ({
                     id: item.id,
                     productId: item.product_id,
                     variantId: item.variant_id,
@@ -53,9 +54,10 @@ export class CartController {
                     currency: item.currency,
                     productTitle: item.product_title,
                     productImage: item.product_image,
-                    size: item.size,
+                    variantLabel: item.variant_label, // Phase 5: variant_label instead of size
                 })) || [],
             },
+            droppedItems: result.droppedItems, // Phase 5: Report dropped items
         };
     }
 
@@ -63,8 +65,8 @@ export class CartController {
      * POST /cart/items - Add item to cart
      */
     @Post('items')
-    async addItem(@Req() req: any, @Body() itemDto: CartItemDto) {
-        const cart = await this.cartService.addItem(req.user.userId, itemDto);
+    async addItem(@Req() req: any, @Body() dto: AddToCartDto) {
+        await this.cartService.addItem(req.user.userId, dto);
         return this.getCart(req);
     }
 
@@ -72,8 +74,8 @@ export class CartController {
      * PATCH /cart/items/:id - Update item quantity
      */
     @Patch('items/:id')
-    async updateItem(@Req() req: any, @Param('id') itemId: string, @Body() body: { quantity: number }) {
-        await this.cartService.updateItemQuantity(req.user.userId, itemId, body.quantity);
+    async updateItem(@Req() req: any, @Param('id') itemId: string, @Body() dto: UpdateCartItemDto) {
+        await this.cartService.updateItemQuantity(req.user.userId, itemId, dto);
         return this.getCart(req);
     }
 

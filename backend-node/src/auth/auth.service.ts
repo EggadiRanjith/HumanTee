@@ -116,6 +116,12 @@ export class AuthService {
                         email,
                     });
                     await this.oauthAccountRepository.save(oauthAccount);
+
+                    // Send welcome email (async, don't wait)
+                    this.emailService.sendWelcomeEmail(email, payload.name).catch(err => {
+                        // Log but don't fail login
+                        console.error('Welcome email failed:', err);
+                    });
                 }
             }
 
@@ -132,7 +138,7 @@ export class AuthService {
             success = true;
 
             // 4️⃣ Issue session
-            const accessToken = this.generateAccessToken(authUser.id, authUser.email);
+            const accessToken = this.generateAccessToken(authUser.id, authUser.email, authUser.role);
             const refreshToken = await this.generateRefreshToken(authUser.id);
 
             return {
@@ -157,9 +163,9 @@ export class AuthService {
         }
     }
 
-    private generateAccessToken(userId: string, email: string): string {
+    private generateAccessToken(userId: string, email: string, role: string): string {
         return this.jwtService.sign(
-            { sub: userId, email },
+            { sub: userId, email, role },
             { expiresIn: '15m' },
         );
     }
@@ -267,7 +273,7 @@ export class AuthService {
             await this.refreshTokenRepository.save(validToken);
 
             // Issue new tokens
-            const newAccessToken = this.generateAccessToken(user.id, user.email);
+            const newAccessToken = this.generateAccessToken(user.id, user.email, user.role);
             const newRefreshToken = await this.generateRefreshToken(user.id);
 
             // Audit log
@@ -362,6 +368,16 @@ export class AuthService {
         );
 
         return { message: 'Logged out successfully' };
+    }
+
+    /**
+     * Find user by email (for admin security checks)
+     */
+    async findUserByEmail(email: string): Promise<AuthUser | null> {
+        const normalizedEmail = email.toLowerCase().trim();
+        return this.authUserRepository.findOne({
+            where: { email: normalizedEmail },
+        });
     }
 
     /**
@@ -500,6 +516,11 @@ export class AuthService {
                     full_name: normalizedEmail.split('@')[0],
                 });
                 await queryRunner.manager.save(userProfile);
+
+                // Send welcome email (async, don't wait) - no name for OTP users
+                this.emailService.sendWelcomeEmail(normalizedEmail).catch(err => {
+                    console.error('Welcome email failed:', err);
+                });
             }
             // Existing users: Allow login regardless of original auth_provider
             // This ensures Google users can also login with OTP and vice versa
@@ -514,7 +535,7 @@ export class AuthService {
             await queryRunner.commitTransaction();
 
             // 9. Issue tokens
-            const accessToken = this.generateAccessToken(authUser.id, authUser.email);
+            const accessToken = this.generateAccessToken(authUser.id, authUser.email, authUser.role);
             const refreshToken = await this.generateRefreshToken(authUser.id);
 
             // 10. Audit log success

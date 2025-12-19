@@ -38,4 +38,23 @@ export class EmailService {
             throw error;
         }
     }
+
+    async sendWelcomeEmail(email: string, name?: string): Promise<void> {
+        const greeting = name ? `Welcome, ${name}!` : 'Welcome to HumanTee!';
+
+        const mailOptions = {
+            from: process.env.SMTP_FROM || `HumanTee <${process.env.SMTP_USER}>`,
+            to: email,
+            subject: 'Welcome to HumanTee! 🎉',
+            text: `${greeting}\n\nThank you for joining HumanTee – where style meets comfort.\n\nWe're excited to have you as part of our community.\n\nStart shopping: ${process.env.FRONTEND_URL || 'http://localhost:3000'}\n\n- HumanTee Team`,
+        };
+
+        try {
+            await this.transporter.sendMail(mailOptions);
+            this.logger.log(`Welcome email sent to ${email.substring(0, 3)}***`);
+        } catch (error) {
+            this.logger.error(`Failed to send welcome email: ${error.message}`);
+            // Don't throw - welcome email is nice-to-have, not critical
+        }
+    }
 }

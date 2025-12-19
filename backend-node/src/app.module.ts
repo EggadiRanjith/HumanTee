@@ -7,6 +7,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { CartModule } from './cart/cart.module';
+import { ProductsModule } from './products/products.module';
+import { OrdersModule } from './orders/orders.module';
+import { PaymentsModule } from './payments/payments.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { ProtectedController } from './protected/protected.controller';
 
 @Module({
@@ -27,10 +31,14 @@ import { ProtectedController } from './protected/protected.controller';
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_DATABASE || 'humantee',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: process.env.NODE_ENV !== 'production', // Auto-sync in dev only
+      synchronize: false, // PHASE 1: Migrations only, no auto-sync
     }),
     AuthModule,
     CartModule,
+    ProductsModule,
+    OrdersModule,
+    PaymentsModule,
+    NotificationsModule,
   ],
   controllers: [AppController, ProtectedController],
   providers: [AppService],

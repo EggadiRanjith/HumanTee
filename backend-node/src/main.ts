@@ -20,9 +20,14 @@ async function bootstrap() {
   // Cookie parser for refresh tokens
   app.use(cookieParser());
 
-  // CORS configuration
+  // CORS configuration - Phase 8: Allow both customer and admin apps
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: [
+      'http://localhost:3000',  // Customer app
+      'http://localhost:3002',  // Admin app
+      process.env.FRONTEND_URL, // Production customer
+      process.env.ADMIN_URL,    // Production admin
+    ].filter(Boolean),
     credentials: true,
   });
 

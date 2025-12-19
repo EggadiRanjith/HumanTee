@@ -1,0 +1,4 @@
+export enum NotificationType {
+    ORDER_CONFIRMATION = 'ORDER_CONFIRMATION',
+    ORDER_FULFILLED = 'ORDER_FULFILLED',
+}
