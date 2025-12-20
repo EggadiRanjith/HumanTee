@@ -367,7 +367,7 @@ export class OrdersService {
         }
 
         // Update order
-        order.status = OrderStatus.CANCELLED_MANUAL;
+        order.status = OrderStatus.CANCELLED;
         order.cancelled_at = new Date(); // Phase 7: Add timestamp
         await this.orderRepo.save(order);
 

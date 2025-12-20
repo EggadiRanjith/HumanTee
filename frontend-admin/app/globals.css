@@ -744,3 +744,73 @@ select:focus-visible {
 .animate-slide-in-right {
   animation: slide-in-right 0.3s ease-out;
 }
+
+/* ----------------------------------------
+   ADMIN PANEL OVERRIDES
+   Prevent dark theme from bleeding into admin
+---------------------------------------- */
+
+/* Admin panel should not inherit dark theme colors */
+.admin-panel {
+  background: #f9fafb;
+  color: #111827;
+}
+
+/* Ensure all form elements in admin have proper colors */
+.admin-panel select,
+.admin-panel select option,
+.admin-panel input[type="text"],
+.admin-panel input[type="email"],
+.admin-panel input[type="password"],
+.admin-panel input[type="number"],
+.admin-panel input[type="url"],
+.admin-panel input[type="tel"],
+.admin-panel input[type="search"],
+.admin-panel textarea {
+  color: inherit;
+  background-color: inherit;
+}
+
+/* ----------------------------------------
+   LOGIN PAGE FIXES
+   Ensure inputs are always visible
+---------------------------------------- */
+
+/* Login page inputs should always have dark text on white background */
+input[type="email"],
+input[type="text"],
+input[type="password"] {
+  color: #111827;
+}
+
+/* Ensure autofill doesn't break text color */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #111827;
+  -webkit-box-shadow: 0 0 0px 1000px white inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* ----------------------------------------
+   SELECT DROPDOWN ARROW STYLING
+   Ensure dropdown arrows are properly aligned
+---------------------------------------- */
+
+/* Style the native dropdown arrow */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23374151' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 12px 12px;
+  padding-right: 2.5rem;
+}
+
+/* Ensure the arrow is visible on dark backgrounds */
+.bg-black select,
+.bg-gray-900 select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+}

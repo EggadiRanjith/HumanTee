@@ -11,7 +11,7 @@ import {
 import { Product } from './product.entity';
 
 /**
- * ProductVariant Entity
+ * ProductVariant Entity (PRODUCTION-GRADE)
  * Sellable unit that owns price and stock
  */
 @Entity('product_variants')
@@ -27,17 +27,29 @@ export class ProductVariant {
     @Index('IDX_PRODUCT_VARIANTS_SKU')
     sku: string;
 
+    @Column({ type: 'boolean', default: false })
+    sku_locked: boolean; // Prevents SKU changes after publish
+
     @Column({ type: 'varchar', length: 50 })
     size: string;
 
     @Column({ type: 'varchar', length: 50, nullable: true })
     color: string;
 
+    @Column({ type: 'varchar', length: 7, nullable: true })
+    color_hex: string; // e.g., #FF5733
+
     @Column({ type: 'decimal', precision: 10, scale: 2 })
     price: number;
 
+    @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+    price_override?: number; // Optional override
+
     @Column({ type: 'int', default: 0 })
     stock_quantity: number;
+
+    @Column({ type: 'int', nullable: true })
+    weight?: number; // Weight in grams
 
     @Column({ type: 'boolean', default: true })
     is_active: boolean;

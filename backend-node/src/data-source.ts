@@ -10,6 +10,7 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_DATABASE || 'HumanTee',
     entities: [__dirname + '/**/*.entity{.ts,.js}'],
     migrations: [__dirname + '/migrations/*{.ts,.js}'],
+    migrationsTableName: 'migrations',
     synchronize: false,
-    logging: false,
+    logging: true, // Enable logging to see what's happening
 });

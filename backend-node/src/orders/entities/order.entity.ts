@@ -53,6 +53,15 @@ export class Order {
     @Column({ type: 'timestamp', nullable: true }) // Phase 7: Cancellation timestamp
     cancelled_at: Date | null;
 
+    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+    discount_amount: number;
+
+    @Column({
+        type: 'varchar',
+        default: 'PENDING',
+    })
+    payment_status: string;
+
     @CreateDateColumn()
     created_at: Date;
 
