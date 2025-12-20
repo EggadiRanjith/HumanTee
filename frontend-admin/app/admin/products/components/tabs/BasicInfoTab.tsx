@@ -20,70 +20,73 @@ export default function BasicInfoTab() {
     }, [name, description, productType, category]);
 
     return (
-        <div className="space-y-4 sm:space-y-6">
+        <div className="space-y-6 sm:space-y-8">
             <FormSection title="Basic Information">
                 <div className="space-y-4 sm:space-y-5">
                     {/* Product Name */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-900 mb-2">
-                            Product Name *
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-900 mb-2">
+                            Product Name <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="text"
+                            id="name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            placeholder="e.g., Premium Cotton T-Shirt"
-                            className="w-full px-3 py-2.5 sm:px-4 sm:py-3 bg-white border-2 border-gray-400 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black focus:border-black outline-none transition-colors text-sm sm:text-base"
+                            placeholder="e.g., Classic White T-Shirt"
+                            className="w-full px-3 py-3 sm:px-4 sm:py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900"
                         />
                     </div>
 
                     {/* Description */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-900 mb-2">
-                            Description *
+                        <label htmlFor="description" className="block text-sm font-medium text-gray-900 mb-2">
+                            Description
                         </label>
                         <textarea
+                            id="description"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Describe your product..."
                             rows={5}
-                            className="w-full px-3 py-2.5 sm:px-4 sm:py-3 bg-white border-2 border-gray-400 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black outline-none resize-none transition-colors text-sm sm:text-base"
+                            placeholder="Describe your product..."
+                            className="w-full px-3 py-3 sm:px-4 sm:py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900 resize-none"
                         />
                     </div>
 
-                    {/* Product Type & Category */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    {/* Product Type & Category - Stack on mobile, row on desktop */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                         <div>
-                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                            <label htmlFor="productType" className="block text-sm font-medium text-gray-900 mb-2">
                                 Product Type
                             </label>
                             <select
+                                id="productType"
                                 value={productType}
                                 onChange={(e) => setProductType(e.target.value)}
-                                className="w-full px-3 py-2.5 sm:px-4 sm:py-3 bg-white border-2 border-gray-400 rounded-lg text-gray-900 focus:ring-2 focus:ring-black focus:border-black outline-none transition-colors cursor-pointer text-sm sm:text-base"
+                                className="w-full px-3 py-3 sm:px-4 sm:py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900"
                             >
-                                <option value="T-Shirt">T-Shirt</option>
-                                <option value="Shirt">Shirt</option>
-                                <option value="Polo">Polo</option>
-                                <option value="Hoodie">Hoodie</option>
-                                <option value="Sweatshirt">Sweatshirt</option>
+                                <option value="">Select type</option>
+                                <option value="t-shirt">T-Shirt</option>
+                                <option value="hoodie">Hoodie</option>
+                                <option value="sweatshirt">Sweatshirt</option>
+                                <option value="accessories">Accessories</option>
                             </select>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                            <label htmlFor="category" className="block text-sm font-medium text-gray-900 mb-2">
                                 Category
                             </label>
                             <select
+                                id="category"
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
-                                className="w-full px-3 py-2.5 sm:px-4 sm:py-3 bg-white border-2 border-gray-400 rounded-lg text-gray-900 focus:ring-2 focus:ring-black focus:border-black outline-none transition-colors cursor-pointer text-sm sm:text-base"
+                                className="w-full px-3 py-3 sm:px-4 sm:py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900"
                             >
-                                <option value="Drop 1">Drop 1</option>
-                                <option value="Drop 2">Drop 2</option>
-                                <option value="Drop 3">Drop 3</option>
-                                <option value="Drop 4">Drop 4</option>
-                                <option value="Drop 5">Drop 5</option>
+                                <option value="">Select category</option>
+                                <option value="drop1">Drop 1</option>
+                                <option value="drop2">Drop 2</option>
+                                <option value="drop3">Drop 3</option>
                             </select>
                         </div>
                     </div>

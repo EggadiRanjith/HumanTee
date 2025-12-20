@@ -9,13 +9,18 @@ import {
     Index,
 } from 'typeorm';
 import { ProductVariant } from './product-variant.entity';
+import { ProductImage } from './product-image.entity';
+import { ProductCollectionMap } from './product-collection-map.entity';
 import { ProductStatus } from '../enums/product-status.enum';
+import { InventoryMode } from '../enums/inventory-mode.enum';
 
 /**
  * Product Entity (PRODUCTION-GRADE)
  * Container for product information with full e-commerce fields
  */
 @Entity('products')
+@Index('idx_products_featured_active', ['is_featured', 'status', 'created_at'])
+@Index('idx_products_low_stock', ['track_inventory', 'stock_quantity', 'low_stock_threshold'])
 export class Product {
     @PrimaryGeneratedColumn('uuid')
     id: string;
@@ -24,7 +29,7 @@ export class Product {
     // BASIC INFO
     // ========================================================================
     @Column({ type: 'varchar', length: 255 })
-    title: string;
+    name: string;
 
     @Column({ type: 'varchar', length: 255, unique: true })
     @Index('IDX_PRODUCTS_SLUG')
@@ -49,6 +54,9 @@ export class Product {
     // ========================================================================
     // PRICING
     // ========================================================================
+    @Column({ type: 'decimal', precision: 10, scale: 2 })
+    base_price: number;
+
     @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
     compare_at_price?: number;
 
@@ -64,6 +72,13 @@ export class Product {
     // ========================================================================
     // INVENTORY
     // ========================================================================
+    @Column({
+        type: 'enum',
+        enum: InventoryMode,
+        default: InventoryMode.SINGLE,
+    })
+    inventory_mode: InventoryMode;
+
     @Column({ type: 'boolean', default: true })
     track_inventory: boolean;
 
@@ -80,18 +95,6 @@ export class Product {
     low_stock_threshold?: number;
 
     // ========================================================================
-    // SEO
-    // ========================================================================
-    @Column({ type: 'varchar', length: 60, nullable: true })
-    meta_title?: string;
-
-    @Column({ type: 'varchar', length: 160, nullable: true })
-    meta_description?: string;
-
-    @Column({ type: 'text', nullable: true })
-    tags?: string; // Comma-separated
-
-    // ========================================================================
     // ORGANIZATION
     // ========================================================================
     @Column({ type: 'boolean', default: false })
@@ -103,9 +106,6 @@ export class Product {
 
     @Column({ type: 'varchar', length: 50, default: 'Drop 1' })
     category: string;
-
-    @Column({ type: 'text', nullable: true })
-    collections?: string; // Comma-separated
 
     // ========================================================================
     // TIMESTAMPS
@@ -121,4 +121,11 @@ export class Product {
     // ========================================================================
     @OneToMany(() => ProductVariant, (variant) => variant.product)
     variants: ProductVariant[];
+
+    @OneToMany(() => ProductImage, (image) => image.product)
+    images: ProductImage[];
+
+    @OneToMany(() => ProductCollectionMap, (map) => map.product)
+    collectionMaps: ProductCollectionMap[];
 }
+

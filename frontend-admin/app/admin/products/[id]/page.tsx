@@ -23,7 +23,6 @@ import { usePricingStore } from '@/domains/product/pricing/pricing.store';
 import { useInventoryStore } from '@/domains/product/inventory/inventory.store';
 import { useVariantsStore } from '@/domains/product/variants/variants.store';
 import { useMediaStore } from '@/domains/product/media/media.store';
-import { useSEOStore } from '@/domains/product/seo/seo.store';
 import { useOrganizationStore } from '@/domains/product/organization/organization.store';
 import {
     triggerAutosave,
@@ -37,10 +36,12 @@ import PricingTab from '@/app/admin/products/components/tabs/PricingTab';
 import InventoryTab from '@/app/admin/products/components/tabs/InventoryTab';
 import VariantsTab from '@/app/admin/products/components/tabs/VariantsTab';
 import MediaTab from '@/app/admin/products/components/tabs/MediaTab';
-import SEOTab from '@/app/admin/products/components/tabs/SEOTab';
 import OrganizationTab from '@/app/admin/products/components/tabs/OrganizationTab';
 
-type Tab = 'basic' | 'pricing' | 'inventory' | 'variants' | 'media' | 'seo' | 'organization';
+// Import modal
+import { ConfirmActionModal } from '@/app/admin/components/ConfirmActionModal';
+
+type Tab = 'basic' | 'pricing' | 'inventory' | 'variants' | 'media' | 'organization';
 
 export default function ProductEditPage() {
     const params = useParams();
@@ -52,6 +53,7 @@ export default function ProductEditPage() {
     const [version, setVersion] = useState<number>(1); // Optimistic locking
     const [hasConflict, setHasConflict] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
     const [showAuditHistory, setShowAuditHistory] = useState(false);
 
     // Domain stores
@@ -59,51 +61,98 @@ export default function ProductEditPage() {
     const pricing = usePricingStore();
     const inventory = useInventoryStore();
     const variants = useVariantsStore();
-    const media = useMediaStore();
-    const seo = useSEOStore();
     const organization = useOrganizationStore();
 
     // Load product data
     const loadProduct = React.useCallback(async () => {
         setIsLoading(true);
         try {
-            // TODO: Replace with actual API call
-            // const response = await fetch(`/api/admin/products/${productId}`);
-            // const product = await response.json();
+            const { getProduct } = await import('@/lib/api/products');
+            const product = await getProduct(productId);
 
-            // Mock data for now
-            const mockProduct = {
-                version: 1,
-                name: 'Premium Cotton T-Shirt',
-                description: 'High-quality cotton t-shirt',
-                price: 1299,
-                compareAtPrice: 1499,
-                costPerItem: 500,
-                sku: 'TSHIRT-001',
-                skuLocked: true, // CRITICAL: SKU is locked
-                stockQuantity: 45,
-                trackInventory: true,
-                continueSelling: false,
-                // ... other fields
-            };
+            // Access stores statically to avoid dependency cycles
+            const basicInfoStore = useBasicInfoStore.getState();
+            const pricingStore = usePricingStore.getState();
+            const inventoryStore = useInventoryStore.getState();
+            const variantsStore = useVariantsStore.getState();
+            const mediaStore = useMediaStore.getState();
+            const organizationStore = useOrganizationStore.getState();
 
-            // Populate stores with correct method names
-            basicInfo.setName(mockProduct.name);
-            basicInfo.setDescription(mockProduct.description);
-            pricing.setPrice(mockProduct.price);
-            pricing.setCompareAtPrice(mockProduct.compareAtPrice);
-            pricing.setCostPerItem(mockProduct.costPerItem);
-            inventory.setSKU(mockProduct.sku);
-            inventory.setStock(mockProduct.stockQuantity);
+            // Reset all stores first
+            basicInfoStore.reset();
+            pricingStore.reset();
+            inventoryStore.reset();
+            variantsStore.reset();
+            mediaStore.reset();
+            organizationStore.reset();
 
-            setVersion(mockProduct.version);
+            // Populate stores with product data
+            basicInfoStore.setName(product.name);
+            basicInfoStore.setDescription(product.description || '');
+            basicInfoStore.setProductType(product.productType);
+            basicInfoStore.setCategory(product.category);
+
+            pricingStore.setPrice(product.basePrice);
+            pricingStore.setCompareAtPrice(product.compareAtPrice || 0);
+            pricingStore.setCostPerItem(product.costPerItem || 0);
+            pricingStore.setTaxable(product.taxable);
+
+            inventoryStore.setSKU(product.sku || '');
+            inventoryStore.setStock(product.stock);
+            inventoryStore.setTrackInventory(product.trackInventory);
+            inventoryStore.setContinueSelling(product.continueSellingWhenOutOfStock);
+            inventoryStore.setLowStockThreshold(product.lowStockThreshold || 0);
+
+            // Set variants if available
+            if (product.variants && product.variants.length > 0) {
+                variantsStore.setEnabled(true);
+                variantsStore.setVariants(product.variants.map(v => ({
+                    id: v.id,
+                    size: v.size,
+                    color: v.color,
+                    colorHex: v.colorHex,
+                    sku: v.sku,
+                    skuLocked: v.skuLocked,
+                    stock: v.stock,
+                    priceOverride: v.priceOverride,
+                    weight: v.weight,
+                })));
+            }
+
+            // Set images
+            if (product.images && product.images.length > 0) {
+                mediaStore.setImages(product.images.map(img => ({
+                    id: img.id,
+                    url: img.url,
+                    altText: img.altText || '',
+                    status: 'ACTIVE',
+                    isPrimary: img.isPrimary,
+                    order: img.displayOrder,
+                    uploadedAt: new Date(img.uploadedAt),
+                })));
+            }
+
+            // Set organization data
+            organizationStore.setStatus(product.status as any);
+            organizationStore.setFeatured(product.isFeatured);
+            organizationStore.setCollections(product.collections?.map(c => c.slug) || []);
+
+            // Mark all stores CLEAN (initial load)
+            basicInfoStore.markClean();
+            pricingStore.markClean();
+            inventoryStore.markClean();
+            variantsStore.markClean();
+            mediaStore.markClean();
+            organizationStore.markClean();
+
+            setVersion(product.version);
         } catch (error) {
             console.error('Failed to load product:', error);
-            alert('Failed to load product');
+            alert(error instanceof Error ? error.message : 'Failed to load product');
         } finally {
             setIsLoading(false);
         }
-    }, [productId, basicInfo, pricing, inventory]);
+    }, [productId]);
 
     useEffect(() => {
         loadProduct();
@@ -111,59 +160,93 @@ export default function ProductEditPage() {
 
     const handleSave = async () => {
         try {
-            // Collect all data from stores (access state directly)
-            const productData = {
-                version, // CRITICAL: Send version for optimistic locking
+            const { updateProduct } = await import('@/lib/api/products');
+            const media = useMediaStore.getState();
+
+            // Transform data to match backend UpdateProductDto strictly
+            const updateRequest = {
                 name: basicInfo.name,
                 description: basicInfo.description,
                 productType: basicInfo.productType,
                 category: basicInfo.category,
-                price: pricing.price,
-                compareAtPrice: pricing.compareAtPrice,
-                costPerItem: pricing.costPerItem,
-                sku: inventory.sku,
-                stock: inventory.stock,
+                // Pricing
+                price: Number(pricing.price),
+                compareAtPrice: pricing.compareAtPrice ? Number(pricing.compareAtPrice) : undefined,
+                costPerItem: pricing.costPerItem ? Number(pricing.costPerItem) : undefined,
+                taxable: pricing.taxable,
+
+                // Media
+                images: media.images.map(img => ({
+                    url: img.url,
+                    altText: img.altText || '',
+                    isPrimary: img.isPrimary,
+                    order: img.order,
+                })),
+
+                // Variants
+                hasVariants: variants.enabled,
+                variants: variants.enabled ? variants.variants.map(v => ({
+                    size: v.size,
+                    color: v.color,
+                    colorHex: v.colorHex,
+                    sku: v.sku,
+                    stock: Number(v.stock) || 0,
+                    priceOverride: v.priceOverride ? Number(v.priceOverride) : undefined,
+                    weight: v.weight ? Number(v.weight) : undefined,
+                })) : [],
+
+                // Inventory (SINGLE mode fields)
+                inventoryMode: (variants.enabled ? 'VARIANT' : 'SINGLE') as 'VARIANT' | 'SINGLE',
                 trackInventory: inventory.trackInventory,
-                // Add other fields as needed
+                stock: !variants.enabled ? (Number(inventory.stock) || 0) : undefined,
+                sku: !variants.enabled ? (inventory.sku || undefined) : undefined,
+                continueSellingWhenOutOfStock: inventory.continueSellingWhenOutOfStock,
+                lowStockThreshold: inventory.lowStockThreshold ? Number(inventory.lowStockThreshold) : undefined,
+
+                // Organization
+                status: organization.status,
+                isFeatured: organization.isFeatured,
+                collections: organization.collections,
             };
 
-            // TODO: Replace with actual API call
-            // const response = await fetch(`/api/admin/products/${productId}`, {
-            //     method: 'PATCH',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify(productData),
-            // });
+            // Threshold Validation
+            const totalStock = updateRequest.hasVariants
+                ? updateRequest.variants.reduce((sum, v) => sum + v.stock, 0)
+                : (updateRequest.stock || 0);
 
-            // if (response.status === 409) {
-            //     // Version conflict detected
-            //     setHasConflict(true);
-            //     return;
-            // }
+            if (updateRequest.lowStockThreshold && updateRequest.lowStockThreshold > totalStock) {
+                alert(`Low stock threshold (${updateRequest.lowStockThreshold}) cannot exceed total stock (${totalStock})`);
+                return;
+            }
 
-            // const updated = await response.json();
-            // setVersion(updated.version);
+            const updated = await updateProduct(productId, updateRequest);
+            setVersion(updated.version);
 
             alert('Product saved successfully!');
             router.push('/admin/products');
         } catch (error) {
             console.error('Save failed:', error);
-            alert('Failed to save product');
+            alert(error instanceof Error ? error.message : 'Failed to save product');
         }
     };
 
     const handleDelete = async () => {
         try {
-            // TODO: Replace with actual API call
-            // await fetch(`/api/admin/products/${productId}`, {
-            //     method: 'DELETE',
-            // });
+            const { deleteProduct } = await import('@/lib/api/products');
+            await deleteProduct(productId);
 
-            alert('Product deleted!');
+            alert('Product deleted successfully!');
             router.push('/admin/products');
         } catch (error) {
             console.error('Delete failed:', error);
-            alert('Failed to delete product');
+            alert(error instanceof Error ? error.message : 'Failed to delete product');
         }
+    };
+
+    const handleDiscard = () => {
+        // Reload product data to discard changes
+        loadProduct();
+        setShowDiscardConfirm(false);
     };
 
     const tabs = [
@@ -172,7 +255,6 @@ export default function ProductEditPage() {
         { key: 'inventory' as Tab, label: 'Inventory', icon: '📦' },
         { key: 'variants' as Tab, label: 'Variants', icon: '🎨' },
         { key: 'media' as Tab, label: 'Media', icon: '🖼️' },
-        { key: 'seo' as Tab, label: 'SEO', icon: '🔍' },
         { key: 'organization' as Tab, label: 'Organization', icon: '🏷️' },
     ];
 
@@ -286,7 +368,6 @@ export default function ProductEditPage() {
                     {activeTab === 'inventory' && <InventoryTab />}
                     {activeTab === 'variants' && <VariantsTab />}
                     {activeTab === 'media' && <MediaTab />}
-                    {activeTab === 'seo' && <SEOTab />}
                     {activeTab === 'organization' && <OrganizationTab />}
                 </div>
             </div>
@@ -349,6 +430,28 @@ export default function ProductEditPage() {
                     </div>
                 </div>
             )}
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmActionModal
+                isOpen={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={handleDelete}
+                title="Delete Product?"
+                message="This action cannot be undone. The product will be permanently deleted from your store."
+                confirmText="Delete Product"
+                isDangerous={true}
+            />
+
+            {/* Discard Changes Modal */}
+            <ConfirmActionModal
+                isOpen={showDiscardConfirm}
+                onClose={() => setShowDiscardConfirm(false)}
+                onConfirm={handleDiscard}
+                title="Discard Changes?"
+                message="You have unsaved changes. Are you sure you want to discard them?"
+                confirmText="Discard Changes"
+                isDangerous={false}
+            />
         </div>
     );
 }

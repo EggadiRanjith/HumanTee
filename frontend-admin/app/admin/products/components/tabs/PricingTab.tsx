@@ -35,96 +35,106 @@ export default function PricingTab() {
     }, [price, compareAtPrice, costPerItem, taxable]);
 
     return (
-        <div className="space-y-4 sm:space-y-6">
+        <div className="space-y-6 sm:space-y-8">
             <FormSection title="Pricing">
                 <div className="space-y-4 sm:space-y-5">
                     {/* Price */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-900 mb-2">
-                            Price ({currency}) *
+                        <label htmlFor="price" className="block text-sm font-medium text-gray-900 mb-2">
+                            Price ({currency}) <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="number"
+                            id="price"
                             value={price || ''}
-                            onChange={(e) => setPrice(Number(e.target.value))}
+                            onChange={(e) => setPrice(e.target.value ? Math.max(0, parseFloat(e.target.value)) : 0)}
                             placeholder="1299"
                             min="0"
+                            max="9999999"
                             step="0.01"
-                            className="w-full px-3 py-2.5 sm:px-4 sm:py-3 bg-white border-2 border-gray-400 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black focus:border-black outline-none transition-colors text-sm sm:text-base"
+                            className="w-full px-3 py-3 sm:px-4 sm:py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900"
                         />
                     </div>
 
                     {/* Compare-at Price */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-900 mb-2">
+                        <label htmlFor="compareAtPrice" className="block text-sm font-medium text-gray-900 mb-2">
                             Compare-at Price ({currency})
                         </label>
                         <input
                             type="number"
+                            id="compareAtPrice"
                             value={compareAtPrice || ''}
                             onChange={(e) =>
-                                setCompareAtPrice(e.target.value ? Number(e.target.value) : undefined)
+                                setCompareAtPrice(e.target.value ? Math.max(0, parseFloat(e.target.value)) : undefined)
                             }
                             placeholder="1999"
                             min="0"
+                            max="9999999"
                             step="0.01"
-                            className="w-full px-3 py-2.5 sm:px-4 sm:py-3 bg-white border-2 border-gray-400 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black focus:border-black outline-none transition-colors text-sm sm:text-base"
+                            className="w-full px-3 py-3 sm:px-4 sm:py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900"
                         />
-                        <p className="text-xs text-gray-500 mt-1.5">
+                        <p className="text-xs sm:text-sm text-gray-500 mt-1.5">
                             Original price to show customers the discount
                         </p>
                     </div>
 
                     {/* Cost per Item */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-900 mb-2">
+                        <label htmlFor="costPerItem" className="block text-sm font-medium text-gray-900 mb-2">
                             Cost per Item ({currency})
                         </label>
                         <input
                             type="number"
+                            id="costPerItem"
                             value={costPerItem || ''}
                             onChange={(e) =>
-                                setCostPerItem(e.target.value ? Number(e.target.value) : undefined)
+                                setCostPerItem(e.target.value ? Math.max(0, parseFloat(e.target.value)) : undefined)
                             }
                             placeholder="500"
                             min="0"
+                            max="9999999"
                             step="0.01"
-                            className="w-full px-3 py-2.5 sm:px-4 sm:py-3 bg-white border-2 border-gray-400 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black focus:border-black outline-none transition-colors text-sm sm:text-base"
+                            className="w-full px-3 py-3 sm:px-4 sm:py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900"
                         />
-                        <p className="text-xs text-gray-500 mt-1.5">
-                            Your cost for this product (for profit tracking)
+                        <p className="text-xs sm:text-sm text-gray-500 mt-1.5">
+                            Your cost for this item (for profit calculation)
                         </p>
                     </div>
 
-                    {/* Profit Margin Display (CALCULATED, NOT STORED) */}
-                    {profitMargin !== null && profitMargin > 0 && (
+                    {/* Profit Metrics - Stack on mobile */}
+                    {costPerItem !== undefined && price > 0 && profit !== null && profitMargin !== null && (
                         <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium text-green-900">Profit Margin</span>
-                                <span className="text-lg sm:text-xl font-bold text-green-700">
-                                    {profitMargin.toFixed(1)}%
-                                </span>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                <div>
+                                    <span className="text-sm font-medium text-green-900">Profit</span>
+                                    <p className="text-lg sm:text-xl font-bold text-green-700">
+                                        {currency} {profit.toFixed(2)}
+                                    </p>
+                                </div>
+                                <div>
+                                    <span className="text-sm font-medium text-green-900">Margin</span>
+                                    <p className="text-lg sm:text-xl font-bold text-green-700">
+                                        {profitMargin.toFixed(1)}%
+                                    </p>
+                                </div>
                             </div>
-                            <p className="text-xs text-green-700 mt-1">
-                                Profit: {currency} {profit?.toFixed(2)}
-                            </p>
                         </div>
                     )}
-                </div>
-            </FormSection>
 
-            <FormSection title="Tax Settings">
-                <div className="flex items-center gap-3">
-                    <input
-                        type="checkbox"
-                        id="taxable"
-                        checked={taxable}
-                        onChange={(e) => setTaxable(e.target.checked)}
-                        className="w-4 h-4 sm:w-5 sm:h-5 text-black border-gray-300 rounded focus:ring-black"
-                    />
-                    <label htmlFor="taxable" className="text-sm sm:text-base text-gray-900">
-                        Charge tax on this product
-                    </label>
+                    {/* Tax */}
+                    <div className="flex items-center gap-3">
+                        <input
+                            type="checkbox"
+                            id="taxable"
+                            checked={taxable}
+                            onChange={(e) => setTaxable(e.target.checked)}
+                            className="w-4 h-4 sm:w-5 sm:h-5 text-black border-gray-300 rounded focus:ring-black"
+                        />
+                        <label htmlFor="taxable" className="text-sm sm:text-base font-medium text-gray-900">
+                            Charge tax on this product
+                        </label>
+                    </div>
                 </div>
             </FormSection>
         </div>

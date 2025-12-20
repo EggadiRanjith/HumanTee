@@ -9,7 +9,6 @@ import { usePricingStore } from '../pricing/pricing.store';
 import { useInventoryStore } from '../inventory/inventory.store';
 import { useVariantsStore } from '../variants/variants.store';
 import { useMediaStore } from '../media/media.store';
-import { useSEOStore } from '../seo/seo.store';
 import { useOrganizationStore } from '../organization/organization.store';
 import { loadDraftFromLocalStorage, clearDraftFromLocalStorage } from './autosave.service';
 
@@ -66,14 +65,7 @@ export const hydrateStoresFromDraft = (draft: ProductDraft): void => {
         isDirty: false,
     });
 
-    // SEO
-    useSEOStore.setState({
-        slug: data.slug,
-        metaTitle: data.metaTitle,
-        metaDescription: data.metaDescription,
-        tags: data.tags,
-        isDirty: false,
-    });
+    // SEO removed
 
     // Organization
     useOrganizationStore.setState({
@@ -103,12 +95,11 @@ export const attemptDraftRecovery = (): ProductDraft | null => {
 export const discardDraft = (): void => {
     clearDraftFromLocalStorage();
 
-    // Reset all stores
+    // Reset all stores to empty state
     useBasicInfoStore.getState().reset();
     usePricingStore.getState().reset();
     useInventoryStore.getState().reset();
     useVariantsStore.getState().reset();
     useMediaStore.getState().reset();
-    useSEOStore.getState().reset();
     useOrganizationStore.getState().reset();
 };

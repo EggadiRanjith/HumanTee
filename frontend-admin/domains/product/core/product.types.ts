@@ -18,6 +18,8 @@ export interface ProductImage {
     file?: File; // Optional File object for uploads
     altText: string; // Changed from 'alt' to 'altText' for consistency
     status: 'TEMP' | 'ACTIVE';
+    isPrimary: boolean; // For identifying the primary image
+    order: number; // Display order
     expiresAt?: Date;
     uploadedAt: Date;
 }
@@ -72,10 +74,8 @@ export interface ProductFormData {
     productType: string;
     category: string;
 
-    // Media
-    images: Map<string, ProductImage>;
-    imageOrder: string[];
-    primaryImageId?: string;
+    // Media (simplified - array-based)
+    images: ProductImage[];
 
     // Pricing
     price: number;
@@ -84,10 +84,9 @@ export interface ProductFormData {
     currency: string;
     taxable: boolean;
 
-    // Variants
+    // Variants (array-based, not Map)
     hasVariants: boolean;
-    variants: Map<string, Variant>;
-    variantOrder: string[];
+    variants: Variant[];
 
     // Inventory
     inventoryMode: InventoryMode;
@@ -96,12 +95,6 @@ export interface ProductFormData {
     sku?: string;
     continueSellingWhenOutOfStock: boolean;
     lowStockThreshold?: number;
-
-    // SEO
-    slug: string;
-    metaTitle?: string;
-    metaDescription?: string;
-    tags: string[];
 
     // Organization
     status: ProductStatus;

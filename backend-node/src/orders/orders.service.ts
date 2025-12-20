@@ -99,14 +99,14 @@ export class OrdersService {
                 // Validate product is ACTIVE
                 if (product.status !== ProductStatus.ACTIVE) {
                     throw new BadRequestException(
-                        `Product ${product.title} is not available`
+                        `Product ${product.name} is not available`
                     );
                 }
 
                 // Validate stock
                 if (variant.stock_quantity < item.quantity) {
                     throw new BadRequestException(
-                        `Insufficient stock for ${product.title}. Available: ${variant.stock_quantity}`
+                        `Insufficient stock for ${product.name}. Available: ${variant.stock_quantity}`
                     );
                 }
 

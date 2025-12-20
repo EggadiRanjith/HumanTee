@@ -31,58 +31,46 @@ export const selectDiscountPercentage = (price?: number, compareAtPrice?: number
 export const selectTotalStock = (
     inventoryMode: 'SINGLE' | 'VARIANT',
     singleStock: number,
-    variants: Map<string, Variant>
+    variants: Variant[]
 ): number => {
     if (inventoryMode === 'SINGLE') {
         return singleStock;
     }
 
-    // Safety check: ensure variants is a Map
-    if (!variants || !(variants instanceof Map)) {
+    // Safety check: ensure variants is an array
+    if (!Array.isArray(variants)) {
         return 0;
     }
 
     // Aggregate variant stock
-    let total = 0;
-    variants.forEach((variant) => {
-        total += variant.stock;
-    });
-    return total;
+    return variants.reduce((total, variant) => total + (variant.stock || 0), 0);
 };
 
 export const selectLowStockVariants = (
-    variants: Map<string, Variant>,
+    variants: Variant[],
     threshold: number
 ): Variant[] => {
-    // Safety check: ensure variants is a Map
-    if (!variants || !(variants instanceof Map)) {
+    // Safety check: ensure variants is an array
+    if (!Array.isArray(variants)) {
         return [];
     }
 
-    const lowStock: Variant[] = [];
-    variants.forEach((variant) => {
-        if (variant.stock <= threshold) {
-            lowStock.push(variant);
-        }
-    });
-    return lowStock;
+    return variants.filter((variant) => variant.stock <= threshold);
 };
 
 // ============================================================================
 // VARIANT SELECTORS
 // ============================================================================
 
-export const selectVariantCount = (variants: Map<string, Variant>): number => {
-    return variants.size;
+export const selectVariantCount = (variants: Variant[]): number => {
+    return Array.isArray(variants) ? variants.length : 0;
 };
 
-export const selectVariantsBySKU = (variants: Map<string, Variant>, sku: string): Variant | null => {
-    for (const [, variant] of variants) {
-        if (variant.sku === sku) {
-            return variant;
-        }
+export const selectVariantsBySKU = (variants: Variant[], sku: string): Variant | null => {
+    if (!Array.isArray(variants)) {
+        return null;
     }
-    return null;
+    return variants.find((variant) => variant.sku === sku) || null;
 };
 
 // ============================================================================

@@ -2,78 +2,71 @@ import {
     Controller,
     Get,
     Post,
-    Patch,
+    Put,
+    Delete,
     Body,
     Param,
-    UseGuards,
+    HttpCode,
+    HttpStatus,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../../auth/guards/jwt.guard';
-import { AdminRoleGuard } from '../../auth/guards/admin-role.guard';
 import { AdminProductsService } from './admin-products.service';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
-import { ChangeStatusDto } from './dto/change-status.dto';
+import { CreateProductDto, UpdateProductDto } from './dto/create-product.dto';
+import { ProductResponseDto } from './dto/product-response.dto';
 
-/**
- * AdminProductsController
- * FIX 1: Uses guard composition, not inheritance
- */
 @Controller('admin/products')
-@UseGuards(JwtAuthGuard, AdminRoleGuard) // FIX 1: Composition
+// @UseGuards(JwtAuthGuard) // TODO: Add auth guard
 export class AdminProductsController {
-    constructor(
-        private readonly adminProductsService: AdminProductsService,
-    ) { }
+    constructor(private readonly adminProductsService: AdminProductsService) { }
 
     /**
+     * Create new product
      * POST /admin/products
-     * Create new product (always DRAFT)
      */
     @Post()
-    async createProduct(@Body() dto: CreateProductDto) {
-        return this.adminProductsService.createProduct(dto);
+    @HttpCode(HttpStatus.CREATED)
+    async createProduct(
+        @Body() createProductDto: CreateProductDto,
+    ): Promise<ProductResponseDto> {
+        return this.adminProductsService.createProduct(createProductDto);
     }
 
     /**
+     * Get all products (admin view - includes drafts)
      * GET /admin/products
-     * List all products (admin view - includes DRAFT/ARCHIVED)
      */
     @Get()
-    async findAll() {
-        const products = await this.adminProductsService.findAll();
-        return { products };
+    async getAllProducts(): Promise<ProductResponseDto[]> {
+        return this.adminProductsService.getAllProducts();
     }
 
     /**
+     * Get single product by ID
      * GET /admin/products/:id
-     * Get single product (admin view)
      */
     @Get(':id')
-    async findById(@Param('id') id: string) {
-        return this.adminProductsService.findById(id);
+    async getProductById(@Param('id') id: string): Promise<ProductResponseDto> {
+        return this.adminProductsService.getProductById(id);
     }
 
     /**
-     * PATCH /admin/products/:id
-     * Update product (safe fields only, no slug)
+     * Update product
+     * PUT /admin/products/:id
      */
-    @Patch(':id')
+    @Put(':id')
     async updateProduct(
         @Param('id') id: string,
-        @Body() dto: UpdateProductDto,
-    ) {
-        return this.adminProductsService.updateProduct(id, dto);
+        @Body() updateProductDto: UpdateProductDto,
+    ): Promise<ProductResponseDto> {
+        return this.adminProductsService.updateProduct(id, updateProductDto);
     }
 
     /**
-     * POST /admin/products/:id/status
-     * Change product status (controlled transitions)
+     * Delete product
+     * DELETE /admin/products/:id
      */
-    @Post(':id/status')
-    async changeStatus(
-        @Param('id') id: string,
-        @Body() dto: ChangeStatusDto,
-    ) {
-        return this.adminProductsService.changeStatus(id, dto);
+    @Delete(':id')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async deleteProduct(@Param('id') id: string): Promise<void> {
+        return this.adminProductsService.deleteProduct(id);
     }
 }

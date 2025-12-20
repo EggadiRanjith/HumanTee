@@ -1,171 +1,177 @@
 /**
- * Media Domain Store
- * Manages product images with TEMP/ACTIVE lifecycle
+ * Media Domain Store (REDESIGNED)
+ * Simple array-based structure for product images
  * 
- * CRITICAL LIFECYCLE:
+ * LIFECYCLE:
  * 1. Upload → status: 'TEMP', expiresAt set
  * 2. Publish → Promote to 'ACTIVE', clear expiresAt
  * 3. Cancel/Delete → Cleanup TEMP images
- * 4. Server-side: TEMP images expire after 24h (TTL + cron job)
  */
 
 import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
 import { v4 as uuidv4 } from 'uuid';
-import type { ProductImage } from '../core/product.types';
+
+export interface MediaImage {
+    id: string;
+    url: string;
+    file?: File;
+    altText: string;
+    status: 'TEMP' | 'ACTIVE';
+    isPrimary: boolean;
+    order: number;
+    expiresAt?: Date;
+    uploadedAt: Date;
+}
 
 interface MediaState {
-    // Data
-    images: Map<string, ProductImage>;
-    order: string[]; // UUID order for display
-    primaryImageId?: string;
-
-    // Dirty tracking
+    images: MediaImage[];
     isDirty: boolean;
 
     // Actions
-    addImage: (data: { url: string; file?: File; altText: string; status: 'TEMP' | 'ACTIVE' }) => void;
-    updateImage: (id: string, updates: Partial<ProductImage>) => void;
-    updateImageAltText: (id: string, altText: string) => void;
+    addImage: (data: { id?: string; url: string; file?: File; altText: string }) => void;
+    updateImage: (id: string, updates: Partial<MediaImage>) => void;
     deleteImage: (id: string) => void;
     reorderImages: (newOrder: string[]) => void;
     setPrimaryImage: (id: string) => void;
-    promoteAllToActive: () => void; // Called on publish
-    cleanupTempImages: () => void; // Called on cancel
+    promoteAllToActive: () => void;
+    cleanupTempImages: () => void;
+    setImages: (images: MediaImage[]) => void; // Called on load
     markClean: () => void;
     markDirty: () => void;
     reset: () => void;
 }
 
 const initialState = {
-    images: new Map<string, ProductImage>(),
-    order: [],
-    primaryImageId: undefined,
+    images: [] as MediaImage[],
     isDirty: false,
 };
 
-export const useMediaStore = create<MediaState>()(
-    immer((set, get) => ({
-        ...initialState,
+export const useMediaStore = create<MediaState>()((set) => ({
+    ...initialState,
 
-        addImage: (data) => {
-            const id = uuidv4();
-            const now = new Date();
-            const expiresAt = data.status === 'TEMP'
-                ? new Date(now.getTime() + 24 * 60 * 60 * 1000)
-                : undefined;
+    addImage: (data) => {
+        const id = data.id || uuidv4(); // Use provided ID or generate new one
+        const now = new Date();
+        const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours
 
-            const image: ProductImage = {
+        set((state) => {
+            const newImage: MediaImage = {
                 id,
                 url: data.url,
                 file: data.file,
                 altText: data.altText,
-                status: data.status,
+                status: 'TEMP',
+                isPrimary: state.images.length === 0, // First image is primary
+                order: state.images.length,
                 expiresAt,
                 uploadedAt: now,
             };
 
-            set((state) => {
-                state.images.set(id, image);
-                state.order.push(id);
+            // Safety check: ensure state.images is an array
+            const currentImages = Array.isArray(state.images) ? state.images : [];
 
-                // Set as primary if first image
-                if (state.images.size === 1) {
-                    state.primaryImageId = id;
-                }
+            return {
+                images: [...currentImages, newImage],
+                isDirty: true,
+            };
+        });
+    },
 
-                state.isDirty = true;
-            });
-        },
+    updateImage: (id, updates) => {
+        set((state) => {
+            const currentImages = Array.isArray(state.images) ? state.images : [];
+            return {
+                images: currentImages.map((img) =>
+                    img.id === id ? { ...img, ...updates } : img
+                ),
+                isDirty: true,
+            };
+        });
+    },
 
-        updateImage: (id, updates) =>
-            set((state) => {
-                const image = state.images.get(id);
-                if (!image) return;
+    deleteImage: (id) => {
+        set((state) => {
+            const currentImages = Array.isArray(state.images) ? state.images : [];
+            const filtered = currentImages.filter((img) => img.id !== id);
 
-                state.images.set(id, { ...image, ...updates });
-                state.isDirty = true;
-            }),
+            // Reorder remaining images
+            const reordered = filtered.map((img, index) => ({
+                ...img,
+                order: index,
+                // If deleted image was primary, make first image primary
+                isPrimary: currentImages.find(i => i.id === id)?.isPrimary && index === 0
+                    ? true
+                    : img.isPrimary && img.id !== id,
+            }));
 
-        updateImageAltText: (id, altText) =>
-            set((state) => {
-                const image = state.images.get(id);
-                if (!image) return;
+            return {
+                images: reordered,
+                isDirty: true,
+            };
+        });
+    },
 
-                state.images.set(id, { ...image, altText });
-                state.isDirty = true;
-            }),
+    reorderImages: (newOrder) => {
+        set((state) => {
+            const currentImages = Array.isArray(state.images) ? state.images : [];
+            const reordered = newOrder
+                .map((id) => currentImages.find((img) => img.id === id))
+                .filter((img): img is MediaImage => img !== undefined)
+                .map((img, index) => ({ ...img, order: index }));
 
-        deleteImage: (id) =>
-            set((state) => {
-                state.images.delete(id);
-                state.order = state.order.filter((imageId) => imageId !== id);
+            return {
+                images: reordered,
+                isDirty: true,
+            };
+        });
+    },
 
-                // Update primary if deleted
-                if (state.primaryImageId === id) {
-                    state.primaryImageId = state.order[0];
-                }
+    setPrimaryImage: (id) => {
+        set((state) => {
+            const currentImages = Array.isArray(state.images) ? state.images : [];
+            return {
+                images: currentImages.map((img) => ({
+                    ...img,
+                    isPrimary: img.id === id,
+                })),
+                isDirty: true,
+            };
+        });
+    },
 
-                state.isDirty = true;
-            }),
+    promoteAllToActive: () => {
+        set((state) => {
+            const currentImages = Array.isArray(state.images) ? state.images : [];
+            return {
+                images: currentImages.map((img) =>
+                    img.status === 'TEMP'
+                        ? { ...img, status: 'ACTIVE' as const, expiresAt: undefined }
+                        : img
+                ),
+            };
+        });
+    },
 
-        reorderImages: (newOrder) =>
-            set((state) => {
-                state.order = newOrder;
-                state.isDirty = true;
-            }),
+    cleanupTempImages: () => {
+        set((state) => {
+            const currentImages = Array.isArray(state.images) ? state.images : [];
+            return {
+                images: currentImages.filter((img) => img.status === 'ACTIVE'),
+            };
+        });
+    },
 
-        setPrimaryImage: (id) =>
-            set((state) => {
-                if (state.images.has(id)) {
-                    state.primaryImageId = id;
-                    state.isDirty = true;
-                }
-            }),
+    setImages: (images) => {
+        set({ images, isDirty: false });
+    },
 
-        promoteAllToActive: () =>
-            set((state) => {
-                state.images.forEach((image, id) => {
-                    if (image.status === 'TEMP') {
-                        state.images.set(id, {
-                            ...image,
-                            status: 'ACTIVE',
-                            expiresAt: undefined,
-                        });
-                    }
-                });
-            }),
+    markClean: () => {
+        set({ isDirty: false });
+    },
 
-        cleanupTempImages: () =>
-            set((state) => {
-                const tempIds: string[] = [];
-                state.images.forEach((image, id) => {
-                    if (image.status === 'TEMP') {
-                        tempIds.push(id);
-                    }
-                });
+    markDirty: () => {
+        set({ isDirty: true });
+    },
 
-                tempIds.forEach((id) => {
-                    state.images.delete(id);
-                    state.order = state.order.filter((imageId) => imageId !== id);
-                });
-
-                // Update primary if needed
-                if (state.primaryImageId && !state.images.has(state.primaryImageId)) {
-                    state.primaryImageId = state.order[0];
-                }
-            }),
-
-        markClean: () =>
-            set((state) => {
-                state.isDirty = false;
-            }),
-
-        markDirty: () =>
-            set((state) => {
-                state.isDirty = true;
-            }),
-
-        reset: () => set(initialState),
-    }))
-);
+    reset: () => set(initialState),
+}));

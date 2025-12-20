@@ -27,6 +27,13 @@ function addRefreshSubscriber(callback: (token: string) => void) {
 
 // Token management (memory + cookie for server-side pages)
 export function getAccessToken(): string | null {
+    // If memory token is gone (e.g. page refresh), try to recover from cookie
+    if (!accessToken && typeof document !== 'undefined') {
+        const match = document.cookie.match(/(^|;)\s*auth_token=([^;]+)/);
+        if (match) {
+            accessToken = match[2];
+        }
+    }
     return accessToken;
 }
 

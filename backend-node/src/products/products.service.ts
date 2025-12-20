@@ -63,7 +63,7 @@ export class ProductsService {
     private transformProduct(product: Product): ProductResponseDto {
         return {
             id: product.id,
-            title: product.title,
+            title: product.name,
             slug: product.slug,
             description: product.description,
             status: product.status,

@@ -21,7 +21,6 @@ export interface ProductVariant {
     stock: number;
     price?: number; // Optional override
     weight?: number; // grams
-    barcode?: string;
 }
 
 export interface ProductFormData {
@@ -51,7 +50,6 @@ export interface ProductFormData {
     trackInventory: boolean;
     stock: number;
     sku?: string;
-    barcode?: string;
     continueSellingWhenOutOfStock: boolean;
     lowStockThreshold?: number;
     reorderPoint?: number;

@@ -1,17 +1,11 @@
 /**
- * Variants Domain Store
- * UUID-based variant management with SKU locking
+ * Variants Domain Store (REDESIGNED)
+ * Simple array-based structure for product variants
  * 
- * CRITICAL: Uses Map<string, Variant> + order array for performance
- * This enables:
- * - No array index bugs
- * - Safe reordering
- * - Memoization works correctly
- * - Undo/redo possible
+ * CRITICAL: SKU locking on publish to prevent inventory issues
  */
 
 import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
 import { v4 as uuidv4 } from 'uuid';
 import type { Variant } from '../core/product.types';
 import { generateSKU } from './sku.generator';
@@ -19,8 +13,7 @@ import { generateSKU } from './sku.generator';
 interface VariantsState {
     // Data
     enabled: boolean;
-    variants: Map<string, Variant>;
-    order: string[]; // UUID order for display
+    variants: Variant[];
 
     // Dirty tracking
     isDirty: boolean;
@@ -33,6 +26,7 @@ interface VariantsState {
     reorderVariants: (newOrder: string[]) => void;
     generateVariantSKU: (id: string, productName: string) => void;
     lockAllSKUs: () => void; // Called on publish
+    setVariants: (variants: Variant[]) => void; // Called on load
     markClean: () => void;
     markDirty: () => void;
     reset: () => void;
@@ -40,97 +34,111 @@ interface VariantsState {
 
 const initialState = {
     enabled: false,
-    variants: new Map<string, Variant>(),
-    order: [],
+    variants: [] as Variant[],
     isDirty: false,
 };
 
-export const useVariantsStore = create<VariantsState>()(
-    immer((set, get) => ({
-        ...initialState,
+export const useVariantsStore = create<VariantsState>()((set) => ({
+    ...initialState,
 
-        setEnabled: (enabled) =>
-            set((state) => {
-                state.enabled = enabled;
-                state.isDirty = true;
-            }),
+    setEnabled: (enabled) => {
+        set({ enabled, isDirty: true });
+    },
 
-        addVariant: (variantData, productName) => {
-            const id = uuidv4();
-            const sku = generateSKU(productName, variantData.size, variantData.color);
+    addVariant: (variant, productName) => {
+        const id = uuidv4();
+        const sku = generateSKU(productName, variant.size, variant.color);
 
-            const variant: Variant = {
-                ...variantData,
+        set((state) => {
+            const currentVariants = Array.isArray(state.variants) ? state.variants : [];
+            const newVariant: Variant = {
+                ...variant,
                 id,
                 sku,
                 skuLocked: false,
             };
 
-            set((state) => {
-                state.variants.set(id, variant);
-                state.order.push(id);
-                state.isDirty = true;
-            });
-        },
+            return {
+                variants: [...currentVariants, newVariant],
+                isDirty: true,
+            };
+        });
+    },
 
-        updateVariant: (id, updates) =>
-            set((state) => {
-                const variant = state.variants.get(id);
-                if (!variant) return;
+    updateVariant: (id, updates) => {
+        set((state) => {
+            const currentVariants = Array.isArray(state.variants) ? state.variants : [];
+            return {
+                variants: currentVariants.map((v) =>
+                    v.id === id ? { ...v, ...updates } : v
+                ),
+                isDirty: true,
+            };
+        });
+    },
 
-                // Prevent SKU changes if locked
-                if (updates.sku && variant.skuLocked) {
-                    throw new Error('Cannot change SKU after product is published');
-                }
+    deleteVariant: (id) => {
+        set((state) => {
+            const currentVariants = Array.isArray(state.variants) ? state.variants : [];
+            return {
+                variants: currentVariants.filter((v) => v.id !== id),
+                isDirty: true,
+            };
+        });
+    },
 
-                state.variants.set(id, { ...variant, ...updates });
-                state.isDirty = true;
-            }),
+    reorderVariants: (newOrder) => {
+        set((state) => {
+            const currentVariants = Array.isArray(state.variants) ? state.variants : [];
+            const reordered = newOrder
+                .map((id) => currentVariants.find((v) => v.id === id))
+                .filter((v): v is Variant => v !== undefined);
 
-        deleteVariant: (id) =>
-            set((state) => {
-                state.variants.delete(id);
-                state.order = state.order.filter((variantId) => variantId !== id);
-                state.isDirty = true;
-            }),
+            return {
+                variants: reordered,
+                isDirty: true,
+            };
+        });
+    },
 
-        reorderVariants: (newOrder) =>
-            set((state) => {
-                state.order = newOrder;
-                state.isDirty = true;
-            }),
+    generateVariantSKU: (id, productName) => {
+        set((state) => {
+            const currentVariants = Array.isArray(state.variants) ? state.variants : [];
+            return {
+                variants: currentVariants.map((v) => {
+                    if (v.id === id && !v.skuLocked) {
+                        return {
+                            ...v,
+                            sku: generateSKU(productName, v.size, v.color),
+                        };
+                    }
+                    return v;
+                }),
+                isDirty: true,
+            };
+        });
+    },
 
-        generateVariantSKU: (id, productName) =>
-            set((state) => {
-                const variant = state.variants.get(id);
-                if (!variant) return;
+    lockAllSKUs: () => {
+        set((state) => {
+            const currentVariants = Array.isArray(state.variants) ? state.variants : [];
+            return {
+                variants: currentVariants.map((v) => ({ ...v, skuLocked: true })),
+            };
+        });
+    },
 
-                if (variant.skuLocked) {
-                    throw new Error('Cannot regenerate SKU after product is published');
-                }
+    setVariants: (variants) => {
+        set({ variants, isDirty: false });
+    },
 
-                const newSKU = generateSKU(productName, variant.size, variant.color);
-                state.variants.set(id, { ...variant, sku: newSKU });
-                state.isDirty = true;
-            }),
+    markClean: () => {
+        set({ isDirty: false });
+    },
 
-        lockAllSKUs: () =>
-            set((state) => {
-                state.variants.forEach((variant, id) => {
-                    state.variants.set(id, { ...variant, skuLocked: true });
-                });
-            }),
+    markDirty: () => {
+        set({ isDirty: true });
+    },
 
-        markClean: () =>
-            set((state) => {
-                state.isDirty = false;
-            }),
-
-        markDirty: () =>
-            set((state) => {
-                state.isDirty = true;
-            }),
-
-        reset: () => set(initialState),
-    }))
-);
+    reset: () => set(initialState),
+}));

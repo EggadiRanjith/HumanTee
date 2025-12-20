@@ -7,91 +7,43 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useMemo } from 'react';
-
-// Mock data - replace with API call later
-const mockProducts = [
-    {
-        id: '1',
-        name: 'Premium Cotton T-Shirt',
-        slug: 'premium-cotton-tshirt',
-        price: 1299,
-        compareAtPrice: 1999,
-        stock: 45,
-        status: 'ACTIVE' as const,
-        category: 'Drop 1',
-        productType: 'T-Shirt',
-        images: ['/placeholder-product.jpg'],
-        isFeatured: true,
-        createdAt: new Date('2024-12-15'),
-    },
-    {
-        id: '2',
-        name: 'Classic Black Hoodie',
-        slug: 'classic-black-hoodie',
-        price: 2499,
-        compareAtPrice: 3499,
-        stock: 23,
-        status: 'ACTIVE' as const,
-        category: 'Drop 2',
-        productType: 'Hoodie',
-        images: ['/placeholder-product.jpg'],
-        isFeatured: false,
-        createdAt: new Date('2024-12-14'),
-    },
-    {
-        id: '3',
-        name: 'Vintage Denim Shirt',
-        slug: 'vintage-denim-shirt',
-        price: 1899,
-        stock: 12,
-        status: 'ACTIVE' as const,
-        category: 'Drop 1',
-        productType: 'Shirt',
-        images: ['/placeholder-product.jpg'],
-        isFeatured: false,
-        createdAt: new Date('2024-12-13'),
-    },
-    {
-        id: '4',
-        name: 'Summer Polo Collection',
-        slug: 'summer-polo-collection',
-        price: 1599,
-        stock: 0,
-        status: 'DRAFT' as const,
-        category: 'Drop 3',
-        productType: 'Polo',
-        images: ['/placeholder-product.jpg'],
-        isFeatured: false,
-        createdAt: new Date('2024-12-12'),
-    },
-    {
-        id: '5',
-        name: 'Oversized Sweatshirt',
-        slug: 'oversized-sweatshirt',
-        price: 2199,
-        stock: 8,
-        status: 'ACTIVE' as const,
-        category: 'Drop 2',
-        productType: 'Sweatshirt',
-        images: ['/placeholder-product.jpg'],
-        isFeatured: true,
-        createdAt: new Date('2024-12-11'),
-    },
-];
+import { useState, useMemo, useEffect } from 'react';
+import { getAllProducts, type ProductResponse } from '@/lib/api/products';
 
 type ProductStatus = 'ACTIVE' | 'DRAFT' | 'ARCHIVED';
 
 export default function ProductsPage() {
+    const [products, setProducts] = useState<ProductResponse[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<ProductStatus | 'ALL'>('ALL');
     const [categoryFilter, setCategoryFilter] = useState('ALL');
     const [sortBy, setSortBy] = useState<'name' | 'price' | 'stock' | 'date'>('date');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
+    // Fetch products from API
+    useEffect(() => {
+        async function fetchProducts() {
+            try {
+                setLoading(true);
+                const data = await getAllProducts();
+                setProducts(data);
+                setError(null);
+            } catch (err) {
+                console.error('Failed to fetch products:', err);
+                setError(err instanceof Error ? err.message : 'Failed to load products');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchProducts();
+    }, []);
+
     // Filtered and sorted products
     const filteredProducts = useMemo(() => {
-        let filtered = mockProducts;
+        let filtered = products;
 
         // Search
         if (searchQuery) {
@@ -120,20 +72,23 @@ export default function ProductsPage() {
                     comparison = a.name.localeCompare(b.name);
                     break;
                 case 'price':
-                    comparison = a.price - b.price;
+                    comparison = (a.basePrice || 0) - (b.basePrice || 0);
                     break;
                 case 'stock':
-                    comparison = a.stock - b.stock;
+                    comparison = (a.stock || 0) - (b.stock || 0);
                     break;
                 case 'date':
-                    comparison = a.createdAt.getTime() - b.createdAt.getTime();
+                    // Convert potential string dates to Date objects
+                    const dateA = new Date(a.createdAt).getTime();
+                    const dateB = new Date(b.createdAt).getTime();
+                    comparison = dateA - dateB;
                     break;
             }
             return sortOrder === 'asc' ? comparison : -comparison;
         });
 
         return filtered;
-    }, [searchQuery, statusFilter, categoryFilter, sortBy, sortOrder]);
+    }, [products, searchQuery, statusFilter, categoryFilter, sortBy, sortOrder]);
 
     const getStatusColor = (status: ProductStatus) => {
         switch (status) {
@@ -153,7 +108,7 @@ export default function ProductsPage() {
                 <div>
                     <h1 className="text-xl sm:text-2xl font-semibold text-black">Products</h1>
                     <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                        {filteredProducts.length} of {mockProducts.length} products
+                        {filteredProducts.length} of {products.length} products
                     </p>
                 </div>
                 <Link
@@ -255,7 +210,7 @@ export default function ProductsPage() {
                                 </h3>
                                 <span
                                     className={`px-2 py-0.5 text-xs font-medium rounded flex-shrink-0 ${getStatusColor(
-                                        product.status
+                                        product.status as ProductStatus
                                     )}`}
                                 >
                                     {product.status}
@@ -263,7 +218,7 @@ export default function ProductsPage() {
                             </div>
                             <div className="flex items-center justify-between text-sm">
                                 <div>
-                                    <div className="font-semibold text-black">₹{product.price}</div>
+                                    <div className="font-semibold text-black">₹{product.basePrice}</div>
                                     {product.compareAtPrice && (
                                         <div className="text-xs text-gray-500 line-through">
                                             ₹{product.compareAtPrice}
@@ -307,7 +262,7 @@ export default function ProductsPage() {
                             <tr key={product.id} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
+                                        <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center text-lg">
                                             👕
                                         </div>
                                         <div>
@@ -321,14 +276,14 @@ export default function ProductsPage() {
                                 <td className="px-6 py-4">
                                     <span
                                         className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(
-                                            product.status
+                                            product.status as ProductStatus
                                         )}`}
                                     >
                                         {product.status}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <div className="text-sm font-medium text-black">₹{product.price}</div>
+                                    <div className="text-sm font-medium text-black">₹{product.basePrice}</div>
                                     {product.compareAtPrice && (
                                         <div className="text-xs text-gray-500 line-through">
                                             ₹{product.compareAtPrice}
@@ -338,10 +293,10 @@ export default function ProductsPage() {
                                 <td className="px-6 py-4">
                                     <div
                                         className={`text-sm ${product.stock === 0
-                                                ? 'text-red-600 font-medium'
-                                                : product.stock < 10
-                                                    ? 'text-orange-600'
-                                                    : 'text-gray-900'
+                                            ? 'text-red-600 font-medium'
+                                            : product.stock < 10
+                                                ? 'text-orange-600'
+                                                : 'text-gray-900'
                                             }`}
                                     >
                                         {product.stock} units

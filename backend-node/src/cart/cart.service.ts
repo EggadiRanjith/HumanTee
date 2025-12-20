@@ -156,7 +156,7 @@ export class CartService {
                         quantity: guestItem.quantity,
                         price_snapshot: variant.price,
                         currency: 'INR',
-                        product_title: variant.product.title,
+                        product_title: variant.product.name,
                         variant_label: `${variant.size}${variant.color ? ' / ' + variant.color : ''}`,
                         product_image: null,
                     });
@@ -230,7 +230,7 @@ export class CartService {
                 // Snapshots (backend-controlled)
                 price_snapshot: variant.price,
                 currency: 'INR', // TEMP: Phase 6 will add to variant model
-                product_title: variant.product.title,
+                product_title: variant.product.name,
                 variant_label: `${variant.size}${variant.color ? ' / ' + variant.color : ''}`,
                 product_image: null, // Until images supported
             });

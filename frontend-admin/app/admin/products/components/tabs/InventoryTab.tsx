@@ -95,11 +95,16 @@ export default function InventoryTab() {
                                         </label>
                                         <input
                                             type="number"
-                                            value={stock}
-                                            onChange={(e) => setStock(Number(e.target.value))}
-                                            placeholder="100"
+                                            id="stock"
+                                            value={stock || ''}
+                                            onChange={(e) => setStock(e.target.value === '' ? 0 : Number(e.target.value))}
+                                            onFocus={(e) => e.target.select()}
+                                            placeholder="0"
                                             min="0"
-                                            className="w-full px-3 py-2.5 sm:px-4 sm:py-3 bg-white border-2 border-gray-400 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black focus:border-black outline-none transition-colors text-sm sm:text-base"
+                                            max="999999"
+                                            step="1"
+                                            disabled={false}
+                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                                         />
                                     </div>
 
@@ -148,22 +153,37 @@ export default function InventoryTab() {
 
                             {/* Low Stock Threshold */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-900 mb-2">
+                                <label htmlFor="lowStockThreshold" className="block text-sm font-medium text-gray-900 mb-2">
                                     Low Stock Threshold
                                 </label>
                                 <input
                                     type="number"
+                                    id="lowStockThreshold"
                                     value={lowStockThreshold || ''}
-                                    onChange={(e) =>
-                                        setLowStockThreshold(e.target.value ? Number(e.target.value) : undefined)
-                                    }
+                                    onChange={(e) => setLowStockThreshold(e.target.value === '' ? undefined : Number(e.target.value))}
+                                    onFocus={(e) => e.target.select()}
                                     placeholder="10"
                                     min="0"
-                                    className="w-full px-3 py-2.5 sm:px-4 sm:py-3 bg-white border-2 border-gray-400 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black focus:border-black outline-none transition-colors text-sm sm:text-base"
+                                    max="9999"
+                                    step="1"
+                                    disabled={!trackInventory}
+                                    className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors ${lowStockThreshold !== undefined && lowStockThreshold > totalStock ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                                 />
-                                <p className="text-xs text-gray-500 mt-1.5">
-                                    Get notified when stock falls below this number
-                                </p>
+                                {lowStockThreshold !== undefined && lowStockThreshold > totalStock ? (
+                                    <p className="text-xs text-red-600 mt-1.5 font-medium flex items-center gap-1">
+                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                        </svg>
+                                        Threshold cannot exceed total stock ({totalStock})
+                                    </p>
+                                ) : (
+                                    <p className="text-xs text-gray-500 mt-1.5">
+                                        {!trackInventory || stock === 0
+                                            ? 'Enable inventory tracking and set stock > 0 to use threshold'
+                                            : 'Get notified when stock falls below this number (0-9999)'
+                                        }
+                                    </p>
+                                )}
                             </div>
                         </>
                     )}

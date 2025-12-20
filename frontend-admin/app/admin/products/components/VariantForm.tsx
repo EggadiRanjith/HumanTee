@@ -121,10 +121,11 @@ export default function VariantForm({
                 </label>
                 <input
                     type="number"
-                    value={formData.stock}
+                    value={formData.stock || ''}
                     onChange={(e) =>
-                        setFormData({ ...formData, stock: Number(e.target.value) })
+                        setFormData({ ...formData, stock: e.target.value === '' ? 0 : Number(e.target.value) })
                     }
+                    onFocus={(e) => e.target.select()}
                     placeholder="0"
                     min="0"
                     className="w-full px-4 py-3 bg-white border-2 border-gray-400 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black focus:border-black outline-none"
@@ -145,6 +146,7 @@ export default function VariantForm({
                             price: e.target.value ? Number(e.target.value) : undefined,
                         })
                     }
+                    onFocus={(e) => e.target.select()}
                     placeholder="Leave empty to use base price"
                     min="0"
                     step="0.01"
@@ -166,22 +168,9 @@ export default function VariantForm({
                             weight: e.target.value ? Number(e.target.value) : undefined,
                         })
                     }
+                    onFocus={(e) => e.target.select()}
                     placeholder="200"
                     min="0"
-                    className="w-full px-4 py-3 bg-white border-2 border-gray-400 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black focus:border-black outline-none"
-                />
-            </div>
-
-            {/* Barcode */}
-            <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                    Barcode (Optional)
-                </label>
-                <input
-                    type="text"
-                    value={formData.barcode || ''}
-                    onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
-                    placeholder="123456789012"
                     className="w-full px-4 py-3 bg-white border-2 border-gray-400 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black focus:border-black outline-none"
                 />
             </div>

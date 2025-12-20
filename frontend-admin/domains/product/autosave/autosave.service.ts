@@ -13,7 +13,6 @@ import { usePricingStore } from '../pricing/pricing.store';
 import { useInventoryStore } from '../inventory/inventory.store';
 import { useVariantsStore } from '../variants/variants.store';
 import { useMediaStore } from '../media/media.store';
-import { useSEOStore } from '../seo/seo.store';
 import { useOrganizationStore } from '../organization/organization.store';
 import type { ProductFormData, ProductDraft } from '../core/product.types';
 import { SCHEMA_VERSION } from '../core/product.types';
@@ -36,7 +35,6 @@ export const observeHasUnsavedChanges = (): boolean => {
         useInventoryStore.getState().isDirty ||
         useVariantsStore.getState().isDirty ||
         useMediaStore.getState().isDirty ||
-        useSEOStore.getState().isDirty ||
         useOrganizationStore.getState().isDirty
     );
 };
@@ -51,7 +49,6 @@ export const aggregateProductData = (): ProductFormData => {
     const inventory = useInventoryStore.getState();
     const variants = useVariantsStore.getState();
     const media = useMediaStore.getState();
-    const seo = useSEOStore.getState();
     const organization = useOrganizationStore.getState();
 
     return {
@@ -63,8 +60,6 @@ export const aggregateProductData = (): ProductFormData => {
 
         // Media
         images: media.images,
-        imageOrder: media.order,
-        primaryImageId: media.primaryImageId,
 
         // Pricing
         price: pricing.price,
@@ -76,7 +71,6 @@ export const aggregateProductData = (): ProductFormData => {
         // Variants
         hasVariants: variants.enabled,
         variants: variants.variants,
-        variantOrder: variants.order,
 
         // Inventory
         inventoryMode: inventory.mode,
@@ -85,12 +79,6 @@ export const aggregateProductData = (): ProductFormData => {
         sku: inventory.sku,
         continueSellingWhenOutOfStock: inventory.continueSellingWhenOutOfStock,
         lowStockThreshold: inventory.lowStockThreshold,
-
-        // SEO
-        slug: seo.slug,
-        metaTitle: seo.metaTitle,
-        metaDescription: seo.metaDescription,
-        tags: seo.tags,
 
         // Organization
         status: organization.status,
@@ -113,7 +101,6 @@ export const markAllDomainsClean = (): void => {
     useInventoryStore.getState().markClean();
     useVariantsStore.getState().markClean();
     useMediaStore.getState().markClean();
-    useSEOStore.getState().markClean();
     useOrganizationStore.getState().markClean();
 };
 

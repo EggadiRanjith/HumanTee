@@ -15,6 +15,7 @@ import { Product } from './product.entity';
  * Sellable unit that owns price and stock
  */
 @Entity('product_variants')
+@Index('idx_variants_stock', ['product_id', 'is_active', 'stock_quantity'])
 export class ProductVariant {
     @PrimaryGeneratedColumn('uuid')
     id: string;
