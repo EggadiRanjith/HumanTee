@@ -1,4 +1,4 @@
-import { IsUUID, IsString, IsNotEmpty, IsEnum, IsOptional, IsArray, ValidateNested } from 'class-validator';
+import { IsUUID, IsString, IsNotEmpty, IsEnum, IsOptional, IsArray, ValidateNested, IsBoolean, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ProductStatus } from '../enums/product-status.enum';
 
@@ -26,6 +26,25 @@ export class VariantResponseDto {
     isActive: boolean;
 }
 
+export class ImageResponseDto {
+    @IsUUID()
+    id: string;
+
+    @IsString()
+    @IsNotEmpty()
+    url: string;
+
+    @IsString()
+    @IsOptional()
+    altText?: string;
+
+    @IsBoolean()
+    isPrimary: boolean;
+
+    @IsNumber()
+    displayOrder: number;
+}
+
 export class ProductResponseDto {
     @IsUUID()
     id: string;
@@ -49,4 +68,10 @@ export class ProductResponseDto {
     @ValidateNested({ each: true })
     @Type(() => VariantResponseDto)
     variants: VariantResponseDto[];
+
+    @IsArray()
+    @IsOptional()
+    @ValidateNested({ each: true })
+    @Type(() => ImageResponseDto)
+    images?: ImageResponseDto[];
 }

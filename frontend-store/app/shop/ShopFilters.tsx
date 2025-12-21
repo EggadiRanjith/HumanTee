@@ -41,17 +41,17 @@ export default function ShopFilters({ onFilterChange, categories, collections }:
                         onChange={(e) => setSelectedCategory(e.target.value)}
                         className="
               appearance-none
-              px-6 py-3 pr-12
+              px-4 xs:px-6 py-3 pr-10 xs:pr-12
               bg-white/5 backdrop-blur-sm
               border border-white/10
               rounded-lg
-              text-white text-sm
+              text-white text-xs xs:text-sm
               tracking-wide
               cursor-pointer
               transition-all duration-300
               hover:bg-white/10 hover:border-white/20
               focus:outline-none focus:ring-2 focus:ring-violet-500/50
-              min-w-[180px]
+              min-w-[140px] xs:min-w-[180px]
             "
                     >
                         <option value="" className="bg-[#0a0a14] text-white">All Categories</option>
@@ -75,17 +75,17 @@ export default function ShopFilters({ onFilterChange, categories, collections }:
                         onChange={(e) => setSelectedCollection(e.target.value)}
                         className="
               appearance-none
-              px-6 py-3 pr-12
+              px-4 xs:px-6 py-3 pr-10 xs:pr-12
               bg-white/5 backdrop-blur-sm
               border border-white/10
               rounded-lg
-              text-white text-sm
+              text-white text-xs xs:text-sm
               tracking-wide
               cursor-pointer
               transition-all duration-300
               hover:bg-white/10 hover:border-white/20
               focus:outline-none focus:ring-2 focus:ring-violet-500/50
-              min-w-[180px]
+              min-w-[140px] xs:min-w-[180px]
             "
                     >
                         <option value="" className="bg-[#0a0a14] text-white">All Collections</option>

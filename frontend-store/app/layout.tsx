@@ -136,15 +136,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <link rel="preload" href="/videos/hero-video.mp4" as="video" type="video/mp4" />
 
       </head>
-      <body className="min-h-screen bg-brand-bg text-brand-text antialiased font-geist overflow-x-hidden">
+      <body className="min-h-screen bg-brand-bg text-brand-text antialiased font-sans overflow-x-hidden">
 
         {/* Client providers moved OUT of layout for performance */}
         <Providers>
 
           <Header />
 
-          {/* Page Content */}
-          <div>
+          {/* Page Content - with consistent bottom padding */}
+          <div className="pb-20 md:pb-32">
             {children}
           </div>
           <Footer />

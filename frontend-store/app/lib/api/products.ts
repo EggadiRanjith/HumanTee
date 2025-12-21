@@ -14,17 +14,21 @@ export async function fetchShopProducts(filters?: {
     productType?: string;
     category?: string;
     collection?: string;
+    page?: number;
+    limit?: number;
 }) {
     const params = new URLSearchParams();
     if (filters?.productType) params.append('productType', filters.productType);
     if (filters?.category) params.append('category', filters.category);
     if (filters?.collection) params.append('collection', filters.collection);
+    if (filters?.page) params.append('page', filters.page.toString());
+    if (filters?.limit) params.append('limit', filters.limit.toString());
 
     const queryString = params.toString();
     const url = queryString ? `/products/shop?${queryString}` : '/products/shop';
 
     const res = await apiClient.get(url);
-    return res.data.products;
+    return res.data; // Now returns { products, total, page, limit, totalPages }
 }
 
 export async function fetchProductBySlug(slug: string) {

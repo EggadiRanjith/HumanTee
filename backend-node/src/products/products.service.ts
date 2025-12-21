@@ -25,7 +25,7 @@ export class ProductsService {
                 status: ProductStatus.ACTIVE,
                 is_featured: true
             },
-            relations: ['variants'],
+            relations: ['variants', 'images'],  // ✅ Added images
         });
 
         return products.map((product) => this.transformProduct(product));
@@ -38,7 +38,7 @@ export class ProductsService {
     async findBySlug(slug: string): Promise<ProductResponseDto> {
         const product = await this.productRepo.findOne({
             where: { slug, status: ProductStatus.ACTIVE },
-            relations: ['variants'],
+            relations: ['variants', 'images'],  // ✅ Added images
         });
 
         if (!product) {
@@ -67,10 +67,23 @@ export class ProductsService {
         productType?: string;
         category?: string;
         collection?: string;
-    }): Promise<ProductResponseDto[]> {
+        page?: number;
+        limit?: number;
+    }): Promise<{
+        products: ProductResponseDto[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }> {
+        const page = filters?.page || 1;
+        const limit = filters?.limit || 12;
+        const skip = (page - 1) * limit;
+
         const query = this.productRepo
             .createQueryBuilder('product')
             .leftJoinAndSelect('product.variants', 'variants')
+            .leftJoinAndSelect('product.images', 'images')
             .where('product.status = :status', { status: ProductStatus.ACTIVE });
 
         // Filter by product type
@@ -98,9 +111,18 @@ export class ProductsService {
                 .andWhere('collection.is_active = :isActive', { isActive: true });
         }
 
-        const products = await query.getMany();
+        const [products, total] = await query
+            .skip(skip)
+            .take(limit)
+            .getManyAndCount();
 
-        return products.map((product) => this.transformProduct(product));
+        return {
+            products: products.map((product) => this.transformProduct(product)),
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+        };
     }
 
     /**
@@ -119,6 +141,18 @@ export class ProductsService {
                 ? product.variants
                     .filter((v) => v.is_active)
                     .map((v) => this.transformVariant(v))
+                : [],
+            // ✅ Added: Include images with camelCase fields
+            images: product.images
+                ? product.images
+                    .filter((img) => img.status === 'ACTIVE')  // Only active images
+                    .map((img) => ({
+                        id: img.id,
+                        url: img.url,
+                        altText: img.alt_text,
+                        isPrimary: img.is_primary,
+                        displayOrder: img.display_order,
+                    }))
                 : [],
         };
     }

@@ -31,7 +31,6 @@ export function ProductInfo({ product }: ProductInfoProps) {
     const [quantity, setQuantity] = useState(1);
     const [sizeError, setSizeError] = useState(false);
     const [stockError, setStockError] = useState<string | null>(null);
-    const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [addedToCart, setAddedToCart] = useState(false);
     const [cartAnimation, setCartAnimation] = useState<any>(null);
@@ -55,9 +54,16 @@ export function ProductInfo({ product }: ProductInfoProps) {
             return;
         }
 
+        // Find the variant for the selected size
+        const selectedVariant = product.variants?.find((v: any) => v.size === selectedSize);
+
+        if (!selectedVariant) {
+            setStockError(`Variant for size ${selectedSize} not found`);
+            return;
+        }
+
         setIsLoading(true);
         setStockError(null);
-        setSuccessMessage(null);
 
         const success = await addToCart(
             {
@@ -68,17 +74,15 @@ export function ProductInfo({ product }: ProductInfoProps) {
                 image: product.images[0],
                 size: selectedSize,
                 quantity,
-                availableStock: product.stock,
-                variantId: product.id as string,
+                availableStock: selectedVariant.stockQuantity || product.stock,
+                variantId: selectedVariant.id, // ✅ Use actual variant ID!
             },
             () => {
                 // Success callback - show inline message
                 setAddedToCart(true);
                 setStockError(null);
-                setSuccessMessage(`${product.title} (${selectedSize}) added to cart successfully!`);
                 setTimeout(() => {
                     setAddedToCart(false);
-                    setSuccessMessage(null);
                 }, 3000);
             },
             (error) => {
@@ -165,14 +169,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
             {/* Action Buttons */}
             <div className="pt-2 space-y-3">
-                {/* Success Message */}
-                {successMessage && (
-                    <div className="px-4 py-3 rounded-lg bg-green-500/10 border border-green-500/30 animate-in fade-in slide-in-from-top-2 duration-300">
-                        <p className="text-green-400 text-sm font-medium text-center">
-                            {successMessage}
-                        </p>
-                    </div>
-                )}
+
 
                 {/* Stock Error Message */}
                 {stockError && (
@@ -195,7 +192,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
             relative overflow-hidden
             flex items-center justify-center gap-2
             ${addedToCart
-                            ? 'bg-[#22c55e] text-white pointer-events-none'
+                            ? 'bg-zinc-800 text-white/50 cursor-not-allowed'
                             : stockError
                                 ? 'bg-red-500 text-white hover:bg-red-600'
                                 : isLoading

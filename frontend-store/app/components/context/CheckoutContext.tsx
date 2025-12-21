@@ -13,7 +13,7 @@ export interface ShippingData {
     country: string;
 }
 
-export type PaymentMethod = "card" | "upi" | "cod";
+export type PaymentMethod = "razorpay";
 
 interface CheckoutContextType {
     shippingData: ShippingData;
@@ -40,12 +40,12 @@ const initialShippingData: ShippingData = {
 
 export function CheckoutProvider({ children }: { children: ReactNode }) {
     const [shippingData, setShippingData] = useState<ShippingData>(initialShippingData);
-    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("razorpay");
     const [orderNumber, setOrderNumber] = useState("");
 
     const clearCheckoutData = () => {
         setShippingData(initialShippingData);
-        setPaymentMethod("card");
+        setPaymentMethod("razorpay");
         setOrderNumber("");
     };
 

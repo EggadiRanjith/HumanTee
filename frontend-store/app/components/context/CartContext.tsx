@@ -78,9 +78,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         title: item.productTitle || '',
         price: item.price,
         currency: item.currency,
-        image: item.productImage || '',
+        image: item.productImage || '/images/placeholder.jpg', // Fallback for null images
         quantity: item.quantity,
-        size: item.size,
+        size: item.variantLabel, // ✅ Backend sends variantLabel, not size
         variantId: item.variantId,
       })));
     } catch (error) {
@@ -128,22 +128,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     if (isAuthenticated) {
-      // Backend cart
+      // Backend cart - only send what the DTO expects
       try {
-        await apiClient.post('/cart/items', {
+        const response = await apiClient.post('/cart/items', {
           productId: item.id.toString(),
           variantId: item.variantId,
           quantity: qtyToAdd,
-          price: item.price,
-          currency: item.currency,
-          productTitle: item.title,
-          productImage: item.image,
-          size: item.size,
         });
+
         await loadBackendCart();
         onSuccess?.();
         return true;
-      } catch (error) {
+      } catch (error: any) {
+        console.error('Add to cart error:', error);
         onError?.('Failed to add to cart');
         return false;
       }

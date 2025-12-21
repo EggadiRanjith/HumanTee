@@ -50,6 +50,7 @@ export class CartService {
             cart = this.cartRepository.create({
                 user_id: userId,
                 status: CartStatus.ACTIVE,
+                items: [], // ✅ Initialize items array
             });
             await this.cartRepository.save(cart);
         }
@@ -180,10 +181,10 @@ export class CartService {
      * Add item to cart (Phase 5: Variant-based with stock validation)
      */
     async addItem(userId: string, dto: AddToCartDto): Promise<Cart> {
-        // 1. Fetch variant with product relation (CORRECTED: fetch once)
+        // 1. Fetch variant with product and images relations
         const variant = await this.variantRepo.findOne({
             where: { id: dto.variantId },
-            relations: ['product'],
+            relations: ['product', 'product.images'],
         });
 
         // 2. Validate variant exists
@@ -220,6 +221,10 @@ export class CartService {
             // 8a. Validate stock for new item (CORRECTED: pass variant object)
             this.assertStockAvailable(variant, dto.quantity, 0);
 
+            // Get primary product image
+            const primaryImage = variant.product.images?.find(img => img.is_primary && img.status === 'ACTIVE');
+            const imageUrl = primaryImage?.url || null;
+
             // 8b. Create item with snapshots
             const newItem = this.cartItemRepository.create({
                 cart_id: cart.id,
@@ -232,7 +237,7 @@ export class CartService {
                 currency: 'INR', // TEMP: Phase 6 will add to variant model
                 product_title: variant.product.name,
                 variant_label: variant.size,
-                product_image: null, // Until images supported
+                product_image: imageUrl, // ✅ Include primary product image
             });
 
             await this.cartItemRepository.save(newItem);

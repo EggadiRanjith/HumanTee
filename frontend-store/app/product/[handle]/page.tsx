@@ -63,7 +63,8 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
     sizes: availableSizes.length > 0 ? availableSizes : ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
     images: productImages,
     vendor: 'HumanTee',
-    productType: 'T-Shirt'
+    productType: 'T-Shirt',
+    variants: apiProduct.variants || [] // ✅ Pass variants to ProductInfo
   };
 
   return (

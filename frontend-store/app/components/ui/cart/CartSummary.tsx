@@ -21,9 +21,9 @@ export function CartSummary({ subtotal, totalItems, onCheckout }: CartSummaryPro
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             className="
-        p-6 rounded-2xl luxury-glass
+        p-4 sm:p-6 rounded-2xl luxury-glass
         border border-white/10 bg-white/5 backdrop-blur-xl
-        sticky top-24
+        lg:sticky lg:top-24
       "
         >
             <h2 className="text-white text-lg font-light uppercase tracking-wide mb-6">

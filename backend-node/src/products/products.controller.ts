@@ -29,13 +29,20 @@ export class ProductsController {
     @Get('shop')
     async findForShop(
         @Query() query: ShopQueryDto,
-    ): Promise<{ products: ProductResponseDto[] }> {
-        const products = await this.productsService.findForShop({
+    ): Promise<{
+        products: ProductResponseDto[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }> {
+        return this.productsService.findForShop({
             productType: query.productType,
             category: query.category,
             collection: query.collection,
+            page: query.page ? parseInt(query.page, 10) : 1,
+            limit: query.limit ? parseInt(query.limit, 10) : 12,
         });
-        return { products };
     }
 
     /**

@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsNumberString } from 'class-validator';
 
 /**
  * Shop Query DTO
@@ -16,4 +16,12 @@ export class ShopQueryDto {
     @IsOptional()
     @IsString()
     collection?: string;
+
+    @IsOptional()
+    @IsNumberString()
+    page?: string;
+
+    @IsOptional()
+    @IsNumberString()
+    limit?: string;
 }

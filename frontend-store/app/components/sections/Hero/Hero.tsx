@@ -8,41 +8,43 @@
 
 import { motion, useReducedMotion, useScroll, useTransform, useMotionValue } from "framer-motion";
 import Image from "next/image";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo, useCallback } from "react";
 import Link from "next/link";
 import { heroSlides, HeroSlide } from '@/app/data/hero-slides.data';
 import { HERO_SLIDE_INTERVAL } from '@/app/constants/animations.constants';
 
 // --- Reusable Holographic Button Component ---
-const HolographicButton = ({ text }: { text: string }) => {
-  // Simulated Gyro / Mouse Parallax
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
+const HolographicButton = memo(({ text }: { text: string }) => {
+  // Simulated Gyro / Mouse Parallax - wrapped in useRef for stable reference
+  const x = useRef(useMotionValue(0)).current;
+  const y = useRef(useMotionValue(0)).current;
 
-  const handleMove = (e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => {
+  const handleMove = useCallback((e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => {
     const rect = (e.target as HTMLElement).getBoundingClientRect();
     const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
 
     x.set(clientX - rect.left);
     y.set(clientY - rect.top);
-  };
+  }, [x, y]);
 
   return (
     <Link href="/shop" className="inline-block relative group">
       <motion.button
         className="
           relative overflow-hidden
-          px-8 sm:px-10 md:px-12
-          py-3 sm:py-3.5 md:py-4
+          min-h-[44px] min-w-[120px]
+          px-6 xs:px-8 sm:px-10 md:px-12
+          py-3.5 sm:py-3.5 md:py-4
           font-geist font-semibold
-          text-[12px] sm:text-[13px] md:text-[14px] tracking-[0.25em] uppercase
+          text-[11px] xs:text-[12px] sm:text-[13px] md:text-[14px] tracking-[0.20em] xs:tracking-[0.25em] uppercase
           rounded-full
           border border-white/20
           bg-white/5 backdrop-blur-xl
           text-white
           transition-all duration-500
           hover:scale-[1.03] hover:border-white/40
+          active:scale-95
         "
         onMouseMove={handleMove}
         onTouchMove={handleMove}
@@ -79,7 +81,7 @@ const HolographicButton = ({ text }: { text: string }) => {
       </motion.button>
     </Link>
   );
-};
+});
 
 const Hero = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -123,83 +125,94 @@ const Hero = () => {
 
   return (
     <section
-      className="relative min-h-screen flex items-center justify-center overflow-hidden -mt-[var(--header-height)] pt-[var(--header-height)] px-6"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden -mt-[var(--header-height)] pt-[var(--header-height)] px-4 xs:px-5 sm:px-6 md:px-8 lg:px-10"
       aria-label="Hero Carousel"
     >
       {/* Media layers - crossfade transition with zoom effects */}
-      {heroSlides.map((slide, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, scale: 1, filter: "blur(10px)" }}
-          animate={{
-            opacity: currentImageIndex === index ? 1 : 0,
-            scale: shouldReducedMotion ? 1 : (currentImageIndex === index ? (index % 2 === 0 ? 1.05 : 1) : (index % 2 === 0 ? 1 : 1.05)),
-            filter: currentImageIndex === index ? "blur(0px)" : "blur(10px)"
-          }}
-          transition={{
-            duration: 1.2,
-            ease: "easeInOut",
-            scale: { duration: 6, ease: "linear" }
-          }}
-          className="absolute inset-0 w-full h-full"
-          style={{
-            willChange: "opacity, transform, filter",
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden",
-          }}
-        >
-          {slide.type === "video" ? (
-            <>
-              <video
-                ref={index === 0 ? videoRef : undefined}
-                src={slide.video}
-                autoPlay
-                muted
-                playsInline
-                className={`w-full h-full object-cover object-center ${videoError ? 'hidden' : ''}`}
-                style={{
-                  filter: "contrast(1.15) saturate(1.3) brightness(1.05) sharpness(1.1)",
-                  transform: "scale(1.05)",
-                }}
-                preload="metadata"
-                onError={() => {
-                  setVideoError(true);
-                }}
-              />
-              {videoError && (
-                <Image
-                  src="/images/hero-fallback.jpg"
-                  alt="HumanTee Collection"
-                  fill
-                  className="object-cover object-center"
-                  priority
+      {/* Only render current and next slide for performance */}
+      {heroSlides.map((slide, index) => {
+        // Only render visible slides after video has played to save memory
+        const isCurrentSlide = index === currentImageIndex;
+        const isNextSlide = index === (currentImageIndex + 1) % heroSlides.length;
+        const isVisible = isCurrentSlide || isNextSlide || !videoHasPlayed;
+
+        if (!isVisible) return null;
+
+        return (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, scale: 1, filter: "blur(10px)" }}
+            animate={{
+              opacity: currentImageIndex === index ? 1 : 0,
+              scale: shouldReducedMotion ? 1 : (currentImageIndex === index ? (index % 2 === 0 ? 1.05 : 1) : (index % 2 === 0 ? 1 : 1.05)),
+              filter: currentImageIndex === index ? "blur(0px)" : "blur(10px)"
+            }}
+            transition={{
+              duration: 1.2,
+              ease: "easeInOut",
+              scale: { duration: 6, ease: "linear" }
+            }}
+            className="absolute inset-0 w-full h-full"
+            style={{
+              willChange: "opacity, transform, filter",
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+            }}
+          >
+            {slide.type === "video" ? (
+              <>
+                <video
+                  ref={index === 0 ? videoRef : undefined}
+                  src={slide.video}
+                  poster="/images/banner1.png"
+                  autoPlay
+                  muted
+                  playsInline
+                  className={`w-full h-full object-cover object-center ${videoError ? 'hidden' : ''}`}
+                  style={{
+                    filter: "contrast(1.15) saturate(1.3) brightness(1.05) sharpness(1.1)",
+                    transform: "scale(1.05)",
+                  }}
+                  preload="none"
+                  onError={() => {
+                    setVideoError(true);
+                  }}
                 />
-              )}
-            </>
-          ) : (
-            <>
-              <Image
-                src={slide.mobileImage || slide.image}
-                alt={`${slide.heading}`}
-                fill
-                className={`object-cover object-center w-full h-full ${slide.mobileImage ? 'md:hidden' : ''}`}
-                priority={index === 1}
-              />
-              {slide.mobileImage && (
+                {videoError && (
+                  <Image
+                    src="/images/hero-fallback.jpg"
+                    alt="HumanTee Collection"
+                    fill
+                    className="object-cover object-center"
+                    priority
+                  />
+                )}
+              </>
+            ) : (
+              <>
                 <Image
-                  src={slide.image}
-                  alt={slide.heading}
+                  src={slide.mobileImage || slide.image}
+                  alt={`${slide.heading}`}
                   fill
-                  className="hidden md:block object-cover object-center w-full h-full"
+                  className={`object-cover object-center w-full h-full ${slide.mobileImage ? 'md:hidden' : ''}`}
                   priority={index === 1}
                 />
-              )}
-            </>
-          )}
-          {/* Dark overlay for better text readability */}
-          <div className="absolute inset-0 bg-black/40 sm:bg-black/50" />
-        </motion.div>
-      ))}
+                {slide.mobileImage && (
+                  <Image
+                    src={slide.image}
+                    alt={slide.heading}
+                    fill
+                    className="hidden md:block object-cover object-center w-full h-full"
+                    priority={index === 1}
+                  />
+                )}
+              </>
+            )}
+            {/* Dark overlay for better text readability */}
+            <div className="absolute inset-0 bg-black/40 sm:bg-black/50" />
+          </motion.div>
+        );
+      })}
 
       {/* Content layers - synchronized crossfade transition */}
       {heroSlides.map((slide, index) => (
@@ -220,20 +233,20 @@ const Hero = () => {
                   {index === 1 && slide.subheading1 ? (
                     <>
                       <h1
-                        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl text-white mb-2 tracking-wide leading-[1.1] font-bold px-2 sm:px-4 md:px-6"
+                        className="text-[32px] xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl text-white mb-2 tracking-wide leading-[1.1] font-bold px-1 xs:px-2 sm:px-4 md:px-6"
                         style={{ fontFamily: "var(--font-zalando-sans)", fontWeight: 700, textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}
                       >
                         {slide.heading}
                       </h1>
                       <h2
-                        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl text-white mb-6 tracking-wide leading-[1.1] font-bold px-2 sm:px-4 md:px-6"
+                        className="text-[32px] xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl text-white mb-6 tracking-wide leading-[1.1] font-bold px-1 xs:px-2 sm:px-4 md:px-6"
                         style={{ fontFamily: "var(--font-zalando-sans)", fontWeight: 700, textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}
                       >
                         {slide.subheading1}
                       </h2>
                       {slide.subheading2 && (
                         <h3
-                          className="text-base sm:text-lg md:text-xl lg:text-2xl text-white mb-8 sm:mb-12 font-semibold tracking-[0.20em] uppercase px-2 sm:px-4 md:px-6"
+                          className="text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl text-white mb-8 sm:mb-12 font-semibold tracking-[0.15em] xs:tracking-[0.20em] uppercase px-1 xs:px-2 sm:px-4 md:px-6"
                         >
                           {slide.subheading2}
                         </h3>
@@ -302,4 +315,4 @@ const Hero = () => {
   );
 };
 
-export default Hero;
+export default memo(Hero);

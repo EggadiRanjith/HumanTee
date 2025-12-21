@@ -1,11 +1,11 @@
 import { Hero, FeaturedProducts } from "./components/sections";
-import { Suspense } from "react";
+import { Suspense, memo } from "react";
 import dynamic from "next/dynamic";
 
 // Skeleton loader for lazy sections
-const SectionSkeleton = () => (
+const SectionSkeleton = memo(() => (
     <div className="w-full h-96 animate-pulse bg-white/5 rounded-lg" />
-);
+));
 
 // Dynamic imports for below-fold content (reduces initial bundle)
 const ScrollingBanner = dynamic(() => import("./components/sections/ScrollingBanner/ScrollingBanner"), {

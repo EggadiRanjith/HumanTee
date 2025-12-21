@@ -6,9 +6,19 @@
  * CORRECTION 2: Currency from variant, not hardcoded
  * CORRECTION 3: Explicit stock calculation (sum of active variants)
  * CORRECTION 4: handle = slug (unified, no mixing)
+ * CORRECTION 5: Uses Cloudinary images from backend
  */
 
 import { Product } from '@/app/types/product.types';
+
+interface BackendImage {
+    id: string;
+    url: string;
+    altText?: string;      // Backend returns camelCase
+    isPrimary: boolean;    // Backend returns camelCase
+    displayOrder: number;  // Backend returns camelCase
+    status?: string;
+}
 
 interface BackendProduct {
     id: string;
@@ -17,6 +27,7 @@ interface BackendProduct {
     description: string;
     status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
     variants: BackendVariant[];
+    images?: BackendImage[];  // Added images array
 }
 
 interface BackendVariant {
@@ -36,6 +47,12 @@ interface BackendVariant {
 export function adaptProduct(apiProduct: BackendProduct): Product {
     const activeVariants = apiProduct.variants?.filter(v => v.isActive) ?? [];
     const firstVariant = activeVariants[0];
+
+    // Get primary image or first image, fallback to placeholder
+    const images = apiProduct.images ?? [];
+    const primaryImage = images.find(img => img.isPrimary);  // Fixed: camelCase
+    const firstImage = images.length > 0 ? images[0] : null;
+    const productImage = primaryImage || firstImage;
 
     return {
         // UUID as string (Phase 4 type change)
@@ -59,9 +76,9 @@ export function adaptProduct(apiProduct: BackendProduct): Product {
         // CORRECTION 4: handle = slug (unified)
         handle: apiProduct.slug,
 
-        // Placeholder image until backend supports images
-        image: '/images/placeholder.jpg',
-        imageAlt: apiProduct.title,
+        // CORRECTION 5: Use Cloudinary image from backend, with fallback
+        image: productImage?.url || '/images/placeholder.jpg',
+        imageAlt: productImage?.altText || apiProduct.title,  // Fixed: camelCase
 
         // Optional fields
         originalPrice: undefined, // No sale pricing yet

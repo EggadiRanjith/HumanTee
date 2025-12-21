@@ -2,17 +2,18 @@
  * Reviews Section
  * Displays customer reviews in a continuous smooth floating container
  * Auto-floats with rewind and pause-on-touch functionality
+ * Optimized with React.memo
  */
 
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, memo } from "react";
 import { ReviewCard } from '@/app/components/ui/cards';
 import { SectionHeader } from '@/app/components/ui/layout';
 import { customerReviews } from '@/app/data/reviews.data';
 
 
-export default function Reviews() {
+function Reviews() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [isUserInteracting, setIsUserInteracting] = useState(false);
@@ -139,3 +140,5 @@ export default function Reviews() {
     </section>
   );
 }
+
+export default memo(Reviews);

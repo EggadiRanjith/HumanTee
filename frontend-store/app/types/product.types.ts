@@ -45,4 +45,5 @@ export interface ProductDetail extends Product {
     images: string[];
     vendor?: string;
     productType?: string;
+    variants: any[]; // Phase 8: Added for variant-specific stock and ID handling
 }

@@ -1,6 +1,7 @@
 /**
  * SafeImage Component
  * Universal image component with automatic fallback handling
+ * Supports Cloudinary images with enhanced error handling
  */
 
 "use client";
@@ -50,9 +51,11 @@ export function SafeImage({
     if (fill) {
         return (
             <>
-                {/* Loading skeleton */}
+                {/* Loading skeleton with shimmer */}
                 {loading && showSkeleton && (
-                    <div className="absolute inset-0 animate-pulse bg-white/5 rounded-lg z-0" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/10 z-0 overflow-hidden">
+                        <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                    </div>
                 )}
 
                 {/* Image with fill - className goes on Image only */}
@@ -60,7 +63,8 @@ export function SafeImage({
                     src={imageSrc}
                     alt={alt}
                     fill
-                    className={`${className} transition-opacity duration-300 ${loading ? "opacity-0" : "opacity-100"}`}
+                    unoptimized={typeof src === 'string' && src.includes('res.cloudinary.com')}
+                    className={`${className} transition-opacity duration-500 ${loading ? "opacity-0" : "opacity-100"}`}
                     onError={handleError}
                     onLoad={handleLoadingComplete}
                     {...props}
@@ -72,16 +76,19 @@ export function SafeImage({
     // Non-fill image - standard layout
     return (
         <div className="relative inline-block">
-            {/* Loading skeleton */}
-            {loading && showSkeleton && (
-                <div className="absolute inset-0 animate-pulse bg-white/5 rounded-lg" />
+            {/* Loading skeleton with shimmer */}
+            {isLoading && showSkeleton && (
+                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/10 rounded-lg overflow-hidden">
+                    <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                </div>
             )}
 
             {/* Image */}
             <Image
                 src={imageSrc}
                 alt={alt}
-                className={`${className} transition-opacity duration-300 ${loading ? "opacity-0" : "opacity-100"}`}
+                unoptimized={typeof src === 'string' && src.includes('res.cloudinary.com')}
+                className={`${className} transition-opacity duration-500 ${loading ? "opacity-0" : "opacity-100"}`}
                 onError={handleError}
                 onLoad={handleLoadingComplete}
                 {...props}

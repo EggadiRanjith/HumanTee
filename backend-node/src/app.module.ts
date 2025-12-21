@@ -11,6 +11,7 @@ import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { ShippingModule } from './shipping/shipping.module';
 import { ProtectedController } from './protected/protected.controller';
 import { UploadModule } from './common/upload/upload.module';
 
@@ -40,6 +41,7 @@ import { UploadModule } from './common/upload/upload.module';
     OrdersModule,
     PaymentsModule,
     NotificationsModule,
+    ShippingModule,
     UploadModule,
   ],
   controllers: [AppController, ProtectedController],
