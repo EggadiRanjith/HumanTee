@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import { ProductVariant } from '@/types/product-form.types';
 import { generateSKU } from '@/utils/product-form.utils';
-import ColorPicker from './ColorPicker';
+
 
 interface VariantFormProps {
     variant?: ProductVariant;
@@ -30,8 +30,6 @@ export default function VariantForm({
             id: `variant-${Date.now()}`,
             sku: '',
             size: '',
-            color: '',
-            colorHex: '#000000',
             stock: 0,
         }
     );
@@ -43,7 +41,7 @@ export default function VariantForm({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.sku || !formData.size || !formData.color) {
+        if (!formData.sku || !formData.size) {
             alert('Please fill in all required fields');
             return;
         }
@@ -77,19 +75,7 @@ export default function VariantForm({
                 </div>
             </div>
 
-            {/* Color Selection */}
-            <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                    Color *
-                </label>
-                <ColorPicker
-                    value={formData.colorHex}
-                    colorName={formData.color}
-                    onChange={(colorName, colorHex) =>
-                        setFormData({ ...formData, color: colorName, colorHex })
-                    }
-                />
-            </div>
+
 
             {/* SKU */}
             <div>
@@ -154,26 +140,7 @@ export default function VariantForm({
                 />
             </div>
 
-            {/* Weight */}
-            <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                    Weight (grams)
-                </label>
-                <input
-                    type="number"
-                    value={formData.weight || ''}
-                    onChange={(e) =>
-                        setFormData({
-                            ...formData,
-                            weight: e.target.value ? Number(e.target.value) : undefined,
-                        })
-                    }
-                    onFocus={(e) => e.target.select()}
-                    placeholder="200"
-                    min="0"
-                    className="w-full px-4 py-3 bg-white border-2 border-gray-400 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black focus:border-black outline-none"
-                />
-            </div>
+
 
             {/* Actions */}
             <div className="flex gap-2 pt-2">

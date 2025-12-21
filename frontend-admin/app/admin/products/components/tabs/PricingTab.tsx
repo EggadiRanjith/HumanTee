@@ -12,7 +12,13 @@ import { selectProfit, selectProfitMargin } from '@/domains/product/core/product
 import { useEffect } from 'react';
 import { triggerAutosave } from '@/domains/product/autosave/autosave.service';
 
-export default function PricingTab() {
+interface PricingTabProps {
+    errors?: {
+        price?: string;
+    };
+}
+
+export default function PricingTab({ errors }: PricingTabProps) {
     const {
         price,
         compareAtPrice,
@@ -52,8 +58,17 @@ export default function PricingTab() {
                             min="0"
                             max="9999999"
                             step="0.01"
-                            className="w-full px-3 py-3 sm:px-4 sm:py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900"
+                            className={`w-full px-3 py-3 sm:px-4 sm:py-2.5 text-base sm:text-sm border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900 ${errors?.price ? 'border-red-500' : 'border-gray-300'
+                                }`}
                         />
+                        {errors?.price && (
+                            <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                </svg>
+                                {errors.price}
+                            </p>
+                        )}
                     </div>
 
                     {/* Compare-at Price */}

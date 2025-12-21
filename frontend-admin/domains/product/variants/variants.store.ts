@@ -47,7 +47,7 @@ export const useVariantsStore = create<VariantsState>()((set) => ({
 
     addVariant: (variant, productName) => {
         const id = uuidv4();
-        const sku = generateSKU(productName, variant.size, variant.color);
+        const sku = generateSKU(productName, variant.size);
 
         set((state) => {
             const currentVariants = Array.isArray(state.variants) ? state.variants : [];
@@ -109,7 +109,7 @@ export const useVariantsStore = create<VariantsState>()((set) => ({
                     if (v.id === id && !v.skuLocked) {
                         return {
                             ...v,
-                            sku: generateSKU(productName, v.size, v.color),
+                            sku: generateSKU(productName, v.size),
                         };
                     }
                     return v;

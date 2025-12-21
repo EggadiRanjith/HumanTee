@@ -77,14 +77,11 @@ export class AdminProductsService {
                 const variant = this.variantRepo.create({
                     product_id: savedProduct.id,
                     size: variantDto.size,
-                    color: variantDto.color,
-                    color_hex: variantDto.colorHex,
                     sku: variantDto.sku,
                     sku_locked: false,
                     price: dto.price,
                     price_override: variantDto.priceOverride,
                     stock_quantity: variantDto.stock,
-                    weight: variantDto.weight,
                     is_active: true,
                 });
                 await this.variantRepo.save(variant);
@@ -159,14 +156,11 @@ export class AdminProductsService {
                 const variant = this.variantRepo.create({
                     product_id: id,
                     size: variantDto.size,
-                    color: variantDto.color,
-                    color_hex: variantDto.colorHex,
                     sku: variantDto.sku,
                     sku_locked: false,
                     price: product.base_price,
                     price_override: variantDto.priceOverride,
                     stock_quantity: variantDto.stock,
-                    weight: variantDto.weight,
                     is_active: true,
                 });
                 await this.variantRepo.save(variant);
@@ -351,13 +345,10 @@ export class AdminProductsService {
             variants: product.variants?.map(v => ({
                 id: v.id,
                 size: v.size,
-                color: v.color,
-                colorHex: v.color_hex,
                 sku: v.sku,
                 skuLocked: v.sku_locked,
                 stock: v.stock_quantity,
                 priceOverride: v.price_override ? Number(v.price_override) : undefined,
-                weight: v.weight,
                 isActive: v.is_active,
             })) || [],
             collections: product.collectionMaps?.map(map => ({

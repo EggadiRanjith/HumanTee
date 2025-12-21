@@ -16,8 +16,6 @@ export interface ProductVariant {
     id: string;
     sku: string;
     size: string;
-    color: string;
-    colorHex: string;
     stock: number;
     price?: number; // Optional override
     weight?: number; // grams

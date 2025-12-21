@@ -27,13 +27,10 @@ export interface ProductImage {
 export interface Variant {
     id: string; // UUID
     size: string;
-    color: string;
-    colorHex: string;
     sku: string;
     skuLocked: boolean; // True after publish
     stock: number;
     priceOverride?: number;
-    weight?: number;
 }
 
 export type ProductStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';

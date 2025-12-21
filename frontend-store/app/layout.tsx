@@ -22,11 +22,6 @@ const geist = localFont({
   display: "swap",
 });
 
-const tanPearl = localFont({
-  src: [{ path: "../public/fonts/tan-pearl/TAN-PEARL.ttf", weight: "400" }],
-  variable: "--font-tan-pearl",
-  display: "swap",
-});
 
 const zalandoSans = Darker_Grotesque({
   weight: "300",
@@ -114,9 +109,9 @@ export const viewport: Viewport = {
 /* ------------------------------------------------------------
    Root Layout (SERVER COMPONENT — FAST)
 ------------------------------------------------------------ */
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geist.variable} ${tanPearl.variable} ${zalandoSans.variable} ${meddon.variable} ${bonheurRoyale.variable} ${benzin.variable}`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Preload critical fonts for faster FCP */}
         <link
@@ -127,6 +122,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"
         />
 
+        {/* Preconnect to external domains for faster loading */}
+        <link rel="preconnect" href="https://www.instagram.com" />
+        <link rel="preconnect" href="https://maps.google.com" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://www.instagram.com" />
+        <link rel="dns-prefetch" href="https://maps.google.com" />
         {/* Preconnect to external domains */}
         <link rel="preconnect" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />

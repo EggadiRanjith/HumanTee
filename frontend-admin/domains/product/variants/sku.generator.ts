@@ -9,7 +9,7 @@
  * 4. Server validates uniqueness on save
  */
 
-export const generateSKU = (productName: string, size?: string, color?: string): string => {
+export const generateSKU = (productName: string, size?: string): string => {
     // Extract initials from product name
     const words = productName.trim().split(/\s+/);
     const initials = words
@@ -31,10 +31,6 @@ export const generateSKU = (productName: string, size?: string, color?: string):
     // Add variant info if provided
     if (size) {
         sku += `-${size.toUpperCase()}`;
-    }
-    if (color) {
-        const colorCode = color.substring(0, 3).toUpperCase();
-        sku += `-${colorCode}`;
     }
 
     return sku;

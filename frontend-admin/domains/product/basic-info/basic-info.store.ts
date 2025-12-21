@@ -29,8 +29,8 @@ interface BasicInfoState {
 const initialState = {
     name: '',
     description: '',
-    productType: 'T-Shirt',
-    category: 'Drop 1',
+    productType: '',
+    category: '',
     isDirty: false,
 };
 

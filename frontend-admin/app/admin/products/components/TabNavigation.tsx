@@ -18,15 +18,14 @@ export default function TabNavigation({ activeTab, onTabChange, tabs }: TabNavig
         <div className="border-b border-gray-200 bg-white sticky top-0 z-10">
             <div className="flex overflow-x-auto scrollbar-hide">
                 {tabs.map((tab) => (
-                    <button
+                    <div
                         key={tab.key}
-                        onClick={() => onTabChange(tab.key)}
                         className={`
               relative px-4 sm:px-6 py-3 sm:py-4 text-sm font-medium whitespace-nowrap
-              transition-colors duration-200
+              transition-colors duration-200 cursor-default
               ${activeTab === tab.key
                                 ? 'text-black border-b-2 border-black'
-                                : 'text-gray-600 hover:text-black hover:bg-gray-50'
+                                : 'text-gray-400'
                             }
             `}
                     >
@@ -37,7 +36,7 @@ export default function TabNavigation({ activeTab, onTabChange, tabs }: TabNavig
                                 <span className="w-2 h-2 bg-red-500 rounded-full" title="Has errors" />
                             )}
                         </div>
-                    </button>
+                    </div>
                 ))}
             </div>
         </div>

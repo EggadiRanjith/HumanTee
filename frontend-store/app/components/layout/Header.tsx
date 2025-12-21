@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback, memo } from "react";
 import { FiMenu, FiX, FiShoppingBag } from "react-icons/fi";
 import Link from "next/link";
 import Navbar from "./Navbar";
@@ -10,7 +10,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import AuthStatus, { AuthStatusMobile } from "./AuthStatus";
 
-export default function Header() {
+function Header() {
   const { totalItems } = useCart();
   const { user, isAuthenticated } = useAuth();
   const ref = useRef<HTMLDivElement>(null);
@@ -41,7 +41,12 @@ export default function Header() {
     };
   }, [open]);
 
-  const stop = (e: any) => e.stopPropagation(); // Prevent closing when touching inside menu
+  const stop = useCallback((e: any) => e.stopPropagation(), []); // Prevent closing when touching inside menu
+
+  const handleMenuToggle = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setOpen(prev => !prev);
+  }, []);
 
   return (
     <div
@@ -65,10 +70,7 @@ export default function Header() {
       >
         {/* MOBILE LEFT — MENU BUTTON */}
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setOpen(!open);
-          }}
+          onClick={handleMenuToggle}
           className="md:hidden p-2 text-white/80 active:scale-95"
           aria-label="Navigation menu"
           aria-expanded={open}
@@ -82,11 +84,12 @@ export default function Header() {
           href="/"
           onClick={(e) => e.stopPropagation()}
           className="
-            text-white font-semibold uppercase tracking-[0.14em]
-            text-[14px] sm:text-[15px]
+            text-white font-bold uppercase tracking-[0.16em]
+            text-[18px] sm:text-[20px] md:text-[22px] lg:text-[24px]
             select-none
+            transition-all duration-300
+            hover:text-white/90
           "
-          style={{ fontFamily: "var(--font-tan-pearl)" }}
         >
           HUMANTEE
         </Link>
@@ -297,3 +300,5 @@ export default function Header() {
     </div>
   );
 }
+
+export default memo(Header);

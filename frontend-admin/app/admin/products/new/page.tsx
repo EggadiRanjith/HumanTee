@@ -17,6 +17,7 @@ import VariantsTab from '../components/tabs/VariantsTab';
 import InventoryTab from '../components/tabs/InventoryTab';
 import OrganizationTab from '../components/tabs/OrganizationTab';
 import { useBasicInfoStore } from '@/domains/product/basic-info/basic-info.store';
+import { useMediaStore } from '@/domains/product/media/media.store';
 import { usePricingStore } from '@/domains/product/pricing/pricing.store';
 import { useInventoryStore } from '@/domains/product/inventory/inventory.store';
 import { useVariantsStore } from '@/domains/product/variants/variants.store';
@@ -24,6 +25,8 @@ import { useOrganizationStore } from '@/domains/product/organization/organizatio
 import { observeHasUnsavedChanges, aggregateProductData, markAllDomainsClean } from '@/domains/product/autosave/autosave.service';
 import { attemptDraftRecovery, discardDraft } from '@/domains/product/autosave/draft.recovery';
 import { ConfirmActionModal } from '@/app/admin/components/ConfirmActionModal';
+import { useToast } from '@/app/admin/hooks/useToast';
+import { ToastContainer } from '@/app/admin/components/Toast';
 
 export default function NewProductPage() {
     const router = useRouter();
@@ -35,6 +38,36 @@ export default function NewProductPage() {
     const { name } = useBasicInfoStore();
     const { price } = usePricingStore();
 
+    // Validation errors for inline display
+    const [validationErrors, setValidationErrors] = useState<{
+        name?: string;
+        description?: string;
+        productType?: string;
+        category?: string;
+        price?: string;
+        images?: string;
+        variants?: string;
+    }>({});
+
+    // Wizard state management
+    const [currentStep, setCurrentStep] = useState(0);
+    const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+
+    // Step definitions
+    const wizardSteps = [
+        { key: 'basic' as TabKey, label: 'Basic Info', index: 0 },
+        { key: 'media' as TabKey, label: 'Media', index: 1 },
+        { key: 'pricing' as TabKey, label: 'Pricing', index: 2 },
+        { key: 'variants' as TabKey, label: 'Variants', index: 3 },
+        { key: 'inventory' as TabKey, label: 'Inventory', index: 4 },
+        { key: 'organization' as TabKey, label: 'Organization', index: 5 },
+    ];
+
+    // Sync activeTab with currentStep
+    useEffect(() => {
+        setActiveTab(wizardSteps[currentStep].key);
+    }, [currentStep]);
+
     // Attempt draft recovery on mount
     useEffect(() => {
         const draft = attemptDraftRecovery();
@@ -43,14 +76,84 @@ export default function NewProductPage() {
         }
     }, []);
 
-    // Tab configuration with error detection
+    // Clear specific errors when fields change (real-time validation)
+    useEffect(() => {
+        if (validationErrors.name && name) {
+            setValidationErrors(prev => ({ ...prev, name: undefined }));
+        }
+    }, [name, validationErrors.name]);
+
+    const { description, productType, category } = useBasicInfoStore();
+
+    useEffect(() => {
+        if (validationErrors.description && description) {
+            setValidationErrors(prev => ({ ...prev, description: undefined }));
+        }
+    }, [description, validationErrors.description]);
+
+    useEffect(() => {
+        if (validationErrors.productType && productType) {
+            setValidationErrors(prev => ({ ...prev, productType: undefined }));
+        }
+    }, [productType, validationErrors.productType]);
+
+    useEffect(() => {
+        if (validationErrors.category && category) {
+            setValidationErrors(prev => ({ ...prev, category: undefined }));
+        }
+    }, [category, validationErrors.category]);
+
+    const { enabled: variantsEnabled, variants } = useVariantsStore();
+
+    useEffect(() => {
+        if (validationErrors.variants && variantsEnabled && variants.length > 0) {
+            const allValid = variants.every(v => v.size && v.sku);
+            if (allValid) {
+                setValidationErrors(prev => ({ ...prev, variants: undefined }));
+            }
+        }
+    }, [variants, variantsEnabled, validationErrors.variants]);
+
+    // Get additional state for error detection
+
+    // Tab configuration with comprehensive error detection
     const tabs = [
-        { key: 'basic' as TabKey, label: 'Basic Info', icon: '📝', hasErrors: !name },
-        { key: 'media' as TabKey, label: 'Media', icon: '📸' },
-        { key: 'pricing' as TabKey, label: 'Pricing', icon: '💰', hasErrors: !price || price <= 0 },
-        { key: 'variants' as TabKey, label: 'Variants', icon: '🎨' },
-        { key: 'inventory' as TabKey, label: 'Inventory', icon: '📦', hasErrors: false },
-        { key: 'organization' as TabKey, label: 'Organization', icon: '🏷️', hasErrors: false },
+        {
+            key: 'basic' as TabKey,
+            label: 'Basic Info',
+            icon: '📝',
+            hasErrors: !name || !description || !productType || !category
+        },
+        {
+            key: 'media' as TabKey,
+            label: 'Media',
+            icon: '📸',
+            hasErrors: false // Will be updated when media store is available
+        },
+        {
+            key: 'pricing' as TabKey,
+            label: 'Pricing',
+            icon: '💰',
+            hasErrors: !price || price <= 0
+        },
+        {
+            key: 'variants' as TabKey,
+            label: 'Variants',
+            icon: '🎨',
+            hasErrors: !variantsEnabled || !variants || variants.length === 0
+        },
+        {
+            key: 'inventory' as TabKey,
+            label: 'Inventory',
+            icon: '📦',
+            hasErrors: false
+        },
+        {
+            key: 'organization' as TabKey,
+            label: 'Organization',
+            icon: '🏷️',
+            hasErrors: false
+        },
     ];
 
     const handleSaveDraft = async () => {
@@ -89,12 +192,9 @@ export default function NewProductPage() {
                 inventoryMode: (productData.hasVariants ? 'VARIANT' : 'SINGLE') as any,
                 variants: productData.hasVariants ? productData.variants.map(v => ({
                     size: v.size,
-                    color: v.color,
-                    colorHex: v.colorHex || '#000000',
                     sku: v.sku || '',
                     stock: Number(v.stock) || 0,
                     priceOverride: v.priceOverride ? Number(v.priceOverride) : undefined,
-                    weight: v.weight ? Number(v.weight) : undefined,
                 })) : [],
 
                 // Inventory
@@ -136,23 +236,192 @@ export default function NewProductPage() {
         }
     };
 
+    // Step validation functions
+    const validateBasicInfo = (): boolean => {
+        const errors: typeof validationErrors = {};
+
+        if (!name || name.trim() === '') {
+            errors.name = 'Product name is required';
+        }
+        if (!description || description.trim() === '') {
+            errors.description = 'Product description is required';
+        }
+        if (!productType || productType.trim() === '') {
+            errors.productType = 'Product type is required';
+        }
+        if (!category || category.trim() === '') {
+            errors.category = 'Product category is required';
+        }
+
+        if (Object.keys(errors).length > 0) {
+            setValidationErrors(errors);
+            return false;
+        }
+        setValidationErrors({});
+        return true;
+    };
+
+    const validateMedia = (): boolean => {
+        const productData = aggregateProductData();
+        if (!productData.images || productData.images.length === 0) {
+            setValidationErrors({ images: 'At least one product image is required' });
+            return false;
+        }
+        setValidationErrors({});
+        return true;
+    };
+
+    const validatePricing = (): boolean => {
+        if (!price || price <= 0) {
+            setValidationErrors({ price: 'Valid price is required' });
+            return false;
+        }
+        setValidationErrors({});
+        return true;
+    };
+
+    const validateVariants = (): boolean => {
+        const productData = aggregateProductData();
+
+        console.log('Validating Variants:', productData.variants);
+
+        if (!productData.hasVariants || !productData.variants || productData.variants.length === 0) {
+            // Show error message for variants
+            setValidationErrors({ variants: 'Please add at least one product variant with size and SKU' });
+            return false;
+        }
+        const invalidVariant = productData.variants.find(v => !v.size || !v.sku);
+        if (invalidVariant) {
+            setValidationErrors({ variants: 'All variants must have a size and SKU' });
+            return false;
+        }
+        return true;
+    };
+
+    // Wizard navigation handlers
+    const handleContinue = () => {
+        let isValid = false;
+
+        switch (currentStep) {
+            case 0: isValid = validateBasicInfo(); break;
+            case 1: isValid = validateMedia(); break;
+            case 2: isValid = validatePricing(); break;
+            case 3: isValid = validateVariants(); break;
+            case 4: isValid = true; break; // Inventory optional
+            case 5: isValid = true; break; // Organization optional
+        }
+
+        if (isValid) {
+            setCompletedSteps(prev => new Set([...prev, currentStep]));
+            setValidationErrors({});
+            if (currentStep < wizardSteps.length - 1) {
+                setCurrentStep(currentStep + 1);
+            }
+        }
+    };
+
+    const handleBack = () => {
+        if (currentStep > 0) {
+            setValidationErrors({});
+            setCurrentStep(currentStep - 1);
+        }
+    };
+
     const handlePublish = async () => {
-        // Validation
+        // Step-by-step validation - validate each section completely before moving to next
+        const productData = aggregateProductData();
+
+        // STEP 1: Basic Info - ALL REQUIRED
+        const basicInfoErrors: typeof validationErrors = {};
+
         if (!name) {
-            alert('Product name is required');
+            basicInfoErrors.name = 'Product name is required';
+        }
+        if (!productData.description || productData.description.trim() === '') {
+            basicInfoErrors.description = 'Product description is required';
+        }
+        if (!productData.productType) {
+            basicInfoErrors.productType = 'Product type is required';
+        }
+        if (!productData.category) {
+            basicInfoErrors.category = 'Product category is required';
+        }
+
+        // If Basic Info has errors, show them and stop
+        if (Object.keys(basicInfoErrors).length > 0) {
+            setValidationErrors(basicInfoErrors);
             setActiveTab('basic');
             return;
         }
+
+        // STEP 2: Media - At least 1 image required
+        if (!productData.images || productData.images.length === 0) {
+            setValidationErrors({ images: 'At least one product image is required' });
+            setActiveTab('media');
+            return;
+        }
+
+        // STEP 3: Pricing - Valid price required
         if (!price || price <= 0) {
-            alert('Valid price is required');
+            setValidationErrors({ price: 'Valid price is required' });
             setActiveTab('pricing');
             return;
         }
 
+        // STEP 4: Variants - REQUIRED (must have at least 1 variant with size)
+        if (!productData.hasVariants || !productData.variants || productData.variants.length === 0) {
+            setValidationErrors({});
+            setActiveTab('variants');
+            return;
+        }
+
+        // STEP 5: Validate each variant has size and SKU
+        const invalidVariant = productData.variants.find(v => !v.size || !v.sku);
+        if (invalidVariant) {
+            setValidationErrors({});
+            setActiveTab('variants');
+            return;
+        }
+
+        // All validation passed - clear errors and proceed
+        setValidationErrors({});
+
         setIsSaving(true);
         try {
             const productData = aggregateProductData();
-            console.log('Raw product data:', productData);
+
+            // STEP 1: Upload images to Cloudinary
+            // File objects are lost in Zustand, so convert base64 data URLs back to Files
+            const dataURLtoFile = (dataurl: string, filename: string): File => {
+                const arr = dataurl.split(',');
+                const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                return new File([u8arr], filename, { type: mime });
+            };
+
+            const { uploadImageToCloudinary } = await import('@/lib/api/uploadToCloudinary');
+
+            const uploadedImages = await Promise.all(
+                productData.images.map(async (img, index) => {
+                    // Convert base64 to File and upload to Cloudinary
+                    const file = dataURLtoFile(img.url, `product-image-${index}.png`);
+                    const url = await uploadImageToCloudinary(file);
+
+                    return {
+                        url,
+                        altText: img.altText || '',
+                        isPrimary: img.isPrimary,
+                        order: img.order,
+                    };
+                })
+            );
+
+
 
             // Transform data for backend strictly
             const publishRequest = {
@@ -166,25 +435,17 @@ export default function NewProductPage() {
                 currency: productData.currency || 'INR',
                 taxable: productData.taxable ?? true,
 
-                // Media
-                images: productData.images.map(img => ({
-                    url: img.url,
-                    altText: img.altText || '',
-                    isPrimary: img.isPrimary,
-                    order: img.order,
-                })),
+                // Media - Use uploaded Cloudinary URLs
+                images: uploadedImages,
 
                 // Variants
                 hasVariants: productData.hasVariants,
                 inventoryMode: (productData.hasVariants ? 'VARIANT' : 'SINGLE') as any,
                 variants: productData.hasVariants ? productData.variants.map(v => ({
                     size: v.size,
-                    color: v.color,
-                    colorHex: v.colorHex || '#000000',
                     sku: v.sku || '',
                     stock: Number(v.stock) || 0,
                     priceOverride: v.priceOverride ? Number(v.priceOverride) : undefined,
-                    weight: v.weight ? Number(v.weight) : undefined,
                 })) : [],
 
                 // Inventory
@@ -210,25 +471,40 @@ export default function NewProductPage() {
                 return;
             }
 
-            console.log('Transformed request:', publishRequest);
-
             // Call backend API to create product
             const { createProduct } = await import('@/lib/api/products');
             const createdProduct = await createProduct(publishRequest as any);
 
-            console.log('Product created successfully:', createdProduct);
-
-            // Lock all variant SKUs
-            useVariantsStore.getState().lockAllSKUs();
-
+            // Success! Clear draft and reset all stores
             markAllDomainsClean();
-            discardDraft(); // Clear draft after successful publish
+            discardDraft();
+
+            // Reset all domain stores for next product
+            useBasicInfoStore.getState().reset();
+            useMediaStore.getState().reset();
+            usePricingStore.getState().reset();
+            useInventoryStore.getState().reset();
+            useVariantsStore.getState().reset();
+            useOrganizationStore.getState().reset();
 
             alert('Product published successfully!');
             router.push('/admin/products');
-        } catch (error) {
-            console.error('Failed to publish product:', error);
-            alert(error instanceof Error ? error.message : 'Failed to publish product');
+        } catch (error: any) {
+
+            // Extract detailed error message from backend
+            let errorMessage = 'Failed to publish product';
+            if (error.response?.data?.message) {
+                // Backend validation error
+                if (Array.isArray(error.response.data.message)) {
+                    errorMessage = error.response.data.message.join(', ');
+                } else {
+                    errorMessage = error.response.data.message;
+                }
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+
+            alert(errorMessage);
         } finally {
             setIsSaving(false);
         }
@@ -237,13 +513,13 @@ export default function NewProductPage() {
     const renderTabContent = () => {
         switch (activeTab) {
             case 'basic':
-                return <BasicInfoTab />;
+                return <BasicInfoTab errors={validationErrors} />;
             case 'media':
-                return <MediaTab />;
+                return <MediaTab errors={{ images: validationErrors.images }} />;
             case 'pricing':
-                return <PricingTab />;
+                return <PricingTab errors={{ price: validationErrors.price }} />;
             case 'variants':
-                return <VariantsTab />;
+                return <VariantsTab errors={{ variants: validationErrors.variants }} />;
             case 'inventory':
                 return <InventoryTab />;
             case 'organization':
@@ -325,20 +601,45 @@ export default function NewProductPage() {
                             >
                                 Cancel
                             </button>
-                            <button
-                                onClick={handleSaveDraft}
-                                disabled={isSaving}
-                                className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isSaving ? 'Saving...' : 'Save Draft'}
-                            </button>
-                            <button
-                                onClick={handlePublish}
-                                disabled={isSaving}
-                                className="bg-black hover:bg-gray-900 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isSaving ? 'Publishing...' : 'Publish Product'}
-                            </button>
+                            {/* Back Button - Show on all steps except first */}
+                            {currentStep > 0 && (
+                                <button
+                                    onClick={handleBack}
+                                    className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+                                >
+                                    ← Back
+                                </button>
+                            )}
+
+                            {/* Continue Button - Show on all steps except last */}
+                            {currentStep < wizardSteps.length - 1 && (
+                                <button
+                                    onClick={handleContinue}
+                                    className="bg-black hover:bg-gray-900 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+                                >
+                                    Continue →
+                                </button>
+                            )}
+
+                            {/* Save Draft & Publish - Show only on last step */}
+                            {currentStep === wizardSteps.length - 1 && (
+                                <>
+                                    <button
+                                        onClick={handleSaveDraft}
+                                        disabled={isSaving}
+                                        className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isSaving ? 'Saving...' : 'Save Draft'}
+                                    </button>
+                                    <button
+                                        onClick={handlePublish}
+                                        disabled={isSaving}
+                                        className="bg-black hover:bg-gray-900 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isSaving ? 'Publishing...' : 'Publish Product'}
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

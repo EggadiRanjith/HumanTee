@@ -1,6 +1,7 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { ProductResponseDto, VariantResponseDto } from './dto/product-response.dto';
+import { ShopQueryDto } from './dto/shop-query.dto';
 
 /**
  * Products Controller
@@ -12,11 +13,28 @@ export class ProductsController {
 
     /**
      * GET /products
-     * List all ACTIVE products with their ACTIVE variants
+     * List all ACTIVE and FEATURED products with their ACTIVE variants
      */
     @Get()
     async findAll(): Promise<{ products: ProductResponseDto[] }> {
         const products = await this.productsService.findAll();
+        return { products };
+    }
+
+    /**
+     * GET /products/shop
+     * List all ACTIVE products with optional filters
+     * Query params: productType, category, collection
+     */
+    @Get('shop')
+    async findForShop(
+        @Query() query: ShopQueryDto,
+    ): Promise<{ products: ProductResponseDto[] }> {
+        const products = await this.productsService.findForShop({
+            productType: query.productType,
+            category: query.category,
+            collection: query.collection,
+        });
         return { products };
     }
 

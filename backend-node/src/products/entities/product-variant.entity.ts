@@ -34,11 +34,6 @@ export class ProductVariant {
     @Column({ type: 'varchar', length: 50 })
     size: string;
 
-    @Column({ type: 'varchar', length: 50, nullable: true })
-    color: string;
-
-    @Column({ type: 'varchar', length: 7, nullable: true })
-    color_hex: string; // e.g., #FF5733
 
     @Column({ type: 'decimal', precision: 10, scale: 2 })
     price: number;
@@ -49,8 +44,7 @@ export class ProductVariant {
     @Column({ type: 'int', default: 0 })
     stock_quantity: number;
 
-    @Column({ type: 'int', nullable: true })
-    weight?: number; // Weight in grams
+
 
     @Column({ type: 'boolean', default: true })
     is_active: boolean;

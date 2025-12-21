@@ -12,6 +12,7 @@ import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ProtectedController } from './protected/protected.controller';
+import { UploadModule } from './common/upload/upload.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { ProtectedController } from './protected/protected.controller';
     OrdersModule,
     PaymentsModule,
     NotificationsModule,
+    UploadModule,
   ],
   controllers: [AppController, ProtectedController],
   providers: [AppService],

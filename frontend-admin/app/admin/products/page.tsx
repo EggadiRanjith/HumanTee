@@ -186,10 +186,18 @@ export default function ProductsPage() {
                         className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
                     >
                         {/* Image */}
-                        <div className="aspect-square bg-gray-100 relative">
-                            <div className="absolute inset-0 flex items-center justify-center text-4xl">
-                                👕
-                            </div>
+                        <div className="aspect-square bg-gray-100 relative overflow-hidden">
+                            {product.images && product.images.length > 0 ? (
+                                <img
+                                    src={(product.images.find(img => img.isPrimary) || product.images[0]).url}
+                                    alt={(product.images.find(img => img.isPrimary) || product.images[0]).altText || product.name}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="absolute inset-0 flex items-center justify-center text-4xl">
+                                    👕
+                                </div>
+                            )}
                             {product.isFeatured && (
                                 <div className="absolute top-2 left-2 bg-black text-white text-xs px-2 py-1 rounded font-medium">
                                     Featured
@@ -238,6 +246,9 @@ export default function ProductsPage() {
                     <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
                             <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
+                                Image
+                            </th>
+                            <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
                                 Product
                             </th>
                             <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
@@ -261,16 +272,24 @@ export default function ProductsPage() {
                         {filteredProducts.map((product) => (
                             <tr key={product.id} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center text-lg">
-                                            👕
+                                    <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center overflow-hidden flex-shrink-0">
+                                        {product.images && product.images.length > 0 ? (
+                                            <img
+                                                src={(product.images.find(img => img.isPrimary) || product.images[0]).url}
+                                                alt={(product.images.find(img => img.isPrimary) || product.images[0]).altText || product.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <span className="text-lg">👕</span>
+                                        )}
+                                    </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <div>
+                                        <div className="font-medium text-sm text-black">
+                                            {product.name}
                                         </div>
-                                        <div>
-                                            <div className="font-medium text-sm text-black">
-                                                {product.name}
-                                            </div>
-                                            <div className="text-xs text-gray-500">{product.slug}</div>
-                                        </div>
+                                        <div className="text-xs text-gray-500">{product.slug}</div>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">

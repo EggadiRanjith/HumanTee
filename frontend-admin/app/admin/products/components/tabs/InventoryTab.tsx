@@ -107,30 +107,6 @@ export default function InventoryTab() {
                                             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                                         />
                                     </div>
-
-                                    {/* SKU with Generate Button */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-900 mb-2">
-                                            SKU (Stock Keeping Unit)
-                                        </label>
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="text"
-                                                value={sku || ''}
-                                                onChange={(e) => setSKU(e.target.value || undefined)}
-                                                placeholder="e.g., PCT-X7Y9"
-                                                className="flex-1 px-3 py-2.5 sm:px-4 sm:py-3 bg-white border-2 border-gray-400 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black focus:border-black outline-none transition-colors text-sm sm:text-base"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={handleGenerateSKU}
-                                                disabled={!productName}
-                                                className="px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm sm:text-base font-medium"
-                                            >
-                                                Generate
-                                            </button>
-                                        </div>
-                                    </div>
                                 </>
                             )}
 

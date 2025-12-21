@@ -15,7 +15,13 @@ import { triggerAutosave } from '@/domains/product/autosave/autosave.service';
 import VariantManager from '../VariantManager';
 import type { ProductVariant } from '@/types/product-form.types';
 
-export default function VariantsTab() {
+interface VariantsTabProps {
+    errors?: {
+        variants?: string;
+    };
+}
+
+export default function VariantsTab({ errors }: VariantsTabProps) {
     const { enabled, variants, setEnabled, addVariant, updateVariant, deleteVariant } = useVariantsStore();
     const { setMode } = useInventoryStore();
     const { name: productName } = useBasicInfoStore();
@@ -44,11 +50,8 @@ export default function VariantsTab() {
             id: variant.id,
             sku: variant.sku,
             size: variant.size,
-            color: variant.color,
-            colorHex: variant.colorHex,
             stock: variant.stock,
             price: variant.priceOverride,
-            weight: variant.weight,
         }));
     }, [variants]);
 
@@ -73,21 +76,15 @@ export default function VariantsTab() {
                 // New variant - add to store
                 addVariant({
                     size: variant.size,
-                    color: variant.color,
-                    colorHex: variant.colorHex,
                     stock: variant.stock,
                     priceOverride: variant.price,
-                    weight: variant.weight,
                 }, productName || 'Product');
                 // Update existing variant
                 updateVariant(variant.id, {
                     sku: variant.sku,
                     size: variant.size,
-                    color: variant.color,
-                    colorHex: variant.colorHex,
                     stock: variant.stock,
                     priceOverride: variant.price,
-                    weight: variant.weight,
                 });
             }
         });
@@ -144,6 +141,15 @@ export default function VariantsTab() {
                     {!enabled && (
                         <p className="text-sm text-gray-500">
                             Enable variants to manage different sizes and colors for this product.
+                        </p>
+                    )}
+
+                    {errors?.variants && (
+                        <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                            {errors.variants}
                         </p>
                     )}
                 </div>

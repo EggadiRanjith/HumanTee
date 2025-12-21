@@ -25,8 +25,8 @@ interface BackendVariant {
     size: string;
     color: string;
     price: number;
-    stock_quantity: number;
-    is_active: boolean;
+    stock: number;        // Changed from stock_quantity
+    isActive: boolean;    // Changed from is_active
 }
 
 /**
@@ -34,7 +34,7 @@ interface BackendVariant {
  * This is mapping only - no business logic
  */
 export function adaptProduct(apiProduct: BackendProduct): Product {
-    const activeVariants = apiProduct.variants?.filter(v => v.is_active) ?? [];
+    const activeVariants = apiProduct.variants?.filter(v => v.isActive) ?? [];
     const firstVariant = activeVariants[0];
 
     return {
@@ -47,7 +47,7 @@ export function adaptProduct(apiProduct: BackendProduct): Product {
 
         // CORRECTION 3: Explicit stock calculation
         // Sum of all active variant stock (display-only)
-        stock: activeVariants.reduce((sum, v) => sum + v.stock_quantity, 0),
+        stock: activeVariants.reduce((sum, v) => sum + v.stock, 0),
 
         // Price from first active variant (display-only)
         price: firstVariant?.price ?? 0,

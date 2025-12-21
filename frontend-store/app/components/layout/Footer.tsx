@@ -3,44 +3,32 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FiInstagram, FiMapPin } from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useRef, useEffect } from "react";
+import { motion } from "framer-motion";
+import { useState, useRef, useEffect, memo } from "react";
 import ScrollingText from "./ScrollingText";
+import { useMediaQuery } from "@/app/hooks/useMediaQuery";
 
-export default function Footer() {
+function Footer() {
   const [shopOpen, setShopOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
-  const [isClient, setIsClient] = useState(false);
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
 
   const shopRef = useRef<HTMLDivElement | null>(null);
   const supportRef = useRef<HTMLDivElement | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
     setShopOpen(false);
     setSupportOpen(false);
   }, [pathname]);
 
-  // Close dropdowns when switching to desktop view
+  // Auto-close dropdowns when switching to desktop
   useEffect(() => {
-    const handleResize = () => {
-      // 1024px is the lg breakpoint in tailwind
-      if (window.innerWidth >= 1024) {
-        setShopOpen(false);
-        setSupportOpen(false);
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    // Also check on mount
-    handleResize();
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    if (isDesktop) {
+      setShopOpen(false);
+      setSupportOpen(false);
+    }
+  }, [isDesktop]);
 
   // Auto-scroll when dropdown opens
   const scrollToView = (ref: HTMLDivElement | null) => {
@@ -179,32 +167,27 @@ export default function Footer() {
               Shop
             </h3>
 
-            <AnimatePresence>
-              {(shopOpen || (isClient && window.innerWidth >= 1024)) && (
-                <motion.div
-                  variants={dropdownAnim}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  className="text-[12px] text-white/60"
+            <div
+              className={`
+                text-[12px] text-white/60 overflow-hidden transition-all duration-350 ease-out
+                ${shopOpen || isDesktop ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
+              `}
+            >
+              {[
+                { name: "Orders", url: "/orders" },
+                { name: "Profile", url: "/profile" },
+                { name: "All Products", url: "/shop" },
+                { name: "Featured Projects", url: "/featured" },
+              ].map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.url}
+                  className="block py-2 border-b border-white/10 hover:text-white"
                 >
-                  {[
-                    { name: "Orders", url: "/orders" },
-                    { name: "Profile", url: "/profile" },
-                    { name: "All Products", url: "/shop" },
-                    { name: "Featured Projects", url: "/featured" },
-                  ].map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.url}
-                      className="block py-2 border-b border-white/10 hover:text-white"
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  {item.name}
+                </Link>
+              ))}
+            </div>
           </div>
 
           {/* ---------- SUPPORT COLUMN ---------- */}
@@ -220,32 +203,27 @@ export default function Footer() {
               Support
             </h3>
 
-            <AnimatePresence>
-              {(supportOpen || (isClient && window.innerWidth >= 1024)) && (
-                <motion.div
-                  variants={dropdownAnim}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  className="text-[12px] text-white/60"
+            <div
+              className={`
+                text-[12px] text-white/60 overflow-hidden transition-all duration-350 ease-out
+                ${supportOpen || isDesktop ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
+              `}
+            >
+              {[
+                { name: "Shipping", url: "/shipping" },
+                { name: "Terms & Privacy", url: "/terms-privacy" },
+                { name: "+91 7780-661493", url: "tel:+917780661493" },
+                { name: "humanteeofficial@gmail.com", url: "mailto:humanteeofficial@gmail.com" },
+              ].map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.url}
+                  className="block py-2 border-b border-white/10 hover:text-white"
                 >
-                  {[
-                    { name: "Shipping", url: "/shipping" },
-                    { name: "Terms & Privacy", url: "/terms-privacy" },
-                    { name: "+91 7780-661493", url: "tel:+917780661493" },
-                    { name: "humanteeofficial@gmail.com", url: "mailto:humanteeofficial@gmail.com" },
-                  ].map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.url}
-                      className="block py-2 border-b border-white/10 hover:text-white"
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  {item.name}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </footer>
@@ -264,3 +242,5 @@ export default function Footer() {
     </>
   );
 }
+
+export default memo(Footer);

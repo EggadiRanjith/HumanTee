@@ -17,11 +17,14 @@ export class ProductsService {
 
     /**
      * FIX 3: Enforce ACTIVE-only queries
-     * Get all ACTIVE products with their ACTIVE variants
+     * Get all ACTIVE and FEATURED products with their ACTIVE variants
      */
     async findAll(): Promise<ProductResponseDto[]> {
         const products = await this.productRepo.find({
-            where: { status: ProductStatus.ACTIVE },
+            where: {
+                status: ProductStatus.ACTIVE,
+                is_featured: true
+            },
             relations: ['variants'],
         });
 
@@ -57,6 +60,50 @@ export class ProductsService {
     }
 
     /**
+     * Shop Page: Get all ACTIVE products with optional filters
+     * Supports filtering by productType, category, and collection
+     */
+    async findForShop(filters?: {
+        productType?: string;
+        category?: string;
+        collection?: string;
+    }): Promise<ProductResponseDto[]> {
+        const query = this.productRepo
+            .createQueryBuilder('product')
+            .leftJoinAndSelect('product.variants', 'variants')
+            .where('product.status = :status', { status: ProductStatus.ACTIVE });
+
+        // Filter by product type
+        if (filters?.productType) {
+            query.andWhere('product.product_type = :productType', {
+                productType: filters.productType,
+            });
+        }
+
+        // Filter by category (Drop 1, Drop 2, etc.)
+        if (filters?.category) {
+            query.andWhere('product.category = :category', {
+                category: filters.category,
+            });
+        }
+
+        // Filter by collection (requires join with collection map)
+        if (filters?.collection) {
+            query
+                .innerJoin('product.collectionMaps', 'collectionMap')
+                .innerJoin('collectionMap.collection', 'collection')
+                .andWhere('collection.slug = :collectionSlug', {
+                    collectionSlug: filters.collection,
+                })
+                .andWhere('collection.is_active = :isActive', { isActive: true });
+        }
+
+        const products = await query.getMany();
+
+        return products.map((product) => this.transformProduct(product));
+    }
+
+    /**
      * FIX 4: Transform DECIMAL to number
      * Transform Product entity to DTO
      */
@@ -85,7 +132,6 @@ export class ProductsService {
             id: variant.id,
             sku: variant.sku,
             size: variant.size,
-            color: variant.color,
             price: Number(variant.price), // CRITICAL: Convert DECIMAL string to number
             stock: variant.stock_quantity,
             isActive: variant.is_active,

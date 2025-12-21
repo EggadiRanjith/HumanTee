@@ -57,14 +57,6 @@ export class CreateVariantDto {
 
     @IsString()
     @IsNotEmpty()
-    color: string;
-
-    @IsString()
-    @IsNotEmpty()
-    colorHex: string;
-
-    @IsString()
-    @IsNotEmpty()
     sku: string;
 
     @IsNumber()
@@ -76,10 +68,7 @@ export class CreateVariantDto {
     @Min(0)
     priceOverride?: number;
 
-    @IsNumber()
-    @IsOptional()
-    @Min(0)
-    weight?: number;
+
 }
 
 // ============================================================================

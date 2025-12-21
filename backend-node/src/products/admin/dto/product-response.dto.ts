@@ -49,13 +49,11 @@ export class ProductImageResponseDto {
 export class VariantResponseDto {
     id: string;
     size: string;
-    color: string;
-    colorHex: string;
     sku: string;
     skuLocked: boolean;
     stock: number;
     priceOverride?: number;
-    weight?: number;
+
     isActive: boolean;
 }
 

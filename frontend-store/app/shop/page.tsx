@@ -1,13 +1,61 @@
 /**
  * Shop Page
- * FROZEN - Awaiting custom product system
+ * Displays all active products with category and collection filtering
  */
 
+"use client";
+
+import { useState, useEffect, useCallback } from 'react';
 import { GradientOverlay } from '@/app/components/ui/layout';
 import { ShopEmptyState } from './ShopEmptyState';
+import { ShopErrorState } from './ShopErrorState';
+import { fetchShopProducts } from '@/app/lib/api/products';
+import { adaptProducts } from '@/app/lib/adapters/product.adapter';
+import { Product } from '@/app/types/product.types';
+import { ProductGrid } from '@/app/components/sections/FeaturedProducts/ProductGrid';
+import ShopFilters from './ShopFilters';
+
+// Hardcoded for now - in production, fetch from API
+const CATEGORIES = ['Drop 1', 'Drop 2', 'Drop 3'];
+const COLLECTIONS = ['summer-collection', 'winter-collection', 'limited-edition'];
 
 export default function ShopPage() {
-  // PHASE 0: Products disabled - show empty state with animation
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [filters, setFilters] = useState<{
+    productType?: string;
+    category?: string;
+    collection?: string;
+  }>({});
+
+  const loadProducts = useCallback(async () => {
+    setLoading(true);
+    setError(false);
+
+    try {
+      const apiProducts = await fetchShopProducts(filters);
+      setProducts(adaptProducts(apiProducts));
+    } catch (err) {
+      console.error('Failed to fetch shop products:', err);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [filters]);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
+
+  const handleFilterChange = useCallback((newFilters: {
+    productType?: string;
+    category?: string;
+    collection?: string;
+  }) => {
+    setFilters(newFilters);
+  }, []);
+
   return (
     <div className="min-h-screen brand-bg pt-[var(--header-height)]">
       <GradientOverlay variant="violet" />
@@ -22,8 +70,26 @@ export default function ShopPage() {
           </p>
         </div>
 
-        {/* Empty State with Lottie Animation */}
-        <ShopEmptyState />
+        {/* Filters */}
+        <ShopFilters
+          onFilterChange={handleFilterChange}
+          categories={CATEGORIES}
+          collections={COLLECTIONS}
+        />
+
+        {/* Product Grid or Empty/Error State */}
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="inline-block w-8 h-8 border-4 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
+            <p className="mt-4 text-white/60 text-sm">Loading products...</p>
+          </div>
+        ) : error ? (
+          <ShopErrorState />
+        ) : products.length === 0 ? (
+          <ShopEmptyState />
+        ) : (
+          <ProductGrid products={products} />
+        )}
       </div>
     </div>
   );

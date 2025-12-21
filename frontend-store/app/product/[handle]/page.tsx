@@ -41,6 +41,31 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
     notFound();
   }
 
+  // Convert single image to array for gallery component
+  const productImages = product.image ? [product.image] : ['/images/placeholder.jpg'];
+
+  // Extract actual sizes from variants (from API response)
+  const apiProduct = await fetchProductBySlug(handle);
+  const availableSizes = apiProduct.variants
+    ?.filter((v: any) => v.isActive)
+    .map((v: any) => v.size) || [];
+
+  // Extend Product to ProductDetail with required fields
+  const productDetail = {
+    ...product,
+    description: product.subtitle || 'Premium quality product',
+    details: [
+      'Premium quality materials',
+      'Comfortable fit',
+      'Machine washable',
+      'Imported'
+    ],
+    sizes: availableSizes.length > 0 ? availableSizes : ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+    images: productImages,
+    vendor: 'HumanTee',
+    productType: 'T-Shirt'
+  };
+
   return (
     <div className="min-h-screen brand-bg-dusk pt-[var(--header-height)]">
       <GradientOverlay variant="violet" />
@@ -50,14 +75,14 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
 
           {/* Image Gallery */}
           <ProductImageGallery
-            images={product.images}
+            images={productImages}
             title={product.title}
-            subtitle={product.description?.substring(0, 50) || ''}
-            productId={product.id}
+            subtitle={product.subtitle || ''}
+            productId={product.id as any}
           />
 
           {/* Product Info - Client Component Island */}
-          <ProductInfo product={product} />
+          <ProductInfo product={productDetail} />
 
         </div>
       </div>

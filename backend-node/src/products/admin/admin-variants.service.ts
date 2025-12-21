@@ -56,7 +56,6 @@ export class AdminVariantsService {
             product_id: productId,
             sku: dto.sku,
             size: dto.size,
-            color: dto.color,
             price: dto.price,
             stock_quantity: dto.stockQuantity,
             is_active: true,
