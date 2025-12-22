@@ -59,7 +59,7 @@ export class DiscountsService {
                     discountId: savedDiscount.id,
                     groupType: DiscountGroupType.PRODUCT,
                     groupValueUuid: productId,
-                    groupValueText: undefined, // Explicitly set to undefined for PRODUCT type
+                    groupValueText: null, // Must be null for PRODUCT type to satisfy check constraint
                 })
             );
             await this.targetGroupRepository.save(groups);

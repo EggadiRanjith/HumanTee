@@ -37,10 +37,10 @@ export class DiscountTargetGroup {
     groupType: DiscountGroupType;
 
     @Column({ name: 'group_value_uuid', type: 'uuid', nullable: true })
-    groupValueUuid: string;
+    groupValueUuid: string | null;
 
     @Column({ name: 'group_value_text', type: 'varchar', length: 255, nullable: true })
-    groupValueText: string;
+    groupValueText: string | null;
 
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;

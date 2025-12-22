@@ -1,5 +1,6 @@
 /**
- * Create/Edit Discount Page (FRONTEND-ONLY)
+ * Edit Discount Page
+ * Full-featured discount editing with exact same UI as create page
  * 
  * CRITICAL RULES:
  * - NO price calculation
@@ -12,18 +13,21 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { discountsApi } from '@/lib/api/discounts';
-import * as productsApi from '@/lib/api/products';
+import { getAllProducts } from '@/lib/api/products';
 
 type DiscountType = 'PERCENT' | 'FLAT';
 type DiscountScope = 'PRODUCT' | 'GROUP' | 'GLOBAL';
 
-export default function CreateDiscountPage() {
+export default function EditDiscountPage() {
     const router = useRouter();
+    const params = useParams();
+    const discountId = params.id as string;
 
     const [isLoading, setIsLoading] = useState(false);
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
     const [isDataLoading, setIsDataLoading] = useState(true);
 
     // Core Fields
@@ -61,12 +65,68 @@ export default function CreateDiscountPage() {
     const [prodCategory, setProdCategory] = useState('ALL');
     const [prodCollection, setProdCollection] = useState('ALL');
 
+    // Load existing discount data
+    useEffect(() => {
+        const loadDiscount = async () => {
+            try {
+                setIsInitialLoading(true);
+                const discount = await discountsApi.getOne(discountId);
+
+                // Pre-fill all fields
+                setName(discount.name || '');
+                setCode(discount.code || '');
+                setDescription(discount.description || '');
+                setType(discount.type || 'PERCENT');
+                setValue(discount.value || '');
+                setPriority(discount.priority || 1);
+                setStackable(discount.isStackable || false);
+                setAudience(discount.audience || 'ALL');
+                setMinOrder(discount.minOrderAmount || '');
+                setMinUserOrders(discount.minUserOrders || '');
+                setMinUserLtv(discount.minUserLtv || '');
+                setGlobalLimit(discount.globalUsageLimit || '');
+                setPerUserLimit(discount.perUserLimit || 1);
+                setScope(discount.scope || 'PRODUCT');
+
+                if (discount.startDate) {
+                    setStartDate(new Date(discount.startDate).toISOString().split('T')[0]);
+                }
+                if (discount.endDate) {
+                    setEndDate(new Date(discount.endDate).toISOString().split('T')[0]);
+                }
+
+                // Load targets
+                if (discount.targetGroups && discount.targetGroups.length > 0) {
+                    const firstGroup = discount.targetGroups[0];
+                    if (firstGroup.groupType === 'PRODUCT') {
+                        setScope('PRODUCT');
+                        setSelectedProducts(discount.targetGroups.map((g: any) => g.groupValueUuid));
+                    } else {
+                        setScope('GROUP');
+                        setGroupType(firstGroup.groupType);
+                        setSelectedGroups(discount.targetGroups.map((g: any) => g.groupValueText || g.groupValueUuid));
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load discount:', error);
+                alert('Failed to load discount');
+            } finally {
+                setIsInitialLoading(false);
+            }
+        };
+
+        if (discountId) {
+            loadDiscount();
+        }
+    }, [discountId]);
+
+    // Load products and collections
     useEffect(() => {
         async function fetchData() {
             try {
                 const [prods, colls] = await Promise.all([
-                    productsApi.getAllProducts(),
-                    productsApi.getCollections()
+                    getAllProducts(),
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/collections`).then(r => r.json())
                 ]);
                 setRealProducts(prods);
                 setRealCollections(colls);
@@ -84,11 +144,11 @@ export default function CreateDiscountPage() {
         const cats = Array.from(new Set(realProducts.map(p => p.category))).filter(Boolean);
 
         return {
-            COLLECTION: realCollections.map(c => ({
+            COLLECTION: Array.isArray(realCollections) ? realCollections.map(c => ({
                 id: c.id,
                 name: c.name,
                 count: realProducts.filter(p => p.collections?.some((pc: any) => pc.id === c.id)).length
-            })),
+            })) : [],
             TYPE: types.map(t => ({ id: t, name: t, count: realProducts.filter(p => p.productType === t).length })),
             CATEGORY: cats.map(c => ({ id: c, name: c, count: realProducts.filter(p => p.category === c).length }))
         };
@@ -147,16 +207,27 @@ export default function CreateDiscountPage() {
                 })) : []
             };
 
-            await discountsApi.create(payload);
-            alert('Discount successfully created! 🚀');
+            await discountsApi.update(discountId, payload);
+            alert('Discount successfully updated! 🚀');
             router.push('/admin/discounts');
         } catch (error: any) {
-            console.error('Save failed:', error);
-            alert(error.response?.data?.message || 'Failed to save discount');
+            console.error('Update failed:', error);
+            alert(error.response?.data?.message || 'Failed to update discount');
         } finally {
             setIsLoading(false);
         }
     };
+
+    if (isInitialLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-center">
+                    <div className="w-8 h-8 border-4 border-gray-300 border-t-black rounded-full animate-spin mx-auto mb-4" />
+                    <p className="text-gray-600">Loading discount...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -170,9 +241,9 @@ export default function CreateDiscountPage() {
                 </Link>
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                     <div>
-                        <h1 className="text-xl sm:text-2xl font-semibold text-black">Create Discount</h1>
+                        <h1 className="text-xl sm:text-2xl font-semibold text-black">Edit Discount</h1>
                         <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                            Configure discount rules (Live Connection)
+                            Update discount rules (Live Connection)
                         </p>
                     </div>
                     <button
@@ -183,7 +254,7 @@ export default function CreateDiscountPage() {
                         {isLoading && (
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         )}
-                        {isLoading ? 'Saving...' : 'Save Discount'}
+                        {isLoading ? 'Updating...' : 'Update Discount'}
                     </button>
                 </div>
             </div>
@@ -472,7 +543,7 @@ export default function CreateDiscountPage() {
                                             className="w-full px-3 py-1.5 border border-gray-200 rounded-md text-xs outline-none bg-white"
                                         >
                                             <option value="ALL">All Collections</option>
-                                            {realCollections.map(c => (
+                                            {Array.isArray(realCollections) && realCollections.map(c => (
                                                 <option key={c.id} value={c.id}>{c.name}</option>
                                             ))}
                                         </select>

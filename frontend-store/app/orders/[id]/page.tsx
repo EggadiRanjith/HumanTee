@@ -151,6 +151,124 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
           </div>
         </div>
 
+        {/* ORDER TIMELINE */}
+        <div className="p-6 rounded-2xl luxury-glass border border-white/10 bg-white/5 backdrop-blur-xl mb-8">
+          <h3 className="text-white/70 text-xs uppercase tracking-[0.18em] mb-6">
+            Order Journey
+          </h3>
+
+          <div className="relative">
+            {/* Timeline Line */}
+            <div className="absolute left-2 top-0 bottom-0 w-[2px] bg-white/10"></div>
+
+            {/* Timeline Items */}
+            <div className="space-y-6">
+              {/* Placed */}
+              <div className="relative flex items-start gap-4 pl-8">
+                <div className="absolute left-0 w-5 h-5 rounded-full bg-green-500 border-4 border-[#0d0d1a] flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-white"></div>
+                </div>
+                <div>
+                  <p className="text-white text-sm font-medium">Order Placed</p>
+                  <p className="text-white/50 text-xs mt-0.5">
+                    {new Date(order.createdAt).toLocaleString('en-IN', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Confirmed */}
+              {(order.status === 'confirmed' || order.status === 'processing' || order.status === 'shipped' || order.status === 'delivered') && (
+                <div className="relative flex items-start gap-4 pl-8">
+                  <div className="absolute left-0 w-5 h-5 rounded-full bg-green-500 border-4 border-[#0d0d1a] flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-white"></div>
+                  </div>
+                  <div>
+                    <p className="text-white text-sm font-medium">Order Confirmed</p>
+                    <p className="text-white/50 text-xs mt-0.5">Payment received</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Processing */}
+              {(order.status === 'processing' || order.status === 'shipped' || order.status === 'delivered') && (
+                <div className="relative flex items-start gap-4 pl-8">
+                  <div className="absolute left-0 w-5 h-5 rounded-full bg-green-500 border-4 border-[#0d0d1a] flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-white"></div>
+                  </div>
+                  <div>
+                    <p className="text-white text-sm font-medium">Processing</p>
+                    <p className="text-white/50 text-xs mt-0.5">Preparing your order</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Shipped */}
+              {(order.status === 'shipped' || order.status === 'delivered') && (
+                <div className="relative flex items-start gap-4 pl-8">
+                  <div className="absolute left-0 w-5 h-5 rounded-full bg-green-500 border-4 border-[#0d0d1a] flex items-center justify-center">
+                    <FiTruck className="w-3 h-3 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-white text-sm font-medium">Shipped</p>
+                    <p className="text-white/50 text-xs mt-0.5">In transit to you</p>
+                    {order.trackingNumber && (
+                      <p className="text-blue-400 text-xs mt-1 font-mono">
+                        Tracking: {order.trackingNumber}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Delivered */}
+              {order.status === 'delivered' ? (
+                <div className="relative flex items-start gap-4 pl-8">
+                  <div className="absolute left-0 w-5 h-5 rounded-full bg-green-500 border-4 border-[#0d0d1a] flex items-center justify-center">
+                    <FiCheckCircle className="w-3 h-3 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-white text-sm font-medium">Delivered</p>
+                    <p className="text-white/50 text-xs mt-0.5">
+                      {order.updatedAt && new Date(order.updatedAt).toLocaleString('en-IN', {
+                        day: 'numeric',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative flex items-start gap-4 pl-8">
+                  <div className="absolute left-0 w-5 h-5 rounded-full bg-white/20 border-4 border-[#0d0d1a] flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-white/40"></div>
+                  </div>
+                  <div>
+                    <p className="text-white/40 text-sm font-medium">Out for Delivery</p>
+                    <p className="text-white/30 text-xs mt-0.5">Arriving soon</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Tracking Button (if shipped) */}
+          {order.trackingNumber && order.status === 'shipped' && (
+            <div className="mt-6 pt-6 border-t border-white/10">
+              <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white/80 hover:bg-white/10 hover:text-white transition-all">
+                <FiTruck className="w-4 h-4" />
+                <span className="text-sm">Track Package</span>
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* GRID SUMMARY */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
 

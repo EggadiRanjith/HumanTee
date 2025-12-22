@@ -22,6 +22,7 @@ export function Sidebar() {
         { href: '/admin/customers', label: 'Customers', icon: '👥' },
         { href: '/admin/discounts', label: 'Discounts', icon: '🎫' },
         { href: '/admin/tickets', label: 'Support', icon: '💬' },
+        { href: '/admin/settings', label: 'Settings', icon: '⚙️' },
     ];
 
     const handleLogout = () => {

@@ -418,17 +418,6 @@ export default function CreateDiscountPage() {
                                     />
                                     <span className="text-sm font-medium text-gray-900">Product Groups</span>
                                 </label>
-                                <label className="flex items-center cursor-pointer">
-                                    <input
-                                        type="radio"
-                                        name="scope"
-                                        value="GLOBAL"
-                                        checked={scope === 'GLOBAL'}
-                                        onChange={(e) => setScope(e.target.value as DiscountScope)}
-                                        className="mr-2"
-                                    />
-                                    <span className="text-sm font-medium text-gray-900">All Products</span>
-                                </label>
                             </div>
 
                             {scope === 'PRODUCT' && (
