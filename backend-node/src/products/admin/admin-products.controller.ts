@@ -40,6 +40,15 @@ export class AdminProductsController {
     }
 
     /**
+     * Get all collections
+     * GET /admin/products/collections
+     */
+    @Get('collections')
+    async getAllCollections(): Promise<any[]> {
+        return this.adminProductsService.getAllCollections();
+    }
+
+    /**
      * Get single product by ID
      * GET /admin/products/:id
      */

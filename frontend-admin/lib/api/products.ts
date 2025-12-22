@@ -149,3 +149,11 @@ export async function getAllProducts(): Promise<ProductResponse[]> {
 export async function deleteProduct(id: string): Promise<void> {
     await apiClient.delete(`/admin/products/${id}`);
 }
+
+/**
+ * Get all collections
+ */
+export async function getCollections(): Promise<any[]> {
+    const response = await apiClient.get('/admin/products/collections');
+    return response.data;
+}

@@ -69,7 +69,7 @@ export function OrderCard({ order }: OrderCardProps) {
                 <div>
                     <div className="flex items-center gap-3 mb-1">
                         <h3 className="text-white text-lg font-light tracking-wide">
-                            {order.id}
+                            {order.orderNumber}
                         </h3>
 
                         <span className={`flex items-center gap-1.5 px-2 py-1 ${status.bg} rounded-md`}>
@@ -81,7 +81,11 @@ export function OrderCard({ order }: OrderCardProps) {
                     </div>
 
                     <p className="text-white/50 text-sm mb-1">
-                        {order.date} • {order.items} items
+                        {new Date(order.createdAt).toLocaleDateString('en-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                        })} • {order.items?.length || 0} items
                     </p>
 
                     {order.tracking && (
@@ -91,7 +95,7 @@ export function OrderCard({ order }: OrderCardProps) {
 
                 {/* Amount + CTA */}
                 <div className="flex items-center gap-6 mt-4">
-                    <p className="text-white text-xl font-light">{order.total}</p>
+                    <p className="text-white text-xl font-light">₹{Number(order.totalAmount).toFixed(2)}</p>
 
                     <Link
                         href={`/orders/${order.id}`}
@@ -108,15 +112,15 @@ export function OrderCard({ order }: OrderCardProps) {
 
             {/* Right Image Cluster */}
             <div className="flex-shrink-0 flex gap-2 sm:gap-3">
-                {order.images.slice(0, 3).map((img, i) => (
+                {order.items?.slice(0, 3).map((item: any, i: number) => (
                     <div
                         key={i}
                         className="relative w-16 h-20 sm:w-20 sm:h-24 rounded-lg overflow-hidden border border-white/10"
                     >
                         <Image
-                            src={img}
+                            src={item.imageUrlSnapshot || '/placeholder.png'}
                             fill
-                            alt={`Order ${order.id} item ${i + 1}`}
+                            alt={`${item.productNameSnapshot || 'Order item'} ${i + 1}`}
                             className="object-cover"
                             sizes="120px"
                         />

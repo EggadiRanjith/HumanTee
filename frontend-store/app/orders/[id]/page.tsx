@@ -6,76 +6,52 @@ import {
   FiClock,
   FiPackage,
   FiHelpCircle,
-  FiShoppingBag
+  FiShoppingBag,
+  FiArrowLeft,
+  FiLoader
 } from "react-icons/fi";
 
 import Link from "next/link";
+import { useState, useEffect, use } from "react";
+import { useAuth } from "@/app/context/AuthContext";
+import { useRouter } from "next/navigation";
+import apiClient from "@/lib/api-client";
+import { HelpActionModal } from "@/app/components/orders/HelpActionModal";
+import { LazyMotion, domAnimation } from "framer-motion";
 
+export default function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const router = useRouter();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const [order, setOrder] = useState<any | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
 
-type Order = {
-  id: string;
-  date: string;
-  status: string;
-  subtotal: string;
-  shipping: string;
-  tax: string;
-  total: string;
-  tracking?: string;
-  paymentMethod: string;
-  shippingAddress: {
-    name: string;
-    line1: string;
-    city: string;
-    country: string;
-    zip: string;
-  };
-  items: {
-    title: string;
-    size: string;
-    price: string;
-    quantity: number;
-    image: string;
-  }[];
-};
+  // Unwrap params Promise
+  const { id } = use(params);
 
-const order: Order = {
-  id: "ORD-001",
-  date: "Dec 5, 2025",
-  status: "delivered",
-  subtotal: "$220.00",
-  shipping: "$10.00",
-  tax: "$28.00",
-  total: "$258.00",
-  tracking: "TRK123456789",
-  paymentMethod: "Visa •••• 4219",
-  shippingAddress: {
-    name: "John Carter",
-    line1: "221B Baker Street",
-    city: "London",
-    country: "UK",
-    zip: "NW1 6XE",
-  },
-  items: [
-    {
-      title: "Midnight Core Tee",
-      size: "L",
-      price: "$58",
-      quantity: 1,
-      image:
-        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format",
-    },
-    {
-      title: "Quantum Crest Tee",
-      size: "M",
-      price: "$62",
-      quantity: 1,
-      image:
-        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format",
-    },
-  ],
-};
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [authLoading, isAuthenticated, router]);
 
-export default function OrderDetailsPage() {
+  useEffect(() => {
+    const fetchOrder = async () => {
+      try {
+        const response = await apiClient.get(`/orders/${id}`);
+        setOrder(response.data);
+      } catch (error) {
+        console.error('Failed to fetch order:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchOrder();
+    }
+  }, [isAuthenticated, id]);
+
   const getStatus = (status: string) => {
     switch (status) {
       case "delivered":
@@ -89,12 +65,41 @@ export default function OrderDetailsPage() {
     }
   };
 
+  if (authLoading || isLoading) {
+    return (
+      <div className="min-h-screen brand-bg-dusk pt-[var(--header-height)] flex items-center justify-center">
+        <FiLoader className="w-8 h-8 animate-spin text-white/40" />
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="min-h-screen brand-bg-dusk pt-[var(--header-height)] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-white/60 mb-4">Order not found</p>
+          <Link href="/orders">
+            <button className="text-white/60 hover:text-white text-sm">← Back to Orders</button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const Status = getStatus(order.status);
   const StatusIcon = Status.icon;
 
   return (
     <div className="min-h-screen brand-bg-dusk pt-[var(--header-height)]">
       <div className="max-w-screen-lg mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-8">
+
+        {/* Back Button */}
+        <Link href="/orders">
+          <button className="flex items-center gap-2 text-white/60 hover:text-white text-sm mb-6 transition-colors">
+            <FiArrowLeft className="w-4 h-4" />
+            Back to Orders
+          </button>
+        </Link>
 
         <div className="mb-10 space-y-1">
           <h1
@@ -126,10 +131,14 @@ export default function OrderDetailsPage() {
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-xl text-white tracking-wide font-light">
-                {order.id}
+                {order.orderNumber}
               </h2>
               <p className="text-white/50 text-sm mt-1">
-                Placed on {order.date}
+                Placed on {new Date(order.createdAt).toLocaleDateString('en-IN', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric'
+                })}
               </p>
             </div>
 
@@ -143,7 +152,7 @@ export default function OrderDetailsPage() {
         </div>
 
         {/* GRID SUMMARY */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
 
           {/* SHIPPING */}
           <div className="p-5 rounded-xl luxury-glass border border-white/10 bg-white/5">
@@ -151,10 +160,11 @@ export default function OrderDetailsPage() {
               Shipping Address
             </h3>
             <p className="text-white/90 text-sm leading-relaxed">
-              {order.shippingAddress.name}<br />
-              {order.shippingAddress.line1}<br />
-              {order.shippingAddress.city}, {order.shippingAddress.country}<br />
-              {order.shippingAddress.zip}
+              {order.address.fullName}<br />
+              {order.address.addressLine1}<br />
+              {order.address.addressLine2 && <>{order.address.addressLine2}<br /></>}
+              {order.address.city}, {order.address.state}<br />
+              {order.address.postalCode}, {order.address.country}
             </p>
           </div>
 
@@ -163,16 +173,11 @@ export default function OrderDetailsPage() {
             <h3 className="text-white/70 text-xs uppercase tracking-[0.18em] mb-2">
               Payment Method
             </h3>
-            <p className="text-white/90 text-sm">{order.paymentMethod}</p>
-          </div>
-
-          {/* TRACKING */}
-          <div className="p-5 rounded-xl luxury-glass border border-white/10 bg-white/5">
-            <h3 className="text-white/70 text-xs uppercase tracking-[0.18em] mb-2">
-              Tracking
-            </h3>
             <p className="text-white/90 text-sm">
-              {order.tracking ?? "Not Available"}
+              {order.payments?.[0]?.paymentMethod || 'Razorpay'}
+            </p>
+            <p className="text-white/60 text-xs mt-1">
+              Status: {order.payments?.[0]?.status || 'Captured'}
             </p>
           </div>
 
@@ -180,25 +185,30 @@ export default function OrderDetailsPage() {
 
         {/* ORDER ITEMS */}
         <div className="space-y-4 mb-12">
-          {order.items.map((item, idx) => (
+          {order.items.map((item: any) => (
             <div
-              key={idx}
+              key={item.id}
               className="flex items-center gap-4 p-4 rounded-xl luxury-glass border border-white/10 bg-white/5"
             >
-              <img
-                src={item.image}
-                className="w-20 h-20 rounded-lg object-cover"
-              />
+              <Link href={`/product/${item.productId}`} className="flex-shrink-0">
+                <img
+                  src={item.imageUrlSnapshot || '/placeholder.png'}
+                  className="w-20 h-20 rounded-lg object-cover hover:opacity-80 transition-opacity cursor-pointer"
+                  alt={item.productNameSnapshot}
+                />
+              </Link>
               <div className="flex-1">
-                <h4 className="text-white text-sm tracking-wide">{item.title}</h4>
-                <p className="text-white/60 text-xs mt-1">Size: {item.size}</p>
+                <Link href={`/product/${item.productId}`} className="hover:underline">
+                  <h4 className="text-white text-sm tracking-wide">{item.productNameSnapshot}</h4>
+                </Link>
+                <p className="text-white/60 text-xs mt-1">Size: {item.variantLabelSnapshot}</p>
 
                 <p className="text-white/70 text-xs mt-1">
-                  {item.price} × {item.quantity}
+                  ₹{Number(item.unitPrice).toFixed(2)} × {item.quantity}
                 </p>
 
                 <p className="text-white text-sm font-light mt-2">
-                  {(Number(item.price.replace("$", "")) * item.quantity).toFixed(2)}$
+                  ₹{Number(item.lineTotal).toFixed(2)}
                 </p>
               </div>
             </div>
@@ -209,22 +219,33 @@ export default function OrderDetailsPage() {
         <div className="p-6 rounded-2xl luxury-glass border border-white/10 bg-white/5 space-y-3 mb-8">
           <div className="flex justify-between text-white/70 text-sm">
             <span>Subtotal</span>
-            <span>{order.subtotal}</span>
+            <span>₹{Number(order.subtotal).toFixed(2)}</span>
           </div>
 
-          <div className="flex justify-between text-white/70 text-sm">
-            <span>Shipping</span>
-            <span>{order.shipping}</span>
-          </div>
+          {order.shippingAmount > 0 && (
+            <div className="flex justify-between text-white/70 text-sm">
+              <span>Shipping</span>
+              <span>₹{Number(order.shippingAmount).toFixed(2)}</span>
+            </div>
+          )}
 
-          <div className="flex justify-between text-white/70 text-sm">
-            <span>Tax</span>
-            <span>{order.tax}</span>
-          </div>
+          {order.taxAmount > 0 && (
+            <div className="flex justify-between text-white/70 text-sm">
+              <span>Tax</span>
+              <span>₹{Number(order.taxAmount).toFixed(2)}</span>
+            </div>
+          )}
+
+          {order.discountAmount > 0 && (
+            <div className="flex justify-between text-green-400 text-sm">
+              <span>Discount</span>
+              <span>-₹{Number(order.discountAmount).toFixed(2)}</span>
+            </div>
+          )}
 
           <div className="border-t border-white/10 pt-3 flex justify-between text-white text-lg tracking-wide font-light">
             <span>Total</span>
-            <span>{order.total}</span>
+            <span>₹{Number(order.totalAmount).toFixed(2)}</span>
           </div>
         </div>
 
@@ -246,8 +267,8 @@ export default function OrderDetailsPage() {
           </Link>
 
           {/* SUPPORT */}
-          <Link
-            href="/support"
+          <button
+            onClick={() => setIsHelpModalOpen(true)}
             className="
               w-full flex items-center justify-center gap-2
               px-6 py-3 rounded-xl
@@ -257,10 +278,18 @@ export default function OrderDetailsPage() {
             "
           >
             <FiHelpCircle className="w-4 h-4" /> Need Help?
-          </Link>
+          </button>
 
         </div>
 
+        <LazyMotion features={domAnimation}>
+          <HelpActionModal
+            isOpen={isHelpModalOpen}
+            onClose={() => setIsHelpModalOpen(false)}
+            orderId={id}
+            orderNumber={order.orderNumber}
+          />
+        </LazyMotion>
       </div>
     </div>
   );

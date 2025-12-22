@@ -1,266 +1,199 @@
-/**
- * Customers List Page (PRODUCTION-GRADE)
- * Features: Search, filters, customer stats
- * Mobile: Card view | Desktop: Table view
- */
-
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useState, useMemo } from 'react';
-
-// Mock data
-const mockCustomers = [
-    {
-        id: 'cust_1',
-        name: 'John Doe',
-        email: 'john@example.com',
-        phone: '+91 98765 43210',
-        totalOrders: 12,
-        totalSpent: 45680,
-        lastOrderDate: new Date('2024-12-19'),
-        createdAt: new Date('2024-06-15'),
-    },
-    {
-        id: 'cust_2',
-        name: 'Sarah Smith',
-        email: 'sarah@example.com',
-        phone: '+91 98765 43211',
-        totalOrders: 8,
-        totalSpent: 32450,
-        lastOrderDate: new Date('2024-12-18'),
-        createdAt: new Date('2024-07-20'),
-    },
-    {
-        id: 'cust_3',
-        name: 'Mike Johnson',
-        email: 'mike@example.com',
-        phone: '+91 98765 43212',
-        totalOrders: 15,
-        totalSpent: 58920,
-        lastOrderDate: new Date('2024-12-17'),
-        createdAt: new Date('2024-05-10'),
-    },
-    {
-        id: 'cust_4',
-        name: 'Emily Davis',
-        email: 'emily@example.com',
-        phone: '+91 98765 43213',
-        totalOrders: 5,
-        totalSpent: 18750,
-        lastOrderDate: new Date('2024-12-15'),
-        createdAt: new Date('2024-08-25'),
-    },
-    {
-        id: 'cust_5',
-        name: 'David Wilson',
-        email: 'david@example.com',
-        phone: '+91 98765 43214',
-        totalOrders: 20,
-        totalSpent: 72340,
-        lastOrderDate: new Date('2024-12-20'),
-        createdAt: new Date('2024-04-05'),
-    },
-];
+import apiClient from '@/lib/api-client';
+import {
+    FiSearch, FiFilter, FiLoader, FiUser,
+    FiShoppingBag, FiCalendar, FiArrowRight,
+    FiTrendingUp, FiUserPlus, FiDollarSign
+} from 'react-icons/fi';
 
 export default function CustomersPage() {
+    const [customers, setCustomers] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [sortBy, setSortBy] = useState<'name' | 'orders' | 'spent' | 'date'>('spent');
-    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+    const [sort, setSort] = useState('newest');
+    const [activeFilter, setActiveFilter] = useState('all');
 
-    // Filtered and sorted customers
-    const filteredCustomers = useMemo(() => {
-        let filtered = mockCustomers;
+    useEffect(() => {
+        fetchCustomers();
+    }, [sort, activeFilter]);
 
-        // Search
-        if (searchQuery) {
-            filtered = filtered.filter(
-                (c) =>
-                    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    c.email.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-        }
+    const fetchCustomers = async () => {
+        setIsLoading(true);
+        try {
+            const params: any = { sort };
+            if (searchQuery) params.search = searchQuery;
 
-        // Sort
-        filtered = [...filtered].sort((a, b) => {
-            let comparison = 0;
-            switch (sortBy) {
-                case 'name':
-                    comparison = a.name.localeCompare(b.name);
-                    break;
-                case 'orders':
-                    comparison = a.totalOrders - b.totalOrders;
-                    break;
-                case 'spent':
-                    comparison = a.totalSpent - b.totalSpent;
-                    break;
-                case 'date':
-                    comparison = a.createdAt.getTime() - b.createdAt.getTime();
-                    break;
+            const response = await apiClient.get('/admin/users', { params });
+            let data = response.data;
+
+            // Apply quick filters on frontend for better UX (or could be backend)
+            if (activeFilter === 'new') {
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                data = data.filter((u: any) => new Date(u.created_at) > thirtyDaysAgo);
+            } else if (activeFilter === 'top') {
+                data = [...data].sort((a, b) => b.totalSpend - a.totalSpend).slice(0, 10);
             }
-            return sortOrder === 'asc' ? comparison : -comparison;
-        });
 
-        return filtered;
-    }, [searchQuery, sortBy, sortOrder]);
+            setCustomers(data);
+        } catch (err) {
+            console.error("Failed to fetch customers:", err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-    const totalCustomers = mockCustomers.length;
-    const totalRevenue = mockCustomers.reduce((sum, c) => sum + c.totalSpent, 0);
-    const avgOrderValue = totalRevenue / mockCustomers.reduce((sum, c) => sum + c.totalOrders, 0);
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        fetchCustomers();
+    };
 
     return (
-        <div className="space-y-4 sm:space-y-6">
-            {/* Header */}
-            <div>
-                <h1 className="text-xl sm:text-2xl font-semibold text-black">Customers</h1>
-                <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                    {filteredCustomers.length} of {totalCustomers} customers
-                </p>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="text-sm text-gray-600 mb-1">Total Customers</div>
-                    <div className="text-2xl font-semibold text-black">{totalCustomers}</div>
-                </div>
-                <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="text-sm text-gray-600 mb-1">Total Revenue</div>
-                    <div className="text-2xl font-semibold text-black">₹{totalRevenue.toLocaleString()}</div>
-                </div>
-                <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="text-sm text-gray-600 mb-1">Avg Order Value</div>
-                    <div className="text-2xl font-semibold text-black">₹{Math.round(avgOrderValue).toLocaleString()}</div>
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-black">Customers</h1>
+                    <p className="text-gray-500 text-sm">Manage and view your customer base</p>
                 </div>
             </div>
 
-            {/* Filters & Search */}
-            <div className="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Search */}
+            {/* Quick Stats / Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button
+                    onClick={() => setActiveFilter('all')}
+                    className={`p-4 rounded-xl border transition-all text-left ${activeFilter === 'all' ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-black'}`}
+                >
+                    <div className="flex items-center justify-between mb-2">
+                        <FiUser className="w-5 h-5" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">All Users</span>
+                    </div>
+                    <p className="text-lg font-bold">Total Directory</p>
+                </button>
+                <button
+                    onClick={() => setActiveFilter('new')}
+                    className={`p-4 rounded-xl border transition-all text-left ${activeFilter === 'new' ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-black'}`}
+                >
+                    <div className="flex items-center justify-between mb-2">
+                        <FiUserPlus className="w-5 h-5" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">Last 30 Days</span>
+                    </div>
+                    <p className="text-lg font-bold">New Registrations</p>
+                </button>
+                <button
+                    onClick={() => setActiveFilter('top')}
+                    className={`p-4 rounded-xl border transition-all text-left ${activeFilter === 'top' ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-black'}`}
+                >
+                    <div className="flex items-center justify-between mb-2">
+                        <FiTrendingUp className="w-5 h-5" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">Top 10</span>
+                    </div>
+                    <p className="text-lg font-bold">Highest Spenders</p>
+                </button>
+            </div>
+
+            {/* Filters Bar */}
+            <div className="flex flex-col md:flex-row gap-4 bg-white p-4 rounded-xl border border-gray-200">
+                <form onSubmit={handleSearch} className="flex-1 relative">
+                    <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                         type="text"
-                        placeholder="Search customers..."
+                        placeholder="Search by name or email..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
+                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-black transition-all"
                     />
-
-                    {/* Sort */}
+                </form>
+                <div className="flex gap-2">
                     <select
-                        value={`${sortBy}-${sortOrder}`}
-                        onChange={(e) => {
-                            const [sort, order] = e.target.value.split('-');
-                            setSortBy(sort as typeof sortBy);
-                            setSortOrder(order as typeof sortOrder);
-                        }}
-                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
+                        value={sort}
+                        onChange={(e) => setSort(e.target.value)}
+                        className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-black transition-all cursor-pointer"
                     >
-                        <option value="spent-desc">Highest Spending</option>
-                        <option value="spent-asc">Lowest Spending</option>
-                        <option value="orders-desc">Most Orders</option>
-                        <option value="orders-asc">Least Orders</option>
-                        <option value="name-asc">Name (A-Z)</option>
-                        <option value="name-desc">Name (Z-A)</option>
-                        <option value="date-desc">Newest First</option>
-                        <option value="date-asc">Oldest First</option>
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="most_orders">Most Orders</option>
+                        <option value="highest_spend">Highest Spend</option>
                     </select>
                 </div>
             </div>
 
-            {/* Customers Cards (Mobile) */}
-            <div className="lg:hidden space-y-3">
-                {filteredCustomers.map((customer) => (
-                    <div
-                        key={customer.id}
-                        className="bg-white rounded-lg border border-gray-200 p-4"
-                    >
-                        <div className="flex justify-between items-start mb-3">
-                            <div>
-                                <div className="font-medium text-black">{customer.name}</div>
-                                <div className="text-sm text-gray-600 mt-1">{customer.email}</div>
-                                <div className="text-xs text-gray-500">{customer.phone}</div>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-200">
-                            <div>
-                                <div className="text-xs text-gray-600">Total Orders</div>
-                                <div className="text-sm font-medium text-black">{customer.totalOrders}</div>
-                            </div>
-                            <div>
-                                <div className="text-xs text-gray-600">Total Spent</div>
-                                <div className="text-sm font-medium text-black">₹{customer.totalSpent.toLocaleString()}</div>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* Customers Table (Desktop) */}
-            <div className="hidden lg:block bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                            <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
-                                Customer
-                            </th>
-                            <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
-                                Contact
-                            </th>
-                            <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
-                                Orders
-                            </th>
-                            <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
-                                Total Spent
-                            </th>
-                            <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
-                                Last Order
-                            </th>
-                            <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
-                                Member Since
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                        {filteredCustomers.map((customer) => (
-                            <tr key={customer.id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4">
-                                    <div className="font-medium text-black">{customer.name}</div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="text-sm text-gray-900">{customer.email}</div>
-                                    <div className="text-xs text-gray-500">{customer.phone}</div>
-                                </td>
-                                <td className="px-6 py-4 text-sm text-gray-900">{customer.totalOrders}</td>
-                                <td className="px-6 py-4 text-sm font-medium text-black">
-                                    ₹{customer.totalSpent.toLocaleString()}
-                                </td>
-                                <td className="px-6 py-4 text-sm text-gray-600">
-                                    {customer.lastOrderDate.toLocaleDateString()}
-                                </td>
-                                <td className="px-6 py-4 text-sm text-gray-600">
-                                    {customer.createdAt.toLocaleDateString()}
-                                </td>
+            {/* Table */}
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead>
+                            <tr className="bg-gray-50 border-b border-gray-200">
+                                <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Customer</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Orders</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Total Spend</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Joined</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Action</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Empty State */}
-            {filteredCustomers.length === 0 && (
-                <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-                    <div className="text-4xl mb-4">🔍</div>
-                    <h3 className="text-lg font-medium text-black mb-2">No customers found</h3>
-                    <p className="text-sm text-gray-600 mb-4">Try adjusting your search</p>
-                    <button
-                        onClick={() => setSearchQuery('')}
-                        className="text-sm text-black hover:underline font-medium"
-                    >
-                        Clear search
-                    </button>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan={5} className="px-6 py-12 text-center">
+                                        <FiLoader className="w-6 h-6 animate-spin mx-auto text-gray-400" />
+                                    </td>
+                                </tr>
+                            ) : customers.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500 text-sm">
+                                        No customers found.
+                                    </td>
+                                </tr>
+                            ) : (
+                                customers.map((customer) => (
+                                    <tr key={customer.id} className="hover:bg-gray-50/50 transition-colors group">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold border border-gray-200">
+                                                    {customer.profile?.full_name?.charAt(0) || 'U'}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-black">{customer.profile?.full_name || 'Anonymous'}</p>
+                                                    <p className="text-xs text-gray-500">{customer.email}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-2">
+                                                <FiShoppingBag className="w-3.5 h-3.5 text-gray-400" />
+                                                <span className="text-sm text-gray-700">{customer.orderCount} orders</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-2">
+                                                <FiDollarSign className="w-3.5 h-3.5 text-gray-400" />
+                                                <span className="text-sm font-bold text-black">₹{customer.totalSpend.toFixed(2)}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-2">
+                                                <FiCalendar className="w-3.5 h-3.5 text-gray-400" />
+                                                <span className="text-sm text-gray-500">
+                                                    {new Date(customer.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <Link href={`/admin/customers/${customer.id}`}>
+                                                <button className="p-2 hover:bg-black hover:text-white rounded-lg transition-all border border-transparent hover:shadow-lg">
+                                                    <FiArrowRight className="w-4 h-4" />
+                                                </button>
+                                            </Link>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
                 </div>
-            )}
+            </div>
         </div>
     );
 }

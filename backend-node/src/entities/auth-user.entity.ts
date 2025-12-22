@@ -3,6 +3,8 @@ import { RefreshToken } from './refresh-token.entity';
 import { UserProfile } from './user-profile.entity';
 import { LoginAuditLog } from './login-audit-log.entity';
 import { OAuthAccount } from './oauth-account.entity';
+import { Order } from './order.entity';
+import { Ticket } from './ticket.entity';
 
 @Entity('auth_users')
 export class AuthUser {
@@ -44,4 +46,10 @@ export class AuthUser {
 
     @OneToMany(() => LoginAuditLog, (log) => log.user)
     login_audit_logs: LoginAuditLog[];
+
+    @OneToMany(() => Order, (order) => order.user)
+    orders: Order[];
+
+    @OneToMany(() => Ticket, (ticket) => ticket.user)
+    tickets: Ticket[];
 }

@@ -72,6 +72,7 @@ export class AuthService {
             if (oauthAccount) {
                 // Case A — Existing OAuth account
                 authUser = oauthAccount.user;
+                this.logger.log(`✅ GOOGLE LOGIN - Existing user: ${email} | Role: ${authUser.role} | ID: ${authUser.id}`);
             } else {
                 // Check if user exists with this email
                 const existingUser = await this.authUserRepository.findOne({
@@ -81,6 +82,7 @@ export class AuthService {
                 if (existingUser) {
                     // Case B — Existing email, OAuth not linked
                     authUser = existingUser;
+                    this.logger.log(`✅ GOOGLE LOGIN - Linking Google to existing user: ${email} | Role: ${authUser.role} | ID: ${authUser.id}`);
 
                     // Create OAuth account link
                     oauthAccount = this.oauthAccountRepository.create({
@@ -99,6 +101,7 @@ export class AuthService {
                         role: 'USER',
                     });
                     await this.authUserRepository.save(authUser);
+                    this.logger.log(`🆕 GOOGLE LOGIN - New user created: ${email} | Role: ${authUser.role} | ID: ${authUser.id}`);
 
                     // Create user profile
                     const userProfile = this.userProfileRepository.create({
@@ -509,6 +512,7 @@ export class AuthService {
                     role: 'USER',
                 });
                 await queryRunner.manager.save(authUser);
+                this.logger.log(`🆕 EMAIL OTP LOGIN - New user created: ${normalizedEmail} | Role: ${authUser.role} | ID: ${authUser.id}`);
 
                 // Create profile with email username as default
                 const userProfile = this.userProfileRepository.create({
@@ -521,6 +525,8 @@ export class AuthService {
                 this.emailService.sendWelcomeEmail(normalizedEmail).catch(err => {
                     console.error('Welcome email failed:', err);
                 });
+            } else {
+                this.logger.log(`✅ EMAIL OTP LOGIN - Existing user: ${normalizedEmail} | Role: ${authUser.role} | ID: ${authUser.id}`);
             }
             // Existing users: Allow login regardless of original auth_provider
             // This ensures Google users can also login with OTP and vice versa
@@ -567,9 +573,71 @@ export class AuthService {
         const result = await this.emailOtpRepository.delete({
             expires_at: LessThan(new Date()),
         });
+        return result.affected || 0;
+    }
 
-        const count = result.affected || 0;
-        this.logger.log(`Cleaned up ${count} expired OTPs`);
-        return count;
+    /**
+     * ADMIN: Find all customers with profiles and order stats
+     */
+    async findAllCustomers(options: { sort?: string; search?: string }) {
+        const query = this.authUserRepository.createQueryBuilder('user')
+            .leftJoinAndSelect('user.profile', 'profile')
+            .leftJoin('user.orders', 'order') // Assuming relationship exists
+            .where('user.role = :role', { role: 'USER' });
+
+        if (options.search) {
+            query.andWhere(
+                '(user.email ILIKE :search OR profile.full_name ILIKE :search)',
+                { search: `%${options.search}%` }
+            );
+        }
+
+        // Add aggregate fields
+        query.addSelect('COUNT(order.id)', 'orderCount')
+            .addSelect('SUM(COALESCE(order.total_amount, 0))', 'totalSpend')
+            .groupBy('user.id')
+            .addGroupBy('profile.id');
+
+        // Note: QueryBuilder return values for aggregates need raw results or additional mapping
+        const rawResults = await query.getRawAndEntities();
+
+        const customers = rawResults.entities.map(user => {
+            const raw = rawResults.raw.find(r => r.user_id === user.id);
+            return {
+                ...user,
+                orderCount: parseInt(raw?.orderCount || '0'),
+                totalSpend: parseFloat(raw?.totalSpend || '0'),
+            };
+        });
+
+        // Apply sorting in memory for aggregate fields if needed, or refine query
+        if (options.sort === 'most_orders') {
+            customers.sort((a, b) => b.orderCount - a.orderCount);
+        } else if (options.sort === 'highest_spend') {
+            customers.sort((a, b) => b.totalSpend - a.totalSpend);
+        } else if (options.sort === 'oldest') {
+            customers.sort((a, b) => a.created_at.getTime() - b.created_at.getTime());
+        } else {
+            // Default: newest
+            customers.sort((a, b) => b.created_at.getTime() - a.created_at.getTime());
+        }
+
+        return customers;
+    }
+
+    /**
+     * ADMIN: Get comprehensive customer detail
+     */
+    async getCustomerDetail(userId: string) {
+        const user = await this.authUserRepository.findOne({
+            where: { id: userId },
+            relations: ['profile', 'orders', 'tickets', 'tickets.messages'],
+        });
+
+        if (!user) {
+            throw new UnauthorizedException('Customer not found');
+        }
+
+        return user;
     }
 }

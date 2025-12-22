@@ -243,6 +243,15 @@ export class AdminProductsService {
         await this.productRepo.remove(product);
     }
 
+    /**
+     * Get all collections
+     */
+    async getAllCollections(): Promise<Collection[]> {
+        return this.collectionRepo.find({
+            order: { name: 'ASC' },
+        });
+    }
+
     // ========================================================================
     // HELPER METHODS
     // ========================================================================

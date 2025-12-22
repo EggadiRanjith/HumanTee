@@ -114,13 +114,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Preload critical fonts for faster FCP */}
-        <link
-          rel="preload"
-          href="/fonts/geist/Geist-Regular.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
 
         {/* Preconnect to external domains for faster loading */}
         <link rel="preconnect" href="https://www.instagram.com" />

@@ -9,7 +9,17 @@ export { CartItem } from './cart-item.entity';
 export { ShippingAddress } from './shipping-address.entity';
 export { Product } from '../products/entities/product.entity';
 export { ProductVariant } from '../products/entities/product-variant.entity';
-export { Order } from '../orders/entities/order.entity';
-export { OrderItem } from '../orders/entities/order-item.entity';
-export { Payment } from '../payments/entities/payment.entity';
-export { OrderNotification } from '../notifications/entities/order-notification.entity';
+
+// Production-grade order system entities
+export { Order, OrderStatus } from './order.entity';
+export { OrderItem } from './order-item.entity';
+export { OrderAddress } from './order-address.entity';
+export { Payment, PaymentStatus } from './payment.entity';
+export { Shipment, ShipmentStatus } from './shipment.entity';
+export { OrderStatusHistory } from './order-status-history.entity';
+
+// Ticket system entities
+export { Ticket, TicketStatus, TicketPriority, TicketCategory } from './ticket.entity';
+export { TicketMessage } from './ticket-message.entity';
+export { TicketStatusHistory } from './ticket-status-history.entity';
+

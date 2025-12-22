@@ -10,95 +10,97 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import { discountsApi } from '@/lib/api/discounts';
 
 type DiscountType = 'PERCENT' | 'FLAT';
-type DiscountScope = 'PRODUCT' | 'GROUP';
-type DiscountStatus = 'SCHEDULED' | 'ACTIVE' | 'EXPIRED' | 'DISABLED';
+type DiscountScope = 'GLOBAL' | 'PRODUCT' | 'GROUP';
 
 interface Discount {
     id: string;
     name: string;
+    code: string;
     type: DiscountType;
     value: number;
     scope: DiscountScope;
-    productsCount: number;
-    status: DiscountStatus;
-    startAt: Date;
-    endAt: Date;
+    isActive: boolean;
+    startDate: string;
+    endDate: string | null;
+    globalUsageLimit: number | null;
+    usedCount?: number; // Total usages from join or count
+    createdAt: string;
 }
 
-// Mock data (UI-only)
-const mockDiscounts: Discount[] = [
-    {
-        id: '1',
-        name: 'Diwali Sale',
-        type: 'PERCENT',
-        value: 20,
-        scope: 'GROUP',
-        productsCount: 24,
-        status: 'ACTIVE',
-        startAt: new Date('2024-12-15'),
-        endAt: new Date('2024-12-25'),
-    },
-    {
-        id: '2',
-        name: 'New Year Offer',
-        type: 'FLAT',
-        value: 500,
-        scope: 'PRODUCT',
-        productsCount: 12,
-        status: 'SCHEDULED',
-        startAt: new Date('2024-12-31'),
-        endAt: new Date('2025-01-05'),
-    },
-    {
-        id: '3',
-        name: 'Summer Sale',
-        type: 'PERCENT',
-        value: 15,
-        scope: 'GROUP',
-        productsCount: 18,
-        status: 'EXPIRED',
-        startAt: new Date('2024-06-01'),
-        endAt: new Date('2024-06-30'),
-    },
-];
-
 export default function DiscountsListPage() {
+    const [discounts, setDiscounts] = useState<Discount[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [searchQuery, setSearchQuery] = useState('');
 
+    useEffect(() => {
+        fetchDiscounts();
+    }, []);
+
+    const fetchDiscounts = async () => {
+        setIsLoading(true);
+        try {
+            const data = await discountsApi.getAll();
+            setDiscounts(data);
+            setError(null);
+        } catch (err: any) {
+            console.error('Fetch discounts failed:', err);
+            setError('Failed to load discounts');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this discount?')) return;
+        try {
+            await discountsApi.delete(id);
+            setDiscounts(discounts.filter(d => d.id !== id));
+        } catch (err) {
+            alert('Failed to delete discount');
+        }
+    };
+
     const filteredDiscounts = useMemo(() => {
-        let filtered = mockDiscounts;
+        let filtered = discounts;
 
         if (statusFilter !== 'ALL') {
-            filtered = filtered.filter((d) => d.status === statusFilter);
+            const now = new Date();
+            filtered = filtered.filter((d) => {
+                const isExpired = d.endDate && new Date(d.endDate) < now;
+                const isScheduled = new Date(d.startDate) > now;
+                const isActive = d.isActive && !isExpired && !isScheduled;
+
+                if (statusFilter === 'ACTIVE') return isActive;
+                if (statusFilter === 'SCHEDULED') return isScheduled;
+                if (statusFilter === 'EXPIRED') return isExpired;
+                if (statusFilter === 'DISABLED') return !d.isActive;
+                return true;
+            });
         }
 
         if (searchQuery) {
             filtered = filtered.filter((d) =>
-                d.name.toLowerCase().includes(searchQuery.toLowerCase())
+                d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                d.code.toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
 
         return filtered;
-    }, [statusFilter, searchQuery]);
+    }, [discounts, statusFilter, searchQuery]);
 
-    const getStatusColor = (status: DiscountStatus) => {
-        switch (status) {
-            case 'ACTIVE':
-                return 'bg-green-100 text-green-700';
-            case 'SCHEDULED':
-                return 'bg-blue-100 text-blue-700';
-            case 'EXPIRED':
-                return 'bg-gray-100 text-gray-700';
-            case 'DISABLED':
-                return 'bg-red-100 text-red-700';
-            default:
-                return 'bg-gray-100 text-gray-700';
-        }
+    const getStatus = (discount: Discount) => {
+        const now = new Date();
+        if (!discount.isActive) return { label: 'DISABLED', color: 'bg-red-100 text-red-700' };
+        if (discount.endDate && new Date(discount.endDate) < now) return { label: 'EXPIRED', color: 'bg-gray-100 text-gray-700' };
+        if (new Date(discount.startDate) > now) return { label: 'SCHEDULED', color: 'bg-blue-100 text-blue-700' };
+        return { label: 'ACTIVE', color: 'bg-green-100 text-green-700' };
     };
 
     return (
@@ -189,16 +191,14 @@ export default function DiscountsListPage() {
                                 </td>
                                 <td className="px-6 py-4">
                                     <span
-                                        className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(
-                                            discount.status
-                                        )}`}
+                                        className={`px-2 py-1 text-xs font-medium rounded ${getStatus(discount).color}`}
                                     >
-                                        {discount.status}
+                                        {getStatus(discount).label}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="text-sm text-gray-600">
-                                        {discount.startAt.toLocaleDateString()} → {discount.endAt.toLocaleDateString()}
+                                        {new Date(discount.startDate).toLocaleDateString()} → {discount.endDate ? new Date(discount.endDate).toLocaleDateString() : 'No end'}
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
@@ -220,55 +220,77 @@ export default function DiscountsListPage() {
 
             {/* Discounts Cards (Mobile) */}
             <div className="lg:hidden space-y-3">
-                {filteredDiscounts.map((discount) => (
-                    <div key={discount.id} className="bg-white rounded-lg border border-gray-200 p-4">
-                        <div className="flex justify-between items-start mb-3">
-                            <div>
-                                <div className="text-sm font-medium text-black">{discount.name}</div>
-                                <div className="text-xs text-gray-600 mt-1">
-                                    {discount.type === 'PERCENT' ? `${discount.value}%` : `₹${discount.value}`} •{' '}
-                                    {discount.scope === 'PRODUCT' ? 'Products' : 'Group'}
-                                </div>
-                            </div>
-                            <span
-                                className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(discount.status)}`}
-                            >
-                                {discount.status}
-                            </span>
-                        </div>
-                        <div className="text-xs text-gray-600 mb-2">
-                            {discount.startAt.toLocaleDateString()} → {discount.endAt.toLocaleDateString()}
-                        </div>
-                        <div className="text-xs text-gray-600 mb-3">{discount.productsCount} products</div>
-                        <Link
-                            href={`/admin/discounts/${discount.id}`}
-                            className="text-sm text-black hover:underline font-medium"
-                        >
-                            Edit Discount
-                        </Link>
+                {isLoading ? (
+                    <div className="bg-white rounded-lg border border-gray-200 p-12 text-center text-gray-500">
+                        Loading...
                     </div>
-                ))}
+                ) : filteredDiscounts.map((discount) => {
+                    const status = getStatus(discount);
+                    return (
+                        <div key={discount.id} className="bg-white rounded-lg border border-gray-200 p-4">
+                            <div className="flex justify-between items-start mb-3">
+                                <div>
+                                    <div className="text-sm font-medium text-black">{discount.name}</div>
+                                    <div className="text-[10px] font-mono text-gray-400 uppercase mt-0.5">{discount.code}</div>
+                                    <div className="text-xs text-gray-600 mt-1">
+                                        {discount.type === 'PERCENT' ? `${discount.value}%` : `₹${discount.value}`} •{' '}
+                                        {discount.scope}
+                                    </div>
+                                </div>
+                                <span
+                                    className={`px-2 py-1 text-xs font-medium rounded ${status.color}`}
+                                >
+                                    {status.label}
+                                </span>
+                            </div>
+                            <div className="text-xs text-gray-600 mb-2">
+                                {new Date(discount.startDate).toLocaleDateString()}
+                                {discount.endDate ? ` → ${new Date(discount.endDate).toLocaleDateString()}` : ' → ∞'}
+                            </div>
+                            <div className="text-xs text-gray-600 mb-3">
+                                Usage: {discount.usedCount || 0} / {discount.globalUsageLimit || '∞'}
+                            </div>
+                            <div className="flex gap-4">
+                                <Link
+                                    href={`/admin/discounts/${discount.id}`}
+                                    className="text-sm text-black hover:underline font-medium"
+                                >
+                                    Edit
+                                </Link>
+                                <button
+                                    onClick={() => handleDelete(discount.id)}
+                                    className="text-sm text-red-600 hover:underline font-medium"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
 
             {/* Empty State */}
-            {filteredDiscounts.length === 0 && (
+            {!isLoading && filteredDiscounts.length === 0 && (
                 <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
                     <div className="text-4xl mb-4">🏷️</div>
-                    <h3 className="text-lg font-medium text-black mb-2">No discounts found</h3>
+                    <h3 className="text-lg font-medium text-black mb-2">
+                        {error ? 'Error loading discounts' : 'No discounts found'}
+                    </h3>
                     <p className="text-sm text-gray-600 mb-4">
-                        {searchQuery || statusFilter !== 'ALL'
+                        {error ? 'Please try again later' : (searchQuery || statusFilter !== 'ALL'
                             ? 'Try adjusting your filters'
-                            : 'Create your first discount to get started'}
+                            : 'Create your first discount to get started')}
                     </p>
-                    {(searchQuery || statusFilter !== 'ALL') && (
+                    {(searchQuery || statusFilter !== 'ALL' || error) && (
                         <button
                             onClick={() => {
                                 setSearchQuery('');
                                 setStatusFilter('ALL');
+                                fetchDiscounts();
                             }}
                             className="text-sm text-black hover:underline font-medium"
                         >
-                            Clear filters
+                            {error ? 'Retry' : 'Clear filters'}
                         </button>
                     )}
                 </div>

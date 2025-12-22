@@ -8,12 +8,14 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { CartModule } from './cart/cart.module';
 import { ProductsModule } from './products/products.module';
-import { OrdersModule } from './orders/orders.module';
+import { OrderModule as OrdersModule } from './orders/order.module';
 import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ShippingModule } from './shipping/shipping.module';
 import { ProtectedController } from './protected/protected.controller';
 import { UploadModule } from './common/upload/upload.module';
+import { TicketsModule } from './tickets/tickets.module';
+import { DiscountsModule } from './discounts/discounts.module';
 
 @Module({
   imports: [
@@ -43,6 +45,8 @@ import { UploadModule } from './common/upload/upload.module';
     NotificationsModule,
     ShippingModule,
     UploadModule,
+    TicketsModule,
+    DiscountsModule,
   ],
   controllers: [AppController, ProtectedController],
   providers: [AppService],

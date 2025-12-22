@@ -73,7 +73,7 @@ export default function OrganizationTab() {
                         Add to Collections
                     </label>
                     <div className="space-y-2">
-                        {['New Arrivals', 'Best Sellers', 'Summer Collection', 'Sale'].map((collection) => (
+                        {['New Arrival', 'Best Seller', 'Summer Collection', 'Sale'].map((collection) => (
                             <div key={collection} className="flex items-center gap-3">
                                 <input
                                     type="checkbox"

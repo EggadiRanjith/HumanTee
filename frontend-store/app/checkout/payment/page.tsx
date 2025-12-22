@@ -10,6 +10,7 @@ import { CheckoutProgress, OrderSummaryCheckout } from "@/app/components/ui/chec
 import { GradientOverlay } from "@/app/components/ui/layout";
 import { FiCreditCard, FiTruck, FiCheck, FiMapPin, FiMail, FiPhone } from "react-icons/fi";
 import { motion } from "framer-motion";
+import apiClient from "@/lib/api-client";
 
 export default function PaymentPage() {
     const router = useRouter();
@@ -42,17 +43,46 @@ export default function PaymentPage() {
 
         setIsProcessing(true);
 
-        // Simulate payment processing delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        try {
+            // Create order in database
+            const response = await apiClient.post('/orders', {
+                items: items.map(item => ({
+                    productId: String(item.id),
+                    variantId: item.variantId || String(item.id),
+                    productNameSnapshot: item.title,
+                    variantLabelSnapshot: item.size || 'Default',
+                    skuSnapshot: item.size || 'N/A',
+                    imageUrlSnapshot: item.image,
+                    quantity: item.quantity,
+                    unitPrice: item.price,
+                    lineTotal: item.price * item.quantity,
+                })),
+                shippingAddress: {
+                    fullName: shippingData.fullName,
+                    email: shippingData.email,
+                    phone: shippingData.phone,
+                    addressLine1: shippingData.address,
+                    city: shippingData.city,
+                    state: shippingData.state,
+                    postalCode: shippingData.postalCode,
+                    country: shippingData.country || 'India',
+                },
+                subtotal: totalPrice,
+                totalAmount: totalPrice,
+            });
 
-        // Generate order number
-        const orderNum = `ORD-${Date.now().toString().slice(-8)}`;
-        setOrderNumber(orderNum);
+            // Set order number from response
+            setOrderNumber(response.data.orderNumber);
 
-        // Clear cart and redirect to success
-        clearCart();
-        setLoading(true);
-        router.push("/checkout/status/success");
+            // Clear cart and redirect to success
+            clearCart();
+            setLoading(true);
+            router.push("/checkout/status/success");
+        } catch (error) {
+            console.error('Order creation failed:', error);
+            setIsProcessing(false);
+            alert('Failed to create order. Please try again.');
+        }
     };
 
     const paymentOptions = [
