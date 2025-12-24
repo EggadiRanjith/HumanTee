@@ -5,9 +5,10 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FiArrowLeft, FiPlus, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiArrowLeft, FiPlus, FiEdit2, FiTrash2, FiSave } from 'react-icons/fi';
+import { settingsApi } from '@/lib/api/settings';
 
 interface ShippingZone {
     id: string;
@@ -21,43 +22,49 @@ interface ShippingZone {
 
 export default function ShippingTaxesSettings() {
     const [isSaving, setIsSaving] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
     const [showZoneModal, setShowZoneModal] = useState(false);
     const [editingZone, setEditingZone] = useState<ShippingZone | null>(null);
 
-    // Mock zones data
+    // Indian States Shipping Zones
     const [zones, setZones] = useState<ShippingZone[]>([
-        {
-            id: '1',
-            name: 'Local',
-            icon: '🏙️',
-            pincodes: ['600001-600100', '603*'],
-            rate: 40,
-            freeShippingThreshold: 2000,
-            isActive: true
-        },
-        {
-            id: '2',
-            name: 'Metro',
-            icon: '🌆',
-            pincodes: ['110*', '400*', '560*', '700*'],
-            rate: 80,
-            freeShippingThreshold: 2500,
-            isActive: true
-        },
-        {
-            id: '3',
-            name: 'Remote',
-            icon: '🏔️',
-            pincodes: ['7*', '8*', '17*'],
-            rate: 120,
-            freeShippingThreshold: 3000,
-            isActive: true
-        }
+        { id: '1', name: 'Jammu and Kashmir', icon: '🏔️', pincodes: ['180000-194999'], rate: 80, freeShippingThreshold: 2500, isActive: true },
+        { id: '2', name: 'Ladakh', icon: '🏔️', pincodes: ['194100-194499'], rate: 100, freeShippingThreshold: 3000, isActive: true },
+        { id: '3', name: 'Himachal Pradesh', icon: '⛰️', pincodes: ['171000-177999'], rate: 70, freeShippingThreshold: 2500, isActive: true },
+        { id: '4', name: 'Punjab', icon: '🌾', pincodes: ['140000-160999'], rate: 60, freeShippingThreshold: 2000, isActive: true },
+        { id: '5', name: 'Haryana', icon: '🏙️', pincodes: ['121000-136999'], rate: 50, freeShippingThreshold: 2000, isActive: true },
+        { id: '6', name: 'Delhi', icon: '🏛️', pincodes: ['110000-110099'], rate: 40, freeShippingThreshold: 1500, isActive: true },
+        { id: '7', name: 'Uttarakhand', icon: '⛰️', pincodes: ['246000-263999'], rate: 70, freeShippingThreshold: 2500, isActive: true },
+        { id: '8', name: 'Rajasthan', icon: '🏜️', pincodes: ['301000-345999'], rate: 60, freeShippingThreshold: 2000, isActive: true },
+        { id: '9', name: 'Uttar Pradesh', icon: '🕌', pincodes: ['201000-285999'], rate: 50, freeShippingThreshold: 2000, isActive: true },
+        { id: '10', name: 'Bihar', icon: '🌾', pincodes: ['800000-855999'], rate: 60, freeShippingThreshold: 2000, isActive: true },
+        { id: '11', name: 'West Bengal', icon: '🌆', pincodes: ['700000-743999'], rate: 60, freeShippingThreshold: 2000, isActive: true },
+        { id: '12', name: 'Sikkim', icon: '🏔️', pincodes: ['737000-737999'], rate: 90, freeShippingThreshold: 3000, isActive: true },
+        { id: '13', name: 'Assam', icon: '🌿', pincodes: ['781000-788999'], rate: 80, freeShippingThreshold: 2500, isActive: true },
+        { id: '14', name: 'Arunachal Pradesh', icon: '🏔️', pincodes: ['790000-792999'], rate: 100, freeShippingThreshold: 3000, isActive: true },
+        { id: '15', name: 'Nagaland', icon: '🏔️', pincodes: ['797000-798999'], rate: 90, freeShippingThreshold: 3000, isActive: true },
+        { id: '16', name: 'Manipur', icon: '🏔️', pincodes: ['795000-795999'], rate: 90, freeShippingThreshold: 3000, isActive: true },
+        { id: '17', name: 'Mizoram', icon: '🏔️', pincodes: ['796000-796999'], rate: 90, freeShippingThreshold: 3000, isActive: true },
+        { id: '18', name: 'Tripura', icon: '🌿', pincodes: ['799000-799999'], rate: 80, freeShippingThreshold: 2500, isActive: true },
+        { id: '19', name: 'Meghalaya', icon: '🏔️', pincodes: ['793000-794999'], rate: 90, freeShippingThreshold: 3000, isActive: true },
+        { id: '20', name: 'Odisha', icon: '🌊', pincodes: ['751000-770999'], rate: 60, freeShippingThreshold: 2000, isActive: true },
+        { id: '21', name: 'Chhattisgarh', icon: '🌾', pincodes: ['490000-497999'], rate: 60, freeShippingThreshold: 2000, isActive: true },
+        { id: '22', name: 'Madhya Pradesh', icon: '🏛️', pincodes: ['450000-488999'], rate: 60, freeShippingThreshold: 2000, isActive: true },
+        { id: '23', name: 'Gujarat', icon: '🏭', pincodes: ['360000-396999'], rate: 60, freeShippingThreshold: 2000, isActive: true },
+        { id: '24', name: 'Maharashtra', icon: '🌆', pincodes: ['400000-444999'], rate: 50, freeShippingThreshold: 2000, isActive: true },
+        { id: '25', name: 'Goa', icon: '🏖️', pincodes: ['403000-403999'], rate: 70, freeShippingThreshold: 2500, isActive: true },
+        { id: '26', name: 'Telangana', icon: '🏙️', pincodes: ['500000-509999'], rate: 50, freeShippingThreshold: 2000, isActive: true },
+        { id: '27', name: 'Andhra Pradesh', icon: '🌾', pincodes: ['515000-534999'], rate: 60, freeShippingThreshold: 2000, isActive: true },
+        { id: '28', name: 'Karnataka', icon: '🌆', pincodes: ['560000-591999'], rate: 50, freeShippingThreshold: 2000, isActive: true },
+        { id: '29', name: 'Tamil Nadu', icon: '🏛️', pincodes: ['600000-643999'], rate: 50, freeShippingThreshold: 2000, isActive: true },
+        { id: '30', name: 'Kerala', icon: '🌴', pincodes: ['670000-695999'], rate: 60, freeShippingThreshold: 2000, isActive: true },
+        { id: '31', name: 'Puducherry', icon: '🏖️', pincodes: ['605000-609999'], rate: 60, freeShippingThreshold: 2000, isActive: true },
+        { id: '32', name: 'Andaman and Nicobar', icon: '🏝️', pincodes: ['744000-744999'], rate: 150, freeShippingThreshold: 4000, isActive: true }
     ]);
 
     // Tax settings
     const [taxEnabled, setTaxEnabled] = useState(true);
-    const [taxRate, setTaxRate] = useState(18);
+    const [taxRate, setTaxRate] = useState<number | ''>('');
     const [taxLabel, setTaxLabel] = useState('GST');
     const [taxInclusive, setTaxInclusive] = useState(false);
 
@@ -68,10 +75,54 @@ export default function ShippingTaxesSettings() {
     const [zoneRate, setZoneRate] = useState<number | string>('');
     const [zoneFreeThreshold, setZoneFreeThreshold] = useState<number | string>('');
 
+    // Fetch shipping settings from backend on mount
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const data = await settingsApi.getSection('shipping');
+
+                // Load zones if they exist
+                if (data.zones && Array.isArray(data.zones)) {
+                    setZones(data.zones);
+                }
+
+                // Load tax settings if they exist
+                if (data.tax) {
+                    setTaxEnabled(data.tax.enabled ?? true);
+                    setTaxRate(data.tax.rate ?? '');
+                    setTaxLabel(data.tax.label ?? 'GST');
+                    setTaxInclusive(data.tax.inclusive ?? false);
+                }
+            } catch (error) {
+                console.error('Failed to load shipping settings:', error);
+                // Keep default values if fetch fails
+            }
+        };
+
+        fetchSettings();
+    }, []);
+
     const handleSave = async () => {
         setIsSaving(true);
-        // TODO: Save to backend
-        setTimeout(() => setIsSaving(false), 1000);
+        try {
+            await settingsApi.saveSection('shipping', {
+                zones: zones,
+                tax: {
+                    enabled: taxEnabled,
+                    rate: taxRate === '' ? 0 : Number(taxRate),
+                    label: taxLabel,
+                    inclusive: taxInclusive
+                }
+            });
+
+            setIsEditing(false);
+            alert('Shipping & tax settings saved successfully!');
+        } catch (error) {
+            console.error('Failed to save settings:', error);
+            alert('Failed to save settings. Please try again.');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleAddZone = () => {
@@ -131,12 +182,43 @@ export default function ShippingTaxesSettings() {
                     <span className="text-sm font-medium">Back to Settings</span>
                 </Link>
 
-                {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Shipping & Taxes</h1>
-                    <p className="mt-2 text-sm text-gray-600">
-                        Configure shipping zones and tax settings
-                    </p>
+                <div className="mb-8 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Shipping & Taxes</h1>
+                        <p className="mt-2 text-sm text-gray-600">
+                            Configure shipping zones and tax settings
+                        </p>
+                    </div>
+
+                    {!isEditing ? (
+                        <button
+                            onClick={() => setIsEditing(true)}
+                            className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium shadow-sm"
+                        >
+                            Edit
+                        </button>
+                    ) : (
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setIsEditing(false)}
+                                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                disabled={isSaving}
+                                className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2 transition-colors font-medium shadow-sm"
+                            >
+                                {isSaving ? (
+                                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <FiSave size={18} />
+                                )}
+                                {isSaving ? 'Saving...' : 'Save All'}
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Shipping Zones Section */}
@@ -147,13 +229,15 @@ export default function ShippingTaxesSettings() {
                                 <h2 className="text-lg font-semibold text-gray-900">Shipping Zones</h2>
                                 <p className="text-sm text-gray-600 mt-1">Manage pincode-based shipping rates</p>
                             </div>
-                            <button
-                                onClick={handleAddZone}
-                                className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
-                            >
-                                <FiPlus size={16} />
-                                Add Zone
-                            </button>
+                            {isEditing && (
+                                <button
+                                    onClick={handleAddZone}
+                                    className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+                                >
+                                    <FiPlus size={16} />
+                                    Add Zone
+                                </button>
+                            )}
                         </div>
 
                         {/* Zones Table */}
@@ -201,35 +285,40 @@ export default function ShippingTaxesSettings() {
                                                 </span>
                                             </td>
                                             <td className="px-4 py-4">
-                                                <label className="relative inline-flex items-center cursor-pointer">
+                                                <label className={`relative inline-flex items-center ${isEditing ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}>
                                                     <input
                                                         type="checkbox"
                                                         checked={zone.isActive}
                                                         onChange={() => {
-                                                            setZones(zones.map(z =>
-                                                                z.id === zone.id ? { ...z, isActive: !z.isActive } : z
-                                                            ));
+                                                            if (isEditing) {
+                                                                setZones(zones.map(z =>
+                                                                    z.id === zone.id ? { ...z, isActive: !z.isActive } : z
+                                                                ));
+                                                            }
                                                         }}
+                                                        disabled={!isEditing}
                                                         className="sr-only peer"
                                                     />
                                                     <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-black rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500"></div>
                                                 </label>
                                             </td>
-                                            <td className="px-4 py-4">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <button
-                                                        onClick={() => handleEditZone(zone)}
-                                                        className="p-2 text-gray-600 hover:text-black hover:bg-gray-100 rounded transition-colors"
-                                                    >
-                                                        <FiEdit2 size={16} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteZone(zone.id)}
-                                                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                                                    >
-                                                        <FiTrash2 size={16} />
-                                                    </button>
-                                                </div>
+                                            <td className="px-4 py-4 text-right">
+                                                {isEditing && (
+                                                    <div className="flex items-center justify-end gap-2 text-right">
+                                                        <button
+                                                            onClick={() => handleEditZone(zone)}
+                                                            className="p-2 text-gray-600 hover:text-black hover:bg-gray-100 rounded transition-colors"
+                                                        >
+                                                            <FiEdit2 size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteZone(zone.id)}
+                                                            className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                                        >
+                                                            <FiTrash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </td>
                                         </tr>
                                     ))}
@@ -252,11 +341,12 @@ export default function ShippingTaxesSettings() {
                                     <p className="text-sm font-medium text-gray-900">Enable Taxes</p>
                                     <p className="text-xs text-gray-500 mt-1">Apply taxes to all orders</p>
                                 </div>
-                                <label className="relative inline-flex items-center cursor-pointer">
+                                <label className={`relative inline-flex items-center ${isEditing ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}>
                                     <input
                                         type="checkbox"
                                         checked={taxEnabled}
-                                        onChange={(e) => setTaxEnabled(e.target.checked)}
+                                        onChange={(e) => isEditing && setTaxEnabled(e.target.checked)}
+                                        disabled={!isEditing}
                                         className="sr-only peer"
                                     />
                                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-black/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
@@ -274,9 +364,16 @@ export default function ShippingTaxesSettings() {
                                             <input
                                                 type="number"
                                                 value={taxRate}
-                                                onChange={(e) => setTaxRate(Number(e.target.value))}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    setTaxRate(val === '' ? '' : Number(val));
+                                                }}
+                                                readOnly={!isEditing}
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black disabled:bg-gray-50 disabled:cursor-not-allowed"
                                                 placeholder="18"
+                                                min="0"
+                                                max="100"
+                                                step="0.01"
                                             />
                                         </div>
 
@@ -288,7 +385,8 @@ export default function ShippingTaxesSettings() {
                                                 type="text"
                                                 value={taxLabel}
                                                 onChange={(e) => setTaxLabel(e.target.value)}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
+                                                readOnly={!isEditing}
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black disabled:bg-gray-50 disabled:cursor-not-allowed"
                                                 placeholder="GST"
                                             />
                                         </div>
@@ -300,11 +398,12 @@ export default function ShippingTaxesSettings() {
                                             Price Display
                                         </label>
                                         <div className="space-y-2">
-                                            <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                                            <label className={`flex items-center gap-3 p-3 border border-gray-200 rounded-lg ${isEditing ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed bg-gray-50'}`}>
                                                 <input
                                                     type="radio"
                                                     checked={!taxInclusive}
-                                                    onChange={() => setTaxInclusive(false)}
+                                                    onChange={() => isEditing && setTaxInclusive(false)}
+                                                    disabled={!isEditing}
                                                     className="w-4 h-4"
                                                 />
                                                 <div>
@@ -312,11 +411,12 @@ export default function ShippingTaxesSettings() {
                                                     <p className="text-xs text-gray-500">Tax added at checkout (e.g., ₹1000 + ₹180 GST)</p>
                                                 </div>
                                             </label>
-                                            <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                                            <label className={`flex items-center gap-3 p-3 border border-gray-200 rounded-lg ${isEditing ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed bg-gray-50'}`}>
                                                 <input
                                                     type="radio"
                                                     checked={taxInclusive}
-                                                    onChange={() => setTaxInclusive(true)}
+                                                    onChange={() => isEditing && setTaxInclusive(true)}
+                                                    disabled={!isEditing}
                                                     className="w-4 h-4"
                                                 />
                                                 <div>
@@ -332,22 +432,7 @@ export default function ShippingTaxesSettings() {
                     </div>
                 </div>
 
-                {/* Save Button */}
-                <div className="mt-8 flex justify-end gap-4">
-                    <Link
-                        href="/admin/settings"
-                        className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                        Cancel
-                    </Link>
-                    <button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                        {isSaving ? 'Saving...' : 'Save Changes'}
-                    </button>
-                </div>
+
             </div>
 
             {/* Zone Modal */}

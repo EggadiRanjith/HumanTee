@@ -53,13 +53,8 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
   // Extend Product to ProductDetail with required fields
   const productDetail = {
     ...product,
-    description: product.subtitle || 'Premium quality product',
-    details: [
-      'Premium quality materials',
-      'Comfortable fit',
-      'Machine washable',
-      'Imported'
-    ],
+    description: product.subtitle || '', // Removed hardcoded 'Premium quality product'
+    details: [], // Removed hardcoded default details
     sizes: availableSizes.length > 0 ? availableSizes : ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
     images: productImages,
     vendor: 'HumanTee',

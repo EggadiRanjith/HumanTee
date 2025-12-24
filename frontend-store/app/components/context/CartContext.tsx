@@ -3,6 +3,8 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import apiClient from "@/lib/api-client";
+import { discountsApi, type DiscountSuggestion } from "@/lib/api/discounts";
+import type { AppliedDiscount } from "@/app/types/discount.types";
 
 export interface CartItem {
   id: number | string;
@@ -27,6 +29,15 @@ interface CartContextType {
   totalPrice: number;
   getItemInCart: (id: number | string, size?: string) => CartItem | undefined;
   isLoading: boolean;
+  // Discount functionality
+  appliedDiscount: AppliedDiscount | null;
+  applyDiscount: (code: string) => Promise<void>;
+  removeDiscount: () => void;
+  discountedTotal: number;
+  // Suggestions
+  suggestions: DiscountSuggestion[];
+  fetchSuggestions: () => Promise<void>;
+  isLoadingSuggestions: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -34,6 +45,10 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
+  const [suggestions, setSuggestions] = useState<DiscountSuggestion[]>([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [hasManuallyRemoved, setHasManuallyRemoved] = useState(false);
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   // PHASE 4: Cart source switch logic
@@ -235,6 +250,123 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return items.find((i) => i.id === id && (!size || i.size === size));
   };
 
+  // Discount functionality
+  const applyDiscount = async (code: string) => {
+    try {
+      const discount = await discountsApi.validateCode({
+        code,
+        cartTotal: totalPrice,
+        items: items.map(item => ({
+          productId: item.id.toString(),
+          variantId: item.variantId || '',
+          quantity: item.quantity,
+          price: item.price
+        }))
+      });
+
+      setAppliedDiscount(discount);
+      // Persist to localStorage
+      localStorage.setItem('humantee-discount', JSON.stringify(discount));
+    } catch (error) {
+      throw error; // Re-throw for component to handle
+    }
+  };
+
+  const removeDiscount = () => {
+    setAppliedDiscount(null);
+    localStorage.removeItem('humantee-discount');
+  };
+
+  // Calculate discounted total
+  const discountedTotal = appliedDiscount
+    ? Math.max(0, totalPrice - appliedDiscount.discountAmount)
+    : totalPrice;
+
+  // Load discount from localStorage on mount
+  useEffect(() => {
+    const savedDiscount = localStorage.getItem('humantee-discount');
+    if (savedDiscount) {
+      try {
+        setAppliedDiscount(JSON.parse(savedDiscount));
+      } catch (e) {
+        localStorage.removeItem('humantee-discount');
+      }
+    }
+  }, []);
+
+  // Re-validate discount when cart changes
+  useEffect(() => {
+    if (appliedDiscount && items.length > 0) {
+      // Silently re-validate discount
+      applyDiscount(appliedDiscount.code).catch(() => {
+        // If validation fails, remove the discount
+        removeDiscount();
+      });
+    }
+  }, [items.length, totalPrice]);
+
+  // Clear discount when cart is cleared
+  useEffect(() => {
+    if (items.length === 0 && appliedDiscount) {
+      removeDiscount();
+    }
+  }, [items.length]);
+
+  // Fetch discount suggestions
+  const fetchSuggestions = async () => {
+    if (items.length === 0) {
+      setSuggestions([]);
+      return;
+    }
+
+    setIsLoadingSuggestions(true);
+    try {
+      const suggestionsData = await discountsApi.getSuggestions({
+        code: '', // Not needed for suggestions
+        cartTotal: totalPrice,
+        items: items.map(item => ({
+          productId: item.id.toString(),
+          variantId: item.variantId || '',
+          quantity: item.quantity,
+          price: item.price
+        }))
+      });
+
+      setSuggestions(suggestionsData);
+
+      // Auto-apply best discount if no discount applied and user hasn't manually removed
+      if (!appliedDiscount && !hasManuallyRemoved && suggestionsData.length > 0) {
+        const best = suggestionsData.find(s => s.isBest);
+        if (best) {
+          try {
+            await applyDiscount(best.code);
+          } catch (error) {
+            console.error('Failed to auto-apply best discount:', error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch suggestions:', error);
+      setSuggestions([]);
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
+  };
+
+  // Fetch suggestions when cart changes
+  useEffect(() => {
+    if (items.length > 0) {
+      fetchSuggestions();
+    }
+  }, [items.length, totalPrice]);
+
+  // Update removeDiscount to mark as manually removed
+  const removeDiscountWithFlag = () => {
+    setAppliedDiscount(null);
+    setHasManuallyRemoved(true);
+    localStorage.removeItem('humantee-discount');
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -247,6 +379,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         totalPrice,
         getItemInCart,
         isLoading,
+        appliedDiscount,
+        applyDiscount,
+        removeDiscount: removeDiscountWithFlag,
+        discountedTotal,
+        suggestions,
+        fetchSuggestions,
+        isLoadingSuggestions,
       }}
     >
       {children}

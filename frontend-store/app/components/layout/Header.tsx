@@ -9,6 +9,7 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "@/app/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import AuthStatus, { AuthStatusMobile } from "./AuthStatus";
+import { settingsApi } from "@/lib/api/settings";
 
 function Header() {
   const { totalItems } = useCart();
@@ -16,6 +17,34 @@ function Header() {
   const ref = useRef<HTMLDivElement>(null);
   const { setHeaderHeight } = useHeaderContext();
   const [open, setOpen] = useState(false);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+
+  // Settings with fallback
+  const [settings, setSettings] = useState({
+    brand_name: "", // Empty until DB loads
+    logo_url: null as string | null,
+  });
+
+  // Fetch settings on mount
+  useEffect(() => {
+    settingsApi.getPublicSettings()
+      .then((data) => {
+        console.log('Header settings loaded:', data);
+        if (data && data['header-footer']) {
+          setSettings({
+            brand_name: data['header-footer'].brand_name || "",
+            logo_url: data['header-footer'].logo_url || null,
+          });
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to load header settings:', error);
+        // Fallback is already set in initial state
+      })
+      .finally(() => {
+        setSettingsLoaded(true); // Mark as loaded regardless of success/failure
+      });
+  }, []);
 
   // Sync header height to global CSS var
   useEffect(() => {
@@ -84,14 +113,28 @@ function Header() {
           href="/"
           onClick={(e) => e.stopPropagation()}
           className="
-            text-white font-bold uppercase tracking-[0.16em]
-            text-[18px] sm:text-[20px] md:text-[22px] lg:text-[24px]
-            select-none
+            flex items-center gap-3
             transition-all duration-300
-            hover:text-white/90
+            hover:opacity-90
           "
         >
-          HUMANTEE
+          {/* Logo + Brand Name */}
+          {settings.logo_url && settings.logo_url.trim() !== '' && (
+            <img
+              src={settings.logo_url}
+              alt={settings.brand_name}
+              className="h-[24px] sm:h-[26px] md:h-[28px] lg:h-[30px] w-auto"
+            />
+          )}
+
+          {/* Brand Text - Always show */}
+          <span className="
+            text-white font-bold uppercase tracking-[0.16em]
+            text-[18px] sm:text-[20px] md:text-[22px] lg:text-[24px]
+            select-none leading-none
+          ">
+            {settings.brand_name}
+          </span>
         </Link>
 
         {/* MIDDLE NAV (DESKTOP ONLY) - Shop, Orders, Contact */}

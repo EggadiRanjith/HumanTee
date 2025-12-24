@@ -5,8 +5,12 @@
 
 "use client";
 
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { settingsApi } from '@/lib/api/settings';
+import { calculateShipping, type ShippingZone } from '@/app/lib/utils/shippingCalculation';
+import { calculateTax, calculateTotal, type TaxSettings } from '@/app/lib/utils/taxCalculation';
 
 interface CartItem {
     id: number | string;
@@ -21,9 +25,53 @@ interface CartItem {
 interface OrderSummaryCheckoutProps {
     items: CartItem[];
     totalPrice: number;
+    pincode?: string; // Optional: only available after address selection
 }
 
-export function OrderSummaryCheckout({ items, totalPrice }: OrderSummaryCheckoutProps) {
+export function OrderSummaryCheckout({ items, totalPrice, pincode }: OrderSummaryCheckoutProps) {
+    const [zones, setZones] = useState<ShippingZone[]>([]);
+    const [taxSettings, setTaxSettings] = useState<TaxSettings>({
+        enabled: true,
+        rate: 18,
+        label: 'GST',
+        inclusive: false
+    });
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Fetch shipping zones and tax settings
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const data = await settingsApi.getPublicSettings();
+                if (data && data['shipping']) {
+                    if (data['shipping'].zones) {
+                        setZones(data['shipping'].zones);
+                    }
+                    if (data['shipping'].tax) {
+                        setTaxSettings(data['shipping'].tax);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load shipping settings:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchSettings();
+    }, []);
+
+    // Calculate shipping (only if pincode is provided)
+    const shipping = pincode && zones.length > 0
+        ? calculateShipping(pincode, totalPrice, zones)
+        : null;
+
+    // Calculate tax
+    const tax = calculateTax(totalPrice, taxSettings);
+
+    // Calculate final total
+    const finalTotal = calculateTotal(totalPrice, taxSettings, shipping?.cost || 0);
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -66,13 +114,36 @@ export function OrderSummaryCheckout({ items, totalPrice }: OrderSummaryCheckout
                         <span className="text-white/60">Subtotal</span>
                         <span className="text-white">₹{totalPrice.toFixed(2)}</span>
                     </div>
+
+                    {/* Shipping */}
                     <div className="flex justify-between text-xs sm:text-sm">
                         <span className="text-white/60">Shipping</span>
-                        <span className="text-white">Free</span>
+                        {isLoading ? (
+                            <span className="text-white/40 text-xs">Loading...</span>
+                        ) : shipping ? (
+                            shipping.isFree ? (
+                                <span className="text-green-400">FREE</span>
+                            ) : (
+                                <span className="text-white">₹{shipping.cost.toFixed(2)}</span>
+                            )
+                        ) : (
+                            <span className="text-white/40 text-xs">Calculated after address</span>
+                        )}
                     </div>
+
+                    {/* Tax */}
+                    <div className="flex justify-between text-xs sm:text-sm">
+                        <span className="text-white/60">Tax ({tax.label})</span>
+                        {tax.isInclusive ? (
+                            <span className="text-white/40 text-xs">Included in price</span>
+                        ) : (
+                            <span className="text-white">₹{tax.amount.toFixed(2)}</span>
+                        )}
+                    </div>
+
                     <div className="flex justify-between text-base sm:text-lg font-light pt-2 border-t border-white/10">
                         <span className="text-white">Total</span>
-                        <span className="text-white font-medium">₹{totalPrice.toFixed(2)}</span>
+                        <span className="text-white font-medium">₹{finalTotal.toFixed(2)}</span>
                     </div>
                 </div>
             </div>

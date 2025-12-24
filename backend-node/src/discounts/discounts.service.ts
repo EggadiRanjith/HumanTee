@@ -279,4 +279,146 @@ export class DiscountsService {
         });
         return this.usageRepository.save(usage);
     }
+
+    /**
+     * Get discount suggestions for a cart
+     * Returns all applicable discounts sorted by savings (best first)
+     */
+    async getSuggestions(cartTotal: number, items: any[], userId?: string) {
+        const now = new Date();
+
+        // Find all active discounts
+        const allDiscounts = await this.discountRepository.find({
+            where: {
+                isActive: true,
+                deletedAt: IsNull(),
+            },
+            relations: ['targetGroups'],
+        });
+
+        const suggestions: any[] = [];
+
+        for (const discount of allDiscounts) {
+            try {
+                // Check time window
+                if (discount.startDate && discount.startDate > now) continue;
+                if (discount.endDate && discount.endDate < now) continue;
+
+                // Check minimum order amount
+                if (discount.minOrderAmount && cartTotal < discount.minOrderAmount) continue;
+
+                // Check scope (products/collections)
+                if (discount.scope === DiscountScope.PRODUCT) {
+                    const matches = await this.checkItemMatchForSuggestions(items, discount.targetGroups);
+                    if (!matches) continue;
+                }
+
+                // Check global usage limit
+                if (discount.globalUsageLimit) {
+                    const totalUses = await this.usageRepository.count({
+                        where: { discountId: discount.id }
+                    });
+                    if (totalUses >= discount.globalUsageLimit) continue;
+                }
+
+                // Check user-specific limits (if user provided)
+                if (userId) {
+                    // Check audience restrictions
+                    if (discount.audience && discount.audience !== DiscountAudience.ALL) {
+                        try {
+                            await this.evaluateAudience(discount, userId);
+                        } catch (error) {
+                            continue; // Skip if not eligible
+                        }
+                    }
+
+                    // Check per-user usage limit
+                    if (discount.perUserLimit) {
+                        const userUses = await this.usageRepository.count({
+                            where: { discountId: discount.id, userId }
+                        });
+                        if (userUses >= discount.perUserLimit) continue;
+                    }
+                }
+
+                // Calculate savings
+                const savings = this.calculateDiscountAmount(discount, cartTotal);
+
+                suggestions.push({
+                    id: discount.id,
+                    code: discount.code,
+                    name: discount.name,
+                    type: discount.type,
+                    value: discount.value,
+                    savings: savings,
+                    description: discount.description || '',
+                    expiresAt: discount.endDate,
+                    scope: discount.scope,
+                    minOrderAmount: discount.minOrderAmount,
+                });
+            } catch (error) {
+                // Skip discounts that cause errors
+                continue;
+            }
+        }
+
+        // Sort by savings (descending), then by expiry (soonest first)
+        suggestions.sort((a, b) => {
+            // Primary: highest savings
+            if (b.savings !== a.savings) {
+                return b.savings - a.savings;
+            }
+
+            // Secondary: expiring soonest (if both have expiry)
+            if (a.expiresAt && b.expiresAt) {
+                return new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime();
+            }
+
+            // Tertiary: with expiry before without
+            if (a.expiresAt && !b.expiresAt) return -1;
+            if (!a.expiresAt && b.expiresAt) return 1;
+
+            return 0;
+        });
+
+        // Mark the best discount
+        if (suggestions.length > 0) {
+            suggestions[0].isBest = true;
+        }
+
+        return {
+            suggestions,
+            count: suggestions.length,
+        };
+    }
+
+    /**
+     * Helper: Calculate discount amount
+     */
+    private calculateDiscountAmount(discount: Discount, cartTotal: number): number {
+        if (discount.type === DiscountType.PERCENT) {
+            return Math.round((cartTotal * discount.value) / 100);
+        } else {
+            return Math.min(discount.value, cartTotal); // Can't discount more than cart total
+        }
+    }
+
+    /**
+     * Helper: Check if items match discount scope (for suggestions only)
+     */
+    private async checkItemMatchForSuggestions(items: any[], targets: DiscountTargetGroup[]): Promise<boolean> {
+        if (!targets || targets.length === 0) return true; // GLOBAL scope
+
+        for (const item of items) {
+            for (const target of targets) {
+                if (target.groupType === DiscountGroupType.PRODUCT) {
+                    if (item.productId === target.groupValueUuid) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
 }

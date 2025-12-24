@@ -38,3 +38,48 @@ export class DiscountsController {
         return this.discountsService.delete(id);
     }
 }
+
+// Public discount endpoints (no auth required)
+@Controller('discounts')
+export class PublicDiscountsController {
+    constructor(private readonly discountsService: DiscountsService) { }
+
+    @Post('validate')
+    async validateCode(@Body() data: any) {
+        try {
+            const discount = await this.discountsService.validateCode(data.code, data.userId, data.cartTotal, data.items);
+
+            // Calculate discount amount
+            let discountAmount = 0;
+            if (discount.type === 'PERCENT') {
+                discountAmount = Math.round((data.cartTotal * discount.value) / 100);
+            } else {
+                discountAmount = Math.min(discount.value, data.cartTotal);
+            }
+
+            return {
+                valid: true,
+                discount: {
+                    id: discount.id,
+                    code: discount.code,
+                    name: discount.name,
+                    type: discount.type,
+                    value: discount.value,
+                    discountAmount,
+                    finalTotal: data.cartTotal - discountAmount
+                }
+            };
+        } catch (error) {
+            return {
+                valid: false,
+                error: error.name,
+                message: error.message
+            };
+        }
+    }
+
+    @Post('suggestions')
+    async getSuggestions(@Body() data: any) {
+        return this.discountsService.getSuggestions(data.cartTotal, data.items, data.userId);
+    }
+}

@@ -219,8 +219,8 @@ export default function ShippingPage() {
                                                 key={addr.id}
                                                 onClick={() => setSelectedAddressId(addr.id)}
                                                 className={`p-4 rounded-lg cursor-pointer transition-all ${selectedAddressId === addr.id
-                                                        ? 'border-2 border-white bg-white/5'
-                                                        : 'border border-white/10 hover:border-white/30'
+                                                    ? 'border-2 border-white bg-white/5'
+                                                    : 'border border-white/10 hover:border-white/30'
                                                     }`}
                                             >
                                                 <div className="flex items-start justify-between">
@@ -292,7 +292,11 @@ export default function ShippingPage() {
                         </motion.div>
 
                         {/* Order Summary */}
-                        <OrderSummaryCheckout items={items} totalPrice={totalPrice} />
+                        <OrderSummaryCheckout
+                            items={items}
+                            totalPrice={totalPrice}
+                            pincode={addresses.find(addr => addr.id === selectedAddressId)?.postalCode}
+                        />
                     </div>
                 </div>
             </div>

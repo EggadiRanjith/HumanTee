@@ -1,224 +1,197 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not } from 'typeorm';
-import { SettingsHistory } from './entities/settings-history.entity';
-import { SettingsValidator } from './settings.validator';
-import { StoreSettings } from './settings.types';
-import { AuditService } from '../audit/audit.service';
-import { AuditEventType, AuditEntityType } from '../audit/audit-event.enum';
+import { Repository, EntityManager } from 'typeorm';
+import { Setting } from '../entities/setting.entity';
+import { SettingHistory } from '../entities/setting-history.entity';
+import { SettingsVersion } from '../entities/settings-version.entity';
 
-/**
- * Settings Service
- * Manages store configuration with validation and rollback
- * CRITICAL: Prevents production outages from bad configs
- */
 @Injectable()
 export class SettingsService {
     constructor(
-        @InjectRepository(SettingsHistory)
-        private readonly settingsHistoryRepo: Repository<SettingsHistory>,
-        private readonly validator: SettingsValidator,
-        private readonly auditService: AuditService,
+        @InjectRepository(Setting)
+        private readonly settingRepository: Repository<Setting>,
+        @InjectRepository(SettingHistory)
+        private readonly historyRepository: Repository<SettingHistory>,
+        @InjectRepository(SettingsVersion)
+        private readonly versionRepository: Repository<SettingsVersion>,
+        private readonly entityManager: EntityManager,
     ) { }
 
     /**
-     * Get current active settings
+     * Get all settings for a section
      */
-    async getActiveSettings(): Promise<StoreSettings> {
-        const active = await this.settingsHistoryRepo.findOne({
-            where: { is_active: true },
-            order: { created_at: 'DESC' },
+    async getSection(section: string, environment: string = 'production'): Promise<Record<string, any>> {
+        const settings = await this.settingRepository.find({
+            where: {
+                section,
+                environment,
+                isActive: true,
+                isPublished: true,
+            }
         });
 
-        if (!active) {
-            throw new NotFoundException('No active settings found');
-        }
-
-        return active.settings;
+        // Convert to object, removing section prefix from keys
+        return settings.reduce((acc, setting) => {
+            const shortKey = setting.key.replace(`${section}.`, '');
+            acc[shortKey] = setting.value;
+            return acc;
+        }, {});
     }
 
     /**
-     * Update settings with validation and rollback support
-     * CRITICAL: This is the safe way to change settings
+     * Update section settings (ATOMIC with validation and history)
      */
-    async updateSettings(
-        adminId: string,
-        adminEmail: string,
-        newSettings: StoreSettings,
-        notes?: string,
-        ipAddress?: string,
-        userAgent?: string,
-    ): Promise<SettingsHistory> {
-        // 1. Get current settings
-        const currentSettings = await this.getActiveSettings();
+    async updateSection(
+        section: string,
+        data: Record<string, any>,
+        userId?: string,
+        reason?: string,
+        environment: string = 'production'
+    ): Promise<void> {
+        // Run in atomic transaction
+        await this.entityManager.transaction(async (manager) => {
+            for (const [shortKey, value] of Object.entries(data)) {
+                const fullKey = `${section}.${shortKey}`;
 
-        // 2. Validate new settings
-        const validation = await this.validator.validate(newSettings);
-        if (!validation.valid) {
-            throw new BadRequestException({
-                message: 'Settings validation failed',
-                errors: validation.errors,
-            });
-        }
+                // Find existing setting
+                const existing = await manager.findOne(Setting, {
+                    where: {
+                        key: fullKey,
+                        environment,
+                        isActive: true
+                    }
+                });
 
-        // 3. Test configuration
-        const test = await this.validator.testConfiguration(newSettings);
-        if (!test.success) {
-            throw new BadRequestException({
-                message: 'Settings test failed',
-                error: test.error,
-                details: test.details,
-            });
-        }
+                if (existing) {
+                    // Save old value to history BEFORE updating
+                    await manager.insert(SettingHistory, {
+                        settingId: existing.id,
+                        key: existing.key,
+                        value: existing.value,
+                        environment: existing.environment,
+                        changedBy: userId,
+                        changeReason: reason,
+                        previousVersion: existing.version,
+                    });
 
-        // 4. Calculate diff
-        const diff = this.validator.getDiff(currentSettings, newSettings);
+                    // OPTIMISTIC LOCKING: Update only if version matches
+                    const result = await manager.update(
+                        Setting,
+                        {
+                            id: existing.id,
+                            version: existing.version,
+                        },
+                        {
+                            value,
+                            version: existing.version + 1,
+                            updatedAt: new Date(),
+                        }
+                    );
 
-        // 5. Save to history
-        const newHistory = this.settingsHistoryRepo.create({
-            admin_id: adminId,
-            settings: newSettings,
-            is_active: true,
-            validation_passed: true,
-            test_passed: true,
-            notes,
+                    // Check if update succeeded (version conflict detection)
+                    if (result.affected === 0) {
+                        throw new ConflictException(
+                            `Setting "${fullKey}" was modified by another process. Please refresh and try again.`
+                        );
+                    }
+                } else {
+                    // Create new setting
+                    await manager.insert(Setting, {
+                        key: fullKey,
+                        value,
+                        environment,
+                    });
+                }
+            }
         });
 
-        const saved = await this.settingsHistoryRepo.save(newHistory);
-
-        // 6. Deactivate previous settings
-        await this.settingsHistoryRepo.update(
-            {
-                is_active: true,
-                id: Not(saved.id),
-            },
-            { is_active: false },
-        );
-
-        // 7. Log to audit
-        await this.auditService.log({
-            adminId,
-            adminEmail,
-            eventType: AuditEventType.SETTINGS_UPDATED,
-            entityType: AuditEntityType.SETTINGS,
-            entityId: saved.id,
-            before: currentSettings,
-            after: newSettings,
-            ipAddress,
-            userAgent,
-        });
-
-        return saved;
+        // Cache invalidates automatically via database trigger
     }
 
     /**
-     * Rollback to a previous settings version
-     * CRITICAL: Recovery mechanism for bad configs
+     * Get setting history
      */
-    async rollback(
-        adminId: string,
-        adminEmail: string,
-        historyId: string,
-        ipAddress?: string,
-        userAgent?: string,
-    ): Promise<SettingsHistory> {
-        // 1. Get the history record
-        const history = await this.settingsHistoryRepo.findOne({
-            where: { id: historyId },
-        });
-
-        if (!history) {
-            throw new NotFoundException('Settings history not found');
-        }
-
-        // 2. Get current settings for audit
-        const currentSettings = await this.getActiveSettings();
-
-        // 3. Re-validate (in case validation rules changed)
-        const validation = await this.validator.validate(history.settings);
-        if (!validation.valid) {
-            throw new BadRequestException({
-                message: 'Cannot rollback: settings no longer valid',
-                errors: validation.errors,
-            });
-        }
-
-        // 4. Create new history entry (rollback is a new version)
-        const rollbackHistory = this.settingsHistoryRepo.create({
-            admin_id: adminId,
-            settings: history.settings,
-            is_active: true,
-            validation_passed: true,
-            test_passed: true,
-            notes: `Rollback to version ${historyId}`,
-        });
-
-        const saved = await this.settingsHistoryRepo.save(rollbackHistory);
-
-        // 5. Deactivate current
-        await this.settingsHistoryRepo.update(
-            {
-                is_active: true,
-                id: Not(saved.id),
-            },
-            { is_active: false },
-        );
-
-        // 6. Log to audit
-        await this.auditService.log({
-            adminId,
-            adminEmail,
-            eventType: AuditEventType.SETTINGS_UPDATED,
-            entityType: AuditEntityType.SETTINGS,
-            entityId: saved.id,
-            before: currentSettings,
-            after: history.settings,
-            ipAddress,
-            userAgent,
-        });
-
-        return saved;
-    }
-
-    /**
-     * Get settings history
-     */
-    async getHistory(limit: number = 50): Promise<SettingsHistory[]> {
-        return this.settingsHistoryRepo.find({
-            order: { created_at: 'DESC' },
+    async getHistory(key: string, environment: string = 'production', limit: number = 10): Promise<SettingHistory[]> {
+        return this.historyRepository.find({
+            where: { key, environment },
+            order: { changedAt: 'DESC' },
             take: limit,
-            relations: ['admin'],
         });
     }
 
     /**
-     * Get specific history version
+     * Rollback to previous version
      */
-    async getHistoryVersion(id: string): Promise<SettingsHistory> {
-        const history = await this.settingsHistoryRepo.findOne({
-            where: { id },
-            relations: ['admin'],
+    async rollback(historyId: string, userId: string): Promise<void> {
+        await this.entityManager.transaction(async (manager) => {
+            // Find history entry
+            const history = await manager.findOne(SettingHistory, {
+                where: { id: historyId }
+            });
+
+            if (!history) {
+                throw new NotFoundException('History entry not found');
+            }
+
+            // Find current setting
+            const setting = await manager.findOne(Setting, {
+                where: {
+                    key: history.key,
+                    environment: history.environment,
+                    isActive: true
+                }
+            });
+
+            if (setting) {
+                // Save current state to history
+                await manager.insert(SettingHistory, {
+                    settingId: setting.id,
+                    key: setting.key,
+                    value: setting.value,
+                    environment: setting.environment,
+                    changedBy: userId,
+                    changeReason: `Rollback to version from ${history.changedAt}`,
+                    previousVersion: setting.version,
+                });
+
+                // Restore old value
+                await manager.update(
+                    Setting,
+                    { id: setting.id },
+                    {
+                        value: history.value,
+                        version: setting.version + 1,
+                    }
+                );
+            }
         });
-
-        if (!history) {
-            throw new NotFoundException('Settings history not found');
-        }
-
-        return history;
     }
 
     /**
-     * Preview settings diff
-     * Shows what will change without applying
+     * Get global version (for cache invalidation)
      */
-    async previewChanges(newSettings: StoreSettings): Promise<{
-        diff: Record<string, { from: any; to: any }>;
-        validation: { valid: boolean; errors: string[] };
-    }> {
-        const currentSettings = await this.getActiveSettings();
-        const diff = this.validator.getDiff(currentSettings, newSettings);
-        const validation = await this.validator.validate(newSettings);
+    async getGlobalVersion(): Promise<number> {
+        const version = await this.versionRepository.findOne({
+            where: { id: 1 }
+        });
+        return version?.version || 1;
+    }
 
-        return { diff, validation };
+    /**
+     * Get all settings (for export/debugging)
+     */
+    async getAll(environment: string = 'production'): Promise<Record<string, any>> {
+        const settings = await this.settingRepository.find({
+            where: {
+                environment,
+                isActive: true,
+                isPublished: true,
+            }
+        });
+
+        return settings.reduce((acc, setting) => {
+            acc[setting.key] = setting.value;
+            return acc;
+        }, {});
     }
 }

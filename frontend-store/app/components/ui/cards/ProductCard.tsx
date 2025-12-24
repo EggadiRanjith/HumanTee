@@ -10,7 +10,7 @@
 
 import Link from 'next/link';
 import { memo, useRef } from 'react';
-import { m, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { Product } from '@/app/types/product.types';
 import { Badge, StockIndicator } from '@/app/components/ui/primitives';
 import { SafeImage } from '@/app/components/ui/primitives/SafeImage';
@@ -64,7 +64,7 @@ const ProductCard = ({
 
     return (
         <div className={`group relative ${className}`}>
-            <m.div
+            <motion.div
                 ref={ref}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
@@ -133,7 +133,7 @@ const ProductCard = ({
                         </button>
                     </div>
                 </Link>
-            </m.div>
+            </motion.div>
 
             {/* Product Info */}
             <div className="mt-3 sm:mt-4 text-center">

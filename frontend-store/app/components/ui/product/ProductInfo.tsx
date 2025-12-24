@@ -18,6 +18,7 @@ import { QuantitySelector } from './QuantitySelector';
 import { ProductDetails } from './ProductDetails';
 import { SizeGuide } from '@/app/components/ui/modals/SizeGuide';
 import { FiInfo } from 'react-icons/fi';
+import { settingsApi } from '@/lib/api/settings';
 
 // Dynamic import to prevent SSR issues
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
@@ -35,6 +36,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
     const [addedToCart, setAddedToCart] = useState(false);
     const [cartAnimation, setCartAnimation] = useState<any>(null);
     const [showSizeGuide, setShowSizeGuide] = useState(false);
+    const [pageSettings, setPageSettings] = useState<any>(null);
     const { addToCart, getItemInCart } = useCart();
     const { showToast } = useToast();
 
@@ -44,6 +46,15 @@ export function ProductInfo({ product }: ProductInfoProps) {
             .then(res => res.json())
             .then(data => setCartAnimation(data))
             .catch(err => console.error("Failed to load Lottie animation", err));
+
+        // Fetch page settings
+        settingsApi.getPublicSettings()
+            .then(data => {
+                if (data && data['product-info']) {
+                    setPageSettings(data['product-info']);
+                }
+            })
+            .catch(err => console.error("Failed to load product info settings", err));
     }, []);
 
     const handleAddToCart = async () => {
@@ -241,6 +252,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
             <ProductDetails
                 description={product.description}
                 details={product.details}
+                pageSettings={pageSettings}
             />
 
             {/* Size Guide Modal */}

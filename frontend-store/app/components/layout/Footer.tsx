@@ -7,15 +7,59 @@ import { motion } from "framer-motion";
 import { useState, useRef, useEffect, memo } from "react";
 import ScrollingText from "./ScrollingText";
 import { useMediaQuery } from "@/app/hooks/useMediaQuery";
+import { settingsApi } from "@/lib/api/settings";
 
 function Footer() {
   const [shopOpen, setShopOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
   const isDesktop = useMediaQuery('(min-width: 1024px)');
 
   const shopRef = useRef<HTMLDivElement | null>(null);
   const supportRef = useRef<HTMLDivElement | null>(null);
   const pathname = usePathname();
+
+  // Settings - empty until DB loads
+  const [settings, setSettings] = useState({
+    brand_name: "",
+    tagline: "",
+    social_links: {
+      instagram: "",
+      maps: ""
+    },
+    contact: {
+      email: "",
+      phone: ""
+    }
+  });
+
+  // Fetch settings on mount
+  useEffect(() => {
+    settingsApi.getPublicSettings()
+      .then((data) => {
+        if (data && data['header-footer']) {
+          const hf = data['header-footer'];
+          setSettings({
+            brand_name: hf.brand_name || "",
+            tagline: hf.tagline || "",
+            social_links: hf.social_links || {
+              instagram: "",
+              maps: ""
+            },
+            contact: hf.contact || {
+              email: "",
+              phone: ""
+            }
+          });
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to load footer settings:', error);
+      })
+      .finally(() => {
+        setSettingsLoaded(true);
+      });
+  }, []);
 
   useEffect(() => {
     setShopOpen(false);
@@ -99,11 +143,11 @@ function Footer() {
               className="text-[14px] text-white tracking-[0.15em] uppercase font-semibold"
               style={{ fontFamily: "var(--font-tan-pearl)" }}
             >
-              HUMANTEE
+              {settings.brand_name}
             </h2>
 
             <p className="text-white/60 text-[12px] leading-relaxed max-w-xs">
-              A luxury shopping experience crafted with minimalist precision.
+              {settings.tagline}
             </p>
 
             <div className="flex flex-wrap items-center gap-6 mt-4 sm:mt-2 justify-center sm:justify-start">
@@ -114,7 +158,7 @@ function Footer() {
                 </span>
 
                 <Link
-                  href="https://www.instagram.com/humanteeofficial/"
+                  href={settings.social_links.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="
@@ -138,7 +182,7 @@ function Footer() {
                 </span>
 
                 <Link
-                  href="https://maps.google.com"
+                  href={settings.social_links.maps}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="
@@ -235,7 +279,7 @@ function Footer() {
       <div className="relative w-full bg-brand-bg border-t border-white/10">
         <div className="max-w-screen-xl mx-auto py-4 text-center">
           <p className="text-white/50 text-[11px] tracking-[0.2em]">
-            © {new Date().getFullYear()} HUMANTEE
+            © {new Date().getFullYear()} {settings.brand_name}
           </p>
         </div>
       </div>

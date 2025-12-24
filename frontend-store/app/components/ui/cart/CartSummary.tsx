@@ -7,14 +7,19 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import type { AppliedDiscount } from '@/app/types/discount.types';
 
 interface CartSummaryProps {
     subtotal: number;
     totalItems: number;
     onCheckout: () => void;
+    discount?: AppliedDiscount | null;
+    total?: number;
 }
 
-export function CartSummary({ subtotal, totalItems, onCheckout }: CartSummaryProps) {
+export function CartSummary({ subtotal, totalItems, onCheckout, discount, total }: CartSummaryProps) {
+    const finalTotal = total !== undefined ? total : subtotal;
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -35,12 +40,23 @@ export function CartSummary({ subtotal, totalItems, onCheckout }: CartSummaryPro
                     <span className="text-white/60">Subtotal</span>
                     <span className="text-white">₹{subtotal.toFixed(2)}</span>
                 </div>
+
+                {discount && (
+                    <div className="flex justify-between text-sm">
+                        <span className="text-green-400 flex items-center gap-1">
+                            Discount ({discount.code})
+                            <span className="text-[10px]">✨</span>
+                        </span>
+                        <span className="text-green-400">-₹{discount.discountAmount.toFixed(2)}</span>
+                    </div>
+                )}
+
                 <div className="flex justify-between text-sm">
                     <span className="text-white/60">Shipping</span>
-                    <span className="text-white">Free</span>
+                    <span className="text-white/40 text-xs">Enter address to calculate</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                    <span className="text-white/60">Tax</span>
+                    <span className="text-white/60">Tax (GST)</span>
                     <span className="text-white">Calculated at checkout</span>
                 </div>
             </div>
@@ -49,8 +65,16 @@ export function CartSummary({ subtotal, totalItems, onCheckout }: CartSummaryPro
 
             <div className="flex justify-between mb-6">
                 <span className="text-white text-lg font-light">Total</span>
-                <span className="text-white text-xl font-light">₹{subtotal.toFixed(2)}</span>
+                <span className="text-white text-xl font-light">₹{finalTotal.toFixed(2)}</span>
             </div>
+
+            {discount && (
+                <div className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                    <p className="text-green-400 text-xs text-center">
+                        🎉 You're saving ₹{discount.discountAmount.toFixed(2)}!
+                    </p>
+                </div>
+            )}
 
             <button
                 onClick={onCheckout}

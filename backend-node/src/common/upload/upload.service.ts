@@ -52,6 +52,44 @@ export class UploadService {
     }
 
     /**
+     * Upload video to Cloudinary
+     * @param file - File buffer from multer
+     * @param folder - Cloudinary folder (e.g., 'videos')
+     * @returns Cloudinary URL and public ID
+     */
+    async uploadVideo(
+        file: Buffer,
+        folder: string = 'videos',
+    ): Promise<{ url: string; publicId: string }> {
+        return new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                    folder,
+                    resource_type: 'video',
+                    transformation: [
+                        { quality: 'auto:good' }, // Auto quality optimization
+                        { fetch_format: 'auto' }, // Auto format
+                    ],
+                },
+                (error, result) => {
+                    if (error) {
+                        reject(error);
+                    } else if (!result) {
+                        reject(new Error('Video upload failed: No result returned'));
+                    } else {
+                        resolve({
+                            url: result.secure_url,
+                            publicId: result.public_id,
+                        });
+                    }
+                },
+            );
+
+            uploadStream.end(file);
+        });
+    }
+
+    /**
      * Delete image from Cloudinary
      * @param publicId - Cloudinary public ID
      */

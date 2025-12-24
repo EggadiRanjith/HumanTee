@@ -6,7 +6,7 @@ import { DiscountUsage } from '../entities/discount-usage.entity';
 import { OrderDiscount } from '../entities/order-discount.entity';
 import { Order } from '../orders/entities/order.entity';
 import { DiscountsService } from './discounts.service';
-import { DiscountsController } from './discounts.controller';
+import { DiscountsController, PublicDiscountsController } from './discounts.controller';
 
 @Module({
     imports: [
@@ -19,7 +19,7 @@ import { DiscountsController } from './discounts.controller';
         ]),
     ],
     providers: [DiscountsService],
-    controllers: [DiscountsController],
+    controllers: [DiscountsController, PublicDiscountsController],
     exports: [DiscountsService],
 })
 export class DiscountsModule { }

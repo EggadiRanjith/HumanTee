@@ -16,6 +16,7 @@ import { ProtectedController } from './protected/protected.controller';
 import { UploadModule } from './common/upload/upload.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { DiscountsModule } from './discounts/discounts.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { DiscountsModule } from './discounts/discounts.module';
     UploadModule,
     TicketsModule,
     DiscountsModule,
+    SettingsModule,
   ],
   controllers: [AppController, ProtectedController],
   providers: [AppService],

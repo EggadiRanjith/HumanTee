@@ -1,16 +1,22 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { SettingsController } from './settings.controller';
+import { PublicSettingsController } from './public-settings.controller';
 import { SettingsService } from './settings.service';
-import { SettingsValidator } from './settings.validator';
-import { SettingsHistory } from './entities/settings-history.entity';
-import { AuditModule } from '../audit/audit.module';
+import { Setting } from '../entities/setting.entity';
+import { SettingHistory } from '../entities/setting-history.entity';
+import { SettingsVersion } from '../entities/settings-version.entity';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([SettingsHistory]),
-        AuditModule,
+        TypeOrmModule.forFeature([
+            Setting,
+            SettingHistory,
+            SettingsVersion,
+        ]),
     ],
-    providers: [SettingsService, SettingsValidator],
-    exports: [SettingsService, SettingsValidator],
+    controllers: [SettingsController, PublicSettingsController],
+    providers: [SettingsService],
+    exports: [SettingsService],
 })
 export class SettingsModule { }

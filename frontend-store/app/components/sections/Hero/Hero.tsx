@@ -83,7 +83,21 @@ const HolographicButton = memo(({ text }: { text: string }) => {
   );
 });
 
-const Hero = () => {
+interface HeroProps {
+  slides?: HeroSlide[];
+}
+
+const Hero = ({ slides: propSlides }: HeroProps = {}) => {
+  // Debug logging
+  console.log('🎬 Hero received propSlides:', propSlides);
+  console.log('🎬 Hero propSlides length:', propSlides?.length);
+
+  // Use prop slides if provided, otherwise fall back to hardcoded data
+  const slides = propSlides && propSlides.length > 0 ? propSlides : heroSlides;
+
+  console.log('🎬 Hero using slides:', slides === propSlides ? 'DYNAMIC' : 'HARDCODED');
+  console.log('🎬 First slide:', slides[0]);
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [videoHasPlayed, setVideoHasPlayed] = useState(false);
   const [videoError, setVideoError] = useState(false);
@@ -112,16 +126,18 @@ const Hero = () => {
           setVideoHasPlayed(true);
           return 1;
         }
-        // After video has played, alternate between banner1 (index 1) and banner2 (index 2)
+        // After video has played, cycle through all remaining slides (excluding video at index 0)
         if (videoHasPlayed) {
-          return prevIndex === 1 ? 2 : 1;
+          const nextIndex = prevIndex + 1;
+          // If we've reached the end, go back to slide 1 (skip video at 0)
+          return nextIndex >= slides.length ? 1 : nextIndex;
         }
         return prevIndex;
       });
     }, HERO_SLIDE_INTERVAL);
 
     return () => clearInterval(interval);
-  }, [videoHasPlayed]);
+  }, [videoHasPlayed, slides.length]);
 
   return (
     <section
@@ -130,10 +146,10 @@ const Hero = () => {
     >
       {/* Media layers - crossfade transition with zoom effects */}
       {/* Only render current and next slide for performance */}
-      {heroSlides.map((slide, index) => {
+      {slides.map((slide, index) => {
         // Only render visible slides after video has played to save memory
         const isCurrentSlide = index === currentImageIndex;
-        const isNextSlide = index === (currentImageIndex + 1) % heroSlides.length;
+        const isNextSlide = index === (currentImageIndex + 1) % slides.length;
         const isVisible = isCurrentSlide || isNextSlide || !videoHasPlayed;
 
         if (!isVisible) return null;
@@ -215,7 +231,7 @@ const Hero = () => {
       })}
 
       {/* Content layers - synchronized crossfade transition */}
-      {heroSlides.map((slide, index) => (
+      {slides.map((slide, index) => (
         <motion.div
           key={`content-${index}`}
           initial={{ opacity: index === 0 ? 1 : 0 }}

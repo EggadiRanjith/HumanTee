@@ -57,4 +57,50 @@ export class UploadController {
             throw error;
         }
     }
+
+    /**
+     * Upload single video to Cloudinary
+     * POST /upload/video
+     */
+    @Post('video')
+    @UseInterceptors(FileInterceptor('file'))
+    async uploadVideo(
+        @UploadedFile() file: Express.Multer.File,
+    ): Promise<{ url: string; publicId: string }> {
+        console.log('Video upload request received:', {
+            hasFile: !!file,
+            mimetype: file?.mimetype,
+            size: file?.size,
+        });
+
+        if (!file) {
+            console.error('No file provided');
+            throw new BadRequestException('No file provided');
+        }
+
+        // Validate file type
+        const allowedMimeTypes = ['video/mp4', 'video/webm', 'video/quicktime'];
+        if (!allowedMimeTypes.includes(file.mimetype)) {
+            console.error('Invalid file type:', file.mimetype);
+            throw new BadRequestException(
+                'Invalid file type. Only MP4, WebM, and MOV are allowed.',
+            );
+        }
+
+        // Validate file size (max 50MB for videos)
+        const maxSize = 50 * 1024 * 1024; // 50MB
+        if (file.size > maxSize) {
+            console.error('File too large:', file.size);
+            throw new BadRequestException('File size exceeds 50MB limit');
+        }
+
+        try {
+            const result = await this.uploadService.uploadVideo(file.buffer, 'videos');
+            console.log('Video upload successful:', result.url);
+            return result;
+        } catch (error) {
+            console.error('Cloudinary video upload failed:', error);
+            throw error;
+        }
+    }
 }

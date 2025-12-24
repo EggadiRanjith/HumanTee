@@ -271,8 +271,9 @@ export default function AccountPage() {
 
         try {
             if (editingAddressId) {
-                // Update existing address
-                const response = await apiClient.patch(`/shipping-addresses/${editingAddressId}`, addressForm);
+                // Update existing address - exclude id and isDefault from payload
+                const { id, isDefault, ...addressData } = addressForm;
+                const response = await apiClient.patch(`/shipping-addresses/${editingAddressId}`, addressData);
                 setShippingAddresses(prev =>
                     prev.map(addr => addr.id === editingAddressId ? { ...response.data } : addr)
                 );

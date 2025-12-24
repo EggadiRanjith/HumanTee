@@ -9,7 +9,13 @@
 import { memo } from "react";
 import { bannerMessages } from '@/app/data/banner-messages.data';
 
-const ScrollingBanner = () => {
+interface ScrollingBannerProps {
+  messages?: string[];
+}
+
+const ScrollingBanner = ({ messages: propMessages }: ScrollingBannerProps = {}) => {
+  // Use prop messages if provided, otherwise fall back to hardcoded data
+  const messages = propMessages && propMessages.length > 0 ? propMessages : bannerMessages;
   return (
     <section className="relative w-full py-3 xs:py-4 overflow-hidden bg-white border-y border-gray-200">
       {/* Gradient overlays for smooth fade effect - Mobile optimized */}
@@ -20,7 +26,7 @@ const ScrollingBanner = () => {
       <div className="relative flex items-center">
         <div className="flex whitespace-nowrap animate-marquee">
           {/* Render messages twice for seamless loop */}
-          {[...bannerMessages, ...bannerMessages].map((message, index) => (
+          {[...messages, ...messages].map((message, index) => (
             <div
               key={index}
               className="inline-flex items-center px-6 xs:px-8 text-[10px] xs:text-[11px] uppercase tracking-[0.25em] xs:tracking-[0.3em] text-gray-800 font-light"

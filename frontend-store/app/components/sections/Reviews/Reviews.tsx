@@ -12,8 +12,18 @@ import { ReviewCard } from '@/app/components/ui/cards';
 import { SectionHeader } from '@/app/components/ui/layout';
 import { customerReviews } from '@/app/data/reviews.data';
 
+interface ReviewsProps {
+  reviews?: any[];
+  enabled?: boolean;
+}
 
-function Reviews() {
+function Reviews({ reviews: propReviews, enabled = true }: ReviewsProps = {}) {
+  // Return null if reviews section is disabled
+  if (!enabled) return null;
+
+  // Use prop reviews if provided, otherwise fall back to hardcoded data
+  const reviews = propReviews && propReviews.length > 0 ? propReviews : customerReviews;
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [isUserInteracting, setIsUserInteracting] = useState(false);
@@ -21,7 +31,7 @@ function Reviews() {
   const animationFrameRef = useRef<number | null>(null);
 
   // Duplicate reviews twice to ensure full width coverage
-  const duplicated = [...customerReviews, ...customerReviews];
+  const duplicated = [...reviews, ...reviews];
 
   // Animation Loop
   const animate = () => {

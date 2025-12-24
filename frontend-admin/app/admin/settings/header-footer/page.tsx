@@ -1,22 +1,95 @@
 /**
  * Header & Footer Settings
- * Edit brand name and footer content
+ * Edit brand name, logo, and footer content
  */
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FiArrowLeft } from 'react-icons/fi';
+import { FiArrowLeft, FiUpload, FiX, FiSave } from 'react-icons/fi';
+import { settingsApi } from '@/lib/api/settings';
+import { useCloudinaryUpload } from '@/hooks/useCloudinaryUpload';
 
 export default function HeaderFooterSettings() {
+    const [formData, setFormData] = useState({
+        brand_name: '',
+        logo_url: '',
+        tagline: '',
+        social_links: {
+            instagram: '',
+            maps: ''
+        },
+        contact: {
+            email: '',
+            phone: ''
+        },
+        scrolling_text: ''
+    });
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
+    const { upload, uploading, error: uploadError } = useCloudinaryUpload();
 
+    // Load settings on mount
+    useEffect(() => {
+        settingsApi.getSection('header-footer')
+            .then(data => {
+                setFormData({
+                    brand_name: data.brand_name || '',
+                    logo_url: data.logo_url || '',
+                    tagline: data.tagline || '',
+                    social_links: data.social_links || { instagram: '', maps: '' },
+                    contact: data.contact || { email: '', phone: '' },
+                    scrolling_text: data.scrolling_text || ''
+                });
+            })
+            .catch(error => console.error('Failed to load settings:', error))
+            .finally(() => setIsLoading(false));
+    }, []);
+
+    // Handle logo upload
+    const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const url = await upload(file, {
+            maxSize: 5 * 1024 * 1024, // 5MB
+            allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml']
+        });
+
+        if (url) {
+            setFormData(prev => ({ ...prev, logo_url: url }));
+        }
+    };
+
+    // Remove logo
+    const handleRemoveLogo = () => {
+        setFormData(prev => ({ ...prev, logo_url: '' }));
+    };
+
+    // Save all settings
     const handleSave = async () => {
         setIsSaving(true);
-        // TODO: Save to backend
-        setTimeout(() => setIsSaving(false), 1000);
+        try {
+            await settingsApi.saveSection('header-footer', formData);
+            setIsEditing(false); // Exit edit mode after save
+            alert('Settings saved successfully!');
+        } catch (error) {
+            console.error('Save failed:', error);
+            alert('Failed to save settings');
+        } finally {
+            setIsSaving(false);
+        }
     };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-gray-600">Loading settings...</div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
@@ -31,11 +104,43 @@ export default function HeaderFooterSettings() {
                 </Link>
 
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Header & Footer</h1>
-                    <p className="mt-2 text-sm text-gray-600">
-                        Customize your site branding and footer content
-                    </p>
+                <div className="mb-8 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Header & Footer</h1>
+                        <p className="mt-2 text-sm text-gray-600">
+                            Customize your site branding and footer content
+                        </p>
+                    </div>
+
+                    {!isEditing ? (
+                        <button
+                            onClick={() => setIsEditing(true)}
+                            className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium shadow-sm"
+                        >
+                            Edit
+                        </button>
+                    ) : (
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setIsEditing(false)}
+                                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                disabled={isSaving || uploading}
+                                className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2 transition-colors font-medium shadow-sm"
+                            >
+                                {isSaving ? (
+                                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <FiSave size={18} />
+                                )}
+                                {isSaving ? 'Saving...' : 'Save All'}
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Form Sections */}
@@ -55,8 +160,11 @@ export default function HeaderFooterSettings() {
                                 </label>
                                 <input
                                     type="text"
+                                    value={formData.brand_name}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, brand_name: e.target.value }))}
                                     placeholder="HUMANTEE"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
+                                    readOnly={!isEditing}
+                                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                                 />
                                 <p className="text-xs text-gray-500 mt-1">Displayed in the top-left corner</p>
                             </div>
@@ -66,13 +174,55 @@ export default function HeaderFooterSettings() {
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Logo
                                 </label>
-                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                                    <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    <p className="mt-2 text-sm text-gray-600">Upload coming soon</p>
-                                    <p className="text-xs text-gray-500 mt-1">PNG, SVG, or JPG (max 2MB)</p>
-                                </div>
+
+                                {formData.logo_url ? (
+                                    // Show preview with remove button
+                                    <div className="space-y-3">
+                                        <div className="relative inline-block">
+                                            <img
+                                                src={formData.logo_url}
+                                                alt="Logo preview"
+                                                className="h-24 w-auto border border-gray-200 rounded-lg"
+                                            />
+                                        </div>
+                                        <button
+                                            onClick={handleRemoveLogo}
+                                            className="flex items-center gap-2 text-red-600 hover:text-red-700 text-sm"
+                                        >
+                                            <FiX size={16} />
+                                            Remove Logo
+                                        </button>
+                                    </div>
+                                ) : (
+                                    // Upload button
+                                    <div className="border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleLogoUpload}
+                                            disabled={uploading}
+                                            className="hidden"
+                                            id="logo-upload"
+                                        />
+                                        <label
+                                            htmlFor="logo-upload"
+                                            className="cursor-pointer flex flex-col items-center p-8 text-center"
+                                        >
+                                            <FiUpload className="h-12 w-12 text-gray-400 mb-2" />
+                                            <p className="text-sm text-gray-600">
+                                                {uploading ? 'Uploading...' : 'Click to upload logo'}
+                                            </p>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                PNG, SVG, or JPG (max 5MB)
+                                            </p>
+                                        </label>
+                                    </div>
+                                )}
+
+                                {uploadError && (
+                                    <p className="text-sm text-red-600 mt-2">{uploadError}</p>
+                                )}
+
                                 <p className="text-xs text-gray-500 mt-1">Upload your site logo</p>
                             </div>
                         </div>
@@ -93,104 +243,106 @@ export default function HeaderFooterSettings() {
                                 </label>
                                 <input
                                     type="text"
-                                    placeholder="A luxury shopping experience crafted with minimalist precision."
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
+                                    value={formData.tagline}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, tagline: e.target.value }))}
+                                    placeholder="Wear Your Story"
+                                    readOnly={!isEditing}
+                                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                                 />
                             </div>
 
-                            {/* Copyright */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Copyright Text
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="HUMANTEE"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
-                                />
-                                <p className="text-xs text-gray-500 mt-1">Year auto-updates (e.g., © 2025 HUMANTEE)</p>
-                            </div>
-
-                            {/* Email */}
+                            {/* Contact Email */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Contact Email
                                 </label>
                                 <input
                                     type="email"
-                                    placeholder="humanteeofficial@gmail.com"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
+                                    value={formData.contact.email}
+                                    onChange={(e) => setFormData(prev => ({
+                                        ...prev,
+                                        contact: { ...prev.contact, email: e.target.value }
+                                    }))}
+                                    placeholder="contact@humantee.com"
+                                    readOnly={!isEditing}
+                                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                                 />
                             </div>
 
-                            {/* Phone */}
+                            {/* Contact Phone */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Contact Phone
                                 </label>
                                 <input
                                     type="tel"
+                                    value={formData.contact.phone}
+                                    onChange={(e) => setFormData(prev => ({
+                                        ...prev,
+                                        contact: { ...prev.contact, phone: e.target.value }
+                                    }))}
                                     placeholder="+91 7780-661493"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
+                                    readOnly={!isEditing}
+                                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                                 />
                             </div>
 
-                            {/* Instagram */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Instagram URL
-                                </label>
-                                <input
-                                    type="url"
-                                    placeholder="https://www.instagram.com/humanteeofficial/"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
-                                />
+                            {/* Social Links */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Instagram URL
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={formData.social_links.instagram}
+                                        onChange={(e) => setFormData(prev => ({
+                                            ...prev,
+                                            social_links: { ...prev.social_links, instagram: e.target.value }
+                                        }))}
+                                        placeholder="https://www.instagram.com/humanteeofficial/"
+                                        readOnly={!isEditing}
+                                        className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Google Maps Location URL
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={formData.social_links.maps}
+                                        onChange={(e) => setFormData(prev => ({
+                                            ...prev,
+                                            social_links: { ...prev.social_links, maps: e.target.value }
+                                        }))}
+                                        placeholder="https://maps.google.com"
+                                        readOnly={!isEditing}
+                                        className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                                    />
+                                </div>
                             </div>
 
-                            {/* Maps */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Location (Google Maps)
-                                </label>
-                                <input
-                                    type="url"
-                                    placeholder="https://maps.google.com"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
-                                />
-                            </div>
-
-                            {/* Footer Scrolling Text */}
+                            {/* Scrolling Text */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Footer Scrolling Text
                                 </label>
-                                <textarea
-                                    rows={3}
-                                    placeholder="© 2025 HUMANTEE • PREMIUM HANDCRAFTED APPAREL • LUXURY FASHION"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black resize-none font-mono text-sm"
+                                <input
+                                    type="text"
+                                    value={formData.scrolling_text}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, scrolling_text: e.target.value }))}
+                                    placeholder="WEAR HUMANTEE · WEAR CONFIDENCE"
+                                    readOnly={!isEditing}
+                                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                                 />
-                                <p className="text-xs text-gray-500 mt-1">One message per line. Scrolls at the bottom of footer.</p>
+                                <p className="text-xs text-gray-500 mt-1">Large scrolling text displayed in footer</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Save Button */}
-                <div className="mt-8 flex justify-end gap-4">
-                    <Link
-                        href="/admin/settings"
-                        className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                        Cancel
-                    </Link>
-                    <button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                        {isSaving ? 'Saving...' : 'Save Changes'}
-                    </button>
-                </div>
             </div>
         </div>
     );

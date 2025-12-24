@@ -6,25 +6,36 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { m, AnimatePresence } from "framer-motion";
-import { FiX, FiInfo } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiX, FiInfo, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 interface SizeGuideProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
-const sizeChart = [
-    { size: "XS", chest: "34-36", length: "27", shoulder: "16" },
-    { size: "S", chest: "36-38", length: "28", shoulder: "17" },
-    { size: "M", chest: "38-40", length: "29", shoulder: "18" },
-    { size: "L", chest: "40-42", length: "30", shoulder: "19" },
-    { size: "XL", chest: "42-44", length: "31", shoulder: "20" },
-    { size: "XXL", chest: "44-46", length: "32", shoulder: "21" },
-];
+import { settingsApi } from "@/lib/api/settings";
+
+
 
 export function SizeGuide({ isOpen, onClose }: SizeGuideProps) {
-    const [activeTab, setActiveTab] = useState<"chart" | "measure" | "fit">("chart");
+    const [images, setImages] = useState<string[]>([]);
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    // Fetch settings on mount
+    useEffect(() => {
+        settingsApi.getPublicSettings()
+            .then(data => {
+                if (data && data['product-info']?.size_guide_images) {
+                    const gallery = data['product-info'].size_guide_images;
+                    setImages(Array.isArray(gallery) ? gallery : []);
+                } else if (data && data['product-info']?.size_guide_image) {
+                    // Fallback for single image if plural doesn't exist
+                    setImages([data['product-info'].size_guide_image]);
+                }
+            })
+            .catch(err => console.error("Failed to load size guide images", err));
+    }, []);
 
     // Robust body scroll lock
     useEffect(() => {
@@ -45,209 +56,143 @@ export function SizeGuide({ isOpen, onClose }: SizeGuideProps) {
                 document.body.style.top = '';
                 document.body.style.width = '';
                 document.body.style.overflow = '';
-                window.scrollTo(0, parseInt(scrollY || '0') * -1);
+                const scrollPos = parseInt(scrollY || '0') * -1;
+                if (!isNaN(scrollPos)) {
+                    window.scrollTo(0, scrollPos);
+                }
             };
         }
     }, [isOpen]);
 
+    const nextImage = () => {
+        setCurrentIndex((prev) => (prev + 1) % images.length);
+    };
+
+    const prevImage = () => {
+        setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+    };
+
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4">
-            {/* Backdrop */}
-            <div
-                onClick={onClose}
-                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-            />
+        <AnimatePresence>
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4">
+                {/* Backdrop */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={onClose}
+                    className="absolute inset-0 bg-black/90 backdrop-blur-md"
+                />
 
-            {/* Modal */}
-            <div
-                onClick={(e) => e.stopPropagation()}
-                className="relative w-full max-w-3xl max-h-[92vh] sm:max-h-[90vh] flex flex-col bg-gradient-to-br from-[#0d0d1e] to-[#050512] border border-white/10 rounded-xl shadow-2xl overflow-hidden"
-            >
-                {/* Header */}
-                <div className="sticky top-0 z-10 bg-[#0d0d1e]/95 border-b border-white/10 backdrop-blur-xl p-4 sm:p-6 flex-shrink-0">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-xl sm:text-2xl font-light text-white tracking-wide">Size Guide</h2>
+                {/* Modal */}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="relative w-full max-w-3xl max-h-[90vh] flex flex-col bg-[#050512] border border-white/10 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden text-white"
+                >
+                    {/* Header */}
+                    <div className="sticky top-0 z-10 bg-[#050512]/80 border-b border-white/10 backdrop-blur-xl p-4 sm:p-6 flex items-center justify-between flex-shrink-0">
+                        <div>
+                            <h2 className="text-xl sm:text-2xl font-light tracking-wide">Size Guide</h2>
+                            <p className="text-white/40 text-[10px] sm:text-[11px] uppercase tracking-widest mt-1">Measurements & Fit</p>
+                        </div>
                         <button
                             onClick={onClose}
-                            className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                            className="p-2 sm:p-3 rounded-full bg-white/5 hover:bg-white/10 transition-all border border-white/10 active:scale-95"
                         >
-                            <FiX className="w-5 h-5 text-white" />
+                            <FiX className="w-5 h-5 text-white/70" />
                         </button>
                     </div>
 
-                    {/* Tabs */}
-                    <div className="flex gap-2 mt-4 overflow-x-auto pb-1 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
-                        {[
-                            { id: "chart", label: "Size Chart" },
-                            { id: "measure", label: "How to Measure" },
-                            { id: "fit", label: "Fit Guide" },
-                        ].map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id as any)}
-                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 ${activeTab === tab.id
-                                    ? "bg-gradient-to-r from-violet-500 to-fuchsia-400 text-white"
-                                    : "bg-white/5 text-white/60 hover:text-white/80"
-                                    }`}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                    {/* Content Area */}
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 custom-scrollbar">
+                        <div className="space-y-6 flex flex-col items-center">
+                            {/* Image Container */}
+                            <div className="w-full relative min-h-[300px] flex items-center justify-center bg-zinc-900/50 rounded-xl border border-white/5 group">
+                                <AnimatePresence mode="wait">
+                                    {images.length > 0 ? (
+                                        <motion.div
+                                            key={currentIndex}
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20 }}
+                                            transition={{ duration: 0.3, ease: "easeOut" }}
+                                            className="w-full h-full flex items-center justify-center p-2"
+                                        >
+                                            <img
+                                                src={images[currentIndex]}
+                                                alt={`Size Chart ${currentIndex + 1}`}
+                                                className="max-w-full max-h-[60vh] object-contain rounded-lg shadow-2xl"
+                                                onLoad={(e) => {
+                                                    // Trigger layout recalculation if needed
+                                                }}
+                                            />
+                                        </motion.div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center p-12 text-center">
+                                            <div className="w-16 h-16 rounded-full bg-violet-500/10 flex items-center justify-center mb-4 border border-violet-500/20">
+                                                <FiInfo className="w-8 h-8 text-violet-400" />
+                                            </div>
+                                            <h3 className="text-white/80 font-medium text-lg mb-2">Size Chart Coming Soon</h3>
+                                            <p className="text-white/40 text-sm max-w-[300px] leading-relaxed">
+                                                We are currently updating our size diagrams to ensure you get the perfect fit.
+                                            </p>
+                                        </div>
+                                    )}
+                                </AnimatePresence>
 
-                {/* Content */}
-                <div className="p-4 sm:p-6 overflow-y-auto flex-1 overscroll-contain">
-                    {/* Size Chart Tab */}
-                    {activeTab === "chart" && (
-                        <div className="space-y-6">
-                            <div className="bg-white/5 rounded-lg p-1">
-                                <p className="text-white/70 text-sm mb-4 p-3">
-                                    All measurements are in inches. For the best fit, measure your favorite t-shirt and compare.
-                                </p>
+                                {/* Responsive Navigation Arrows */}
+                                {images.length > 1 && (
+                                    <>
+                                        <button
+                                            onClick={prevImage}
+                                            className="absolute left-2 sm:left-4 p-2.5 sm:p-3 rounded-full bg-black/60 hover:bg-black/80 text-white transition-all backdrop-blur-md border border-white/10 group-hover:translate-x-1"
+                                        >
+                                            <FiChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+                                        </button>
+                                        <button
+                                            onClick={nextImage}
+                                            className="absolute right-2 sm:right-4 p-2.5 sm:p-3 rounded-full bg-black/60 hover:bg-black/80 text-white transition-all backdrop-blur-md border border-white/10 group-hover:-translate-x-1"
+                                        >
+                                            <FiChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+                                        </button>
 
-                                <div className="overflow-x-auto">
-                                    <table className="w-full">
-                                        <thead>
-                                            <tr className="border-b border-white/10">
-                                                <th className="text-left p-3 text-white font-medium">Size</th>
-                                                <th className="text-left p-3 text-white font-medium">Chest (inches)</th>
-                                                <th className="text-left p-3 text-white font-medium">Length (inches)</th>
-                                                <th className="text-left p-3 text-white font-medium">Shoulder (inches)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {sizeChart.map((row, idx) => (
-                                                <tr
-                                                    key={row.size}
-                                                    className={`border-b border-white/5 hover:bg-white/5 transition-colors ${idx % 2 === 0 ? "bg-white/[0.02]" : ""
-                                                        }`}
-                                                >
-                                                    <td className="p-2 sm:p-3 text-white font-semibold text-sm sm:text-base">{row.size}</td>
-                                                    <td className="p-2 sm:p-3 text-white/80 text-sm sm:text-base">{row.chest}</td>
-                                                    <td className="p-2 sm:p-3 text-white/80 text-sm sm:text-base">{row.length}</td>
-                                                    <td className="p-2 sm:p-3 text-white/80 text-sm sm:text-base">{row.shoulder}</td>
-                                                </tr>
+                                        {/* Counter / Dots */}
+                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1.5 bg-black/40 backdrop-blur-md rounded-full border border-white/10">
+                                            {images.map((_, i) => (
+                                                <button
+                                                    key={i}
+                                                    onClick={() => setCurrentIndex(i)}
+                                                    className={`w-1.5 h-1.5 rounded-full transition-all ${i === currentIndex ? 'bg-violet-400 w-4' : 'bg-white/30 hover:bg-white/50'}`}
+                                                />
                                             ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
 
-                            <div className="bg-violet-500/10 border border-violet-500/20 rounded-lg p-4 flex gap-3">
-                                <FiInfo className="w-5 h-5 text-violet-400 flex-shrink-0 mt-0.5" />
-                                <div className="text-sm">
-                                    <p className="text-white/90 font-medium mb-1">Between sizes?</p>
-                                    <p className="text-white/70">We recommend sizing up for a relaxed fit, or down for a fitted look.</p>
+                            {/* Fit Info Footer */}
+                            <div className="w-full bg-violet-500/5 border border-violet-500/10 rounded-xl p-5">
+                                <div className="flex gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-violet-500/10 flex-shrink-0 flex items-center justify-center">
+                                        <FiInfo className="w-5 h-5 text-violet-400" />
+                                    </div>
+                                    <div className="text-sm">
+                                        <p className="text-violet-300 font-medium mb-1 uppercase tracking-wider text-[11px]">Fit Recommendation</p>
+                                        <p className="text-white/60 leading-relaxed">
+                                            For the most accurate fit, we recommend measuring your favorite t-shirt while flat and comparing those dimensions with the chart above. Our apparel follows standard unisex sizing.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    )}
-
-                    {/* How to Measure Tab */}
-                    {activeTab === "measure" && (
-                        <div className="space-y-6">
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div className="space-y-4">
-                                    <h3 className="text-white font-medium text-lg">Measurement Instructions</h3>
-
-                                    <div className="space-y-3">
-                                        <div className="flex gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-400 flex items-center justify-center text-white font-bold flex-shrink-0">
-                                                1
-                                            </div>
-                                            <div>
-                                                <p className="text-white font-medium">Chest</p>
-                                                <p className="text-white/70 text-sm">Measure around the fullest part of your chest, keeping the tape horizontal.</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-400 flex items-center justify-center text-white font-bold flex-shrink-0">
-                                                2
-                                            </div>
-                                            <div>
-                                                <p className="text-white font-medium">Length</p>
-                                                <p className="text-white/70 text-sm">Measure from the highest point of the shoulder to the hem.</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-400 flex items-center justify-center text-white font-bold flex-shrink-0">
-                                                3
-                                            </div>
-                                            <div>
-                                                <p className="text-white font-medium">Shoulder</p>
-                                                <p className="text-white/70 text-sm">Measure from shoulder seam to shoulder seam across the back.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="bg-white/5 rounded-lg p-4 flex items-center justify-center">
-                                    <div className="text-center text-white/60">
-                                        <p className="text-sm">Measurement diagram</p>
-                                        <p className="text-xs mt-1">(Illustration placeholder)</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg p-4">
-                                <p className="text-white/90 font-medium mb-2">Pro Tip</p>
-                                <p className="text-white/70 text-sm">
-                                    For the most accurate fit, lay your favorite t-shirt flat and measure it, then compare with our size chart.
-                                </p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Fit Guide Tab */}
-                    {activeTab === "fit" && (
-                        <div className="space-y-6">
-                            <div className="grid gap-4">
-                                <div className="bg-white/5 rounded-lg p-5 border border-white/10">
-                                    <h3 className="text-white font-medium text-lg mb-2">Regular Fit</h3>
-                                    <p className="text-white/70 text-sm mb-3">
-                                        Our standard fit. Not too tight, not too loose. Perfect for everyday wear.
-                                    </p>
-                                    <div className="flex gap-2">
-                                        <span className="px-3 py-1 bg-violet-500/20 text-violet-300 rounded-full text-xs">Recommended</span>
-                                    </div>
-                                </div>
-
-                                <div className="bg-white/5 rounded-lg p-5 border border-white/10">
-                                    <h3 className="text-white font-medium text-lg mb-2">Relaxed Fit</h3>
-                                    <p className="text-white/70 text-sm mb-3">
-                                        Order one size up for a looser, more comfortable fit with extra breathing room.
-                                    </p>
-                                    <div className="flex gap-2">
-                                        <span className="px-3 py-1 bg-white/10 text-white/60 rounded-full text-xs">Size up</span>
-                                    </div>
-                                </div>
-
-                                <div className="bg-white/5 rounded-lg p-5 border border-white/10">
-                                    <h3 className="text-white font-medium text-lg mb-2">Fitted Look</h3>
-                                    <p className="text-white/70 text-sm mb-3">
-                                        Order one size down for a more tailored, body-hugging fit.
-                                    </p>
-                                    <div className="flex gap-2">
-                                        <span className="px-3 py-1 bg-white/10 text-white/60 rounded-full text-xs">Size down</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 border border-white/10 rounded-lg p-4">
-                                <p className="text-white/90 font-medium mb-2">Still unsure?</p>
-                                <p className="text-white/70 text-sm">
-                                    Contact our customer support team for personalized sizing advice. We're happy to help!
-                                </p>
-                            </div>
-                        </div>
-                    )}
-                </div>
+                    </div>
+                </motion.div>
             </div>
-        </div>
+        </AnimatePresence>
     );
 }
