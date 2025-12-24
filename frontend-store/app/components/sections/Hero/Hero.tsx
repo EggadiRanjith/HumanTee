@@ -88,15 +88,9 @@ interface HeroProps {
 }
 
 const Hero = ({ slides: propSlides }: HeroProps = {}) => {
-  // Debug logging
-  console.log('🎬 Hero received propSlides:', propSlides);
-  console.log('🎬 Hero propSlides length:', propSlides?.length);
-
   // Use prop slides if provided, otherwise fall back to hardcoded data
   const slides = propSlides && propSlides.length > 0 ? propSlides : heroSlides;
 
-  console.log('🎬 Hero using slides:', slides === propSlides ? 'DYNAMIC' : 'HARDCODED');
-  console.log('🎬 First slide:', slides[0]);
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [videoHasPlayed, setVideoHasPlayed] = useState(false);

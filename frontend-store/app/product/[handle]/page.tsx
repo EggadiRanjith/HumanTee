@@ -1,7 +1,7 @@
 import { ProductImageGallery, ProductInfo } from '@/app/components/ui/product';
 import { GradientOverlay } from '@/app/components/ui/layout';
-import { fetchProductBySlug } from '@/app/lib/api/products';
-import { adaptProduct } from '@/app/lib/adapters/product.adapter';
+import { fetchProductBySlug } from '@/lib/app/api/products';
+import { adaptProduct } from '@/lib/app/adapters/product.adapter';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 

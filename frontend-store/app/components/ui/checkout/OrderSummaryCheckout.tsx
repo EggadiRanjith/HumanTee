@@ -9,8 +9,8 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { settingsApi } from '@/lib/api/settings';
-import { calculateShipping, type ShippingZone } from '@/app/lib/utils/shippingCalculation';
-import { calculateTax, calculateTotal, type TaxSettings } from '@/app/lib/utils/taxCalculation';
+import { calculateShipping, type ShippingZone } from '@/lib/app/utils/shippingCalculation';
+import { calculateTax, calculateTotal, type TaxSettings } from '@/lib/app/utils/taxCalculation';
 
 interface CartItem {
     id: number | string;

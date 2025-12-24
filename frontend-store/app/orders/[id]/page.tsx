@@ -13,7 +13,7 @@ import {
 
 import Link from "next/link";
 import { useState, useEffect, use } from "react";
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "@/app/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import apiClient from "@/lib/api-client";
 import { HelpActionModal } from "@/app/components/orders/HelpActionModal";

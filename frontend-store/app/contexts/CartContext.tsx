@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { useAuth } from "@/app/context/AuthContext";
+import { createContext, useContext, useState, ReactNode, useEffect, useMemo } from "react";
+import { useAuth } from "@/app/contexts/AuthContext";
 import apiClient from "@/lib/api-client";
 import { discountsApi, type DiscountSuggestion } from "@/lib/api/discounts";
 import type { AppliedDiscount } from "@/app/types/discount.types";
@@ -19,28 +19,32 @@ export interface CartItem {
   subtitle?: string;
 }
 
-interface CartContextType {
+// Phase 2: Split contexts for render isolation
+interface CartItemsContextType {
   items: CartItem[];
   addToCart: (item: Omit<CartItem, "quantity"> & { quantity?: number }, onSuccess?: () => void, onError?: (message: string) => void) => Promise<boolean>;
   removeFromCart: (id: number | string, size?: string) => void;
   updateQuantity: (id: number | string, size: string, quantity: number) => void;
   clearCart: () => void;
-  totalItems: number;
-  totalPrice: number;
   getItemInCart: (id: number | string, size?: string) => CartItem | undefined;
   isLoading: boolean;
-  // Discount functionality
+  // Discount operations
   appliedDiscount: AppliedDiscount | null;
   applyDiscount: (code: string) => Promise<void>;
   removeDiscount: () => void;
-  discountedTotal: number;
-  // Suggestions
   suggestions: DiscountSuggestion[];
   fetchSuggestions: () => Promise<void>;
   isLoadingSuggestions: boolean;
 }
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+interface CartSummaryContextType {
+  totalItems: number;
+  totalPrice: number;
+  discountedTotal: number;
+}
+
+const CartItemsContext = createContext<CartItemsContextType | undefined>(undefined);
+const CartSummaryContext = createContext<CartSummaryContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -50,6 +54,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [hasManuallyRemoved, setHasManuallyRemoved] = useState(false);
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+
+  // Phase 2: INDEPENDENT summary state (not derived!)
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [discountedTotal, setDiscountedTotal] = useState(0);
 
   // PHASE 4: Cart source switch logic
   useEffect(() => {
@@ -93,24 +102,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
         title: item.productTitle || '',
         price: item.price,
         currency: item.currency,
-        image: item.productImage || '/images/placeholder.jpg', // Fallback for null images
+        image: item.productImage || '/images/placeholder.jpg',
         quantity: item.quantity,
-        size: item.variantLabel, // ✅ Backend sends variantLabel, not size
+        size: item.variantLabel,
         variantId: item.variantId,
       })));
     } catch (error) {
-      console.error('Failed to load backend cart:', error);
+      console.error('Failed to load cart:', error);
       setItems([]);
     }
   };
 
-  // Save to localStorage (guest only)
+  // Save guest cart to localStorage
   useEffect(() => {
-    if (!authLoading && !isAuthenticated && items.length >= 0) {
-      const timeoutId = setTimeout(() => {
-        localStorage.setItem("humantee-cart", JSON.stringify(items));
-      }, 500);
-      return () => clearTimeout(timeoutId);
+    if (!isAuthenticated && !authLoading && items.length >= 0) {
+      localStorage.setItem("humantee-cart", JSON.stringify(items));
     }
   }, [items, isAuthenticated, authLoading]);
 
@@ -119,59 +125,53 @@ export function CartProvider({ children }: { children: ReactNode }) {
     onSuccess?: () => void,
     onError?: (message: string) => void
   ): Promise<boolean> => {
-    const qtyToAdd = item.quantity || 1;
-    const { quantity: _, ...itemWithoutQty } = item;
-
-    // Stock validation
-    if (item.availableStock !== undefined && qtyToAdd > item.availableStock) {
-      const errorMsg = `Only ${item.availableStock} items available`;
-      onError?.(errorMsg);
-      return false;
-    }
-
-    // Check for existing item
-    const existing = items.find((i) => i.id === item.id && i.size === item.size);
-
-    if (existing) {
-      const totalQty = existing.quantity + qtyToAdd;
-      if (item.availableStock !== undefined && totalQty > item.availableStock) {
-        const remaining = item.availableStock - existing.quantity;
-        const errorMsg = `You already have ${existing.quantity} in cart. Only ${remaining} more available.`;
-        onError?.(errorMsg);
-        return false;
-      }
-    }
+    const quantity = item.quantity || 1;
 
     if (isAuthenticated) {
-      // Backend cart - only send what the DTO expects
+      // Backend cart
       try {
-        const response = await apiClient.post('/cart/items', {
+        await apiClient.post('/cart/items', {
           productId: item.id.toString(),
-          variantId: item.variantId,
-          quantity: qtyToAdd,
+          variantId: item.variantId || item.id.toString(),
+          quantity,
+          price: item.price,
+          currency: item.currency,
         });
-
         await loadBackendCart();
         onSuccess?.();
         return true;
       } catch (error: any) {
-        console.error('Add to cart error:', error);
-        onError?.('Failed to add to cart');
+        const message = error.response?.data?.message || 'Failed to add item to cart';
+        onError?.(message);
         return false;
       }
     } else {
-      // Guest cart (localStorage)
-      setItems((prev) => {
-        const existingItem = prev.find((i) => i.id === item.id && i.size === item.size);
-        if (existingItem) {
-          return prev.map((i) =>
-            i.id === item.id && i.size === item.size
-              ? { ...i, quantity: i.quantity + qtyToAdd }
+      // Guest cart - check stock before adding
+      const existingItem = items.find(
+        (i) => i.id === item.id && (!item.size || i.size === item.size)
+      );
+
+      const newQuantity = existingItem
+        ? existingItem.quantity + quantity
+        : quantity;
+
+      if (item.availableStock !== undefined && newQuantity > item.availableStock) {
+        onError?.(`Only ${item.availableStock} items available in stock`);
+        return false;
+      }
+
+      if (existingItem) {
+        setItems((prev) =>
+          prev.map((i) =>
+            i.id === item.id && (!item.size || i.size === item.size)
+              ? { ...i, quantity: i.quantity + quantity }
               : i
-          );
-        }
-        return [...prev, { ...itemWithoutQty, quantity: qtyToAdd }];
-      });
+          )
+        );
+      } else {
+        setItems((prev) => [...prev, { ...item, quantity } as CartItem]);
+      }
+
       onSuccess?.();
       return true;
     }
@@ -186,14 +186,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
           await apiClient.delete(`/cart/items/${item.id}`);
           await loadBackendCart();
         } catch (error) {
-          console.error('Failed to remove from cart:', error);
+          console.error('Failed to remove item:', error);
         }
       }
     } else {
       // Guest cart
-      setItems((prev) => prev.filter((item) =>
-        !(item.id === id && (!size || item.size === size))
-      ));
+      setItems((prev) => prev.filter((item) => !(item.id === id && (!size || item.size === size))));
     }
   };
 
@@ -240,15 +238,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-
-  const totalPrice = items.reduce((sum, item) => {
-    return sum + item.price * item.quantity;
-  }, 0);
-
   const getItemInCart = (id: number | string, size?: string) => {
     return items.find((i) => i.id === id && (!size || i.size === size));
   };
+
+  // Phase 2: Update summary state when items change
+  useEffect(() => {
+    const newTotalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+    const newTotalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const newDiscountedTotal = appliedDiscount
+      ? Math.max(0, newTotalPrice - appliedDiscount.discountAmount)
+      : newTotalPrice;
+
+    setTotalItems(newTotalItems);
+    setTotalPrice(newTotalPrice);
+    setDiscountedTotal(newDiscountedTotal);
+  }, [items, appliedDiscount]);
 
   // Discount functionality
   const applyDiscount = async (code: string) => {
@@ -265,22 +270,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
       });
 
       setAppliedDiscount(discount);
-      // Persist to localStorage
       localStorage.setItem('humantee-discount', JSON.stringify(discount));
     } catch (error) {
-      throw error; // Re-throw for component to handle
+      throw error;
     }
   };
 
   const removeDiscount = () => {
     setAppliedDiscount(null);
+    setHasManuallyRemoved(true);
     localStorage.removeItem('humantee-discount');
   };
-
-  // Calculate discounted total
-  const discountedTotal = appliedDiscount
-    ? Math.max(0, totalPrice - appliedDiscount.discountAmount)
-    : totalPrice;
 
   // Load discount from localStorage on mount
   useEffect(() => {
@@ -297,9 +297,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Re-validate discount when cart changes
   useEffect(() => {
     if (appliedDiscount && items.length > 0) {
-      // Silently re-validate discount
       applyDiscount(appliedDiscount.code).catch(() => {
-        // If validation fails, remove the discount
         removeDiscount();
       });
     }
@@ -322,7 +320,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setIsLoadingSuggestions(true);
     try {
       const suggestionsData = await discountsApi.getSuggestions({
-        code: '', // Not needed for suggestions
+        code: '',
         cartTotal: totalPrice,
         items: items.map(item => ({
           productId: item.id.toString(),
@@ -334,7 +332,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       setSuggestions(suggestionsData);
 
-      // Auto-apply best discount if no discount applied and user hasn't manually removed
       if (!appliedDiscount && !hasManuallyRemoved && suggestionsData.length > 0) {
         const best = suggestionsData.find(s => s.isBest);
         if (best) {
@@ -360,43 +357,56 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [items.length, totalPrice]);
 
-  // Update removeDiscount to mark as manually removed
-  const removeDiscountWithFlag = () => {
-    setAppliedDiscount(null);
-    setHasManuallyRemoved(true);
-    localStorage.removeItem('humantee-discount');
-  };
+  // Phase 2: Memoize context values separately
+  const itemsValue = useMemo(() => ({
+    items,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    getItemInCart,
+    isLoading,
+    appliedDiscount,
+    applyDiscount,
+    removeDiscount,
+    suggestions,
+    fetchSuggestions,
+    isLoadingSuggestions,
+  }), [items, isLoading, appliedDiscount, suggestions, isLoadingSuggestions]);
+
+  const summaryValue = useMemo(() => ({
+    totalItems,
+    totalPrice,
+    discountedTotal,
+  }), [totalItems, totalPrice, discountedTotal]);
 
   return (
-    <CartContext.Provider
-      value={{
-        items,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        totalItems,
-        totalPrice,
-        getItemInCart,
-        isLoading,
-        appliedDiscount,
-        applyDiscount,
-        removeDiscount: removeDiscountWithFlag,
-        discountedTotal,
-        suggestions,
-        fetchSuggestions,
-        isLoadingSuggestions,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
+    <CartItemsContext.Provider value={itemsValue}>
+      <CartSummaryContext.Provider value={summaryValue}>
+        {children}
+      </CartSummaryContext.Provider>
+    </CartItemsContext.Provider>
   );
 }
 
-export function useCart() {
-  const context = useContext(CartContext);
+// Phase 2: Export two hooks
+export function useCartItems() {
+  const context = useContext(CartItemsContext);
   if (context === undefined) {
-    throw new Error("useCart must be used within a CartProvider");
+    throw new Error("useCartItems must be used within a CartProvider");
   }
   return context;
+}
+
+export function useCartSummary() {
+  const context = useContext(CartSummaryContext);
+  if (context === undefined) {
+    throw new Error("useCartSummary must be used within a CartProvider");
+  }
+  return context;
+}
+
+// Legacy hook for backward compatibility (combines both)
+export function useCart() {
+  return { ...useCartItems(), ...useCartSummary() };
 }

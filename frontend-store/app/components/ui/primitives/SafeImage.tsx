@@ -77,7 +77,7 @@ export function SafeImage({
     return (
         <div className="relative inline-block">
             {/* Loading skeleton with shimmer */}
-            {isLoading && showSkeleton && (
+            {loading && showSkeleton && (
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/10 rounded-lg overflow-hidden">
                     <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 </div>

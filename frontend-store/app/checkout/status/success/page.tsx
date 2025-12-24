@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCheckout } from "@/app/components/context/CheckoutContext";
+import { useCheckout } from "@/app/contexts/CheckoutContext";
 import { GradientOverlay } from "@/app/components/ui/layout";
 import { FiCheck } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";

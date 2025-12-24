@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCheckout } from "@/app/components/context/CheckoutContext";
+import { useCheckout } from "@/app/contexts/CheckoutContext";
 import { FiClock } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";

@@ -14,7 +14,7 @@ import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { Product } from '@/app/types/product.types';
 import { Badge, StockIndicator } from '@/app/components/ui/primitives';
 import { SafeImage } from '@/app/components/ui/primitives/SafeImage';
-import { getImagePlaceholder } from '@/app/lib/image-placeholders';
+import { getImagePlaceholder } from '@/lib/app/image-placeholders';
 
 
 interface ProductCardProps {

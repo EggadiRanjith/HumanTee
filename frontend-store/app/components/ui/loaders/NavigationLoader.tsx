@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { useLoading } from "../../context/LoadingContext";
+import { useLoading } from "@/app/contexts/LoadingContext";
 
 
 const TShirtIcon = () => (
@@ -39,11 +39,14 @@ function NavigationLoaderContent() {
             const link = target.closest("a");
 
             if (link && link.href && !link.target && !link.download) {
-                const url = new URL(link.href);
-                const current = new URL(window.location.href);
+                // Guard against SSR - window is not available during server-side rendering
+                if (typeof window !== 'undefined') {
+                    const url = new URL(link.href);
+                    const current = new URL(window.location.href);
 
-                if (url.origin === current.origin && url.pathname !== current.pathname) {
-                    setLoading(true);
+                    if (url.origin === current.origin && url.pathname !== current.pathname) {
+                        setLoading(true);
+                    }
                 }
             }
         };

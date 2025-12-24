@@ -6,8 +6,8 @@
 import { SectionHeader, GradientOverlay } from '@/app/components/ui/layout';
 import { FeaturedProductsState } from './FeaturedProductsState';
 import { ProductGrid } from './ProductGrid';
-import { fetchProducts } from '@/app/lib/api/products';
-import { adaptProducts } from '@/app/lib/adapters/product.adapter';
+import { fetchProducts } from '@/lib/app/api/products';
+import { adaptProducts } from '@/lib/app/adapters/product.adapter';
 import { Product } from '@/app/types/product.types';
 
 export default async function FeaturedProducts() {

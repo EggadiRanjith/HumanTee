@@ -40,9 +40,6 @@ const nextConfig: NextConfig = {
   experimental: {
     // optimizeCss: true, // Disabled - requires critters module
     optimizePackageImports: ['framer-motion', 'react-icons'],
-    turbopack: {
-      root: '.',
-    },
   },
   // Headers for better video streaming
   async headers() {

@@ -18,7 +18,7 @@ import {
 } from "react-icons/fi";
 import Link from "next/link";
 import apiClient from "@/lib/api-client";
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "@/app/contexts/AuthContext";
 
 export default function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();

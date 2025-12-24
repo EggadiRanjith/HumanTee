@@ -3,17 +3,26 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
 import { FiMenu, FiX, FiShoppingBag } from "react-icons/fi";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Navbar from "./Navbar";
 import { useHeaderContext } from "./useHeaderContext";
-import { useCart } from "../context/CartContext";
-import { useAuth } from "@/app/context/AuthContext";
+import { useCartSummary } from "@/app/contexts/CartContext"; // Phase 2: Summary only!
+import { useAuth } from "@/app/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import AuthStatus, { AuthStatusMobile } from "./AuthStatus";
 import { settingsApi } from "@/lib/api/settings";
 
 function Header() {
-  const { totalItems } = useCart();
+  const { totalItems } = useCartSummary(); // Phase 2: Only subscribe to summary!
   const { user, isAuthenticated } = useAuth();
+  const pathname = usePathname();
+
+  // Phase 2: Render measurement
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.count('Header render - Phase 2');
+    }
+  });
   const ref = useRef<HTMLDivElement>(null);
   const { setHeaderHeight } = useHeaderContext();
   const [open, setOpen] = useState(false);
@@ -21,7 +30,7 @@ function Header() {
 
   // Settings with fallback
   const [settings, setSettings] = useState({
-    brand_name: "", // Empty until DB loads
+    brand_name: "HUMANTEE", // Fallback until DB loads
     logo_url: null as string | null,
   });
 
@@ -29,10 +38,9 @@ function Header() {
   useEffect(() => {
     settingsApi.getPublicSettings()
       .then((data) => {
-        console.log('Header settings loaded:', data);
         if (data && data['header-footer']) {
           setSettings({
-            brand_name: data['header-footer'].brand_name || "",
+            brand_name: data['header-footer'].brand_name || "HUMANTEE",
             logo_url: data['header-footer'].logo_url || null,
           });
         }
@@ -122,7 +130,7 @@ function Header() {
           {settings.logo_url && settings.logo_url.trim() !== '' && (
             <img
               src={settings.logo_url}
-              alt={settings.brand_name}
+              alt={settings.brand_name || 'Brand Logo'}
               className="h-[24px] sm:h-[26px] md:h-[28px] lg:h-[30px] w-auto"
             />
           )}
@@ -141,40 +149,40 @@ function Header() {
         <div className="hidden md:flex items-center gap-10 absolute left-1/2 -translate-x-1/2">
           <Link
             href="/shop"
-            className="
+            className={`
               uppercase
               tracking-[0.20em]
               transition-all duration-300
-              text-white/60 hover:text-white
+              ${pathname === '/shop' ? 'text-white' : 'text-white/60 hover:text-white'}
               text-[14px] xl:text-[15px]
               py-1.5
-            "
+            `}
           >
             SHOP
           </Link>
           <Link
             href="/orders"
-            className="
+            className={`
               uppercase
               tracking-[0.20em]
               transition-all duration-300
-              text-white/60 hover:text-white
+              ${pathname === '/orders' ? 'text-white' : 'text-white/60 hover:text-white'}
               text-[14px] xl:text-[15px]
               py-1.5
-            "
+            `}
           >
             ORDERS
           </Link>
           <Link
             href="/contact"
-            className="
+            className={`
               uppercase
               tracking-[0.20em]
               transition-all duration-300
-              text-white/60 hover:text-white
+              ${pathname === '/contact' ? 'text-white' : 'text-white/60 hover:text-white'}
               text-[14px] xl:text-[15px]
               py-1.5
-            "
+            `}
           >
             CONTACT US
           </Link>
@@ -268,7 +276,7 @@ function Header() {
                 fixed inset-0 
                 z-[4000]
                 md:hidden
-                bg-transparent
+                bg-black/20 backdrop-blur-sm
                 pointer-events-auto
               "
             />
@@ -328,11 +336,11 @@ function Header() {
 
 
                 <Link
-                  href="/profile"
+                  href="/account"
                   onClick={() => setOpen(false)}
                   className="px-3 py-3 text-sm hover:text-white hover:bg-white/5 rounded-lg"
                 >
-                  Profile
+                  Account
                 </Link>
 
               </nav>

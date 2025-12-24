@@ -5,7 +5,7 @@ import { GradientOverlay } from "@/app/components/ui/layout";
 import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "@/app/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import apiClient from "@/lib/api-client";
 

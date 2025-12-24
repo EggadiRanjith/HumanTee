@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCart } from "../context/CartContext";
+import { useEffect } from "react";
+import { useCartSummary } from "@/app/contexts/CartContext"; // Phase 2: Summary only!
 
 interface NavbarProps {
   large?: boolean;
@@ -10,7 +11,14 @@ interface NavbarProps {
 
 export default function Navbar({ large = false }: NavbarProps) {
   const pathname = usePathname();
-  const { totalItems } = useCart();
+  const { totalItems } = useCartSummary(); // Phase 2: Only subscribe to summary!
+
+  // Phase 2: Render measurement
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.count('Navbar render - Phase 2');
+    }
+  });
 
   const items = [
     { href: "/shop", label: "SHOP" },

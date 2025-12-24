@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
     FiArrowLeft,
@@ -14,7 +14,7 @@ import {
 } from "react-icons/fi";
 import Link from "next/link";
 import apiClient from "@/lib/api-client";
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "@/app/contexts/AuthContext";
 
 const CATEGORIES = [
     { id: 'wrong_item', label: 'Wrong Item Received' },
@@ -27,7 +27,7 @@ const CATEGORIES = [
 
 const MAX_IMAGES = 5;
 
-export default function CreateTicketPage() {
+function CreateTicketPageContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -39,11 +39,11 @@ export default function CreateTicketPage() {
         subject: '',
         description: '',
     });
-    
+
     // Image states
     const [attachments, setAttachments] = useState<{ url: string; name: string; type: string; size: number }[]>([]);
     const [isUploading, setIsUploading] = useState(false);
-    
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCheckingActive, setIsCheckingActive] = useState(true);
     const [hasActiveTicket, setHasActiveTicket] = useState(false);
@@ -302,12 +302,12 @@ export default function CreateTicketPage() {
                                 Attachments (Optional)
                                 <span>{attachments.length} / {MAX_IMAGES}</span>
                             </label>
-                            
+
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                                 {attachments.map((file, idx) => (
                                     <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-white/10 bg-white/5 group">
                                         <img src={file.url} alt="upload" className="w-full h-full object-cover" />
-                                        <button 
+                                        <button
                                             type="button"
                                             onClick={() => removeAttachment(idx)}
                                             className="absolute top-1 right-1 p-1.5 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity"
@@ -316,7 +316,7 @@ export default function CreateTicketPage() {
                                         </button>
                                     </div>
                                 ))}
-                                
+
                                 {attachments.length < MAX_IMAGES && (
                                     <label className={`
                                         aspect-square rounded-xl border border-dashed border-white/10 bg-white/5 
@@ -324,11 +324,11 @@ export default function CreateTicketPage() {
                                         hover:bg-white/[0.08] hover:border-white/20 transition-all
                                         ${isUploading ? 'opacity-50 pointer-events-none' : ''}
                                     `}>
-                                        <input 
-                                            type="file" 
-                                            multiple 
-                                            accept="image/*" 
-                                            className="hidden" 
+                                        <input
+                                            type="file"
+                                            multiple
+                                            accept="image/*"
+                                            className="hidden"
                                             onChange={handleFileChange}
                                             disabled={isUploading}
                                         />
@@ -375,5 +375,17 @@ export default function CreateTicketPage() {
                 </form>
             </div>
         </div>
+    );
+}
+
+export default function CreateTicketPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen brand-bg-dusk pt-[var(--header-height)] flex items-center justify-center">
+                <FiLoader className="w-8 h-8 animate-spin text-white/40" />
+            </div>
+        }>
+            <CreateTicketPageContent />
+        </Suspense>
     );
 }

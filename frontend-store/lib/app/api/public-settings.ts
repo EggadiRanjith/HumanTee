@@ -28,8 +28,7 @@ export const publicSettingsApi = {
      */
     async getSection(section: string) {
         const response = await fetch(`${API_BASE_URL}/public/settings/${section}`, {
-            next: { revalidate: 0 }, // No cache during development
-            cache: 'no-store'
+            next: { revalidate: 300 } // Cache for 5 minutes
         });
 
         if (!response.ok) {

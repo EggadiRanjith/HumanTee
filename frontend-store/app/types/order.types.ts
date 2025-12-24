@@ -7,10 +7,13 @@ export type OrderStatus = 'delivered' | 'shipped' | 'processing' | 'pending' | '
 
 export interface Order {
     id: string;
-    date: string;
+    orderNumber: string;
+    date: string; // Keep for backward compatibility
+    createdAt: string;
     status: OrderStatus;
-    total: string;
-    items: number;
-    tracking: string | null;
-    images: string[];
+    total: string; // Keep for backward compatibility
+    totalAmount: number;
+    items?: any[]; // Array of order items
+    tracking?: string | null;
+    images?: string[]; // Keep for backward compatibility
 }

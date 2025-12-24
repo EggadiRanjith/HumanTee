@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
     FiPlus,
@@ -14,9 +14,9 @@ import {
 } from "react-icons/fi";
 import Link from "next/link";
 import apiClient from "@/lib/api-client";
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "@/app/contexts/AuthContext";
 
-export default function TicketListPage() {
+function TicketListPageContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -149,5 +149,17 @@ export default function TicketListPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function TicketListPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen brand-bg-dusk pt-[var(--header-height)] flex items-center justify-center">
+                <FiLoader className="w-8 h-8 animate-spin text-white/40" />
+            </div>
+        }>
+            <TicketListPageContent />
+        </Suspense>
     );
 }

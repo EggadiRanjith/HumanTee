@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/app/components/context/CartContext";
-import { useLoading } from "@/app/components/context/LoadingContext";
+import { useCart } from "@/app/contexts/CartContext";
+import { useLoading } from "@/app/contexts/LoadingContext";
 import { motion } from "framer-motion";
 
 export default function CheckoutPage() {
@@ -56,3 +56,4 @@ export default function CheckoutPage() {
     // NavigationLoader will handle the transition
     return null;
 }
+
