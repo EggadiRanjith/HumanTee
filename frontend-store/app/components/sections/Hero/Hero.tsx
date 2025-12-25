@@ -1,170 +1,98 @@
 /**
  * Hero Section
  * Main hero carousel with video and image slides
- * Includes luxury mobile animations: Scroll Hint (Classic Explore), Holographic Shimmer
+ * Optimized for 10/10 performance and responsiveness
  */
 
 "use client";
 
-import { motion, useReducedMotion, useScroll, useTransform, useMotionValue } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
-import { useState, useEffect, useRef, memo, useCallback } from "react";
-import Link from "next/link";
-import { heroSlides, HeroSlide } from '@/app/data/hero-slides.data';
-import { HERO_SLIDE_INTERVAL } from '@/app/constants/animations.constants';
+import { useState, useEffect, memo, lazy, Suspense } from "react";
+import { HolographicButton, ScrollHint, HeroSkeleton } from "./components";
+import { useHeroCarousel, useVideoPlayer, useIsMobile, useHeroSettings } from "./hooks";
+import { isSlideVisible, getSlideContentClasses } from "./utils";
+import { HERO_CONSTANTS, SLIDE_STYLES } from "./constants";
+import { HeroProps } from "./types";
 
-// --- Reusable Holographic Button Component ---
-const HolographicButton = memo(({ text }: { text: string }) => {
-  // Simulated Gyro / Mouse Parallax - wrapped in useRef for stable reference
-  const x = useRef(useMotionValue(0)).current;
-  const y = useRef(useMotionValue(0)).current;
-
-  const handleMove = useCallback((e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => {
-    const rect = (e.target as HTMLElement).getBoundingClientRect();
-    const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
-
-    x.set(clientX - rect.left);
-    y.set(clientY - rect.top);
-  }, [x, y]);
-
-  return (
-    <Link href="/shop" className="inline-block relative group">
-      <motion.button
-        className="
-          relative overflow-hidden
-          min-h-[44px] min-w-[120px]
-          px-6 xs:px-8 sm:px-10 md:px-12
-          py-3.5 sm:py-3.5 md:py-4
-          font-geist font-semibold
-          text-[11px] xs:text-[12px] sm:text-[13px] md:text-[14px] tracking-[0.20em] xs:tracking-[0.25em] uppercase
-          rounded-full
-          border border-white/20
-          bg-white/5 backdrop-blur-xl
-          text-white
-          transition-all duration-500
-          hover:scale-[1.03] hover:border-white/40
-          active:scale-95
-        "
-        onMouseMove={handleMove}
-        onTouchMove={handleMove}
-        whileTap={{ scale: 0.97 }}
-      >
-        {/* Ambient Holographic Sheen (Auto-Loop) */}
-        <motion.div
-          className="absolute inset-0 opacity-40 pointer-events-none"
-          animate={{
-            background: [
-              "linear-gradient(110deg, transparent 0%, rgba(255,255,255,0) 20%, transparent 100%)",
-              "linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)",
-              "linear-gradient(110deg, transparent 0%, rgba(255,255,255,0) 80%, transparent 100%)"
-            ],
-            backgroundPosition: ["200% 0", "-200% 0"]
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "linear",
-            repeatDelay: 2
-          }}
-        />
-
-        {/* Interaction Glow (Follows Finger/Mouse) */}
-        <motion.div
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-          style={{
-            background: `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.25), transparent 60%)`
-          }}
-        />
-
-        <span className="relative z-10">{text}</span>
-      </motion.button>
-    </Link>
-  );
-});
-
-interface HeroProps {
-  slides?: HeroSlide[];
-}
+// Lazy load error state (rarely needed)
+const HeroError = lazy(() => import("./components/HeroError"));
 
 const Hero = ({ slides: propSlides }: HeroProps = {}) => {
-  // Use prop slides if provided, otherwise fall back to hardcoded data
-  const slides = propSlides && propSlides.length > 0 ? propSlides : heroSlides;
-
-
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [videoHasPlayed, setVideoHasPlayed] = useState(false);
-  const [videoError, setVideoError] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const shouldReducedMotion = useReducedMotion();
-  const { scrollY } = useScroll();
-  const opacity = useTransform(scrollY, [0, 200], [1, 0]); // Fade out scroll hint
+  const isMobile = useIsMobile(768);
 
-  // Restart video when slide becomes active
+  // Fetch hero settings from API with fallback
+  const { settings: heroSettings, isLoading: settingsLoading } = useHeroSettings();
+
+  // Use prop slides if provided, otherwise use API/fallback slides
+  const slides = propSlides && propSlides.length > 0 ? propSlides : heroSettings.slides;
+
+  // Custom hooks for state management
+  const { videoRef, videoHasPlayed, videoError, setVideoHasPlayed, handleVideoError } =
+    useVideoPlayer(0, isMobile);
+  const { currentIndex } = useHeroCarousel(slides.length, videoHasPlayed);
+
+  // Loading state (wait for both component mount and settings)
   useEffect(() => {
-    if (currentImageIndex === 0 && videoRef.current && !videoHasPlayed) {
-      const video = videoRef.current;
-      video.currentTime = 0;
-      video.play().catch(() => {
-        setVideoError(true);
-      });
+    if (!settingsLoading) {
+      const timer = setTimeout(() => setIsLoading(false), 300);
+      return () => clearTimeout(timer);
     }
-  }, [currentImageIndex, videoHasPlayed]);
+  }, [settingsLoading]);
 
-  // Auto-advance slides
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => {
-        // After video plays once, mark it as played and move to first banner
-        if (prevIndex === 0 && !videoHasPlayed) {
-          setVideoHasPlayed(true);
-          return 1;
-        }
-        // After video has played, cycle through all remaining slides (excluding video at index 0)
-        if (videoHasPlayed) {
-          const nextIndex = prevIndex + 1;
-          // If we've reached the end, go back to slide 1 (skip video at 0)
-          return nextIndex >= slides.length ? 1 : nextIndex;
-        }
-        return prevIndex;
-      });
-    }, HERO_SLIDE_INTERVAL);
-
-    return () => clearInterval(interval);
-  }, [videoHasPlayed, slides.length]);
+  // Error state (lazy loaded)
+  if (slides.length === 0) {
+    return (
+      <Suspense fallback={<HeroSkeleton />}>
+        <HeroError />
+      </Suspense>
+    );
+  }
+  if (isLoading) return <HeroSkeleton />;
 
   return (
     <section
-      className="relative min-h-screen flex items-center justify-center overflow-hidden -mt-[var(--header-height)] pt-[var(--header-height)] px-4 xs:px-5 sm:px-6 md:px-8 lg:px-10"
+      className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden -mt-[var(--header-height)] pt-[var(--header-height)] px-4 xs:px-5 sm:px-6 md:px-8 lg:px-10"
       aria-label="Hero Carousel"
+      aria-live="polite"
+      aria-atomic="true"
     >
       {/* Media layers - crossfade transition with zoom effects */}
-      {/* Only render current and next slide for performance */}
       {slides.map((slide, index) => {
-        // Only render visible slides after video has played to save memory
-        const isCurrentSlide = index === currentImageIndex;
-        const isNextSlide = index === (currentImageIndex + 1) % slides.length;
-        const isVisible = isCurrentSlide || isNextSlide || !videoHasPlayed;
-
+        const isVisible = isSlideVisible(index, currentIndex, videoHasPlayed, slides.length);
         if (!isVisible) return null;
 
         return (
           <motion.div
             key={index}
-            initial={{ opacity: 0, scale: 1, filter: "blur(10px)" }}
+            initial={{ opacity: 0, scale: 1, filter: isMobile ? "none" : HERO_CONSTANTS.BLUR.INITIAL }}
             animate={{
-              opacity: currentImageIndex === index ? 1 : 0,
-              scale: shouldReducedMotion ? 1 : (currentImageIndex === index ? (index % 2 === 0 ? 1.05 : 1) : (index % 2 === 0 ? 1 : 1.05)),
-              filter: currentImageIndex === index ? "blur(0px)" : "blur(10px)"
+              opacity: currentIndex === index ? 1 : 0,
+              scale: shouldReducedMotion
+                ? 1
+                : currentIndex === index
+                  ? index % 2 === 0
+                    ? HERO_CONSTANTS.ZOOM_SCALE.EVEN
+                    : HERO_CONSTANTS.ZOOM_SCALE.ODD
+                  : index % 2 === 0
+                    ? HERO_CONSTANTS.ZOOM_SCALE.ODD
+                    : HERO_CONSTANTS.ZOOM_SCALE.EVEN,
+              filter: isMobile
+                ? "none"
+                : currentIndex === index
+                  ? HERO_CONSTANTS.BLUR.ACTIVE
+                  : HERO_CONSTANTS.BLUR.INITIAL,
             }}
             transition={{
-              duration: 1.2,
-              ease: "easeInOut",
-              scale: { duration: 6, ease: "linear" }
+              duration: HERO_CONSTANTS.TRANSITION.DURATION,
+              ease: HERO_CONSTANTS.TRANSITION.EASE,
+              scale: { duration: HERO_CONSTANTS.TRANSITION.SCALE_DURATION, ease: "linear" },
             }}
             className="absolute inset-0 w-full h-full"
             style={{
-              willChange: "opacity, transform, filter",
+              willChange: isMobile ? "opacity, transform" : "opacity, transform, filter",
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
             }}
@@ -178,15 +106,14 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
                   autoPlay
                   muted
                   playsInline
-                  className={`w-full h-full object-cover object-center ${videoError ? 'hidden' : ''}`}
+                  className={`w-full h-full object-cover object-center ${videoError ? "hidden" : ""}`}
                   style={{
                     filter: "contrast(1.15) saturate(1.3) brightness(1.05) sharpness(1.1)",
                     transform: "scale(1.05)",
                   }}
                   preload="none"
-                  onError={() => {
-                    setVideoError(true);
-                  }}
+                  onError={handleVideoError}
+                  onEnded={() => setVideoHasPlayed(true)}
                 />
                 {videoError && (
                   <Image
@@ -201,16 +128,17 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
             ) : (
               <>
                 <Image
-                  src={slide.mobileImage || slide.image}
-                  alt={`${slide.heading}`}
+                  src={slide.mobileImage || slide.image || "/images/hero-fallback.jpg"}
+                  alt={`${slide.heading || "HumanTee Slide"}`}
                   fill
-                  className={`object-cover object-center w-full h-full ${slide.mobileImage ? 'md:hidden' : ''}`}
+                  className={`object-cover object-center w-full h-full ${slide.mobileImage ? "md:hidden" : ""
+                    }`}
                   priority={index === 1}
                 />
                 {slide.mobileImage && (
                   <Image
-                    src={slide.image}
-                    alt={slide.heading}
+                    src={slide.image || "/images/hero-fallback.jpg"}
+                    alt={slide.heading || "HumanTee Collection"}
                     fill
                     className="hidden md:block object-cover object-center w-full h-full"
                     priority={index === 1}
@@ -229,35 +157,35 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
         <motion.div
           key={`content-${index}`}
           initial={{ opacity: index === 0 ? 1 : 0 }}
-          animate={{ opacity: currentImageIndex === index ? 1 : 0, pointerEvents: currentImageIndex === index ? 'auto' : 'none' }}
+          animate={{
+            opacity: currentIndex === index ? 1 : 0,
+            pointerEvents: currentIndex === index ? "auto" : "none",
+          }}
           transition={{ duration: 0.8 }}
           className="absolute inset-0 z-10 flex items-center"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 w-full">
-            <div className={`max-w-2xl ${index === 1 ? 'mt-16 sm:mt-12 md:mt-8 lg:mt-0' : index === 2 ? 'mt-8 sm:mt-4 md:mt-0 lg:-mt-8' : 'mt-32 sm:mt-24 md:mt-16 lg:mt-0'}`}>
-
+            <div className={getSlideContentClasses(index)}>
               {/* Skip content for video slide */}
-              {slide.type === 'video' ? null : (
+              {slide.type === "video" ? null : (
                 <>
                   {/* Banner 1 */}
                   {index === 1 && slide.subheading1 ? (
                     <>
                       <h1
-                        className="text-[32px] xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl text-white mb-2 tracking-wide leading-[1.1] font-bold px-1 xs:px-2 sm:px-4 md:px-6"
-                        style={{ fontFamily: "var(--font-zalando-sans)", fontWeight: 700, textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}
+                        className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-1 sm:mb-2 tracking-wide leading-[1.2] font-bold px-2 xs:px-3 sm:px-4 md:px-6"
+                        style={SLIDE_STYLES.heading}
                       >
                         {slide.heading}
                       </h1>
                       <h2
-                        className="text-[32px] xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl text-white mb-6 tracking-wide leading-[1.1] font-bold px-1 xs:px-2 sm:px-4 md:px-6"
-                        style={{ fontFamily: "var(--font-zalando-sans)", fontWeight: 700, textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}
+                        className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-3 sm:mb-4 md:mb-6 tracking-wide leading-[1.2] font-bold px-2 xs:px-3 sm:px-4 md:px-6"
+                        style={SLIDE_STYLES.heading}
                       >
                         {slide.subheading1}
                       </h2>
                       {slide.subheading2 && (
-                        <h3
-                          className="text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl text-white mb-8 sm:mb-12 font-semibold tracking-[0.15em] xs:tracking-[0.20em] uppercase px-1 xs:px-2 sm:px-4 md:px-6"
-                        >
+                        <h3 className="text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl text-white mb-4 sm:mb-6 md:mb-8 font-semibold tracking-[0.15em] xs:tracking-[0.20em] uppercase px-2 xs:px-3 sm:px-4 md:px-6">
                           {slide.subheading2}
                         </h3>
                       )}
@@ -266,22 +194,20 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
                     /* Banner 2 - Cursive */
                     <>
                       <h1
-                        className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl text-white mb-1 sm:mb-2 tracking-normal leading-[1.2] font-bold px-2 sm:px-4 md:px-6"
-                        style={{ fontFamily: "var(--font-bonheur-royale)", fontWeight: 700 }}
+                        className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl text-white mb-1 sm:mb-2 tracking-normal leading-[1.2] font-bold px-2 sm:px-4 md:px-6"
+                        style={SLIDE_STYLES.cursive}
                       >
                         {slide.heading}
                       </h1>
                       {slide.subheading1 && (
-                        <h2
-                          className="text-base sm:text-lg md:text-xl lg:text-2xl text-white mb-4 sm:mb-6 font-semibold tracking-[0.20em] uppercase px-2 sm:px-4 md:px-6"
-                        >
+                        <h2 className="text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl text-white mb-3 sm:mb-4 md:mb-6 font-semibold tracking-[0.20em] uppercase px-2 sm:px-4 md:px-6">
                           {slide.subheading1}
                         </h2>
                       )}
                       {slide.subheading2 && (
                         <h3
-                          className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 mb-8 sm:mb-12 font-geist font-light tracking-[0.08em] px-2 sm:px-4 md:px-6"
-                          style={{ fontFamily: "var(--font-tan-pearl)" }}
+                          className="text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 mb-4 sm:mb-6 md:mb-8 font-geist font-light tracking-[0.08em] px-2 sm:px-4 md:px-6"
+                          style={SLIDE_STYLES.tanPearl}
                         >
                           {slide.subheading2}
                         </h3>
@@ -290,7 +216,7 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
                   ) : (
                     <h1
                       className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 sm:mb-6 tracking-[0.02em] leading-[1.3] font-geist font-light uppercase px-2 sm:px-4 md:px-6"
-                      style={{ fontFamily: "var(--font-tan-pearl)" }}
+                      style={SLIDE_STYLES.tanPearl}
                     >
                       {slide.heading}
                     </h1>
@@ -309,20 +235,15 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
         </motion.div>
       ))}
 
-      {/* 2. SCROLL DISCOVERY HINT (Old 'Explore' Version) */}
-      <motion.div
-        style={{ opacity }}
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 pointer-events-none"
-      >
-        <span className="text-[10px] tracking-[0.3em] uppercase text-white/60 font-geist">Explore</span>
-        <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="w-[1px] h-12 bg-gradient-to-b from-white to-transparent"
-        />
-      </motion.div>
+      {/* Scroll Discovery Hint */}
+      <ScrollHint />
     </section>
   );
 };
 
-export default memo(Hero);
+// Memo with comparison function for better performance
+export default memo(Hero, (prevProps, nextProps) => {
+  // Only re-render if slides array reference changes
+  if (!prevProps || !nextProps) return false;
+  return prevProps.slides === nextProps.slides;
+});

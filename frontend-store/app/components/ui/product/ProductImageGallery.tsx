@@ -6,8 +6,12 @@
 "use client";
 
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { FiZoomIn, FiX } from 'react-icons/fi';
+
+// Constants
+const AUTO_ADVANCE_INTERVAL = 3000;
+const SWIPE_THRESHOLD = 50;
 
 interface ProductImageGalleryProps {
     images: string[];
@@ -16,21 +20,29 @@ interface ProductImageGalleryProps {
     productId: number;
 }
 
-export function ProductImageGallery({ images, title, subtitle, productId }: ProductImageGalleryProps) {
+const ProductImageGalleryComponent = ({ images, title, subtitle, productId }: ProductImageGalleryProps) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isAutoPlaying, setIsAutoPlaying] = useState(true);
     const [isZoomed, setIsZoomed] = useState(false);
     const [touchStart, setTouchStart] = useState(0);
     const [touchEnd, setTouchEnd] = useState(0);
-    const [zoomScale, setZoomScale] = useState(100); // Zoom percentage
+    const [zoomScale, setZoomScale] = useState(100);
 
-    // Auto-transition images every 3 seconds
+    // Preload next image for smoother transitions
+    useEffect(() => {
+        if (images[currentImageIndex + 1]) {
+            const img = new Image();
+            img.src = images[currentImageIndex + 1];
+        }
+    }, [currentImageIndex, images]);
+
+    // Auto-transition images
     useEffect(() => {
         if (!isAutoPlaying || images.length <= 1 || isZoomed) return;
 
         const interval = setInterval(() => {
             setCurrentImageIndex((prev) => (prev + 1) % images.length);
-        }, 3000);
+        }, AUTO_ADVANCE_INTERVAL);
 
         return () => clearInterval(interval);
     }, [isAutoPlaying, images.length, isZoomed]);

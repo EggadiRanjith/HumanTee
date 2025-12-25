@@ -97,9 +97,10 @@ export default memo(function ProfileSection({
                     {!isEditing && (
                         <button
                             onClick={handleEditClick}
-                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 flex items-center justify-center transition-all"
+                            aria-label="Edit personal information"
+                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 flex items-center justify-center transition-all min-h-[44px] min-w-[44px]"
                         >
-                            <FiEdit2 className="w-4 h-4 text-white/60" />
+                            <FiEdit2 className="w-4 h-4 text-white/60" aria-hidden="true" />
                         </button>
                     )}
                 </div>
@@ -107,16 +108,19 @@ export default memo(function ProfileSection({
                 <div className="space-y-4 sm:space-y-5">
                     {/* Full Name */}
                     <div>
-                        <p className="text-[10px] sm:text-xs text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider">
+                        <label htmlFor="fullname-input" className="text-[10px] sm:text-xs text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider block">
                             Full Name
-                        </p>
+                        </label>
                         {isEditing ? (
                             <input
+                                id="fullname-input"
                                 type="text"
                                 value={editedName}
                                 onChange={(e) => setEditedName(e.target.value)}
                                 placeholder="Enter your full name"
-                                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all text-sm sm:text-base"
+                                autoComplete="name"
+                                aria-label="Full name"
+                                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all text-sm sm:text-base min-h-[44px]"
                             />
                         ) : (
                             <p className="text-base sm:text-lg text-white/90">
@@ -129,16 +133,20 @@ export default memo(function ProfileSection({
 
                     {/* Phone */}
                     <div>
-                        <p className="text-[10px] sm:text-xs text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider">
+                        <label htmlFor="phone-input" className="text-[10px] sm:text-xs text-white/40 mb-1.5 sm:mb-2 uppercase tracking-wider block">
                             Phone Number
-                        </p>
+                        </label>
                         {isEditing ? (
                             <input
+                                id="phone-input"
                                 type="tel"
                                 value={editedPhone}
                                 onChange={(e) => setEditedPhone(e.target.value)}
                                 placeholder="Enter your phone number"
-                                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all text-sm sm:text-base"
+                                autoComplete="tel"
+                                inputMode="tel"
+                                aria-label="Phone number"
+                                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all text-sm sm:text-base min-h-[44px]"
                             />
                         ) : (
                             <p className="text-base sm:text-lg text-white/90">
@@ -170,14 +178,17 @@ export default memo(function ProfileSection({
                             <button
                                 onClick={handleSaveProfile}
                                 disabled={isSaving}
-                                className="flex-1 px-4 py-2.5 sm:py-3 bg-white text-black rounded-lg font-semibold text-sm sm:text-base hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                aria-busy={isSaving}
+                                aria-label={isSaving ? "Saving profile changes" : "Save profile changes"}
+                                className="flex-1 px-4 py-2.5 sm:py-3 bg-white text-black rounded-lg font-semibold text-sm sm:text-base hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
                             >
                                 {isSaving ? 'Saving...' : 'Save Changes'}
                             </button>
                             <button
                                 onClick={handleCancelEdit}
                                 disabled={isSaving}
-                                className="flex-1 px-4 py-2.5 sm:py-3 bg-white/10 text-white rounded-lg font-semibold text-sm sm:text-base hover:bg-white/20 transition-colors disabled:opacity-50"
+                                aria-label="Cancel editing"
+                                className="flex-1 px-4 py-2.5 sm:py-3 bg-white/10 text-white rounded-lg font-semibold text-sm sm:text-base hover:bg-white/20 transition-colors disabled:opacity-50 min-h-[44px]"
                             >
                                 Cancel
                             </button>
@@ -186,10 +197,20 @@ export default memo(function ProfileSection({
 
                     {/* Messages */}
                     {saveError && (
-                        <p className="text-red-400 text-xs sm:text-sm mt-2">{saveError}</p>
+                        <p
+                            role="alert"
+                            aria-live="assertive"
+                            className="text-red-400 text-xs sm:text-sm mt-2"
+                        >
+                            {saveError}
+                        </p>
                     )}
                     {saveSuccess && (
-                        <p className="text-green-400 text-xs sm:text-sm mt-2">
+                        <p
+                            role="status"
+                            aria-live="polite"
+                            className="text-green-400 text-xs sm:text-sm mt-2"
+                        >
                             Profile updated successfully!
                         </p>
                     )}

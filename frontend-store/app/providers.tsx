@@ -1,7 +1,7 @@
 "use client";
 
 import { LoadingProvider } from "./contexts/LoadingContext";
-import { HeaderProvider } from "./components/layout/useHeaderContext";
+import { HeaderProvider } from "./components/layout/shared/useHeaderContext";
 import { CartProvider } from "./contexts/CartContext";
 import { CheckoutProvider } from "./contexts/CheckoutContext";
 import { ToastProvider } from "./contexts/ToastContext";

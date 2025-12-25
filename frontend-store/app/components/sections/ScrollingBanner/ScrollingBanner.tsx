@@ -1,23 +1,46 @@
 /**
  * ScrollingBanner Section
  * Displays promotional messages in an infinite scrolling banner
- * Optimized with pure CSS animation and mobile responsiveness
+ * Optimized with API integration, fallback support, and accessibility
  */
 
 "use client";
 
-import { memo } from "react";
-import { bannerMessages } from '@/app/data/banner-messages.data';
+import { useState, useEffect, memo } from "react";
+import { BannerSkeleton } from "./components";
+import { useBannerSettings } from "./hooks";
 
 interface ScrollingBannerProps {
   messages?: string[];
 }
 
 const ScrollingBanner = ({ messages: propMessages }: ScrollingBannerProps = {}) => {
-  // Use prop messages if provided, otherwise fall back to hardcoded data
-  const messages = propMessages && propMessages.length > 0 ? propMessages : bannerMessages;
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch banner settings from API with fallback
+  const { settings: bannerSettings, isLoading: settingsLoading } = useBannerSettings();
+
+  // Use prop messages if provided, otherwise use API/fallback messages
+  const messages = propMessages && propMessages.length > 0 ? propMessages : bannerSettings.messages;
+
+  // Loading state
+  useEffect(() => {
+    if (!settingsLoading) {
+      const timer = setTimeout(() => setIsLoading(false), 200);
+      return () => clearTimeout(timer);
+    }
+  }, [settingsLoading]);
+
+  // Don't render if no messages
+  if (messages.length === 0) return null;
+  if (isLoading) return <BannerSkeleton />;
+
   return (
-    <section className="relative w-full py-3 xs:py-4 overflow-hidden bg-white border-y border-gray-200">
+    <section
+      className="relative w-full py-3 xs:py-4 overflow-hidden bg-white border-y border-gray-200"
+      aria-label="Promotional announcements"
+      role="region"
+    >
       {/* Gradient overlays for smooth fade effect - Mobile optimized */}
       <div className="absolute left-0 top-0 bottom-0 w-12 xs:w-16 sm:w-20 bg-gradient-to-r from-white to-transparent z-10" />
       <div className="absolute right-0 top-0 bottom-0 w-12 xs:w-16 sm:w-20 bg-gradient-to-l from-white to-transparent z-10" />
@@ -62,4 +85,8 @@ const ScrollingBanner = ({ messages: propMessages }: ScrollingBannerProps = {}) 
   );
 };
 
-export default memo(ScrollingBanner);
+// Memo with comparison function
+export default memo(ScrollingBanner, (prevProps, nextProps) => {
+  if (!prevProps || !nextProps) return false;
+  return prevProps.messages === nextProps.messages;
+});

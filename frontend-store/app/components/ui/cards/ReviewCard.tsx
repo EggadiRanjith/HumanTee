@@ -10,6 +10,7 @@
 
 import { motion } from 'framer-motion';
 import { memo } from 'react';
+import Image from 'next/image';
 import { Review } from '@/app/types/review.types';
 
 interface ReviewCardProps {
@@ -30,12 +31,14 @@ const ReviewCard = ({ review, className = '' }: ReviewCardProps) => {
         >
             {/* Avatar & User Info */}
             <div className="flex items-center mb-4">
-                <img
-                    src={review.avatar}
-                    alt={`${review.name} avatar`}
-                    className="w-12 h-12 rounded-full border border-white/15"
-                    loading="lazy"
-                />
+                <div className="relative w-12 h-12 shrink-0">
+                    <Image
+                        src={review.avatar || "/images/avatar-placeholder.png"}
+                        alt={`${review.name} avatar`}
+                        fill
+                        className="rounded-full border border-white/15 object-cover"
+                    />
+                </div>
                 <div className="ml-3">
                     <h3 className="font-geist text-white font-medium text-sm sm:text-base">
                         {review.name}

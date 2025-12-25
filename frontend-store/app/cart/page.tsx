@@ -1,39 +1,47 @@
+/**
+ * Cart Page
+ * FANG-Level Refactored with mobile-first responsive design
+ * Modular architecture with performance optimizations
+ */
+
 "use client";
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
-import { useCart } from "@/app/contexts/CartContext";
 import { useLoading } from "@/app/contexts/LoadingContext";
 import { CartItem, CartSummary } from "@/app/components/ui/cart";
 import { GradientOverlay } from "@/app/components/ui/layout";
 import { EmptyCart } from "@/app/components/ui/EmptyState";
-import DiscountSuggestions from "@/app/components/checkout/DiscountSuggestions";
-import DiscountInput from "@/app/components/checkout/DiscountInput";
-import { FiX } from "react-icons/fi";
+import { CartHeader, CartSkeleton, DiscountSection } from "./components";
+import { useCartOperations } from "./hooks";
+import type { LottieAnimation } from "./types";
 
 // Dynamic import to prevent SSR issues
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 export default function CartPage() {
     const router = useRouter();
+    const { setLoading } = useLoading();
+
+    // Cart operations hook (memoized)
     const {
         items,
-        removeFromCart,
-        updateQuantity,
-        totalPrice,
-        totalItems,
-        appliedDiscount,
-        applyDiscount,
-        removeDiscount,
-        discountedTotal,
+        hasItems,
+        cartSummary,
         suggestions,
-        isLoadingSuggestions
-    } = useCart();
-    const { setLoading } = useLoading();
+        isLoadingSuggestions,
+        appliedDiscount,
+        handleRemoveItem,
+        handleUpdateQuantity,
+        handleApplyDiscount,
+        handleRemoveDiscount,
+    } = useCartOperations();
+
+    // Local state
     const [showIntro, setShowIntro] = useState(true);
-    const [introAnimation, setIntroAnimation] = useState<any>(null);
+    const [introAnimation, setIntroAnimation] = useState<LottieAnimation | null>(null);
     const [showManualEntry, setShowManualEntry] = useState(false);
 
     // Load Lottie Animation
@@ -55,10 +63,12 @@ export default function CartPage() {
     // Intro Animation View - Overlay on top of content
     const showOverlay = showIntro && introAnimation;
 
-    if (items.length === 0) {
+    // Empty cart state
+    if (!hasItems) {
         return (
             <div className="min-h-screen brand-bg pb-24 pt-[var(--header-height)]">
                 <GradientOverlay variant="violet" />
+                {/* Mobile: 16px padding, Tablet: 24px, Desktop: 40px */}
                 <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10">
                     <EmptyCart />
                 </div>
@@ -70,7 +80,7 @@ export default function CartPage() {
         <div className="min-h-screen brand-bg pb-24 pt-[var(--header-height)] relative">
             <GradientOverlay variant="violet" />
 
-            {/* Intro Overlay */}
+            {/* Intro Overlay - Mobile only */}
             <AnimatePresence>
                 {showOverlay && (
                     <motion.div
@@ -91,94 +101,50 @@ export default function CartPage() {
                 )}
             </AnimatePresence>
 
-            {/* Manual Discount Entry Modal */}
-            <AnimatePresence>
-                {showManualEntry && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-                        onClick={() => setShowManualEntry(false)}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            className="w-full max-w-md p-6 rounded-2xl luxury-glass border border-white/20 bg-[#0d0d1a]"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-white text-lg font-medium">Enter Discount Code</h3>
-                                <button
-                                    onClick={() => setShowManualEntry(false)}
-                                    className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-                                >
-                                    <FiX className="w-5 h-5 text-white/60" />
-                                </button>
-                            </div>
-
-                            <DiscountInput
-                                cartTotal={totalPrice}
-                                appliedDiscount={appliedDiscount}
-                                onApply={async (code) => {
-                                    await applyDiscount(code);
-                                    setShowManualEntry(false);
-                                }}
-                                onRemove={removeDiscount}
-                            />
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
+            {/* Main Content - Mobile-first responsive */}
             <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10 pt-12">
 
-                {/* Page Header */}
-                <div className="mb-10">
-                    <h1 className="text-[26px] sm:text-[34px] lg:text-[42px] font-light uppercase tracking-[0.14em] text-white">
-                        Shopping Cart
-                    </h1>
-                    <p className="text-white/45 text-[11px] uppercase tracking-[0.22em] mt-2">
-                        {totalItems} {totalItems === 1 ? "item" : "items"} in your cart
-                    </p>
-                </div>
+                {/* Header Component */}
+                <CartHeader totalItems={cartSummary.itemCount} />
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Grid Layout - Mobile: 1 col, Desktop: 3 cols (2+1) */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
 
-                    {/* Cart Items */}
+                    {/* Cart Items - Mobile: Full width, Desktop: 2/3 width */}
                     <div className="lg:col-span-2 space-y-4">
                         {items.map((item, index) => (
                             <CartItem
                                 key={`${item.id}-${item.size}`}
                                 item={item}
                                 index={index}
-                                onUpdateQuantity={updateQuantity}
-                                onRemove={removeFromCart}
+                                onUpdateQuantity={handleUpdateQuantity}
+                                onRemove={handleRemoveItem}
                             />
                         ))}
                     </div>
 
-                    {/* Order Summary */}
-                    <div className="lg:col-span-1 space-y-4">
-                        {/* Discount Suggestions */}
-                        {!isLoadingSuggestions && (
-                            <DiscountSuggestions
-                                suggestions={suggestions}
-                                appliedDiscount={appliedDiscount}
-                                onApply={applyDiscount}
-                                onRemove={removeDiscount}
-                                onManualEntry={() => setShowManualEntry(true)}
-                            />
-                        )}
+                    {/* Order Summary - Mobile: Full width, Desktop: 1/3 width, Sticky */}
+                    <div className="lg:col-span-1 space-y-4 lg:sticky lg:top-24 lg:self-start">
+                        {/* Discount Section Component */}
+                        <DiscountSection
+                            suggestions={suggestions}
+                            appliedDiscount={appliedDiscount}
+                            isLoadingSuggestions={isLoadingSuggestions}
+                            showManualEntry={showManualEntry}
+                            cartTotal={cartSummary.subtotal}
+                            onApply={handleApplyDiscount}
+                            onRemove={handleRemoveDiscount}
+                            onOpenManualEntry={() => setShowManualEntry(true)}
+                            onCloseManualEntry={() => setShowManualEntry(false)}
+                        />
 
-                        {/* Cart Summary */}
+                        {/* Cart Summary Component */}
                         <CartSummary
-                            subtotal={totalPrice}
-                            totalItems={totalItems}
+                            subtotal={cartSummary.subtotal}
+                            totalItems={cartSummary.itemCount}
                             onCheckout={handleCheckout}
                             discount={appliedDiscount}
-                            total={discountedTotal}
+                            total={cartSummary.total}
                         />
                     </div>
 

@@ -5,6 +5,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { memo } from 'react';
 import { FiPackage, FiTruck, FiCheckCircle, FiClock } from 'react-icons/fi';
 import { Order, OrderStatus } from '@/app/types/order.types';
 
@@ -52,7 +53,7 @@ function getStatusConfig(status: OrderStatus) {
     }
 }
 
-export function OrderCard({ order }: OrderCardProps) {
+const OrderCardComponent = ({ order }: OrderCardProps) => {
     const status = getStatusConfig(order.status);
     const Icon = status.icon;
 
@@ -129,4 +130,9 @@ export function OrderCard({ order }: OrderCardProps) {
             </div>
         </div>
     );
-}
+};
+
+// Memoized export to prevent unnecessary re-renders
+export const OrderCard = memo(OrderCardComponent, (prevProps, nextProps) => {
+    return prevProps.order.id === nextProps.order.id;
+});

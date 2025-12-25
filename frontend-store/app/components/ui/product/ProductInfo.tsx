@@ -6,7 +6,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/app/contexts/CartContext';
@@ -27,16 +27,21 @@ interface ProductInfoProps {
     product: ProductDetail;
 }
 
-export function ProductInfo({ product }: ProductInfoProps) {
+interface ProductSettings {
+    showSizeGuide?: boolean;
+    enableQuickBuy?: boolean;
+}
+
+const ProductInfoComponent = ({ product }: ProductInfoProps) => {
     const [selectedSize, setSelectedSize] = useState("");
     const [quantity, setQuantity] = useState(1);
     const [sizeError, setSizeError] = useState(false);
     const [stockError, setStockError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [addedToCart, setAddedToCart] = useState(false);
-    const [cartAnimation, setCartAnimation] = useState<any>(null);
+    const [cartAnimation, setCartAnimation] = useState<object | null>(null);
     const [showSizeGuide, setShowSizeGuide] = useState(false);
-    const [pageSettings, setPageSettings] = useState<any>(null);
+    const [pageSettings, setPageSettings] = useState<ProductSettings | null>(null);
     const { addToCart, getItemInCart } = useCart();
     const { showToast } = useToast();
 

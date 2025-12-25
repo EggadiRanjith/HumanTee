@@ -28,22 +28,42 @@ export default memo(function EmailForm({
             console.count('EmailForm render');
         }
     });
+
     return (
-        <form onSubmit={onSubmit} className="space-y-6">
+        <form
+            onSubmit={onSubmit}
+            className="space-y-6"
+            aria-label="Email login form"
+        >
             <div>
+                <label htmlFor="email-input" className="sr-only">
+                    Email address
+                </label>
                 <div className="relative group">
-                    <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-white/70 transition-colors z-10" />
+                    <FiMail
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-white/70 transition-colors z-10"
+                        aria-hidden="true"
+                    />
                     <input
+                        id="email-input"
                         type="email"
                         placeholder="Enter your email address"
                         value={email}
                         onChange={(e) => onEmailChange(e.target.value)}
                         disabled={isLoading}
+                        required
+                        autoComplete="email"
+                        aria-required="true"
+                        aria-invalid={!!error}
+                        aria-describedby={error ? "email-error" : success ? "email-success" : undefined}
                         className="w-full pl-12 pr-4 py-4 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-white/40 focus:border-white/30 focus:bg-black/60 focus:outline-none transition-all text-sm disabled:opacity-50"
                     />
                 </div>
                 {error && (
                     <motion.p
+                        id="email-error"
+                        role="alert"
+                        aria-live="assertive"
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="text-red-400 text-xs mt-2 ml-1"
@@ -53,11 +73,14 @@ export default memo(function EmailForm({
                 )}
                 {success && (
                     <motion.p
+                        id="email-success"
+                        role="status"
+                        aria-live="polite"
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="text-green-400 text-xs mt-2 ml-1 flex items-center gap-2"
                     >
-                        <FiCheck className="w-4 h-4" />
+                        <FiCheck className="w-4 h-4" aria-hidden="true" />
                         {success}
                     </motion.p>
                 )}
@@ -68,17 +91,26 @@ export default memo(function EmailForm({
                 whileTap={{ scale: isLoading ? 1 : 0.98 }}
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-4 bg-white text-black rounded-xl font-bold uppercase tracking-wider hover:bg-white/90 shadow-lg shadow-white/10 transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                aria-busy={isLoading}
+                aria-label={isLoading ? "Sending OTP code" : "Continue with email"}
+                className="w-full py-4 bg-white text-black rounded-xl font-bold uppercase tracking-wider hover:bg-white/90 shadow-lg shadow-white/10 transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[48px]"
             >
                 {isLoading ? (
                     <>
-                        <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
-                        Sending OTP...
+                        <div
+                            className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin"
+                            role="status"
+                            aria-label="Loading"
+                        ></div>
+                        <span>Sending OTP...</span>
                     </>
                 ) : (
                     <>
                         Continue with Email
-                        <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
+                        <FiArrowRight
+                            className="group-hover:translate-x-1 transition-transform"
+                            aria-hidden="true"
+                        />
                     </>
                 )}
             </motion.button>

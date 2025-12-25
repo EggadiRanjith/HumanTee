@@ -1,89 +1,60 @@
 /**
  * Reviews Section
  * Displays customer reviews in a continuous smooth floating container
- * Auto-floats with rewind and pause-on-touch functionality
- * Optimized with React.memo
+ * Refactored with API integration, modular hooks, and proper states
  */
 
 "use client";
 
-import { useRef, useEffect, useState, memo } from "react";
-import { ReviewCard } from '@/app/components/ui/cards';
-import { SectionHeader } from '@/app/components/ui/layout';
-import { customerReviews } from '@/app/data/reviews.data';
+import { useRef, useState, useEffect, memo } from "react";
+import { ReviewCard } from "@/app/components/ui/cards";
+import { SectionHeader } from "@/app/components/ui/layout";
+import { ReviewsSkeleton, ReviewsEmpty } from "./components";
+import { useReviewsSettings, useReviewsAnimation, useReviewsInteraction } from "./hooks";
+import { Review } from "@/app/types/review.types";
 
 interface ReviewsProps {
-  reviews?: any[];
+  reviews?: Review[];
   enabled?: boolean;
 }
 
-function Reviews({ reviews: propReviews, enabled = true }: ReviewsProps = {}) {
+function Reviews({ reviews: propReviews, enabled: propEnabled }: ReviewsProps = {}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch reviews settings from API with fallback
+  const { settings: reviewsSettings, isLoading: settingsLoading } = useReviewsSettings();
+
+  // Use prop values if provided, otherwise use API/fallback
+  const enabled = propEnabled !== undefined ? propEnabled : reviewsSettings.enabled;
+  const reviews = propReviews && propReviews.length > 0 ? propReviews : reviewsSettings.items;
+  const title = reviewsSettings.title;
+
+  // User interaction handling
+  const { isUserInteracting, handleUserInteraction } = useReviewsInteraction();
+
+  // Animation (auto-scroll)
+  useReviewsAnimation(scrollRef, isUserInteracting);
+
+  // Loading state
+  useEffect(() => {
+    if (!settingsLoading) {
+      const timer = setTimeout(() => setIsLoading(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [settingsLoading]);
+
   // Return null if reviews section is disabled
   if (!enabled) return null;
 
-  // Use prop reviews if provided, otherwise fall back to hardcoded data
-  const reviews = propReviews && propReviews.length > 0 ? propReviews : customerReviews;
+  // Loading state
+  if (isLoading) return <ReviewsSkeleton />;
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isUserInteracting, setIsUserInteracting] = useState(false);
-  const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
+  // Empty state
+  if (reviews.length === 0) return <ReviewsEmpty />;
 
   // Duplicate reviews twice to ensure full width coverage
   const duplicated = [...reviews, ...reviews];
-
-  // Animation Loop
-  const animate = () => {
-    if (scrollRef.current && !isPaused && !isUserInteracting) {
-      const container = scrollRef.current;
-      const maxScroll = container.scrollWidth - container.clientWidth;
-
-      // Check if we are at the end to rewind
-      if (container.scrollLeft >= maxScroll - 2) {
-        // Trigger smooth rewind
-        setIsUserInteracting(true); // Pause updates while rewinding
-        container.scrollTo({ left: 0, behavior: 'smooth' });
-
-        // Wait for rewind to likely finish then resume
-        setTimeout(() => {
-          setIsUserInteracting(false);
-        }, 1500);
-      } else {
-        // Continuous float
-        container.scrollLeft += 1; // 1px per frame (approx 60px/sec at 60fps)
-      }
-    }
-
-    // Loop
-    animationFrameRef.current = requestAnimationFrame(animate);
-  };
-
-  // Start animation loop
-  useEffect(() => {
-    animationFrameRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, [isPaused, isUserInteracting]);
-
-  // Handle user interaction - pause and resume after 4 seconds
-  const handleUserInteraction = () => {
-    setIsUserInteracting(true);
-
-    // Clear existing pause timer
-    if (pauseTimerRef.current) {
-      clearTimeout(pauseTimerRef.current);
-    }
-
-    // Resume after 4 seconds of no interaction
-    pauseTimerRef.current = setTimeout(() => {
-      setIsUserInteracting(false);
-    }, 4000) as any;
-  };
 
   return (
     <section
@@ -92,25 +63,16 @@ function Reviews({ reviews: propReviews, enabled = true }: ReviewsProps = {}) {
     >
       {/* Section Header */}
       <div className="px-4 sm:px-0">
-        <SectionHeader
-          title="What Our Customers Say"
-          variant="centered"
-        />
+        <SectionHeader title={title} variant="centered" />
       </div>
 
       {/* Scrollable Container */}
       <div
         ref={scrollRef}
-        className="
-          overflow-x-auto 
-          cursor-grab active:cursor-grabbing
-          pb-4 no-scrollbar
-          w-full
-          px-4 sm:px-0
-        "
+        className="overflow-x-auto cursor-grab active:cursor-grabbing pb-4 no-scrollbar w-full px-4 sm:px-0"
         style={{
-          scrollbarWidth: 'none', /* Firefox */
-          msOverflowStyle: 'none', /* IE and Edge */
+          scrollbarWidth: "none" /* Firefox */,
+          msOverflowStyle: "none" /* IE and Edge */,
         }}
         onWheel={(e) => {
           handleUserInteraction();
@@ -121,27 +83,20 @@ function Reviews({ reviews: propReviews, enabled = true }: ReviewsProps = {}) {
         onTouchStart={handleUserInteraction}
         onTouchMove={handleUserInteraction}
         onMouseDown={handleUserInteraction}
-        onScroll={() => {
-          // Optional: logic if needed
-        }}
         role="region"
         aria-label="Customer testimonials"
       >
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            .no-scrollbar::-webkit-scrollbar {
-              display: none;
-            }
-          `
-        }} />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `.no-scrollbar::-webkit-scrollbar { display: none; }`,
+          }}
+        />
 
         <div className="flex gap-4 sm:gap-6 md:gap-8 lg:gap-10">
           {duplicated.map((review, index) => (
             <ReviewCard
               key={`review-${index}`}
               review={review}
-              // Mobile: 85vw width so hints of next card show (don't feel cut off)
-              // Desktop: Standard fixed widths
               className="w-[85vw] sm:w-auto shrink-0 !min-w-[auto] sm:!min-w-[300px] md:!min-w-[360px]"
             />
           ))}
@@ -151,4 +106,8 @@ function Reviews({ reviews: propReviews, enabled = true }: ReviewsProps = {}) {
   );
 }
 
-export default memo(Reviews);
+// Memo with comparison function
+export default memo(Reviews, (prevProps, nextProps) => {
+  if (!prevProps || !nextProps) return false;
+  return prevProps.reviews === nextProps.reviews && prevProps.enabled === nextProps.enabled;
+});

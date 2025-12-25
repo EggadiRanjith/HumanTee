@@ -20,6 +20,12 @@ import Link from "next/link";
 import apiClient from "@/lib/api-client";
 import { useAuth } from "@/app/contexts/AuthContext";
 
+// CRITICAL: Prevent any scrolling before component even renders
+if (typeof window !== 'undefined') {
+    window.history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+}
+
 export default function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
     const { id } = use(params);
@@ -32,11 +38,31 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
     const [error, setError] = useState<string | null>(null);
     const [attachments, setAttachments] = useState<{ url: string; name: string; type: string; size: number }[]>([]);
     const [isUploading, setIsUploading] = useState(false);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
     const MAX_IMAGES = 5;
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        // Removed smooth behavior to prevent unwanted scrolling on page load
+        messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
     };
+
+    // Prevent browser scroll restoration - force scroll to top
+    useEffect(() => {
+        // Disable automatic scroll restoration
+        if ('scrollRestoration' in window.history) {
+            window.history.scrollRestoration = 'manual';
+        }
+
+        // Force immediate scroll to top without animation
+        window.scrollTo(0, 0);
+
+        // Cleanup: restore default behavior when component unmounts
+        return () => {
+            if ('scrollRestoration' in window.history) {
+                window.history.scrollRestoration = 'auto';
+            }
+        };
+    }, []);
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
@@ -49,6 +75,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
             try {
                 const response = await apiClient.get(`/tickets/${id}`);
                 setTicket(response.data);
+                setIsInitialLoad(false);
             } catch (error) {
                 console.error("Failed to fetch ticket:", error);
                 setError("Failed to load ticket details.");
@@ -62,13 +89,23 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         }
     }, [isAuthenticated, id]);
 
-    useEffect(() => {
-        if (ticket?.messages) {
-            scrollToBottom();
-        }
-    }, [ticket?.messages]);
-
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+    // CRITICAL: Force messages container to stay at top on mount
+    useEffect(() => {
+        if (messagesContainerRef.current) {
+            messagesContainerRef.current.scrollTop = 0;
+        }
+    }, [ticket]);
+
+    useEffect(() => {
+        // DISABLED: Do not auto-scroll to bottom at all
+        // Only scroll when user sends a message manually
+        // if (ticket?.messages && !isInitialLoad) {
+        //     scrollToBottom();
+        // }
+    }, [ticket?.messages, isInitialLoad]);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -229,7 +266,11 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                     <div className="flex-1 flex flex-col luxury-glass border border-white/10 rounded-2xl bg-white/5 overflow-hidden">
 
                         {/* Messages Area */}
-                        <div className="flex-1 overflow-y-auto p-6 space-y-6 min-h-[400px]">
+                        <div
+                            ref={messagesContainerRef}
+                            className="flex-1 p-6 space-y-6 min-h-[400px]"
+                            style={{ overflowY: 'auto', scrollBehavior: 'auto' }}
+                        >
                             {ticket.messages.map((msg: any) => {
                                 const isMe = msg.userId === user?.id && !msg.isAdminReply;
                                 return (

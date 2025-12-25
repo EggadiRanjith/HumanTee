@@ -4,9 +4,17 @@
  * Keep only logout for backward compatibility
  */
 
+// Dynamic API URL helper
+const getApiUrl = () => {
+    if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const hostname = window.location.hostname;
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') return `http://${hostname}:3001`;
+    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+};
+
 export async function logout(): Promise<void> {
     try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+        await fetch(`${getApiUrl()}/auth/logout`, {
             method: 'POST',
             credentials: 'include',
         });
@@ -38,7 +46,7 @@ export async function getServerUser(): Promise<User | null> {
         }
 
         // Verify token with backend
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+        const response = await fetch(`${getApiUrl()}/auth/me`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },

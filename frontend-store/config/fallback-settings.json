@@ -1,0 +1,147 @@
+{
+    "header-footer": {
+        "brand_name": "HUMANTEE",
+        "tagline": "Premium Handcrafted T-Shirts Since 1931",
+        "logo_url": null,
+        "social_links": {
+            "instagram": "https://www.instagram.com/humantee",
+            "maps": "https://maps.google.com"
+        },
+        "contact": {
+            "email": "humanteeofficial@gmail.com",
+            "phone": "+91 7780-661493"
+        }
+    },
+    "homepage": {
+        "hero": {
+            "slides": [
+                {
+                    "type": "video",
+                    "video": "/video/introvideo.mp4"
+                },
+                {
+                    "type": "image",
+                    "image": "/images/banner1.png",
+                    "mobileImage": "/images/banner1-mobile.png",
+                    "heading": "Years Of Legacy",
+                    "subheading1": "Since 1931",
+                    "subheading2": "Available in all sizes",
+                    "buttonText": "Shop Now"
+                },
+                {
+                    "type": "image",
+                    "image": "/images/banner2.png",
+                    "mobileImage": "/images/banner2mobile.png",
+                    "heading": "Apart from beginning",
+                    "subheading1": "Available in all sizes",
+                    "subheading2": "",
+                    "buttonText": "Shop Now"
+                }
+            ]
+        },
+        "banner": {
+            "messages": [
+                "Free Shipping on Orders Over ₹2000",
+                "Premium Quality Guaranteed",
+                "Handcrafted with Love Since 1931",
+                "Limited Edition Collections Available"
+            ]
+        },
+        "reviews": {
+            "enabled": true,
+            "title": "What Our Customers Say",
+            "items": [
+                {
+                    "id": 1,
+                    "name": "Alexander Chen",
+                    "role": "Luxury Fashion Collector",
+                    "avatar": "https://i.pravatar.cc/150?img=5",
+                    "rating": 5,
+                    "text": "The craftsmanship and detail exceeded my expectations. Truly bespoke luxury."
+                },
+                {
+                    "id": 2,
+                    "name": "Sophia Martinez",
+                    "role": "Creative Director",
+                    "avatar": "https://i.pravatar.cc/150?img=32",
+                    "rating": 5,
+                    "text": "Modern premium shopping — curated, elegant, and delightful."
+                },
+                {
+                    "id": 3,
+                    "name": "James Williams",
+                    "role": "Entrepreneur",
+                    "avatar": "https://i.pravatar.cc/150?img=12",
+                    "rating": 5,
+                    "text": "A cinematic shopping experience with unmatched refinement."
+                },
+                {
+                    "id": 4,
+                    "name": "Isabella Rossi",
+                    "role": "Design Consultant",
+                    "avatar": "https://i.pravatar.cc/150?img=45",
+                    "rating": 4,
+                    "text": "The design language is stunning — every detail feels intentional."
+                },
+                {
+                    "id": 5,
+                    "name": "Oliver Park",
+                    "role": "Tech Executive",
+                    "avatar": "https://i.pravatar.cc/150?img=10",
+                    "rating": 5,
+                    "text": "An innovative blend of luxury and digital craftsmanship."
+                }
+            ]
+        },
+        "featured_section": {
+            "enabled": true,
+            "title": "Featured Collection",
+            "subtitle": "Handpicked designs for the season",
+            "actionText": "View All",
+            "actionHref": "/shop",
+            "limit": 8,
+            "showViewAll": true
+        }
+    },
+    "shop": {
+        "categories": [
+            "Drop 1",
+            "Drop 2",
+            "Drop 3"
+        ],
+        "collections": [
+            "summer-collection",
+            "winter-collection",
+            "limited-edition"
+        ],
+        "default_sort": "newest",
+        "items_per_page": 12,
+        "show_filters": true,
+        "sort_options": [
+            {
+                "value": "newest",
+                "label": "Newest First"
+            },
+            {
+                "value": "price_asc",
+                "label": "Price: Low to High"
+            },
+            {
+                "value": "price_desc",
+                "label": "Price: High to Low"
+            },
+            {
+                "value": "popular",
+                "label": "Most Popular"
+            }
+        ]
+    },
+    "checkout": {
+        "free_shipping_threshold": 2000,
+        "currency": "INR",
+        "payment_methods": [
+            "razorpay",
+            "cod"
+        ]
+    }
+}

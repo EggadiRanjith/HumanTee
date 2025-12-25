@@ -1,0 +1,67 @@
+/**
+ * Shop Filters Hook
+ * Manages filter state via URL query parameters
+ * Enables shareable links and browser history support
+ */
+
+"use client";
+
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useCallback } from 'react';
+
+export interface ShopFilters {
+    category?: string;
+    collection?: string;
+    sort?: string;
+    page?: number;
+}
+
+export function useShopFilters() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+
+    // Parse current filters from URL
+    const filters: ShopFilters = {
+        category: searchParams.get('category') || undefined,
+        collection: searchParams.get('collection') || undefined,
+        sort: searchParams.get('sort') || undefined,
+        page: parseInt(searchParams.get('page') || '1'),
+    };
+
+    // Update filters in URL
+    const setFilters = useCallback((newFilters: Partial<ShopFilters>) => {
+        const params = new URLSearchParams(searchParams.toString());
+
+        // Update or remove each filter
+        Object.entries(newFilters).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+                params.set(key, String(value));
+            } else {
+                params.delete(key);
+            }
+        });
+
+        // Navigate to new URL
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    }, [searchParams, router, pathname]);
+
+    // Clear all filters
+    const clearFilters = useCallback(() => {
+        router.push(pathname, { scroll: false });
+    }, [router, pathname]);
+
+    // Check if any filters are active
+    const hasActiveFilters = !!(filters.category || filters.collection || filters.sort);
+
+    // Get active filter count
+    const activeFilterCount = [filters.category, filters.collection, filters.sort].filter(Boolean).length;
+
+    return {
+        filters,
+        setFilters,
+        clearFilters,
+        hasActiveFilters,
+        activeFilterCount,
+    };
+}

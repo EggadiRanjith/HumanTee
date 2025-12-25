@@ -639,7 +639,7 @@ body {
 /* Smooth scrolling for mobile drawer */
 .overflow-y-auto {
   -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
+  /* Removed scroll-behavior: smooth to prevent unwanted page scrolling */
 }
 
 /* Prevent body scroll when drawer is open */
