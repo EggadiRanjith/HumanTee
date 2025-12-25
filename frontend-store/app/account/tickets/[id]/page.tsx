@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, use, useRef } from "react";
+import { logError } from '@/lib/logger';
 import { useRouter } from "next/navigation";
 import {
     FiArrowLeft,
@@ -77,7 +78,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                 setTicket(response.data);
                 setIsInitialLoad(false);
             } catch (error) {
-                console.error("Failed to fetch ticket:", error);
+                logError(error, "Failed to fetch ticket");
                 setError("Failed to load ticket details.");
             } finally {
                 setIsLoading(false);
@@ -139,7 +140,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
             const results = await Promise.all(uploadPromises);
             setAttachments(prev => [...prev, ...results]);
         } catch (err: any) {
-            console.error("Upload failed:", err);
+            logError(err, "Upload failed");
             setError("Some images failed to upload. Please try again.");
         } finally {
             setIsUploading(false);
@@ -180,7 +181,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                 setIsSending(false);
             }, 2000);
         } catch (err) {
-            console.error("Failed to send message:", err);
+            logError(err, "Failed to send message");
             setError("Failed to send message. Please try again.");
             setIsSending(false);
         }

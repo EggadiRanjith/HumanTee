@@ -6,6 +6,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { logError } from '@/lib/logger';
 import { settingsApi } from "@/lib/api/settings";
 import fallbackSettings from "@/config/fallback-settings.json";
 import type { FooterSettings } from "../types";
@@ -59,7 +60,7 @@ export function useFooterSettings() {
             .catch((err) => {
                 if (!mounted) return;
                 setError(err);
-                console.error('Failed to load footer settings, using fallback:', err);
+                logError(err, 'Failed to load footer settings, using fallback');
                 // Fallback already set in initial state
             })
             .finally(() => {

@@ -7,6 +7,7 @@
 "use client";
 
 import Link from "next/link";
+import { logError } from '@/lib/logger';
 import { useState, useEffect, use } from "react";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useRouter } from "next/navigation";
@@ -47,7 +48,7 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
         const response = await apiClient.get(`/orders/${id}`);
         setOrder(response.data);
       } catch (error) {
-        console.error('Failed to fetch order:', error);
+        logError(error, 'Failed to fetch order');
       } finally {
         setIsLoading(false);
       }

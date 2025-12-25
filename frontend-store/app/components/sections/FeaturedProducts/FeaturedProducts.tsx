@@ -7,6 +7,7 @@
 "use client";
 
 import { useState, useEffect, memo } from 'react';
+import { logError } from '@/lib/logger';
 import { SectionHeader, GradientOverlay } from '@/app/components/ui/layout';
 import {
   FeaturedProductsSkeleton,
@@ -14,7 +15,7 @@ import {
   FeaturedProductsError,
   ProductGrid
 } from './components';
-import { useFeaturedSettings } from './hooks';
+import { useSectionSettings } from '@/app/hooks/useSettings';
 import { fetchProducts } from '@/lib/app/api/products';
 import { adaptProducts } from '@/lib/app/adapters/product.adapter';
 import { Product } from '@/app/types/product.types';
@@ -24,8 +25,13 @@ function FeaturedProducts() {
   const [error, setError] = useState(false);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
 
-  // Fetch settings from API with config fallback
-  const { settings, isLoading: settingsLoading } = useFeaturedSettings();
+  // Get featured settings from centralized cache
+  const { settings, isLoading: settingsLoading } = useSectionSettings('featured');
+
+  // Extract values with defaults
+  const enabled = settings?.enabled ?? true;
+  const title = settings?.title || "Featured Products";
+  const subtitle = settings?.subtitle || "Discover our curated collection";
 
   // Fetch products
   useEffect(() => {
@@ -35,7 +41,7 @@ function FeaturedProducts() {
         const adaptedProducts = adaptProducts(apiProducts);
         setProducts(adaptedProducts);
       } catch (err) {
-        console.error('Failed to fetch products:', err);
+        logError(err, 'Failed to fetch products');
         setError(true);
       } finally {
         setIsLoadingProducts(false);
@@ -45,31 +51,17 @@ function FeaturedProducts() {
     loadProducts();
   }, []);
 
-  // Don't render if section is disabled
-  if (!settings.enabled) return null;
+  // Don't render if explicitly disabled
+  if (enabled === false) return null;
 
   // Loading state
   if (settingsLoading || isLoadingProducts) {
-    return (
-      <section className="relative w-full pt-12 pb-20 px-4 sm:px-6 md:px-10 lg:px-14 cinematic-bg-dusk">
-        <GradientOverlay variant="aurora" />
-        <div className="relative max-w-screen-xl mx-auto">
-          <FeaturedProductsSkeleton />
-        </div>
-      </section>
-    );
+    return <FeaturedProductsSkeleton />;
   }
 
   // Error state
   if (error) {
-    return (
-      <section className="relative w-full pt-12 pb-20 px-4 sm:px-6 md:px-10 lg:px-14 cinematic-bg-dusk">
-        <GradientOverlay variant="aurora" />
-        <div className="relative max-w-screen-xl mx-auto">
-          <FeaturedProductsError />
-        </div>
-      </section>
-    );
+    return <FeaturedProductsError />;
   }
 
   // Empty state
@@ -85,7 +77,7 @@ function FeaturedProducts() {
   }
 
   // Limit products based on settings
-  const displayProducts = products.slice(0, settings.limit);
+  const displayProducts = products.slice(0, settings?.limit || 8);
 
   return (
     <section
@@ -98,16 +90,15 @@ function FeaturedProducts() {
       <div className="relative max-w-screen-xl mx-auto">
         {/* Header */}
         <SectionHeader
-          title={settings.title}
-          subtitle={settings.subtitle}
-          actionText={settings.actionText}
-          actionHref={settings.actionHref}
+          title={title}
+          actionText={settings?.actionText}
+          actionHref={settings?.actionHref}
         />
 
         {/* Product Grid */}
         <ProductGrid
           products={displayProducts}
-          showViewAll={settings.showViewAll}
+          showViewAll={settings?.showViewAll ?? true}
         />
       </div>
     </section>

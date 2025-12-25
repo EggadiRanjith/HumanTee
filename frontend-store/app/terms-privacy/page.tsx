@@ -2,6 +2,7 @@
 // Force refresh 1
 
 import { useState, useEffect } from "react";
+import { logError } from '@/lib/logger';
 import Link from "next/link";
 import { GradientOverlay } from "@/app/components/ui/layout";
 import { settingsApi } from "@/lib/api/settings";
@@ -38,7 +39,7 @@ export default function TermsPrivacyPage() {
         }
       })
       .catch((error) => {
-        console.error('Failed to load policies settings:', error);
+        logError(error, 'Failed to load policies settings');
       });
   }, []);
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { logError } from '@/lib/logger';
 import { FiTag, FiX, FiCheck, FiClock } from 'react-icons/fi';
 import type { AppliedDiscount } from '@/app/types/discount.types';
 import type { DiscountSuggestion } from '@/lib/api/discounts';
@@ -30,7 +31,7 @@ export default function DiscountSuggestions({
         try {
             await onApply(code);
         } catch (error) {
-            console.error('Failed to apply discount:', error);
+            logError(error, 'Failed to apply discount');
         } finally {
             setIsApplying(null);
         }

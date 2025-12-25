@@ -6,6 +6,7 @@
 "use client";
 
 import Link from 'next/link';
+import { logError } from '@/lib/logger';
 import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
 
@@ -18,7 +19,7 @@ export function OrdersEmpty() {
         fetch('/animation/lottie/Empty_order.json')
             .then(res => res.json())
             .then(data => setAnimation(data))
-            .catch(err => console.error('Failed to load empty order animation:', err));
+            .catch(err => logError(err, 'Failed to load empty order animation'));
     }, []);
 
     return (

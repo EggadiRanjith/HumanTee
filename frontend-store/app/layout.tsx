@@ -5,6 +5,7 @@ import { Providers } from "./providers"; // client providers isolated
 
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
+import MainContentWrapper from "./components/layout/MainContentWrapper";
 
 import localFont from "next/font/local";
 import { Darker_Grotesque, Meddon, Bonheur_Royale } from "next/font/google";
@@ -136,10 +137,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
           <Header />
 
-          {/* Page Content - with consistent bottom padding */}
-          <div className="pb-20 md:pb-32">
+          {/* Page Content - Wrapper controls padding based on route */}
+          <MainContentWrapper>
             {children}
-          </div>
+          </MainContentWrapper>
+
           <Footer />
 
         </Providers>
@@ -148,3 +150,4 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     </html>
   );
 }
+

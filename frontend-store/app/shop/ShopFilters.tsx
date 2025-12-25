@@ -7,7 +7,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { ShopFilters as ShopFiltersType } from '../hooks';
+import { ShopFilters as ShopFiltersType } from './hooks';
 
 interface SortOption {
     value: string;
@@ -49,7 +49,8 @@ export default function ShopFilters({
             collection: selectedCollection || undefined,
             sort: selectedSort || undefined,
         });
-    }, [selectedCategory, selectedCollection, selectedSort, onFilterChange]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedCategory, selectedCollection, selectedSort]);
 
     return (
         <div className="mb-8 sm:mb-10">

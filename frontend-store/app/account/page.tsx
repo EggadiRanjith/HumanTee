@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react"; // Phase 3: useCallback
+import { useEffect, useState, useCallback } from "react";
+import { logError } from '@/lib/logger'; // Phase 3: useCallback
 import { useRouter } from "next/navigation";
 import { FiLogOut, FiLoader } from "react-icons/fi";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { GradientOverlay } from "@/app/components/ui/layout";
+import { InlineError } from "@/app/components/ui/errors";
 import { useProfileData } from "./_hooks/useProfileData";
 import ProfileSection from "./_components/ProfileSection";
 import AddressesSection from "./_components/AddressesSection";
@@ -18,10 +20,14 @@ export default function AccountPage() {
     const {
         profile,
         isLoadingProfile,
+        profileError,
         shippingAddresses,
         isLoadingAddresses,
+        addressesError,
         updateProfile,
         updateAddresses,
+        retryProfile,
+        retryAddresses,
     } = useProfileData(user?.id, user?.email, user?.role);
 
     // Redirect if not authenticated
@@ -36,7 +42,7 @@ export default function AccountPage() {
         try {
             await logout();
         } catch (error) {
-            console.error('Logout failed:', error);
+            logError(error, 'Logout failed');
             setIsLoggingOut(false);
         }
     };
@@ -63,6 +69,27 @@ export default function AccountPage() {
                     <FiLoader className="w-12 h-12 animate-spin mx-auto mb-4 text-white/40" />
                     <p className="text-white/60 text-sm">Loading your account...</p>
                 </div>
+            </div>
+        );
+    }
+
+    // Error state - profile fetch failed
+    if (profileError) {
+        const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
+
+        return (
+            <div className="min-h-screen brand-bg pt-[var(--header-height)] flex items-center justify-center px-4">
+                <InlineError
+                    title="Unable to load account"
+                    message={
+                        isOffline
+                            ? "You're offline. Check your connection."
+                            : "Please try again."
+                    }
+                    actionLabel="Retry"
+                    onAction={retryProfile}
+                    className="max-w-md"
+                />
             </div>
         );
     }

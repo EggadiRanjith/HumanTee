@@ -21,22 +21,26 @@ export interface HeaderFooterSettings {
 }
 
 export interface HeroSettings {
-    title: string;
-    subtitle: string;
-    cta_text: string;
-    video_url: string;
+    title?: string;
+    subtitle?: string;
+    cta_text?: string;
+    video_url?: string;
 }
 
 export interface SectionSettings {
-    enabled: boolean;
-    title: string;
+    enabled?: boolean;
+    title?: string;
     subtitle?: string;
 }
 
 export interface HomepageSettings {
-    hero: HeroSettings;
-    featured_section: SectionSettings;
-    reviews_section: SectionSettings;
+    hero?: HeroSettings;
+    hero_slides?: any;
+    featured_section?: SectionSettings;
+    reviews_section?: SectionSettings;
+    reviews_settings?: any;
+    reviews?: any;
+    banner_messages?: any;
 }
 
 export interface ShopSettings {
@@ -56,4 +60,7 @@ export interface AppSettings {
     homepage: HomepageSettings;
     shop: ShopSettings;
     checkout: CheckoutSettings;
+    'product-info'?: any;
+    'policies'?: any;
+    'shipping'?: any;
 }

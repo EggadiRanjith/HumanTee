@@ -6,6 +6,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { logError } from '@/lib/logger';
 import { useEffect, useState, memo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,7 +19,7 @@ import { QuantitySelector } from './QuantitySelector';
 import { ProductDetails } from './ProductDetails';
 import { SizeGuide } from '@/app/components/ui/modals/SizeGuide';
 import { FiInfo } from 'react-icons/fi';
-import { settingsApi } from '@/lib/api/settings';
+import { useSectionSettings } from "@/app/hooks/useSettings";
 
 // Dynamic import to prevent SSR issues
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
@@ -28,8 +29,9 @@ interface ProductInfoProps {
 }
 
 interface ProductSettings {
-    showSizeGuide?: boolean;
-    enableQuickBuy?: boolean;
+    material_care?: string[];
+    shipping_returns?: string[];
+    size_fit?: string[];
 }
 
 const ProductInfoComponent = ({ product }: ProductInfoProps) => {
@@ -41,25 +43,25 @@ const ProductInfoComponent = ({ product }: ProductInfoProps) => {
     const [addedToCart, setAddedToCart] = useState(false);
     const [cartAnimation, setCartAnimation] = useState<object | null>(null);
     const [showSizeGuide, setShowSizeGuide] = useState(false);
-    const [pageSettings, setPageSettings] = useState<ProductSettings | null>(null);
     const { addToCart, getItemInCart } = useCart();
     const { showToast } = useToast();
+
+    // Get product-info settings from centralized cache
+    const { settings: pageSettings } = useSectionSettings('product-info');
+
+    // Extract settings with proper typing
+    const productSettings: ProductSettings = pageSettings || {
+        material_care: [],
+        shipping_returns: [],
+        size_fit: []
+    };
 
     // Fetch Lottie JSON on mount
     useEffect(() => {
         fetch('/animation/lottie/shopping/add_to_cart.json')
             .then(res => res.json())
             .then(data => setCartAnimation(data))
-            .catch(err => console.error("Failed to load Lottie animation", err));
-
-        // Fetch page settings
-        settingsApi.getPublicSettings()
-            .then(data => {
-                if (data && data['product-info']) {
-                    setPageSettings(data['product-info']);
-                }
-            })
-            .catch(err => console.error("Failed to load product info settings", err));
+            .catch(err => logError(err, "Failed to load Lottie animation"));
     }, []);
 
     const handleAddToCart = async () => {
@@ -257,7 +259,7 @@ const ProductInfoComponent = ({ product }: ProductInfoProps) => {
             <ProductDetails
                 description={product.description}
                 details={product.details}
-                pageSettings={pageSettings}
+                pageSettings={productSettings}
             />
 
             {/* Size Guide Modal */}
@@ -269,3 +271,5 @@ const ProductInfoComponent = ({ product }: ProductInfoProps) => {
         </div>
     );
 }
+
+export const ProductInfo = memo(ProductInfoComponent);

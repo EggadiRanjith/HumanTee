@@ -7,13 +7,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
+import { logError } from '@/lib/logger';
 import { GradientOverlay } from '@/app/components/ui/layout';
 import { fetchShopProducts } from '@/lib/app/api/products';
 import { adaptProducts } from '@/lib/app/adapters/product.adapter';
 import { Product } from '@/app/types/product.types';
 import { ProductGrid } from '@/app/components/sections/FeaturedProducts/components';
 import { Pagination } from '@/app/components/ui/navigation/Pagination';
-import { useShopFilters, useShopSettings } from './hooks';
+import { useShopFilters } from './hooks';
 import {
   ShopHeader,
   ShopSkeleton,
@@ -22,6 +23,7 @@ import {
   ShopError
 } from './components';
 import ShopFilters from './ShopFilters';
+import { useSectionSettings } from "@/app/hooks/useSettings";
 
 export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -32,36 +34,42 @@ export default function ShopPage() {
   // URL-based filters (shareable links!)
   const { filters, setFilters, clearFilters, activeFilterCount } = useShopFilters();
 
-  // Dynamic settings from API + config fallback
-  const { settings, isLoading: settingsLoading } = useShopSettings();
+  // Extract primitive values to stabilize useEffect dependencies
+  const category = filters.category;
+  const collection = filters.collection;
+  const page = filters.page;
+
+  // Get shop settings from centralized cache
+  const { settings: shopSettings, isLoading: settingsLoading } = useSectionSettings('shop');
+  const itemsPerPage = shopSettings?.items_per_page || 12;
 
   // Load products when filters change
-  const loadProducts = useCallback(async () => {
-    setLoading(true);
-    setError(false);
-
-    try {
-      const data = await fetchShopProducts({
-        category: filters.category,
-        collection: filters.collection,
-        page: filters.page || 1,
-        limit: settings.itemsPerPage
-      });
-      setProducts(adaptProducts(data.products));
-      setTotalPages(data.totalPages);
-    } catch (err) {
-      console.error('Failed to fetch shop products:', err);
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  }, [filters, settings.itemsPerPage]);
-
   useEffect(() => {
-    if (!settingsLoading) {
-      loadProducts();
-    }
-  }, [loadProducts, settingsLoading]);
+    if (settingsLoading) return;
+
+    const loadProducts = async () => {
+      setLoading(true);
+      setError(false);
+
+      try {
+        const data = await fetchShopProducts({
+          category,
+          collection,
+          page: page || 1,
+          limit: itemsPerPage
+        });
+        setProducts(adaptProducts(data.products));
+        setTotalPages(data.totalPages);
+      } catch (err) {
+        logError(err, 'Failed to fetch shop products');
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, [category, collection, page, itemsPerPage, settingsLoading]);
 
   // Handle filter changes
   const handleFilterChange = useCallback((newFilters: {
@@ -92,12 +100,12 @@ export default function ShopPage() {
         <ShopHeader />
 
         {/* Filters */}
-        {settings.showFilters && (
+        {shopSettings?.show_filters !== false && (
           <ShopFilters
             onFilterChange={handleFilterChange}
-            categories={settings.categories}
-            collections={settings.collections}
-            sortOptions={settings.sortOptions}
+            categories={shopSettings?.categories || []}
+            collections={shopSettings?.collections || []}
+            sortOptions={shopSettings?.sort_options || []}
             currentFilters={filters}
             activeFilterCount={activeFilterCount}
           />

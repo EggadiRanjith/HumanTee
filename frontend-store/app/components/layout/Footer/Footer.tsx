@@ -2,23 +2,31 @@
 
 import { memo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { usePathname } from "next/navigation";
 import { useMediaQuery } from "@/app/hooks/useMediaQuery";
 import ScrollingText from "../shared/ScrollingText";
 import { BrandSection, FooterNav, FooterSkeleton } from "./components";
-import { useFooterSettings } from "./hooks";
+import { useSectionSettings } from "@/app/hooks/useSettings";
 import { FOOTER_NAV_SECTIONS } from "./constants";
 
 function Footer() {
-  const { settings } = useFooterSettings();
+  // Get header-footer settings from centralized cache
+  const { settings } = useSectionSettings('header-footer');
+  const pathname = usePathname();
+
+  if (pathname?.startsWith('/maintenance')) {
+    return null;
+  }
+
   const isDesktop = useMediaQuery('(min-width: 640px)');
   const [brandLoaded, setBrandLoaded] = useState(false);
 
   // Track when brand loads (prevents re-render after initial load)
   useEffect(() => {
-    if (settings.brand_name && !brandLoaded) {
+    if (settings?.brand_name && !brandLoaded) {
       setBrandLoaded(true);
     }
-  }, [settings.brand_name, brandLoaded]);
+  }, [settings?.brand_name, brandLoaded]);
 
   return (
     <>
@@ -50,10 +58,10 @@ function Footer() {
             <>
               {/* Brand Column */}
               <BrandSection
-                brandName={settings.brand_name}
-                logoUrl={settings.logo_url}
-                tagline={settings.tagline}
-                socialLinks={settings.social_links}
+                brandName={settings?.brand_name}
+                logoUrl={settings?.logo_url}
+                tagline={settings?.tagline}
+                socialLinks={settings?.social_links}
               />
 
               {/* Navigation Columns */}
@@ -76,7 +84,7 @@ function Footer() {
       <div className="relative w-full bg-brand-bg border-t border-white/10">
         <div className="max-w-screen-xl mx-auto py-4 text-center">
           <p className="text-white/50 text-[11px] tracking-[0.2em]">
-            © {new Date().getFullYear()} {settings.brand_name}
+            © {new Date().getFullYear()} {settings?.brand_name || 'HumanTee'}
           </p>
         </div>
       </div>

@@ -17,6 +17,7 @@ import { UploadModule } from './common/upload/upload.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { DiscountsModule } from './discounts/discounts.module';
 import { SettingsModule } from './settings/settings.module';
+import { MaintenanceModule } from './settings/maintenance.module';
 
 @Module({
   imports: [
@@ -36,7 +37,7 @@ import { SettingsModule } from './settings/settings.module';
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_DATABASE || 'humantee',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: false, // PHASE 1: Migrations only, no auto-sync
+      synchronize: false, // Phase 1: Migrations only, no auto-sync
     }),
     AuthModule,
     CartModule,
@@ -49,6 +50,7 @@ import { SettingsModule } from './settings/settings.module';
     TicketsModule,
     DiscountsModule,
     SettingsModule,
+    MaintenanceModule,
   ],
   controllers: [AppController, ProtectedController],
   providers: [AppService],

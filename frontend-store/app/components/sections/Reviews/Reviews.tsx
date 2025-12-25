@@ -6,29 +6,27 @@
 
 "use client";
 
-import { useRef, useState, useEffect, memo } from "react";
+import { useRef, useState, useEffect, memo, Suspense, lazy } from "react";
 import { ReviewCard } from "@/app/components/ui/cards";
 import { SectionHeader } from "@/app/components/ui/layout";
-import { ReviewsSkeleton, ReviewsEmpty } from "./components";
-import { useReviewsSettings, useReviewsAnimation, useReviewsInteraction } from "./hooks";
+import { ReviewsSkeleton } from "./components";
+import { useReviewsSettings } from "./hooks/useReviewsSettings";
+import { useReviewsAnimation, useReviewsInteraction } from "./hooks";
 import { Review } from "@/app/types/review.types";
 
-interface ReviewsProps {
-  reviews?: Review[];
-  enabled?: boolean;
-}
+const ReviewsEmpty = lazy(() => import("./components/ReviewsEmpty"));
 
-function Reviews({ reviews: propReviews, enabled: propEnabled }: ReviewsProps = {}) {
+function Reviews() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch reviews settings from API with fallback
+  // Get reviews settings with fallback support
   const { settings: reviewsSettings, isLoading: settingsLoading } = useReviewsSettings();
 
-  // Use prop values if provided, otherwise use API/fallback
-  const enabled = propEnabled !== undefined ? propEnabled : reviewsSettings.enabled;
-  const reviews = propReviews && propReviews.length > 0 ? propReviews : reviewsSettings.items;
-  const title = reviewsSettings.title;
+  // Extract values from settings
+  const enabled = reviewsSettings?.enabled ?? true;
+  const reviews = reviewsSettings?.items || [];
+  const title = reviewsSettings?.title || "What Our Customers Say";
 
   // User interaction handling
   const { isUserInteracting, handleUserInteraction } = useReviewsInteraction();

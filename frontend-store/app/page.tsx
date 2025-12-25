@@ -1,4 +1,5 @@
 import { Hero, FeaturedProducts } from "./components/sections";
+import { logError } from '@/lib/logger';
 import { Suspense, memo } from "react";
 import dynamic from "next/dynamic";
 import { publicSettingsApi } from "@/lib/app/api/public-settings";
@@ -24,7 +25,7 @@ export default async function Home() {
     try {
         homepageSettings = await publicSettingsApi.getHomepage();
     } catch (error) {
-        console.error('❌ Failed to load homepage settings:', error);
+        logError(error, 'Failed to load homepage settings');
         // Will fall back to hardcoded data in components
     }
 

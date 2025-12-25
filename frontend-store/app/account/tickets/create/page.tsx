@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, Suspense } from "react";
+import { logError } from '@/lib/logger';
 import { useSearchParams, useRouter } from "next/navigation";
 import {
     FiArrowLeft,
@@ -76,7 +77,7 @@ function CreateTicketPageContent() {
                     setActiveTicketId(checkRes.data.ticketId);
                 }
             } catch (error) {
-                console.error("Failed to fetch order/ticket info:", error);
+                logError(error, "Failed to fetch order/ticket info");
             } finally {
                 setIsCheckingActive(false);
             }
@@ -119,7 +120,7 @@ function CreateTicketPageContent() {
             const results = await Promise.all(uploadPromises);
             setAttachments(prev => [...prev, ...results]);
         } catch (err: any) {
-            console.error("Upload failed:", err);
+            logError(err, "Upload failed");
             setError("Some images failed to upload. Please try again.");
         } finally {
             setIsUploading(false);
@@ -156,7 +157,7 @@ function CreateTicketPageContent() {
                 router.push(`/account/tickets/${response.data.id}`);
             }, 2000);
         } catch (err: any) {
-            console.error("Failed to create ticket:", err);
+            logError(err, "Failed to create ticket");
             setError(err.response?.data?.message || "Failed to create ticket. Please try again.");
         } finally {
             setIsSubmitting(false);

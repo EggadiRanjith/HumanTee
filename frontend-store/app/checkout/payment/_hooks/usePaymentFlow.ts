@@ -11,14 +11,16 @@ export function usePaymentFlow() {
     const { paymentMethod, setPaymentMethod, setOrderNumber, shippingData } = useCheckout();
     const { setLoading } = useLoading();
     const [isProcessing, setIsProcessing] = useState(false);
+    const [error, setError] = useState('');
 
     const handlePlaceOrder = async () => {
         if (!paymentMethod) {
-            alert("Please select a payment method");
+            setError('Please select a payment method');
             return;
         }
 
         setIsProcessing(true);
+        setError('');
 
         try {
             // Create order in database
@@ -55,10 +57,18 @@ export function usePaymentFlow() {
             clearCart();
             setLoading(true);
             router.push("/checkout/status/success");
-        } catch (error) {
-            console.error('Order creation failed:', error);
+        } catch (err: any) {
+            // P1-C: Refined error copy based on error type
+            if (err.isTimeout) {
+                setError('The request took too long. Please try again.');
+            } else if (err.response?.status === 400) {
+                setError('Please check your order details and try again.');
+            } else if (err.response?.status === 402) {
+                setError('Payment was declined. Please try another method.');
+            } else {
+                setError('Unable to complete the order. Please try again.');
+            }
             setIsProcessing(false);
-            alert('Failed to create order. Please try again.');
         }
     };
 
@@ -69,6 +79,7 @@ export function usePaymentFlow() {
         setPaymentMethod,
         shippingData,
         isProcessing,
+        error,
         handlePlaceOrder,
     };
 }

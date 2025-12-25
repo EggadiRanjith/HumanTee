@@ -7,6 +7,7 @@ import { AuthController } from './auth.controller';
 import { AdminUsersController } from './admin-users.controller';
 import { AuthService } from './auth.service';
 import { AuthCronService } from './auth.cron';
+import { LoginAggregationService } from './login-aggregation.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { AuthUser } from '../entities/auth-user.entity';
@@ -16,6 +17,8 @@ import { EmailOtp } from '../entities/email-otp.entity';
 import { UserProfile } from '../entities/user-profile.entity';
 import { LoginAuditLog } from '../entities/login-audit-log.entity';
 import { EmailModule } from '../email/email.module';
+import { CartModule } from '../cart/cart.module';
+import { ShippingModule } from '../shipping/shipping.module';
 
 @Module({
     imports: [
@@ -37,9 +40,11 @@ import { EmailModule } from '../email/email.module';
             LoginAuditLog,
         ]),
         EmailModule,
+        CartModule,
+        ShippingModule,
     ],
     controllers: [AuthController, AdminUsersController],
-    providers: [AuthService, AuthCronService, JwtStrategy, GoogleStrategy],
+    providers: [AuthService, AuthCronService, LoginAggregationService, JwtStrategy, GoogleStrategy],
     exports: [AuthService],
 })
 export class AuthModule { }

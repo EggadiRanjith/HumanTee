@@ -2,6 +2,7 @@ import { Controller, Post, Body, UseGuards, Get, Req, Res, UnauthorizedException
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
+import { LoginAggregationService } from './login-aggregation.service';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
@@ -9,7 +10,10 @@ import { JwtAuthGuard } from './guards/jwt.guard';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private readonly authService: AuthService) { }
+    constructor(
+        private readonly authService: AuthService,
+        private readonly loginAggregationService: LoginAggregationService,
+    ) { }
 
     @Post('send-otp')
     @Throttle({ default: { limit: 5, ttl: 3600000 } })  // 5 requests per hour
@@ -70,14 +74,13 @@ export class AuthController {
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
-        // Phase 8: Role-based redirect (case-insensitive)
+        // Phase 1.5: Delegate to aggregation service
         const redirectUrl = result.user.role?.toLowerCase() === 'admin' ? '/post-login' : '/';
-
-        return {
-            accessToken: result.accessToken,
-            user: result.user,
+        return this.loginAggregationService.buildLoginPayload(
+            result.accessToken,
+            result.user,
             redirectUrl,
-        };
+        );
     }
 
     @Post('google')
@@ -103,15 +106,13 @@ export class AuthController {
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
 
-        // Phase 8: Role-based redirect (case-insensitive)
+        // Phase 1.5: Delegate to aggregation service
         const redirectUrl = result.user.role?.toLowerCase() === 'admin' ? '/post-login' : '/';
-
-        // Return access token and user info (NOT refresh token)
-        return {
-            accessToken: result.accessToken,
-            user: result.user,
+        return this.loginAggregationService.buildLoginPayload(
+            result.accessToken,
+            result.user,
             redirectUrl,
-        };
+        );
     }
 
     @Post('refresh')

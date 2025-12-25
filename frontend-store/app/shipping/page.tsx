@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { logError } from '@/lib/logger';
 import Link from "next/link";
 import { GradientOverlay } from "@/app/components/ui/layout";
 import { settingsApi } from "@/lib/api/settings";
@@ -35,7 +36,7 @@ export default function ShippingPolicyPage() {
         }
       })
       .catch((error) => {
-        console.error('Failed to load shipping settings:', error);
+        logError(error, 'Failed to load shipping settings');
       });
   }, []);
 

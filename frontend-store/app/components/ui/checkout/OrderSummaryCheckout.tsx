@@ -6,6 +6,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { logError } from '@/lib/logger';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { settingsApi } from '@/lib/api/settings';
@@ -52,7 +53,7 @@ export function OrderSummaryCheckout({ items, totalPrice, pincode }: OrderSummar
                     }
                 }
             } catch (error) {
-                console.error('Failed to load shipping settings:', error);
+                logError(error, 'Failed to load shipping settings');
             } finally {
                 setIsLoading(false);
             }

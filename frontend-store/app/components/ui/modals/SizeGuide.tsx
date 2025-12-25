@@ -1,41 +1,32 @@
-/**
- * Size Guide Modal
- * Helps customers choose the right size with measurement charts
- */
-
 "use client";
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiInfo, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { useSectionSettings } from "@/app/hooks/useSettings";
 
 interface SizeGuideProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
-import { settingsApi } from "@/lib/api/settings";
-
-
-
 export function SizeGuide({ isOpen, onClose }: SizeGuideProps) {
     const [images, setImages] = useState<string[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
 
-    // Fetch settings on mount
+    // Get product-info settings from centralized cache
+    const { settings } = useSectionSettings('product-info');
+
+    // Extract size guide images from settings
     useEffect(() => {
-        settingsApi.getPublicSettings()
-            .then(data => {
-                if (data && data['product-info']?.size_guide_images) {
-                    const gallery = data['product-info'].size_guide_images;
-                    setImages(Array.isArray(gallery) ? gallery : []);
-                } else if (data && data['product-info']?.size_guide_image) {
-                    // Fallback for single image if plural doesn't exist
-                    setImages([data['product-info'].size_guide_image]);
-                }
-            })
-            .catch(err => console.error("Failed to load size guide images", err));
-    }, []);
+        if (settings?.size_guide_images) {
+            const gallery = settings.size_guide_images;
+            setImages(Array.isArray(gallery) ? gallery : []);
+        } else if (settings?.size_guide_image) {
+            // Fallback for single image
+            setImages([settings.size_guide_image]);
+        }
+    }, [settings]);
 
     // Robust body scroll lock
     useEffect(() => {

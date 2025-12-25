@@ -11,7 +11,7 @@ import { useCartSummary } from "@/app/contexts/CartContext";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { AuthStatus, AuthStatusMobile } from "./components/AuthStatus";
 import { MobileMenu, CartBadge, HeaderSkeleton } from "./components";
-import { useHeaderSettings } from "./hooks";
+import { useSectionSettings } from "@/app/hooks/useSettings";
 import { HEADER_Z_INDEX, NAV_LINKS, ICON_SIZES } from "./constants";
 import { FOCUS_RING } from "../shared/design-tokens";
 
@@ -19,7 +19,13 @@ function Header() {
   const { totalItems } = useCartSummary();
   const { user, isAuthenticated } = useAuth();
   const pathname = usePathname();
-  const { settings } = useHeaderSettings();
+  // Get header-footer settings from centralized cache
+  const { settings } = useSectionSettings('header-footer');
+
+  // Hide header on maintenance page
+  if (pathname?.startsWith('/maintenance')) {
+    return null;
+  }
 
   const ref = useRef<HTMLDivElement>(null);
   const { setHeaderHeight } = useHeaderContext();
@@ -29,10 +35,10 @@ function Header() {
 
   // Track when brand name loads (prevents re-render after initial load)
   useEffect(() => {
-    if (settings.brand_name && !brandLoaded) {
+    if (settings?.brand_name && !brandLoaded) {
       setBrandLoaded(true);
     }
-  }, [settings.brand_name, brandLoaded]);
+  }, [settings?.brand_name, brandLoaded]);
 
   // Sync header height to global CSS var
   useEffect(() => {
@@ -132,10 +138,10 @@ function Header() {
               onClick={stopPropagation}
               className="flex items-center gap-2 sm:gap-3 transition-all duration-300 hover:opacity-90 min-w-0 flex-shrink"
             >
-              {settings.logo_url && settings.logo_url.trim() !== '' && (
+              {settings?.logo_url && settings.logo_url.trim() !== '' && (
                 <img
-                  src={settings.logo_url}
-                  alt={settings.brand_name || 'Brand Logo'}
+                  src={settings?.logo_url}
+                  alt={settings?.brand_name || 'Brand Logo'}
                   className="h-[28px] xs:h-[30px] sm:h-[32px] md:h-[36px] lg:h-[40px] w-auto flex-shrink-0 border border-white/20 rounded p-1.5"
                 />
               )}
@@ -148,9 +154,9 @@ function Header() {
                 max-w-[120px] xs:max-w-[140px] sm:max-w-[180px] md:max-w-none
                 overflow-hidden text-ellipsis whitespace-nowrap
               "
-                title={settings.brand_name}
+                title={settings?.brand_name}
               >
-                {settings.brand_name}
+                {settings?.brand_name || 'HumanTee'}
               </span>
             </Link>
 

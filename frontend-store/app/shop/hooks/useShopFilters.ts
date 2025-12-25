@@ -7,7 +7,7 @@
 "use client";
 
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 export interface ShopFilters {
     category?: string;
@@ -22,12 +22,12 @@ export function useShopFilters() {
     const pathname = usePathname();
 
     // Parse current filters from URL
-    const filters: ShopFilters = {
+    const filters: ShopFilters = useMemo(() => ({
         category: searchParams.get('category') || undefined,
         collection: searchParams.get('collection') || undefined,
         sort: searchParams.get('sort') || undefined,
         page: parseInt(searchParams.get('page') || '1'),
-    };
+    }), [searchParams]);
 
     // Update filters in URL
     const setFilters = useCallback((newFilters: Partial<ShopFilters>) => {

@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import fallbackSettings from "@/config/fallback-settings.json";
 
 interface SortOption {
@@ -23,7 +23,7 @@ interface ShopSettings {
 }
 
 export function useShopSettings() {
-    const [settings, setSettings] = useState<ShopSettings>({
+    const initialSettings = useMemo(() => ({
         categories: fallbackSettings.shop.categories || [],
         collections: fallbackSettings.shop.collections || [],
         itemsPerPage: fallbackSettings.shop.items_per_page || 12,
@@ -34,7 +34,9 @@ export function useShopSettings() {
             { value: 'price_asc', label: 'Price: Low to High' },
             { value: 'price_desc', label: 'Price: High to Low' },
         ],
-    });
+    }), []);
+
+    const [settings, setSettings] = useState<ShopSettings>(initialSettings);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 

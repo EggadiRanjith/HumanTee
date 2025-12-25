@@ -74,6 +74,7 @@ export function clearAccessToken() {
 // Create axios instance
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
+    timeout: 10000, // 10s hard cap
     withCredentials: true, // Send cookies with requests
     headers: {
         'Content-Type': 'application/json',
@@ -98,6 +99,11 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
     (response) => response,
     async (error: AxiosError) => {
+        // Mark timeout errors for component-level handling
+        if (error.code === 'ECONNABORTED') {
+            error.isTimeout = true;
+        }
+
         const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
         // Only handle 401 errors

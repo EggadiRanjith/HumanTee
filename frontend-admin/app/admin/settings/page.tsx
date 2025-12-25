@@ -38,11 +38,11 @@ const settingsCards = [
         icon: '📦',
     },
     {
-        title: 'Shipping, Terms & Privacy',
-        description: 'Edit shipping info, terms, privacy, and legal policies',
-        items: ['Shipping policy', 'Terms & conditions', 'Privacy policy'],
-        href: '/admin/settings/policies',
-        icon: '📜',
+        title: 'System & Maintenance',
+        description: 'Control site accessibility and maintenance mode',
+        items: ['Maintenance mode', 'Admin bypass', 'System status'],
+        href: '/admin/settings/system',
+        icon: '⚙️',
     },
 ];
 

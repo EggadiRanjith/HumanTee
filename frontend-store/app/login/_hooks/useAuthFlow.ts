@@ -1,6 +1,7 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
+import { logError } from "@/lib/logger";
 
 type AuthStep = 'email' | 'otp';
 
@@ -81,8 +82,9 @@ export function useAuthFlow() {
                 throw new Error('Invalid OTP');
             }
 
+            // Phase 1: Extract batched data (user + cart + addresses)
             const data = await response.json();
-            await authLogin(data.accessToken, data.user);
+            await authLogin(data.accessToken, data.user, data.cart, data.addresses);
 
             setSuccess("Login successful! Redirecting...");
             setTimeout(() => {
@@ -110,16 +112,17 @@ export function useAuthFlow() {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                console.error('Google login error:', errorData);
+                logError(errorData, 'Google login error');
                 throw new Error(errorData.message || 'Google login failed');
             }
 
+            // Phase 1: Extract batched data (user + cart + addresses)
             const data = await response.json();
-            await authLogin(data.accessToken, data.user);
+            await authLogin(data.accessToken, data.user, data.cart, data.addresses);
 
             router.push('/');
         } catch (err: any) {
-            console.error('Google login error:', err);
+            logError(err, 'Google login error');
             setGoogleError(err.message || "Google login failed. Please try again.");
         } finally {
             setGoogleLoading(false);

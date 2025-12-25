@@ -13,8 +13,8 @@ const nextConfig: NextConfig = {
     } : false,
   },
 
-  // Remove React DevTools in production
-  reactStrictMode: false,
+  // Enable React DevTools and strict mode in development
+  reactStrictMode: process.env.NODE_ENV === 'development',
 
   images: {
     remotePatterns: [

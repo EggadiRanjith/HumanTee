@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import apiClient from '@/lib/api-client';
+import { logError } from '@/lib/logger';
 import { Order, OrderFilters } from '../types';
 
 export function useOrders(filters: OrderFilters = {}) {
@@ -43,7 +44,7 @@ export function useOrders(filters: OrderFilters = {}) {
                 setOrders(response.data.orders || response.data);
                 setTotalPages(response.data.totalPages || 1);
             } catch (err) {
-                console.error('Failed to fetch orders:', err);
+                logError(err, 'Failed to fetch orders');
                 setError(err as Error);
             } finally {
                 setIsLoading(false);

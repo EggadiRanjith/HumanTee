@@ -1,11 +1,66 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export default function proxy(request: NextRequest) {
-    const response = NextResponse.next();
+// In-memory cache for maintenance flag (production-grade)
+let maintenanceCache = {
+    enabled: false,
+    lastChecked: 0,
+};
 
+const CACHE_TTL = 30_000; // 30 seconds
+
+export default async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
+    // 1. Skip logic for static assets and specific ignored paths
+    if (
+        pathname.startsWith('/_next') ||
+        pathname.startsWith('/api/') ||
+        pathname.startsWith('/static') ||
+        pathname.includes('.') ||
+        pathname.startsWith('/maintenance')
+    ) {
+        return NextResponse.next();
+    }
+
+    // 2. Maintenance Mode Enforcement (Cached)
+    const now = Date.now();
+    const isAdmin = request.cookies.get('admin_bypass')?.value === 'true';
+
+    // Use cache if fresh (eliminates backend call on every request)
+    if (now - maintenanceCache.lastChecked < CACHE_TTL) {
+        if (maintenanceCache.enabled && !isAdmin) {
+            return NextResponse.redirect(new URL('/maintenance', request.url));
+        }
+    } else {
+        // Refresh cache (ONLY once per 30s)
+        try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+            const response = await fetch(`${apiUrl}/public-settings/maintenance`, {
+                cache: 'no-store',
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                maintenanceCache = {
+                    enabled: data.enabled,
+                    lastChecked: now,
+                };
+
+                if (data.enabled && !isAdmin) {
+                    return NextResponse.redirect(new URL('/maintenance', request.url));
+                }
+            }
+        } catch (error) {
+            console.error('[Maintenance] Status check failed:', error);
+            // Fail-open: allow traffic if API is down
+            // Do NOT update cache on error to avoid locking users out
+        }
+    }
+
+    const response = NextResponse.next();
+
+    // 3. Cache Control & Headers (Original Proxy Logic)
     // Cache static assets aggressively (1 year)
     if (
         pathname.startsWith('/images/') ||
@@ -19,7 +74,7 @@ export default function proxy(request: NextRequest) {
         );
     }
 
-    // Stale-while-revalidate for API routes (instant responses)
+    // Stale-while-revalidate for API routes
     if (pathname.startsWith('/api/')) {
         response.headers.set(
             'Cache-Control',
@@ -27,7 +82,7 @@ export default function proxy(request: NextRequest) {
         );
     }
 
-    // Cache product pages with stale-while-revalidate
+    // Cache product pages
     if (pathname.startsWith('/product/')) {
         response.headers.set(
             'Cache-Control',
@@ -35,7 +90,7 @@ export default function proxy(request: NextRequest) {
         );
     }
 
-    // Cache shop page briefly
+    // Cache shop page
     if (pathname === '/shop') {
         response.headers.set(
             'Cache-Control',
@@ -61,6 +116,6 @@ export const config = {
          * - _next/image (image optimization files)
          * - favicon.ico (favicon file)
          */
-        '/((?!_next/static|_next/image|favicon.ico).*)',
+        '/((?!api|_next/static|_next/image|favicon.ico).*)',
     ],
 };

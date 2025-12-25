@@ -7,6 +7,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { logError } from '@/lib/logger';
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
@@ -50,7 +51,7 @@ export default function CartPage() {
             .then(res => res.json())
             .then(data => setIntroAnimation(data))
             .catch(err => {
-                console.error("Failed to load Cart Intro", err);
+                logError(err, "Failed to load Cart Intro");
                 setShowIntro(false); // Skip intro on error
             });
     }, []);

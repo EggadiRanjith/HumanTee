@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, memo, useEffect } from "react";
+import { logError } from '@/lib/logger';
 import dynamic from "next/dynamic";
 import { FiMapPin, FiEdit2, FiX, FiStar, FiLoader } from "react-icons/fi";
 import apiClient from "@/lib/api-client";
@@ -98,7 +99,7 @@ export default memo(function AddressesSection({
                 }))
             );
         } catch (error) {
-            console.error('Failed to set default address:', error);
+            logError(error, 'Failed to set default address');
         }
     };
 
@@ -109,7 +110,7 @@ export default memo(function AddressesSection({
             await apiClient.delete(`/shipping-addresses/${addressId}`);
             onAddressesChange(addresses.filter((addr) => addr.id !== addressId));
         } catch (error) {
-            console.error('Failed to delete address:', error);
+            logError(error, 'Failed to delete address');
         }
     };
 

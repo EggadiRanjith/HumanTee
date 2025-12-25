@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import apiClient from '@/lib/api-client';
+import { logError } from '@/lib/logger';
 import { Ticket, TicketFilters } from '../types';
 
 export function useTickets(filters: TicketFilters = {}) {
@@ -55,7 +56,7 @@ export function useTickets(filters: TicketFilters = {}) {
                 setTickets(response.data.tickets || response.data);
                 setTotalPages(response.data.totalPages || 1);
             } catch (err) {
-                console.error('Failed to fetch tickets:', err);
+                logError(err, 'Failed to fetch tickets');
                 setError(err as Error);
             } finally {
                 setIsLoading(false);

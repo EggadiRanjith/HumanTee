@@ -1,8 +1,9 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useEffect, useMemo } from "react";
-import { useAuth } from "@/app/contexts/AuthContext";
+import { AuthContext } from "@/app/contexts/AuthContext";
 import apiClient from "@/lib/api-client";
+import { logError } from "@/lib/logger";
 import { discountsApi, type DiscountSuggestion } from "@/lib/api/discounts";
 import type { AppliedDiscount } from "@/app/types/discount.types";
 
@@ -27,6 +28,7 @@ interface CartItemsContextType {
   updateQuantity: (id: number | string, size: string, quantity: number) => void;
   clearCart: () => void;
   getItemInCart: (id: number | string, size?: string) => CartItem | undefined;
+  hydrateCart: (cart: any) => void; // Phase 1: Explicit cart hydration from login
   isLoading: boolean;
   // Discount operations
   appliedDiscount: AppliedDiscount | null;
@@ -53,7 +55,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [suggestions, setSuggestions] = useState<DiscountSuggestion[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [hasManuallyRemoved, setHasManuallyRemoved] = useState(false);
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+
+  // Access auth context directly to avoid circular dependency
+  const authContext = useContext(AuthContext);
+  const isAuthenticated = authContext?.isAuthenticated ?? false;
+  const authLoading = authContext?.isLoading ?? true;
 
   // Phase 2: INDEPENDENT summary state (not derived!)
   const [totalItems, setTotalItems] = useState(0);
@@ -108,7 +114,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         variantId: item.variantId,
       })));
     } catch (error) {
-      console.error('Failed to load cart:', error);
+      logError(error, 'Failed to load cart');
       setItems([]);
     }
   };
@@ -186,7 +192,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           await apiClient.delete(`/cart/items/${item.id}`);
           await loadBackendCart();
         } catch (error) {
-          console.error('Failed to remove item:', error);
+          logError(error, 'Failed to remove item');
         }
       }
     } else {
@@ -209,7 +215,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           await apiClient.patch(`/cart/items/${item.id}`, { quantity });
           await loadBackendCart();
         } catch (error) {
-          console.error('Failed to update quantity:', error);
+          logError(error, 'Failed to update quantity');
         }
       }
     } else {
@@ -230,7 +236,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         await apiClient.delete('/cart');
         setItems([]);
       } catch (error) {
-        console.error('Failed to clear cart:', error);
+        logError(error, 'Failed to clear cart');
       }
     } else {
       setItems([]);
@@ -240,6 +246,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const getItemInCart = (id: number | string, size?: string) => {
     return items.find((i) => i.id === id && (!size || i.size === size));
+  };
+
+  // Phase 1: Explicit cart hydration from login response
+  const hydrateCart = (cart: any) => {
+    if (!cart || !cart.items) return;
+
+    const hydratedItems = cart.items.map((item: any) => ({
+      id: item.id,
+      title: item.productTitle || '',
+      price: item.price || 0,
+      currency: item.currency || 'INR',
+      image: item.productImage || '/images/placeholder.jpg',
+      quantity: item.quantity || 1,
+      size: item.variantLabel || item.size,
+      variantId: item.variantId,
+    }));
+
+    setItems(hydratedItems);
   };
 
   // Phase 2: Update summary state when items change
@@ -338,12 +362,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
           try {
             await applyDiscount(best.code);
           } catch (error) {
-            console.error('Failed to auto-apply best discount:', error);
+            logError(error, 'Failed to auto-apply best discount');
           }
         }
       }
     } catch (error) {
-      console.error('Failed to fetch suggestions:', error);
+      logError(error, 'Failed to fetch suggestions');
       setSuggestions([]);
     } finally {
       setIsLoadingSuggestions(false);
@@ -365,6 +389,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     updateQuantity,
     clearCart,
     getItemInCart,
+    hydrateCart, // Phase 1: Expose hydration method
     isLoading,
     appliedDiscount,
     applyDiscount,

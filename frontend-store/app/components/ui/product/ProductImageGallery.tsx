@@ -31,7 +31,7 @@ const ProductImageGalleryComponent = ({ images, title, subtitle, productId }: Pr
     // Preload next image for smoother transitions
     useEffect(() => {
         if (images[currentImageIndex + 1]) {
-            const img = new Image();
+            const img = new window.Image();
             img.src = images[currentImageIndex + 1];
         }
     }, [currentImageIndex, images]);
@@ -357,3 +357,5 @@ const ProductImageGalleryComponent = ({ images, title, subtitle, productId }: Pr
         </>
     );
 }
+
+export const ProductImageGallery = memo(ProductImageGalleryComponent);

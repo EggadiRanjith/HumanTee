@@ -6,6 +6,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { logError } from '@/lib/logger';
 import { settingsApi } from "@/lib/api/settings";
 import fallbackSettings from "@/config/fallback-settings.json";
 import type { HeaderSettings } from "../types";
@@ -38,7 +39,7 @@ export function useHeaderSettings() {
             .catch((err) => {
                 if (!mounted) return;
                 setError(err);
-                console.error('Failed to load header settings, using fallback:', err);
+                logError(err, 'Failed to load header settings, using fallback');
                 // Fallback already set in initial state
             })
             .finally(() => {

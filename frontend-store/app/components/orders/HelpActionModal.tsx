@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { logError } from '@/lib/logger';
 import { m, AnimatePresence } from "framer-motion";
 import { FiX, FiPlusCircle, FiList, FiAlertCircle, FiChevronRight, FiLoader } from "react-icons/fi";
 import { useRouter } from "next/navigation";
@@ -54,7 +55,7 @@ export function HelpActionModal({ isOpen, onClose, orderId, orderNumber }: HelpA
                 router.push(`/account/tickets/create?orderId=${orderId}`);
             }
         } catch (err: any) {
-            console.error("Failed to check active ticket:", err);
+            logError(err, "Failed to check active ticket");
             setError("Something went wrong. Please try again.");
         } finally {
             setIsChecking(false);

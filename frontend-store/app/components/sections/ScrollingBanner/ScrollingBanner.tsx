@@ -8,7 +8,7 @@
 
 import { useState, useEffect, memo } from "react";
 import { BannerSkeleton } from "./components";
-import { useBannerSettings } from "./hooks";
+import { useSectionSettings } from "@/app/hooks/useSettings";
 
 interface ScrollingBannerProps {
   messages?: string[];
@@ -17,11 +17,11 @@ interface ScrollingBannerProps {
 const ScrollingBanner = ({ messages: propMessages }: ScrollingBannerProps = {}) => {
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch banner settings from API with fallback
-  const { settings: bannerSettings, isLoading: settingsLoading } = useBannerSettings();
+  // Get banner settings from centralized cache
+  const { settings, isLoading: settingsLoading } = useSectionSettings('banner');
 
   // Use prop messages if provided, otherwise use API/fallback messages
-  const messages = propMessages && propMessages.length > 0 ? propMessages : bannerSettings.messages;
+  const messages = propMessages && propMessages.length > 0 ? propMessages : (settings?.messages || []);
 
   // Loading state
   useEffect(() => {

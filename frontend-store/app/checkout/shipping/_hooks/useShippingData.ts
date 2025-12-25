@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { logError } from '@/lib/logger';
 import { useRouter } from "next/navigation";
 import apiClient from "@/lib/api-client";
 
@@ -72,7 +73,7 @@ export function useShippingData(userId?: string) {
                     }
                 }
             } catch (error) {
-                console.error('Failed to load addresses:', error);
+                logError(error, 'Failed to load addresses');
             } finally {
                 setIsLoadingAddresses(false);
             }
