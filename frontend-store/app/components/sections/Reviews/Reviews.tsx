@@ -13,6 +13,7 @@ import { ReviewsSkeleton } from "./components";
 import { useReviewsSettings } from "./hooks/useReviewsSettings";
 import { useReviewsAnimation, useReviewsInteraction } from "./hooks";
 import { Review } from "@/app/types/review.types";
+import styles from "./Reviews.module.css";
 
 const ReviewsEmpty = lazy(() => import("./components/ReviewsEmpty"));
 
@@ -67,11 +68,7 @@ function Reviews() {
       {/* Scrollable Container */}
       <div
         ref={scrollRef}
-        className="overflow-x-auto cursor-grab active:cursor-grabbing pb-4 no-scrollbar w-full px-4 sm:px-0"
-        style={{
-          scrollbarWidth: "none" /* Firefox */,
-          msOverflowStyle: "none" /* IE and Edge */,
-        }}
+        className={`overflow-x-auto cursor-grab active:cursor-grabbing pb-4 w-full px-4 sm:px-0 ${styles.noScrollbar}`}
         onWheel={(e) => {
           handleUserInteraction();
           if (scrollRef.current) {
@@ -84,11 +81,6 @@ function Reviews() {
         role="region"
         aria-label="Customer testimonials"
       >
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `.no-scrollbar::-webkit-scrollbar { display: none; }`,
-          }}
-        />
 
         <div className="flex gap-4 sm:gap-6 md:gap-8 lg:gap-10">
           {duplicated.map((review, index) => (

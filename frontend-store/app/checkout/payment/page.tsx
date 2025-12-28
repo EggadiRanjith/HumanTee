@@ -17,7 +17,6 @@ export default function PaymentPage() {
 
     const {
         items,
-        totalPrice,
         paymentMethod,
         setPaymentMethod,
         shippingData,
@@ -68,7 +67,6 @@ export default function PaymentPage() {
                             <PaymentActions
                                 isProcessing={isProcessing}
                                 paymentMethod={paymentMethod}
-                                totalPrice={totalPrice}
                                 onPlaceOrder={handlePlaceOrder}
                             />
                         </div>
@@ -80,7 +78,7 @@ export default function PaymentPage() {
                             transition={{ duration: 0.4, delay: 0.3 }}
                             className="lg:col-span-1"
                         >
-                            <OrderSummaryCheckout items={items} totalPrice={totalPrice} />
+                            <OrderSummaryCheckout items={items} />
                         </motion.div>
                     </div>
                 </div>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { FiInstagram, FiMail } from 'react-icons/fi';
 
 interface MaintenanceSettings {
@@ -21,7 +22,7 @@ export default function MaintenanceView({ initialSettings }: { initialSettings: 
 
     const handleRefresh = () => {
         setIsRefreshing(true);
-        window.location.reload();
+        window.location.href = '/';
     };
 
     return (
@@ -44,10 +45,13 @@ export default function MaintenanceView({ initialSettings }: { initialSettings: 
                     <div className="animate-fade-in space-y-3 sm:space-y-4">
                         {settings.logoUrl && (
                             <div className="flex justify-center">
-                                <img
+                                <Image
                                     src={settings.logoUrl}
                                     alt={settings.brandName || 'Brand Logo'}
+                                    width={256}
+                                    height={128}
                                     className="h-14 sm:h-20 md:h-24 lg:h-28 xl:h-32 w-auto drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+                                    priority
                                 />
                             </div>
                         )}

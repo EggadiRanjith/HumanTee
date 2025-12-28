@@ -4,12 +4,14 @@ import {
     UploadedFile,
     UseInterceptors,
     BadRequestException,
+    Logger,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from './upload.service';
 
 @Controller('upload')
 export class UploadController {
+    private readonly logger = new Logger(UploadController.name);
     constructor(private readonly uploadService: UploadService) { }
 
     /**
@@ -21,21 +23,21 @@ export class UploadController {
     async uploadImage(
         @UploadedFile() file: Express.Multer.File,
     ): Promise<{ url: string; publicId: string }> {
-        console.log('Upload request received:', {
+        this.logger.log('Upload request received', {
             hasFile: !!file,
             mimetype: file?.mimetype,
             size: file?.size,
         });
 
         if (!file) {
-            console.error('No file provided');
+            this.logger.error('No file provided');
             throw new BadRequestException('No file provided');
         }
 
         // Validate file type
         const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
         if (!allowedMimeTypes.includes(file.mimetype)) {
-            console.error('Invalid file type:', file.mimetype);
+            this.logger.error('Invalid file type', { mimetype: file.mimetype });
             throw new BadRequestException(
                 'Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed.',
             );
@@ -44,16 +46,16 @@ export class UploadController {
         // Validate file size (max 10MB)
         const maxSize = 10 * 1024 * 1024; // 10MB
         if (file.size > maxSize) {
-            console.error('File too large:', file.size);
+            this.logger.error('File too large', { size: file.size });
             throw new BadRequestException('File size exceeds 10MB limit');
         }
 
         try {
             const result = await this.uploadService.uploadImage(file.buffer, 'products');
-            console.log('Upload successful:', result.url);
+            this.logger.log('Upload successful', { url: result.url });
             return result;
         } catch (error) {
-            console.error('Cloudinary upload failed:', error);
+            this.logger.error('Cloudinary upload failed', error.stack);
             throw error;
         }
     }
@@ -67,21 +69,21 @@ export class UploadController {
     async uploadVideo(
         @UploadedFile() file: Express.Multer.File,
     ): Promise<{ url: string; publicId: string }> {
-        console.log('Video upload request received:', {
+        this.logger.log('Video upload request received', {
             hasFile: !!file,
             mimetype: file?.mimetype,
             size: file?.size,
         });
 
         if (!file) {
-            console.error('No file provided');
+            this.logger.error('No file provided');
             throw new BadRequestException('No file provided');
         }
 
         // Validate file type
         const allowedMimeTypes = ['video/mp4', 'video/webm', 'video/quicktime'];
         if (!allowedMimeTypes.includes(file.mimetype)) {
-            console.error('Invalid file type:', file.mimetype);
+            this.logger.error('Invalid file type', { mimetype: file.mimetype });
             throw new BadRequestException(
                 'Invalid file type. Only MP4, WebM, and MOV are allowed.',
             );
@@ -90,16 +92,16 @@ export class UploadController {
         // Validate file size (max 50MB for videos)
         const maxSize = 50 * 1024 * 1024; // 50MB
         if (file.size > maxSize) {
-            console.error('File too large:', file.size);
+            this.logger.error('File too large', { size: file.size });
             throw new BadRequestException('File size exceeds 50MB limit');
         }
 
         try {
             const result = await this.uploadService.uploadVideo(file.buffer, 'videos');
-            console.log('Video upload successful:', result.url);
+            this.logger.log('Video upload successful', { url: result.url });
             return result;
         } catch (error) {
-            console.error('Cloudinary video upload failed:', error);
+            this.logger.error('Cloudinary video upload failed', error.stack);
             throw error;
         }
     }

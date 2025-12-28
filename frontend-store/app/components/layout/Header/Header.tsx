@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback, memo, useMemo } from "react";
 import { FiMenu, FiX, FiShoppingBag } from "react-icons/fi";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
 
@@ -139,10 +140,13 @@ function Header() {
               className="flex items-center gap-2 sm:gap-3 transition-all duration-300 hover:opacity-90 min-w-0 flex-shrink"
             >
               {settings?.logo_url && settings.logo_url.trim() !== '' && (
-                <img
+                <Image
                   src={settings?.logo_url}
                   alt={settings?.brand_name || 'Brand Logo'}
+                  width={160}
+                  height={40}
                   className="h-[28px] xs:h-[30px] sm:h-[32px] md:h-[36px] lg:h-[40px] w-auto flex-shrink-0 border border-white/20 rounded p-1.5"
+                  priority
                 />
               )}
 

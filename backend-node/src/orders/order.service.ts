@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import {
     Order,
     OrderItem,
@@ -13,42 +13,116 @@ import {
 import { CreateOrderDto } from './dto/create-order.dto';
 import { DiscountsService } from '../discounts/discounts.service';
 import { OrderDiscount } from '../entities/order-discount.entity';
+import { Product } from '../products/entities/product.entity';
+import { ProductVariant } from '../products/entities/product-variant.entity';
+import { RazorpayService } from '../payments/razorpay.service';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class OrderService {
     constructor(
         @InjectRepository(Order)
         private orderRepository: Repository<Order>,
+        @InjectRepository(Product)
+        private productRepository: Repository<Product>,
+        @InjectRepository(ProductVariant)
+        private variantRepository: Repository<ProductVariant>,
         private dataSource: DataSource,
         private discountsService: DiscountsService,
+        private razorpayService: RazorpayService,
     ) { }
 
     /**
+     * Generate secure order number
+     * Format: HT-XXXXXX (6 random alphanumeric chars)
+     */
+    private generateSecureOrderNumber(): string {
+        const prefix = 'HT';
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // No ambiguous chars
+        const bytes = randomBytes(4);
+
+        let code = '';
+        for (let i = 0; i < 6; i++) {
+            code += chars[bytes[i % bytes.length] % chars.length];
+        }
+
+        return `${prefix}-${code}`;
+    }
+
+    /**
      * Create order with atomic transaction
-     * All or nothing - if any step fails, entire order is rolled back
+     * SECURITY: Server-side price calculation (frontend prices ignored)
      */
     async createOrder(userId: string, orderData: CreateOrderDto): Promise<Order> {
         return await this.dataSource.transaction(async (manager) => {
-            // 1. Generate unique order number
-            const orderNumber = `ORD-${Date.now().toString().slice(-8)}`;
+            // 1. Fetch products and variants from database
+            const productIds = orderData.items.map(i => i.productId);
+            const variantIds = orderData.items.map(i => i.variantId);
 
-            // 2. Create order
+            const variants = await manager.find(ProductVariant, {
+                where: { id: In(variantIds) },
+                relations: ['product'],
+            });
+
+            if (variants.length !== orderData.items.length) {
+                throw new BadRequestException('Some products or variants not found');
+            }
+
+            // 2. Calculate prices SERVER-SIDE (ignore frontend prices)
+            let subtotal = 0;
+            const validatedItems = orderData.items.map(item => {
+                const variant = variants.find(v => v.id === item.variantId);
+                if (!variant) {
+                    throw new BadRequestException(`Variant ${item.variantId} not found`);
+                }
+
+                // Check stock
+                if (variant.stock_quantity < item.quantity) {
+                    throw new BadRequestException(`Insufficient stock for ${variant.product.name}`);
+                }
+
+                const lineTotal = Number(variant.price) * item.quantity;
+                subtotal += lineTotal;
+
+                return {
+                    ...item,
+                    unitPrice: Number(variant.price),
+                    lineTotal,
+                    productNameSnapshot: variant.product.name,
+                    variantLabelSnapshot: variant.size,
+                    skuSnapshot: variant.sku,
+                };
+            });
+
+            // 3. Calculate totals
+            const taxAmount = subtotal * 0.18; // 18% GST
+            const shippingAmount = 0; // Free shipping
+            const discountAmount = 0; // TODO: Apply discount if code provided
+            const totalAmount = subtotal + taxAmount + shippingAmount - discountAmount;
+
+            // 4. Generate secure order number
+            const orderNumber = this.generateSecureOrderNumber();
+
+            // 5. Create Razorpay order
+            const razorpayOrderId = await this.razorpayService.createOrder(totalAmount);
+
+            // 6. Create order
             const order = manager.create(Order, {
                 orderNumber,
                 userId,
-                status: OrderStatus.PROCESSING, // Skip payment for now
-                subtotal: orderData.subtotal,
-                taxAmount: orderData.taxAmount || 0,
-                shippingAmount: orderData.shippingAmount || 0,
-                discountAmount: orderData.discountAmount || 0,
-                totalAmount: orderData.totalAmount,
+                status: OrderStatus.PENDING_PAYMENT,
+                subtotal,
+                taxAmount,
+                shippingAmount,
+                discountAmount,
+                totalAmount,
                 currency: 'INR',
-                completedAt: new Date(), // Mark as completed immediately (mock payment)
+                payment_order_id: razorpayOrderId,
             });
             await manager.save(Order, order);
 
-            // 3. Create order items (product snapshots)
-            const items = orderData.items.map((item) =>
+            // 7. Create order items (with server-calculated prices)
+            const items = validatedItems.map((item) =>
                 manager.create(OrderItem, {
                     orderId: order.id,
                     productId: item.productId,
@@ -56,7 +130,7 @@ export class OrderService {
                     productNameSnapshot: item.productNameSnapshot,
                     variantLabelSnapshot: item.variantLabelSnapshot,
                     skuSnapshot: item.skuSnapshot,
-                    imageUrlSnapshot: item.imageUrlSnapshot,
+                    imageUrlSnapshot: item.imageUrlSnapshot || '',
                     quantity: item.quantity,
                     unitPrice: item.unitPrice,
                     taxAmount: 0,
@@ -66,7 +140,17 @@ export class OrderService {
             );
             await manager.save(OrderItem, items);
 
-            // 4. Create shipping address snapshot
+            // 8. Reduce stock
+            for (const item of validatedItems) {
+                await manager.decrement(
+                    ProductVariant,
+                    { id: item.variantId },
+                    'stock_quantity',
+                    item.quantity
+                );
+            }
+
+            // 9. Create shipping address snapshot
             const address = manager.create(OrderAddress, {
                 orderId: order.id,
                 fullName: orderData.shippingAddress.fullName,
@@ -82,14 +166,14 @@ export class OrderService {
             });
             await manager.save(OrderAddress, address);
 
-            // 5. Create mock payment record
+            // 10. Create payment record (PENDING)
             const payment = manager.create(Payment, {
-                orderId: order.id,
-                amount: orderData.totalAmount,
+                order_id: order.id,
+                amount: totalAmount,
                 currency: 'INR',
-                status: PaymentStatus.CAPTURED, // Mock success
-                provider: 'razorpay',
-                paymentMethod: 'razorpay',
+                status: PaymentStatus.CREATED,
+                provider: 'RAZORPAY',
+                provider_order_id: razorpayOrderId,
             });
             await manager.save(Payment, payment);
 
@@ -116,17 +200,64 @@ export class OrderService {
                 await manager.save(OrderDiscount, snapshot);
             }
 
-            // 7. Create status history entry
+            // 12. Create status history entry
             const history = manager.create(OrderStatusHistory, {
                 orderId: order.id,
                 fromStatus: undefined,
-                toStatus: OrderStatus.PROCESSING,
+                toStatus: OrderStatus.PENDING_PAYMENT,
                 changedBy: userId,
-                reason: 'Order created',
+                reason: 'Order created, awaiting payment',
             });
             await manager.save(OrderStatusHistory, history);
 
-            return order;
+            // Return order with Razorpay details
+            return {
+                ...order,
+                razorpayOrderId,
+            } as any;
+        });
+    }
+
+    /**
+     * Mark order as PAID (called by webhook)
+     */
+    async markOrderPaid(orderId: string, paymentId: string): Promise<void> {
+        await this.dataSource.transaction(async (manager) => {
+            // Update order status
+            await manager.update(Order, { id: orderId }, {
+                status: OrderStatus.PROCESSING,
+                completedAt: new Date(),
+            });
+
+            // Create status history
+            const history = manager.create(OrderStatusHistory, {
+                orderId,
+                fromStatus: OrderStatus.PENDING_PAYMENT,
+                toStatus: OrderStatus.PROCESSING,
+                reason: `Payment confirmed: ${paymentId}`,
+            });
+            await manager.save(OrderStatusHistory, history);
+        });
+    }
+
+    /**
+     * Mark order as PAYMENT_FAILED (called by webhook)
+     */
+    async markOrderPaymentFailed(orderId: string): Promise<void> {
+        await this.dataSource.transaction(async (manager) => {
+            // Update order status
+            await manager.update(Order, { id: orderId }, {
+                status: OrderStatus.PAYMENT_FAILED,
+            });
+
+            // Create status history
+            const history = manager.create(OrderStatusHistory, {
+                orderId,
+                fromStatus: OrderStatus.PENDING_PAYMENT,
+                toStatus: OrderStatus.PAYMENT_FAILED,
+                reason: 'Payment failed',
+            });
+            await manager.save(OrderStatusHistory, history);
         });
     }
 

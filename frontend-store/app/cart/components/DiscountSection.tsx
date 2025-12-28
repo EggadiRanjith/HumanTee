@@ -8,11 +8,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiX } from 'react-icons/fi';
 import DiscountSuggestions from '@/app/components/checkout/DiscountSuggestions';
 import DiscountInput from '@/app/components/checkout/DiscountInput';
-import type { Discount, DiscountSuggestion } from '../types';
+import type { AppliedDiscount } from '@/app/types/discount.types';
+import type { DiscountSuggestion } from '@/lib/api/discounts';
 
 interface DiscountSectionProps {
     suggestions: DiscountSuggestion[];
-    appliedDiscount: Discount | null;
+    appliedDiscount: AppliedDiscount | null;
     isLoadingSuggestions: boolean;
     showManualEntry: boolean;
     cartTotal: number;

@@ -61,7 +61,7 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
       aria-atomic="true"
     >
       {/* Media layers - crossfade transition with zoom effects */}
-      {slides.map((slide, index) => {
+      {slides.map((slide: any, index) => {
         const isVisible = isSlideVisible(index, currentIndex, videoHasPlayed, slides.length);
         if (!isVisible) return null;
 

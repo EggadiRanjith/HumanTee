@@ -1,0 +1,4 @@
+﻿lib/queries/useTickets.ts(1,50): error TS1002: Unterminated string literal.
+lib/queries/useTickets.ts(2,12): error TS1005: '>' expected.
+lib/queries/useTickets.ts(2,16): error TS1005: ';' expected.
+lib/queries/useTickets.ts(2,53): error TS1002: Unterminated string literal.

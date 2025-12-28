@@ -4,6 +4,7 @@
  */
 
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { configureRetry } from './api/retry-config';
 
 // Dynamic API URL - works on both laptop and phone
 const getApiBaseUrl = () => {
@@ -80,6 +81,9 @@ const apiClient = axios.create({
         'Content-Type': 'application/json',
     },
 });
+
+// PRODUCTION: Configure retry logic with guards for dangerous endpoints
+configureRetry(apiClient);
 
 // Request interceptor: Add access token to headers
 apiClient.interceptors.request.use(

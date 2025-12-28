@@ -25,11 +25,10 @@ interface CartItem {
 
 interface OrderSummaryCheckoutProps {
     items: CartItem[];
-    totalPrice: number;
     pincode?: string; // Optional: only available after address selection
 }
 
-export function OrderSummaryCheckout({ items, totalPrice, pincode }: OrderSummaryCheckoutProps) {
+export function OrderSummaryCheckout({ items, pincode }: OrderSummaryCheckoutProps) {
     const [zones, setZones] = useState<ShippingZone[]>([]);
     const [taxSettings, setTaxSettings] = useState<TaxSettings>({
         enabled: true,
@@ -38,6 +37,9 @@ export function OrderSummaryCheckout({ items, totalPrice, pincode }: OrderSummar
         inclusive: false
     });
     const [isLoading, setIsLoading] = useState(true);
+
+    // Calculate totalPrice from items
+    const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
     // Fetch shipping zones and tax settings
     useEffect(() => {

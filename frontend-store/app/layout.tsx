@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 import { Providers } from "./providers"; // client providers isolated
+import { validateEnvironment } from "@/lib/config/env-validator"; // Environment validation
 
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
@@ -9,6 +10,9 @@ import MainContentWrapper from "./components/layout/MainContentWrapper";
 
 import localFont from "next/font/local";
 import { Darker_Grotesque, Meddon, Bonheur_Royale } from "next/font/google";
+
+// Validate environment on app startup
+validateEnvironment();
 
 /* ------------------------------------------------------------
    Fonts (loaded once, on server)

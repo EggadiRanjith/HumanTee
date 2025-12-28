@@ -137,7 +137,6 @@ export default function ShippingPage() {
                         {/* Order Summary - DEFER */}
                         <OrderSummaryCheckout
                             items={items}
-                            totalPrice={totalPrice}
                             pincode={
                                 addresses.find((addr) => addr.id === selectedAddressId)
                                     ?.postalCode

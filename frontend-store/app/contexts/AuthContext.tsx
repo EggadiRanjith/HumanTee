@@ -11,6 +11,8 @@ import { logError } from '@/lib/logger';
 import { useCart } from '@/app/contexts/CartContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
+import { authSync } from '@/lib/auth/multi-tab-sync';
+import { setUserContext, clearUserContext } from '@/lib/monitoring/sentry';
 
 interface User {
     id: string;
@@ -99,6 +101,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setAccessToken(accessToken);
         setUser(userData);
 
+        // PRODUCTION: Set Sentry user context for error tracking
+        setUserContext({
+            id: userData.id,
+            email: userData.email,
+        });
+
+        // PRODUCTION: Broadcast login to all tabs
+        authSync.broadcastLogin({
+            id: userData.id,
+            email: userData.email,
+        });
+
         // Phase 2: Hydrate React Query cache from login payload
         // This prevents redundant API calls after login
         queryClient.setQueryData(queryKeys.user, userData);
@@ -121,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    const handleLogout = async () => {
+    const logout = async () => {
         try {
             // Call logout endpoint (will use refresh token from cookie)
             await apiClient.post('/auth/logout');
@@ -136,6 +150,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Prevents next user seeing previous user's data
             queryClient.clear();
 
+            // SECURITY: Clear sensitive state
+            clearUserContext();
+
+            // Clear checkout data (addresses, payment info)
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('checkout-data');
+                localStorage.removeItem('shipping-address');
+                sessionStorage.clear();
+            }
+
+            // PRODUCTION: Broadcast logout to all tabs
+            authSync.broadcastLogout();
+
             // Redirect to homepage
             if (typeof window !== 'undefined') {
                 window.location.href = '/';
@@ -143,13 +170,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    // PRODUCTION: Listen for auth events from other tabs
+    useEffect(() => {
+        authSync.listen((message) => {
+            if (message.type === 'LOGOUT') {
+                // Another tab logged out - sync this tab
+                clearAccessToken();
+                setUser(null);
+                queryClient.clear();
+                if (typeof window !== 'undefined') {
+                    window.location.href = '/';
+                }
+            } else if (message.type === 'LOGIN' && message.user) {
+                // Another tab logged in - sync this tab
+                setUser({
+                    id: message.user.id,
+                    email: message.user.email,
+                    role: 'customer', // Default role
+                });
+            }
+        });
+    }, [queryClient]);
+
     return (
         <AuthContext.Provider
             value={{
                 user,
                 isLoading,
                 login,
-                logout: handleLogout,
+                logout,
                 isAuthenticated: !!user,
             }}
         >

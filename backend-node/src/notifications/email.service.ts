@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as nodemailer from 'nodemailer';
@@ -16,6 +16,7 @@ import { NotificationType } from './enums/notification-type.enum';
  */
 @Injectable()
 export class EmailService {
+    private readonly logger = new Logger(EmailService.name);
     private transporter: any;
     private templates: Map<string, HandlebarsTemplateDelegate> = new Map();
 
@@ -28,7 +29,7 @@ export class EmailService {
         const smtpPort = process.env.SMTP_PORT;
 
         if (!smtpHost || !smtpPort) {
-            console.warn('⚠️  SMTP not configured. Email features will be unavailable.');
+            this.logger.warn('⚠️  SMTP not configured. Email features will be unavailable.');
             this.transporter = null;
             return;
         }
@@ -54,7 +55,7 @@ export class EmailService {
         const templatesDir = path.join(__dirname, 'templates');
 
         if (!fs.existsSync(templatesDir)) {
-            console.warn('⚠️  Email templates directory not found');
+            this.logger.warn('⚠️  Email templates directory not found');
             return;
         }
 
@@ -76,7 +77,7 @@ export class EmailService {
      */
     async sendOrderConfirmation(order: Order, user: AuthUser): Promise<void> {
         if (!this.transporter) {
-            console.warn('⚠️  Email not configured, skipping order confirmation');
+            this.logger.warn('⚠️  Email not configured, skipping order confirmation');
             return;
         }
 
@@ -89,14 +90,14 @@ export class EmailService {
         });
 
         if (existing) {
-            console.log(`Order confirmation already sent for order ${order.id}`);
+            this.logger.log(`Order confirmation already sent for order ${order.id}`);
             return; // Idempotent - skip
         }
 
         // Get template
         const template = this.templates.get('order-confirmation');
         if (!template) {
-            console.error('Order confirmation template not found');
+            this.logger.error('Order confirmation template not found');
             return;
         }
 
@@ -132,7 +133,7 @@ export class EmailService {
         });
         await this.notificationRepo.save(notification);
 
-        console.log(`Order confirmation sent to ${user.email} for order ${order.id}`);
+        this.logger.log(`Order confirmation sent to ${user.email} for order ${order.id}`);
     }
 
     /**
@@ -140,7 +141,7 @@ export class EmailService {
      */
     async sendOrderFulfilled(order: Order, user: AuthUser): Promise<void> {
         if (!this.transporter) {
-            console.warn('⚠️  Email not configured, skipping order fulfilled notification');
+            this.logger.warn('⚠️  Email not configured, skipping order fulfilled notification');
             return;
         }
 
@@ -153,14 +154,14 @@ export class EmailService {
         });
 
         if (existing) {
-            console.log(`Order fulfilled email already sent for order ${order.id}`);
+            this.logger.log(`Order fulfilled email already sent for order ${order.id}`);
             return; // Idempotent - skip
         }
 
         // Get template
         const template = this.templates.get('order-fulfilled');
         if (!template) {
-            console.error('Order fulfilled template not found');
+            this.logger.error('Order fulfilled template not found');
             return;
         }
 
@@ -187,6 +188,6 @@ export class EmailService {
         });
         await this.notificationRepo.save(notification);
 
-        console.log(`Order fulfilled email sent to ${user.email} for order ${order.id}`);
+        this.logger.log(`Order fulfilled email sent to ${user.email} for order ${order.id}`);
     }
 }

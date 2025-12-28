@@ -46,9 +46,50 @@ const nextConfig: NextConfig = {
     // optimizeCss: true, // Disabled - requires critters module
     optimizePackageImports: ['framer-motion', 'react-icons'],
   },
-  // Headers for better video streaming
+  // Headers for security and performance
   async headers() {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const isDev = process.env.NODE_ENV === 'development';
+
     return [
+      // Security headers for all routes
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+          {
+            // CSP in report-only mode
+            // Development: allows unsafe-eval for React dev tools
+            // Production: strict CSP without unsafe-eval
+            key: 'Content-Security-Policy-Report-Only',
+            value: `
+              default-src 'self';
+              script-src 'self' https://cdn.sentry.io https://checkout.razorpay.com ${isDev ? "'unsafe-eval'" : ''};
+              style-src 'self' 'unsafe-inline';
+              img-src 'self' data: https:;
+              font-src 'self' data:;
+              connect-src 'self' ${apiUrl} https://sentry.io https://api.razorpay.com;
+              report-uri /api/csp-report;
+            `.replace(/\s+/g, ' ').trim(),
+          },
+        ],
+      },
+      // Video streaming headers
       {
         source: '/videos/:path*',
         headers: [
@@ -62,6 +103,7 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // Font caching
       {
         source: '/fonts/:path*',
         headers: [
@@ -71,6 +113,7 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // Image caching
       {
         source: '/images/:path*',
         headers: [

@@ -24,15 +24,15 @@ export function useCartOperations() {
 
     // Memoized cart operations to prevent unnecessary re-renders
     const handleRemoveItem = useCallback(
-        (itemId: string, size: string) => {
-            removeFromCart(itemId, size);
+        (itemId: string | number, size?: string) => {
+            removeFromCart(String(itemId), size || '');
         },
         [removeFromCart]
     );
 
     const handleUpdateQuantity = useCallback(
-        (itemId: string, size: string, quantity: number) => {
-            updateQuantity(itemId, size, quantity);
+        (itemId: string | number, size: string, quantity: number) => {
+            updateQuantity(String(itemId), size, quantity);
         },
         [updateQuantity]
     );

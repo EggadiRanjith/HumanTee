@@ -4,6 +4,7 @@
 
 "use client";
 
+import Image from "next/image";
 import SocialLinks from "./SocialLinks";
 
 interface BrandSectionProps {
@@ -22,9 +23,11 @@ export default function BrandSection({ brandName, logoUrl, tagline, socialLinks 
             {/* Logo + Brand Name */}
             <div className="flex items-center gap-2 sm:gap-3">
                 {logoUrl && logoUrl.trim() !== '' && (
-                    <img
+                    <Image
                         src={logoUrl}
                         alt={brandName || 'Brand Logo'}
+                        width={144}
+                        height={36}
                         className="h-[32px] sm:h-[36px] w-auto flex-shrink-0 border border-white/20 rounded p-1.5"
                     />
                 )}

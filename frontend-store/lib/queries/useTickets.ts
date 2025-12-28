@@ -1,5 +1,5 @@
-import { useQuery } from '@tantml:function_calls>
-<parameter name="queryKeys } from '@/lib/queryKeys';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import apiClient from '@/lib/api-client';
 
 export function useTickets(userId: string, page: number = 1) {

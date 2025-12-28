@@ -7,14 +7,12 @@ import { useLoading } from "@/app/contexts/LoadingContext";
 interface PaymentActionsProps {
     isProcessing: boolean;
     paymentMethod: string | null;
-    totalPrice: number;
     onPlaceOrder: () => void;
 }
 
 export default function PaymentActions({
     isProcessing,
     paymentMethod,
-    totalPrice,
     onPlaceOrder,
 }: PaymentActionsProps) {
     const router = useRouter();
@@ -48,7 +46,7 @@ export default function PaymentActions({
                         Processing...
                     </span>
                 ) : (
-                    `Place Order • ₹${totalPrice.toFixed(2)}`
+                    'Place Order'
                 )}
             </button>
         </motion.div>
