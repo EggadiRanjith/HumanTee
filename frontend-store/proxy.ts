@@ -53,8 +53,17 @@ export default async function proxy(request: NextRequest) {
             }
         } catch (error) {
             console.error('[Maintenance] Status check failed:', error);
-            // Fail-open: allow traffic if API is down
-            // Do NOT update cache on error to avoid locking users out
+
+            // FAIL-CLOSED: If backend is unreachable, show maintenance page
+            // This prevents users from seeing a broken site when backend is down
+            maintenanceCache = {
+                enabled: true, // Treat backend failure as maintenance mode
+                lastChecked: now,
+            };
+
+            if (!isAdmin) {
+                return NextResponse.redirect(new URL('/maintenance', request.url));
+            }
         }
     }
 

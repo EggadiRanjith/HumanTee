@@ -56,7 +56,7 @@ export function useSettings() {
                 setError(null);
             } catch (err) {
                 setError(err as Error);
-                logError(err, 'Failed to fetch settings');
+                console.error('Failed to fetch settings:', err);
             } finally {
                 setIsLoading(false);
             }
