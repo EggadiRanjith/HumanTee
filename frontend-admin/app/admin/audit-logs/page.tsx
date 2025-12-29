@@ -7,7 +7,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import Link from 'link';
+import Link from 'next/link';
 
 // Mock data - replace with API call
 const mockAuditLogs = [

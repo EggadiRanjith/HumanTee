@@ -1,0 +1,129 @@
+﻿Folder PATH listing for volume Windows
+Volume serial number is 6057-2E16
+C:\USERS\RANJITH\ONEDRIVE\DESKTOP\HUMANTEE\HUMANTEE\FRONTEND-ADMIN\APP
+|   favicon.ico
+|   globals.css
+|   layout.tsx
+|   page.tsx
+|   
++---admin
+|   |   layout.tsx
+|   |   page.tsx
+|   |   
+|   +---analytics
+|   |       page.tsx
+|   |       
+|   +---audit-logs
+|   |       page.tsx
+|   |       
+|   +---components
+|   |       ConfirmActionModal.tsx
+|   |       Sidebar.tsx
+|   |       StatusBadge.tsx
+|   |       Toast.tsx
+|   |       
+|   +---config
+|   |       status.ts
+|   |       theme.ts
+|   |       
+|   +---customers
+|   |   |   page.tsx
+|   |   |   
+|   |   \---[id]
+|   |           page.tsx
+|   |           
+|   +---discounts
+|   |   |   page.tsx
+|   |   |   
+|   |   +---new
+|   |   |       page.tsx
+|   |   |       
+|   |   \---[id]
+|   |           page.tsx
+|   |           page_backup.tsx
+|   |           
+|   +---hooks
+|   |       useToast.ts
+|   |       
+|   +---lib
+|   |       admin-api.ts
+|   |       error-handler.ts
+|   |       
+|   +---orders
+|   |   |   page.tsx
+|   |   |   
+|   |   \---[id]
+|   +---products
+|   |   |   page.tsx
+|   |   |   
+|   |   +---components
+|   |   |   |   CharacterCounter.tsx
+|   |   |   |   ColorPicker.tsx
+|   |   |   |   FormSection.tsx
+|   |   |   |   ImagePreviewCard.tsx
+|   |   |   |   ImageUploader.tsx
+|   |   |   |   input-styles.ts
+|   |   |   |   shared-styles.ts
+|   |   |   |   SlugInput.tsx
+|   |   |   |   TabNavigation.tsx
+|   |   |   |   TagInput.tsx
+|   |   |   |   VariantForm.tsx
+|   |   |   |   VariantManager.tsx
+|   |   |   |   
+|   |   |   \---tabs
+|   |   |           BasicInfoTab.tsx
+|   |   |           InventoryTab.tsx
+|   |   |           MediaTab.tsx
+|   |   |           OrganizationTab.tsx
+|   |   |           PricingTab.tsx
+|   |   |           ShippingTab.tsx
+|   |   |           VariantsTab.tsx
+|   |   |           
+|   |   +---new
+|   |   |       page.tsx
+|   |   |       
+|   |   \---[id]
+|   |           page.tsx
+|   |           
+|   +---settings
+|   |   |   page.tsx
+|   |   |   
+|   |   +---header-footer
+|   |   |       page.tsx
+|   |   |       
+|   |   +---homepage
+|   |   |       page.tsx
+|   |   |       
+|   |   +---policies
+|   |   |       page.tsx
+|   |   |       
+|   |   +---product-info
+|   |   |       page.tsx
+|   |   |       
+|   |   +---shipping-taxes
+|   |   |       page.tsx
+|   |   |       
+|   |   \---system
+|   |           page.tsx
+|   |           
+|   +---system
+|   |       page.tsx
+|   |       
+|   +---team
+|   |       page.tsx
+|   |       
+|   \---tickets
+|       |   page.tsx
+|       |   
+|       \---[id]
+|               page.tsx
+|               
++---context
+|       AuthContext.tsx
+|       
++---login
+|       page.tsx
+|       
+\---post-login
+        page.tsx
+        

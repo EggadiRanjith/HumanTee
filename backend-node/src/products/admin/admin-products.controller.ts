@@ -10,7 +10,7 @@ import {
     HttpStatus,
     UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
+import { JwtAuthGuard } from '../../auth/guards/jwt.guard';
 import { AdminProductsService } from './admin-products.service';
 import { CreateProductDto, UpdateProductDto } from './dto/create-product.dto';
 import { ProductResponseDto } from './dto/product-response.dto';

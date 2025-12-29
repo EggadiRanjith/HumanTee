@@ -18,6 +18,8 @@ import { TicketsModule } from './tickets/tickets.module';
 import { DiscountsModule } from './discounts/discounts.module';
 import { SettingsModule } from './settings/settings.module';
 import { MaintenanceModule } from './settings/maintenance.module';
+import { ObservabilityModule } from './common/observability.module';
+
 
 @Module({
   imports: [
@@ -51,6 +53,7 @@ import { MaintenanceModule } from './settings/maintenance.module';
     DiscountsModule,
     SettingsModule,
     MaintenanceModule,
+    ObservabilityModule, // Health checks + Prometheus metrics
   ],
   controllers: [AppController, ProtectedController],
   providers: [AppService],

@@ -65,7 +65,7 @@ function FeaturedProducts() {
   }
 
   // Empty state
-  if (products.length === 0) {
+  if (!products || products.length === 0) {
     return (
       <section className="relative w-full pt-12 pb-20 px-4 sm:px-6 md:px-10 lg:px-14 cinematic-bg-dusk">
         <GradientOverlay variant="aurora" />

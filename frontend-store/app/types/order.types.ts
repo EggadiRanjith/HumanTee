@@ -3,17 +3,17 @@
  * Type definitions for order data
  */
 
-export type OrderStatus = 'delivered' | 'shipped' | 'processing' | 'pending' | 'cancelled';
+export type OrderStatus = 'delivered' | 'shipped' | 'processing' | 'pending' | 'cancelled' | 'confirmed';
 
 export interface Order {
     id: string;
     orderNumber: string;
-    date: string; // Keep for backward compatibility
+    date?: string; // Optional for backward compatibility
     createdAt: string;
     status: OrderStatus;
-    total: string; // Keep for backward compatibility
+    total?: string; // Optional for backward compatibility
     totalAmount: number;
     items?: any[]; // Array of order items
     tracking?: string | null;
-    images?: string[]; // Keep for backward compatibility
+    images?: string[]; // Optional for backward compatibility
 }

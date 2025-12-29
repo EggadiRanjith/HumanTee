@@ -10,7 +10,7 @@ export function useTickets(userId: string, page: number = 1) {
             return response.data;
         },
         enabled: !!userId,
-        keepPreviousData: true, // Prevents pagination flicker
+        placeholderData: (previousData) => previousData, // Prevents pagination flicker
         staleTime: 2 * 60 * 1000,
     });
 }

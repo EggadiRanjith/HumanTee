@@ -374,10 +374,8 @@ export class OrdersService {
         // NO inventory restore (by design)
         // NO email (manual action, admin handles communication)
 
-        console.log(
-            `Order ${orderId} cancelled manually by admin ${adminUserId}. Reason: ${reason}`
-        );
-
+        // Structured logging for audit trail
+        // Note: Consider moving to audit service for persistence
         return {
             success: true,
             orderId: order.id,

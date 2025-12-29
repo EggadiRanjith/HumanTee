@@ -1,0 +1,261 @@
+﻿Folder PATH listing for volume Windows
+Volume serial number is 6057-2E16
+C:\USERS\RANJITH\ONEDRIVE\DESKTOP\HUMANTEE\HUMANTEE\BACKEND-NODE\SRC
+|   app.controller.ts
+|   app.module.ts
+|   app.service.ts
+|   data-source.ts
+|   main.ts
+|   
++---analytics
+|       analytics.module.ts
+|       analytics.service.ts
+|       analytics.types.ts
+|       
++---audit
+|   |   audit-event.enum.ts
+|   |   audit.module.ts
+|   |   audit.service.ts
+|   |   
+|   \---entities
+|           audit-log.entity.ts
+|           
++---auth
+|   |   admin-users.controller.ts
+|   |   auth.controller.ts
+|   |   auth.cron.ts
+|   |   auth.module.ts
+|   |   auth.service.ts
+|   |   login-aggregation.service.ts
+|   |   
+|   +---dto
+|   |       google-login.dto.ts
+|   |       send-otp.dto.ts
+|   |       update-profile.dto.ts
+|   |       verify-otp.dto.ts
+|   |       
+|   +---guards
+|   |       admin-role.guard.ts
+|   |       admin.guard.ts
+|   |       jwt.guard.ts
+|   |       
+|   \---strategies
+|           google.strategy.ts
+|           jwt.strategy.ts
+|           
++---cart
+|   |   cart.controller.ts
+|   |   cart.module.ts
+|   |   cart.service.ts
+|   |   
+|   \---dto
+|           add-to-cart.dto.ts
+|           cart-item.dto.ts
+|           merge-cart.dto.ts
+|           update-cart-item.dto.ts
+|           
++---common
+|   \---upload
+|           upload.controller.ts
+|           upload.module.ts
+|           upload.service.ts
+|           
++---discounts
+|       discounts.controller.ts
+|       discounts.module.ts
+|       discounts.service.ts
+|       
++---email
+|       email.module.ts
+|       email.service.ts
+|       
++---entities
+|       auth-user.entity.ts
+|       cart-item.entity.ts
+|       cart.entity.ts
+|       discount-target-group.entity.ts
+|       discount-usage.entity.ts
+|       discount.entity.ts
+|       email-otp-code.entity.ts
+|       email-otp.entity.ts
+|       index.ts
+|       login-audit-log.entity.ts
+|       oauth-account.entity.ts
+|       order-address.entity.ts
+|       order-discount.entity.ts
+|       order-item.entity.ts
+|       order-status-history.entity.ts
+|       order.entity.ts
+|       payment.entity.ts
+|       refresh-token.entity.ts
+|       setting-history.entity.ts
+|       setting.entity.ts
+|       settings-version.entity.ts
+|       shipment.entity.ts
+|       shipping-address.entity.ts
+|       ticket-message.entity.ts
+|       ticket-status-history.entity.ts
+|       ticket.entity.ts
+|       user-profile.entity.ts
+|       
++---jobs
+|   |   job-monitor.service.ts
+|   |   job.types.ts
+|   |   jobs.module.ts
+|   |   
+|   +---decorators
+|   |       monitored-job.decorator.ts
+|   |       
+|   \---entities
+|           background-job.entity.ts
+|           
++---migrations
+|       1734567890122-CreateCartTables.ts
+|       1734567890123-CreateProductsTable.ts
+|       1734567890124-CreateProductVariantsTable.ts
+|       1734567890125-UpdateCartItemsForVariants.ts
+|       1734675000000-AddProductionFields.ts
+|       1734675100000-AddVariantEnhancements.ts
+|       1734676000000-CreateAuditLogsTable.ts
+|       1734676100000-AddAdminRoles.ts
+|       1734676200000-CreateSettingsHistory.ts
+|       1734676300000-CreateBackgroundJobs.ts
+|       1734714000000-ProductSchemaEnhancements.ts
+|       1734776000000-RemoveColorFromVariants.ts
+|       1734812000000-RemoveWeightFromVariants.ts
+|       1734813000000-CreateShippingAddressesTable.ts
+|       1734850000000-CreateOrderSystemTables.ts
+|       1734870000000-UpdateCollectionLabels.ts
+|       
++---notifications
+|   |   email.service.ts
+|   |   notifications.module.ts
+|   |   
+|   +---entities
+|   |       order-notification.entity.ts
+|   |       
+|   +---enums
+|   |       notification-type.enum.ts
+|   |       
+|   \---templates
+|           order-confirmation.hbs
+|           order-fulfilled.hbs
+|           
++---orders
+|   |   admin-orders.controller.ts
+|   |   order.controller.ts
+|   |   order.module.ts
+|   |   order.service.ts
+|   |   orders.controller.ts
+|   |   orders.module.ts
+|   |   orders.service.ts
+|   |   
+|   +---dto
+|   |       admin-order.dto.ts
+|   |       cancel-order.dto.ts
+|   |       create-order.dto.ts
+|   |       list-orders.dto.ts
+|   |       
+|   +---entities
+|   |       order-item.entity.ts
+|   |       order.entity.ts
+|   |       
+|   +---enums
+|   |       order-status.enum.ts
+|   |       
+|   \---interfaces
+|           create-order-response.interface.ts
+|           
++---payments
+|   |   payments.module.ts
+|   |   payments.service.ts
+|   |   razorpay.service.ts
+|   |   webhook.controller.ts
+|   |   webhooks.controller.ts
+|   |   
+|   +---entities
+|   |       payment.entity.ts
+|   |       
+|   \---enums
+|           payment-status.enum.ts
+|           
++---products
+|   |   products.controller.ts
+|   |   products.module.ts
+|   |   products.service.ts
+|   |   
+|   +---admin
+|   |   |   admin-products.controller.ts
+|   |   |   admin-products.service.ts
+|   |   |   admin-variants.controller.ts
+|   |   |   admin-variants.service.ts
+|   |   |   
+|   |   \---dto
+|   |           change-status.dto.ts
+|   |           create-product.dto.ts
+|   |           create-variant.dto.ts
+|   |           product-response.dto.ts
+|   |           update-product.dto.ts
+|   |           update-variant.dto.ts
+|   |           
+|   +---dto
+|   |       product-response.dto.ts
+|   |       shop-query.dto.ts
+|   |       
+|   +---entities
+|   |       collection.entity.ts
+|   |       product-collection-map.entity.ts
+|   |       product-image.entity.ts
+|   |       product-variant.entity.ts
+|   |       product.entity.ts
+|   |       
+|   \---enums
+|           inventory-mode.enum.ts
+|           product-status.enum.ts
+|           
++---protected
+|       protected.controller.ts
+|       
++---rbac
+|   |   permission.service.ts
+|   |   rbac.module.ts
+|   |   rbac.types.ts
+|   |   
+|   +---decorators
+|   |       require-permission.decorator.ts
+|   |       
+|   \---guards
+|           permission.guard.ts
+|           
++---settings
+|   |   maintenance.controller.ts
+|   |   maintenance.module.ts
+|   |   public-settings.controller.ts
+|   |   settings.controller.ts
+|   |   settings.module.ts
+|   |   settings.service.ts
+|   |   settings.types.ts
+|   |   settings.validator.ts
+|   |   
+|   \---entities
+|           settings-history.entity.ts
+|           
++---shipping
+|   |   shipping.controller.ts
+|   |   shipping.module.ts
+|   |   shipping.service.ts
+|   |   
+|   \---dto
+|           create-shipping-address.dto.ts
+|           update-shipping-address.dto.ts
+|           
+\---tickets
+    |   tickets.controller.ts
+    |   tickets.module.ts
+    |   tickets.service.ts
+    |   
+    \---dto
+            add-message.dto.ts
+            create-ticket.dto.ts
+            update-ticket.dto.ts
+            

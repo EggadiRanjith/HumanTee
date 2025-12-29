@@ -33,7 +33,7 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
   // Custom hooks for state management
   const { videoRef, videoHasPlayed, videoError, setVideoHasPlayed, handleVideoError } =
     useVideoPlayer(0, isMobile);
-  const { currentIndex } = useHeroCarousel(slides.length, videoHasPlayed);
+  const { currentIndex } = useHeroCarousel(slides?.length || 0, videoHasPlayed);
 
   // Loading state (wait for both component mount and settings)
   useEffect(() => {
@@ -44,7 +44,7 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
   }, [settingsLoading]);
 
   // Error state (lazy loaded)
-  if (slides.length === 0) {
+  if (!slides || slides.length === 0) {
     return (
       <Suspense fallback={<HeroSkeleton />}>
         <HeroError />
@@ -61,7 +61,7 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
       aria-atomic="true"
     >
       {/* Media layers - crossfade transition with zoom effects */}
-      {slides.map((slide: any, index) => {
+      {slides.map((slide: any, index: number) => {
         const isVisible = isSlideVisible(index, currentIndex, videoHasPlayed, slides.length);
         if (!isVisible) return null;
 
@@ -154,7 +154,7 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
       })}
 
       {/* Content layers - synchronized crossfade transition */}
-      {slides.map((slide, index) => (
+      {slides.map((slide: any, index: number) => (
         <motion.div
           key={`content-${index}`}
           initial={{ opacity: index === 0 ? 1 : 0 }}

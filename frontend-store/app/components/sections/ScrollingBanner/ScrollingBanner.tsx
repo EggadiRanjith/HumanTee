@@ -32,7 +32,7 @@ const ScrollingBanner = ({ messages: propMessages }: ScrollingBannerProps = {}) 
   }, [settingsLoading]);
 
   // Don't render if no messages
-  if (messages.length === 0) return null;
+  if (!messages || messages.length === 0) return null;
   if (isLoading) return <BannerSkeleton />;
 
   return (

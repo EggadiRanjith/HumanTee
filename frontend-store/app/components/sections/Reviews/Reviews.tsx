@@ -17,16 +17,21 @@ import styles from "./Reviews.module.css";
 
 const ReviewsEmpty = lazy(() => import("./components/ReviewsEmpty"));
 
-function Reviews() {
+interface ReviewsProps {
+  reviews?: any;
+  enabled?: boolean;
+}
+
+function Reviews({ reviews: propReviews, enabled: propEnabled }: ReviewsProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Get reviews settings with fallback support
   const { settings: reviewsSettings, isLoading: settingsLoading } = useReviewsSettings();
 
-  // Extract values from settings
-  const enabled = reviewsSettings?.enabled ?? true;
-  const reviews = reviewsSettings?.items || [];
+  // Extract values from settings with prop fallbacks
+  const enabled = propEnabled ?? reviewsSettings?.enabled ?? true;
+  const reviews = propReviews ?? reviewsSettings?.items ?? [];
   const title = reviewsSettings?.title || "What Our Customers Say";
 
   // User interaction handling
@@ -50,7 +55,7 @@ function Reviews() {
   if (isLoading) return <ReviewsSkeleton />;
 
   // Empty state
-  if (reviews.length === 0) return <ReviewsEmpty />;
+  if (!reviews || reviews.length === 0) return <ReviewsEmpty />;
 
   // Duplicate reviews twice to ensure full width coverage
   const duplicated = [...reviews, ...reviews];
@@ -97,7 +102,7 @@ function Reviews() {
 }
 
 // Memo with comparison function
-export default memo(Reviews, (prevProps, nextProps) => {
+export default memo(Reviews, (prevProps: ReviewsProps, nextProps: ReviewsProps) => {
   if (!prevProps || !nextProps) return false;
   return prevProps.reviews === nextProps.reviews && prevProps.enabled === nextProps.enabled;
 });

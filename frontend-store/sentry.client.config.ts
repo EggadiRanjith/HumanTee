@@ -22,8 +22,6 @@ Sentry.init({
     },
 
     integrations: [
-        Sentry.browserTracingIntegration({
-            tracePropagationTargets: [process.env.NEXT_PUBLIC_API_URL || 'localhost'],
-        }),
+        Sentry.browserTracingIntegration(),
     ],
 });

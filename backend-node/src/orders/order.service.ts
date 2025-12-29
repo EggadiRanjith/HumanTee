@@ -171,7 +171,7 @@ export class OrderService {
                 order_id: order.id,
                 amount: totalAmount,
                 currency: 'INR',
-                status: PaymentStatus.CREATED,
+                status: PaymentStatus.INITIATED,
                 provider: 'RAZORPAY',
                 provider_order_id: razorpayOrderId,
             });

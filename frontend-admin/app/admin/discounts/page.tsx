@@ -29,6 +29,7 @@ interface Discount {
     endDate: string | null;
     globalUsageLimit: number | null;
     usedCount?: number; // Total usages from join or count
+    productsCount?: number; // Number of products this discount applies to
     createdAt: string;
 }
 
@@ -50,7 +51,6 @@ export default function DiscountsListPage() {
             setDiscounts(data);
             setError(null);
         } catch (err: any) {
-            console.error('Fetch discounts failed:', err);
             setError('Failed to load discounts');
         } finally {
             setIsLoading(false);
@@ -202,7 +202,7 @@ export default function DiscountsListPage() {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <div className="text-sm text-gray-600">{discount.productsCount} products</div>
+                                    <div className="text-sm text-gray-600">{discount.productsCount || 0} products</div>
                                 </td>
                                 <td className="px-6 py-4">
                                     <Link

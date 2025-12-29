@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "./context/AuthContext";
+import { QueryProvider } from "./context/QueryProvider";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import localFont from "next/font/local";
 
 // Geist font (matching store)
@@ -27,9 +29,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={geist.variable}>
       <body className="antialiased font-geist">
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <ErrorBoundary>
+          <QueryProvider>
+            <AuthProvider>
+              {children}
+            </AuthProvider>
+          </QueryProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

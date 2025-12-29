@@ -1,6 +1,8 @@
+"use client";
+
 import { Hero, FeaturedProducts } from "./components/sections";
 import { logError } from '@/lib/logger';
-import { Suspense, memo } from "react";
+import { Suspense, memo, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { publicSettingsApi } from "@/lib/app/api/public-settings";
 
@@ -12,22 +14,33 @@ const SectionSkeleton = memo(() => (
 // Dynamic imports for below-fold content (reduces initial bundle)
 const ScrollingBanner = dynamic(() => import("./components/sections/ScrollingBanner/ScrollingBanner"), {
     loading: () => null,
-    ssr: true
+    ssr: false
 });
 
 const Reviews = dynamic(() => import("./components/sections/Reviews/Reviews"), {
-    loading: () => <SectionSkeleton />
+    loading: () => <SectionSkeleton />,
+    ssr: false
 });
 
-export default async function Home() {
-    // Fetch homepage settings from API
-    let homepageSettings = null;
-    try {
-        homepageSettings = await publicSettingsApi.getHomepage();
-    } catch (error) {
-        logError(error, 'Failed to load homepage settings');
-        // Will fall back to hardcoded data in components
-    }
+export default function Home() {
+    const [homepageSettings, setHomepageSettings] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        // Fetch homepage settings from API
+        async function loadSettings() {
+            try {
+                const settings = await publicSettingsApi.getHomepage();
+                setHomepageSettings(settings);
+            } catch (error) {
+                logError(error, 'Failed to load homepage settings');
+                // Will fall back to hardcoded data in components
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadSettings();
+    }, []);
 
     return (
         <>

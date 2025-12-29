@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { GradientOverlay } from "@/app/components/ui/layout";
@@ -21,7 +21,7 @@ import {
   OrdersError
 } from './components';
 
-export default function OrdersPage() {
+function OrdersPageContent() {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
@@ -118,5 +118,14 @@ export default function OrdersPage() {
         )}
       </div>
     </div>
+  );
+}
+
+// Wrap in Suspense to fix useSearchParams error
+export default function OrdersPage() {
+  return (
+    <Suspense fallback={<OrdersSkeleton />}>
+      <OrdersPageContent />
+    </Suspense>
   );
 }

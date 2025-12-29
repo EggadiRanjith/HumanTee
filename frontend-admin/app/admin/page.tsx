@@ -99,7 +99,7 @@ export default function DashboardPage() {
             setRecentOrders(orders.slice(0, 5));
 
         } catch (error) {
-            console.error('Failed to fetch dashboard data:', error);
+            // Error handling - could add toast notification here
         } finally {
             setIsLoading(false);
         }
@@ -139,11 +139,6 @@ export default function DashboardPage() {
             return date.toISOString().split('T')[0];
         });
 
-        console.log('=== CHART DEBUG ===');
-        console.log('Total orders loaded:', allOrders.length);
-        console.log('Date range (centered):', dateRange);
-        console.log('Today:', new Date().toISOString().split('T')[0]);
-
         const result = dateRange.map(date => {
             const dayOrders = allOrders.filter(order =>
                 order.createdAt.split('T')[0] === date
@@ -151,14 +146,9 @@ export default function DashboardPage() {
             const orderCount = dayOrders.length;
             const revenue = dayOrders.reduce((sum, order) => sum + Number(order.totalAmount), 0);
 
-            if (dayOrders.length > 0) {
-                console.log(`Date ${date}: ${orderCount} orders, ₹${revenue}`);
-            }
-
             return { date, orderCount, revenue };
         });
 
-        console.log('Chart data:', result);
         return result;
     }, [allOrders, timeDuration]);
 

@@ -15,14 +15,15 @@ const getApiBaseUrl = () => {
     return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 };
 
-const API_BASE_URL = getApiBaseUrl();
+// Call getApiBaseUrl() inside functions, not at module level to avoid SSR errors
+
 
 export const publicSettingsApi = {
     /**
      * Get all public settings
      */
     async getAll() {
-        const response = await fetch(`${API_BASE_URL}/public/settings`, {
+        const response = await fetch(`${getApiBaseUrl()}/public/settings`, {
             next: { revalidate: 300 } // Cache for 5 minutes
         });
 
@@ -39,7 +40,7 @@ export const publicSettingsApi = {
      * @param section - Section name (e.g., 'homepage', 'header-footer')
      */
     async getSection(section: string) {
-        const response = await fetch(`${API_BASE_URL}/public/settings/${section}`, {
+        const response = await fetch(`${getApiBaseUrl()}/public/settings/${section}`, {
             next: { revalidate: 300 } // Cache for 5 minutes
         });
 
@@ -59,7 +60,7 @@ export const publicSettingsApi = {
     },
 
     /**
-     * Get header/footer settings
+     * Get header-footer settings
      */
     async getHeaderFooter() {
         return this.getSection('header-footer');

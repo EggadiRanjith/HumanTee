@@ -67,7 +67,6 @@ export const trackWebVitals = (pathname: string) => {
 
             inpObserver.observe({
                 type: 'event',
-                durationThreshold: 200, // Only track slow events
                 buffered: true
             });
 

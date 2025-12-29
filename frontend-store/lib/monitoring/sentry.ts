@@ -39,9 +39,7 @@ export function initSentry() {
         },
 
         integrations: [
-            Sentry.browserTracingIntegration({
-                tracePropagationTargets: [clientEnv.NEXT_PUBLIC_API_URL],
-            }),
+            Sentry.browserTracingIntegration(),
         ],
     });
 }

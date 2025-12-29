@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { logError } from '@/lib/logger';
 import { GradientOverlay } from '@/app/components/ui/layout';
 import { fetchShopProducts } from '@/lib/app/api/products';
@@ -25,7 +25,7 @@ import {
 import ShopFilters from './ShopFilters';
 import { useSectionSettings } from "@/app/hooks/useSettings";
 
-export default function ShopPage() {
+function ShopPageContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -137,5 +137,14 @@ export default function ShopPage() {
         )}
       </div>
     </div>
+  );
+}
+
+// Wrap in Suspense to fix useSearchParams error
+export default function ShopPage() {
+  return (
+    <Suspense fallback={<ShopSkeleton />}>
+      <ShopPageContent />
+    </Suspense>
   );
 }
