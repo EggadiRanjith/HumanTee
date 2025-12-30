@@ -61,7 +61,10 @@ export const aggregateProductData = (): ProductFormData => {
         // Media
         images: media.images,
 
-        // Pricing
+        // SEO
+        slug: basicInfo.name.toLowerCase().replace(/\s+/g, '-'),
+
+        // Organizationg
         price: pricing.price,
         compareAtPrice: pricing.compareAtPrice,
         costPerItem: pricing.costPerItem,

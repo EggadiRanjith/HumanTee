@@ -108,7 +108,7 @@ export default function EditDiscountPage() {
                     }
                 }
             } catch (error) {
-                console.error('Failed to load discount:', error);
+                // Failed to load discount
                 alert('Failed to load discount');
             } finally {
                 setIsInitialLoading(false);
@@ -131,7 +131,7 @@ export default function EditDiscountPage() {
                 setRealProducts(prods);
                 setRealCollections(colls);
             } catch (error) {
-                console.error('Failed to fetch data:', error);
+                // Failed to fetch data
             } finally {
                 setIsDataLoading(false);
             }
@@ -211,7 +211,7 @@ export default function EditDiscountPage() {
             alert('Discount successfully updated! 🚀');
             router.push('/admin/discounts');
         } catch (error: any) {
-            console.error('Update failed:', error);
+            // Update failed
             alert(error.response?.data?.message || 'Failed to update discount');
         } finally {
             setIsLoading(false);

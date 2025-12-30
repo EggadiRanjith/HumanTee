@@ -83,13 +83,13 @@ export default function ColorPicker({ value, colorName, onChange }: ColorPickerP
                         <input
                             type="color"
                             value={customHex}
-                            onChange={(e) => handleCustomChange(e.target.value)}
+                            onChange={(e: any) => handleCustomChange(e.target.value)}
                             className="w-12 h-10 rounded border border-gray-300 cursor-pointer"
                         />
                         <input
                             type="text"
                             value={customHex}
-                            onChange={(e) => handleCustomChange(e.target.value)}
+                            onChange={(e: any) => handleCustomChange(e.target.value)}
                             placeholder="#000000"
                             className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
                         />

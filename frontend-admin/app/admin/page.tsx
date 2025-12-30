@@ -7,8 +7,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect, useMemo } from 'react';
-import apiClient from '@/lib/api-client';
+import { useMemo, useState } from 'react';
+import { useDashboardData } from './hooks/useDashboardData';
+import { PageSkeleton } from '../components/PageSkeleton';
+import { ErrorDisplay } from '../components/ErrorDisplay';
 
 interface DashboardStats {
     totalOrders: number;
@@ -37,7 +39,10 @@ interface RecentOrder {
 }
 
 export default function DashboardPage() {
-    const [stats, setStats] = useState<DashboardStats>({
+    // Use React Query hook - automatic caching and loading states
+    const { data, isLoading, error, refetch } = useDashboardData();
+
+    const stats = data?.stats || {
         totalOrders: 0,
         pendingOrders: 0,
         processingOrders: 0,
@@ -46,64 +51,14 @@ export default function DashboardPage() {
         totalRevenue: 0,
         paidAmount: 0,
         pendingPayments: 0,
-    });
-    const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
-    const [allOrders, setAllOrders] = useState<RecentOrder[]>([]); // All orders for chart
-    const [isLoading, setIsLoading] = useState(true);
+    };
+
+    const recentOrders = data?.recentOrders || [];
+    const allOrders = data?.allOrders || []; // All orders for chart
+    // Low stock products removed - not in API response
+
     const [chartType, setChartType] = useState<'orders' | 'revenue'>('orders'); // Toggle: orders or revenue
     const [timeDuration, setTimeDuration] = useState<'7days' | '30days' | '6months'>('7days'); // Time range
-
-    useEffect(() => {
-        fetchDashboardData();
-    }, []);
-
-    const fetchDashboardData = async () => {
-        try {
-            setIsLoading(true);
-
-            // Fetch all orders to calculate stats
-            const response = await apiClient.get('/admin/orders', {
-                params: { limit: 100 }
-            });
-
-            const orders = response.data.orders || [];
-            setAllOrders(orders); // Store all orders for chart
-
-            // Calculate statistics
-            const totalOrders = orders.length;
-            const pendingOrders = orders.filter((o: RecentOrder) =>
-                o.status.toLowerCase() === 'pending_payment' || o.status.toLowerCase() === 'pending'
-            ).length;
-            const processingOrders = orders.filter((o: RecentOrder) => o.status.toLowerCase() === 'processing').length;
-            const shippedOrders = orders.filter((o: RecentOrder) => o.status.toLowerCase() === 'shipped').length;
-            const deliveredOrders = orders.filter((o: RecentOrder) => o.status.toLowerCase() === 'delivered').length;
-
-            const totalRevenue = orders.reduce((sum: number, o: RecentOrder) => sum + Number(o.totalAmount), 0);
-            const paidAmount = orders
-                .filter((o: RecentOrder) => o.payments?.[0]?.status?.toLowerCase() === 'paid')
-                .reduce((sum: number, o: RecentOrder) => sum + Number(o.totalAmount), 0);
-            const pendingPayments = totalRevenue - paidAmount;
-
-            setStats({
-                totalOrders,
-                pendingOrders,
-                processingOrders,
-                shippedOrders,
-                deliveredOrders,
-                totalRevenue,
-                paidAmount,
-                pendingPayments,
-            });
-
-            // Get 5 most recent orders
-            setRecentOrders(orders.slice(0, 5));
-
-        } catch (error) {
-            // Error handling - could add toast notification here
-        } finally {
-            setIsLoading(false);
-        }
-    };
 
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
@@ -144,7 +99,7 @@ export default function DashboardPage() {
                 order.createdAt.split('T')[0] === date
             );
             const orderCount = dayOrders.length;
-            const revenue = dayOrders.reduce((sum, order) => sum + Number(order.totalAmount), 0);
+            const revenue = dayOrders.reduce((sum: number, order) => sum + Number(order.totalAmount), 0);
 
             return { date, orderCount, revenue };
         });
@@ -180,7 +135,7 @@ export default function DashboardPage() {
                     <p className="text-xs sm:text-sm text-gray-600 mt-1">Overview of your store</p>
                 </div>
                 <button
-                    onClick={fetchDashboardData}
+                    onClick={() => refetch()}
                     className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                 >
                     🔄 Refresh
@@ -215,16 +170,17 @@ export default function DashboardPage() {
 
             {/* Interactive Chart - Professional Design */}
             <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 shadow-sm">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-6">
+                <div className="flex flex-col gap-4 mb-6">
+                    {/* Title and Total */}
                     <div>
                         <h2 className="text-base sm:text-lg font-semibold text-black mb-1">
                             {chartType === 'orders' ? 'Orders Analytics' : 'Revenue Analytics'}
                         </h2>
-                        <div className="flex items-baseline gap-3">
-                            <p className="text-2xl sm:text-3xl font-bold text-black">
+                        <div className="flex items-baseline gap-2 sm:gap-3">
+                            <p className="text-xl sm:text-2xl md:text-3xl font-bold text-black">
                                 {chartType === 'orders'
-                                    ? chartData.reduce((sum, d) => sum + d.orderCount, 0)
-                                    : `₹${chartData.reduce((sum, d) => sum + d.revenue, 0).toLocaleString()}`
+                                    ? chartData.reduce((sum: number, d) => sum + d.orderCount, 0)
+                                    : `₹${chartData.reduce((sum: number, d) => sum + d.revenue, 0).toLocaleString()}`
                                 }
                             </p>
                             <p className="text-xs text-gray-500">
@@ -233,12 +189,13 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
+                    {/* Controls */}
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                         {/* Chart Type Toggle */}
                         <div className="flex bg-gray-100 rounded-lg p-1 shadow-inner">
                             <button
                                 onClick={() => setChartType('orders')}
-                                className={`px-4 py-2 text-xs font-semibold rounded-md transition-all duration-200 ${chartType === 'orders'
+                                className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 text-xs font-semibold rounded-md transition-all duration-200 ${chartType === 'orders'
                                     ? 'bg-black text-white shadow-sm'
                                     : 'text-gray-600 hover:text-black hover:bg-gray-50'
                                     }`}
@@ -247,7 +204,7 @@ export default function DashboardPage() {
                             </button>
                             <button
                                 onClick={() => setChartType('revenue')}
-                                className={`px-4 py-2 text-xs font-semibold rounded-md transition-all duration-200 ${chartType === 'revenue'
+                                className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 text-xs font-semibold rounded-md transition-all duration-200 ${chartType === 'revenue'
                                     ? 'bg-black text-white shadow-sm'
                                     : 'text-gray-600 hover:text-black hover:bg-gray-50'
                                     }`}
@@ -259,8 +216,8 @@ export default function DashboardPage() {
                         {/* Time Duration Selector */}
                         <select
                             value={timeDuration}
-                            onChange={(e) => setTimeDuration(e.target.value as any)}
-                            className="px-4 py-2 text-xs font-medium border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none bg-white hover:border-gray-300 transition-colors cursor-pointer shadow-sm"
+                            onChange={(e: any) => setTimeDuration(e.target.value as any)}
+                            className="flex-1 sm:flex-none px-3 sm:px-4 py-2 text-xs font-medium border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none bg-white hover:border-gray-300 transition-colors cursor-pointer shadow-sm"
                         >
                             <option value="7days">📅 7 Days</option>
                             <option value="30days">📅 30 Days</option>
@@ -270,7 +227,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Chart Container - Fully Responsive */}
-                <div className="relative w-full" style={{ height: '300px' }}>
+                <div className="relative w-full h-[200px] sm:h-[250px] md:h-[300px]">
                     {/* Y-axis labels - Absolute positioned */}
                     <div className="absolute left-0 top-0 bottom-0 w-12 flex flex-col justify-between py-5 pr-2">
                         {[0, 1, 2, 3, 4].map((i) => {
@@ -324,7 +281,7 @@ export default function DashboardPage() {
                             const chartBottom = 260;
                             const chartHeight = chartBottom - chartTop;
 
-                            const points = chartData.map((data, index) => {
+                            const points = chartData.map((data: any, index: number) => {
                                 const value = chartType === 'orders' ? data.orderCount : data.revenue;
                                 const x = (index / Math.max(chartData.length - 1, 1)) * 1000;
                                 const y = value > 0 ? chartBottom - ((value / maxChartValue) * chartHeight) : chartBottom;
@@ -333,7 +290,7 @@ export default function DashboardPage() {
 
                             // Create smooth Bezier curve path
                             let pathData = '';
-                            points.forEach((point, index) => {
+                            points.forEach((point, index: number) => {
                                 if (index === 0) {
                                     pathData += `M ${point.x} ${point.y}`;
                                 } else {
@@ -368,7 +325,7 @@ export default function DashboardPage() {
                                     />
 
                                     {/* Data points with hover effect */}
-                                    {points.map((point, index) => {
+                                    {points.map((point, index: number) => {
                                         if (point.value === 0) return null;
                                         const displayValue = chartType === 'orders'
                                             ? `${point.value} orders`
@@ -413,7 +370,7 @@ export default function DashboardPage() {
 
                     {/* X-axis Date Labels - Below Chart */}
                     <div className="absolute bottom-0 left-12 right-0 flex justify-between pb-2">
-                        {chartData.map((data, index) => {
+                        {chartData.map((data: any, index: number) => {
                             const showLabel = timeDuration === '7days'
                                 ? true
                                 : timeDuration === '30days'
@@ -449,8 +406,8 @@ export default function DashboardPage() {
                         <p className="text-xs text-gray-500 mb-1">Average</p>
                         <p className="text-sm font-semibold text-black">
                             {chartType === 'orders'
-                                ? Math.round(chartData.reduce((sum, d) => sum + d.orderCount, 0) / chartData.length)
-                                : `₹${Math.round(chartData.reduce((sum, d) => sum + d.revenue, 0) / chartData.length).toLocaleString()}`
+                                ? Math.round(chartData.reduce((sum: number, d) => sum + d.orderCount, 0) / chartData.length)
+                                : `₹${Math.round(chartData.reduce((sum: number, d) => sum + d.revenue, 0) / chartData.length).toLocaleString()}`
                             }
                         </p>
                     </div>
@@ -464,8 +421,8 @@ export default function DashboardPage() {
                         <p className="text-xs text-gray-500 mb-1">Total</p>
                         <p className="text-sm font-semibold text-black">
                             {chartType === 'orders'
-                                ? chartData.reduce((sum, d) => sum + d.orderCount, 0)
-                                : `₹${chartData.reduce((sum, d) => sum + d.revenue, 0).toLocaleString()}`
+                                ? chartData.reduce((sum: number, d) => sum + d.orderCount, 0)
+                                : `₹${chartData.reduce((sum: number, d) => sum + d.revenue, 0).toLocaleString()}`
                             }
                         </p>
                     </div>

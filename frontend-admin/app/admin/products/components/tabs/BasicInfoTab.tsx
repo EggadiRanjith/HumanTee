@@ -41,7 +41,7 @@ export default function BasicInfoTab({ errors }: BasicInfoTabProps) {
                             type="text"
                             id="name"
                             value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            onChange={(e: any) => setName(e.target.value)}
                             placeholder="e.g., Classic White T-Shirt"
                             className={`w-full px-3 py-3 sm:px-4 sm:py-2.5 text-base sm:text-sm border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900 ${errors?.name ? 'border-red-500' : 'border-gray-300'
                                 }`}
@@ -64,7 +64,7 @@ export default function BasicInfoTab({ errors }: BasicInfoTabProps) {
                         <textarea
                             id="description"
                             value={description}
-                            onChange={(e) => setDescription(e.target.value)}
+                            onChange={(e: any) => setDescription(e.target.value)}
                             rows={5}
                             placeholder="Describe your product..."
                             className={`w-full px-3 py-3 sm:px-4 sm:py-2.5 text-base sm:text-sm border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900 resize-none ${errors?.description ? 'border-red-500' : 'border-gray-300'
@@ -89,7 +89,7 @@ export default function BasicInfoTab({ errors }: BasicInfoTabProps) {
                             <select
                                 id="productType"
                                 value={productType}
-                                onChange={(e) => setProductType(e.target.value)}
+                                onChange={(e: any) => setProductType(e.target.value)}
                                 className={`w-full px-3 py-3 sm:px-4 sm:py-2.5 text-base sm:text-sm border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900 ${errors?.productType ? 'border-red-500' : 'border-gray-300'
                                     }`}
                             >
@@ -116,7 +116,7 @@ export default function BasicInfoTab({ errors }: BasicInfoTabProps) {
                             <select
                                 id="category"
                                 value={category}
-                                onChange={(e) => setCategory(e.target.value)}
+                                onChange={(e: any) => setCategory(e.target.value)}
                                 className={`w-full px-3 py-3 sm:px-4 sm:py-2.5 text-base sm:text-sm border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900 ${errors?.category ? 'border-red-500' : 'border-gray-300'
                                     }`}
                             >

@@ -62,7 +62,7 @@ export default function InventoryTab() {
                             type="checkbox"
                             id="trackInventory"
                             checked={trackInventory}
-                            onChange={(e) => setTrackInventory(e.target.checked)}
+                            onChange={(e: any) => setTrackInventory(e.target.checked)}
                             className="w-4 h-4 sm:w-5 sm:h-5 text-black border-gray-300 rounded focus:ring-black"
                         />
                         <label htmlFor="trackInventory" className="text-sm sm:text-base font-medium text-gray-900">
@@ -97,8 +97,8 @@ export default function InventoryTab() {
                                             type="number"
                                             id="stock"
                                             value={stock || ''}
-                                            onChange={(e) => setStock(e.target.value === '' ? 0 : Number(e.target.value))}
-                                            onFocus={(e) => e.target.select()}
+                                            onChange={(e: any) => setStock(e.target.value === '' ? 0 : Number(e.target.value))}
+                                            onFocus={(e: any) => e.target.select()}
                                             placeholder="0"
                                             min="0"
                                             max="999999"
@@ -116,7 +116,7 @@ export default function InventoryTab() {
                                     type="checkbox"
                                     id="continueSellingWhenOutOfStock"
                                     checked={continueSellingWhenOutOfStock}
-                                    onChange={(e) => setContinueSelling(e.target.checked)}
+                                    onChange={(e: any) => setContinueSelling(e.target.checked)}
                                     className="w-4 h-4 sm:w-5 sm:h-5 text-black border-gray-300 rounded focus:ring-black"
                                 />
                                 <label
@@ -136,8 +136,8 @@ export default function InventoryTab() {
                                     type="number"
                                     id="lowStockThreshold"
                                     value={lowStockThreshold || ''}
-                                    onChange={(e) => setLowStockThreshold(e.target.value === '' ? undefined : Number(e.target.value))}
-                                    onFocus={(e) => e.target.select()}
+                                    onChange={(e: any) => setLowStockThreshold(e.target.value === '' ? undefined : Number(e.target.value))}
+                                    onFocus={(e: any) => e.target.select()}
                                     placeholder="10"
                                     min="0"
                                     max="9999"

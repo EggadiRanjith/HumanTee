@@ -52,7 +52,7 @@ export default function TicketDetailPage() {
             setPriority(data.priority);
             setAssignedTo(data.assignedTo || '');
         } catch (err: any) {
-            console.error("Failed to fetch ticket:", err);
+            // Failed to fetch ticket
             setError("Failed to load ticket details.");
         } finally {
             setIsLoading(false);
@@ -70,7 +70,7 @@ export default function TicketDetailPage() {
             // Refresh ticket to show new message
             await fetchTicket();
         } catch (err: any) {
-            console.error("Failed to send reply:", err);
+            // Failed to send reply
             alert("Failed to send reply. Please try again.");
         } finally {
             setIsActionLoading(false);
@@ -90,7 +90,7 @@ export default function TicketDetailPage() {
             await fetchTicket();
             alert("Ticket updated successfully!");
         } catch (err: any) {
-            console.error("Failed to update ticket:", err);
+            // Failed to update ticket
             alert("Failed to update ticket attributes.");
         } finally {
             setIsActionLoading(false);

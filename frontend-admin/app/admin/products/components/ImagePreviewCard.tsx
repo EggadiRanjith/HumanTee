@@ -102,7 +102,7 @@ export default function ImagePreviewCard({
                         <input
                             type="text"
                             value={altText}
-                            onChange={(e) => setAltText(e.target.value)}
+                            onChange={(e: any) => setAltText(e.target.value)}
                             placeholder="Alt text"
                             className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-black focus:border-black outline-none"
                             autoFocus

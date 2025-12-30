@@ -40,7 +40,7 @@ export default function SlugInput({
                 <input
                     type="text"
                     value={value}
-                    onChange={(e) => onChange(e.target.value.toLowerCase())}
+                    onChange={(e: any) => onChange(e.target.value.toLowerCase())}
                     placeholder="product-url-slug"
                     className={`
             flex-1 px-4 py-3 bg-white border-2 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black outline-none transition-colors

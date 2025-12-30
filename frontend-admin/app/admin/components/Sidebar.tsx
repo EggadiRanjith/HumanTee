@@ -22,6 +22,8 @@ export function Sidebar() {
         { href: '/admin/customers', label: 'Customers', icon: '👥' },
         { href: '/admin/discounts', label: 'Discounts', icon: '🎫' },
         { href: '/admin/tickets', label: 'Support', icon: '💬' },
+        { href: '/admin/analytics', label: 'Analytics', icon: '📈' },
+        { href: '/admin/audit-logs', label: 'Audit Logs', icon: '📋' },
         { href: '/admin/settings', label: 'Settings', icon: '⚙️' },
     ];
 

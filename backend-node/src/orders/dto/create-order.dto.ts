@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsArray, IsNumber, IsString, ValidateNested, IsEmail, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsArray, IsNumber, IsString, ValidateNested, IsEmail, IsOptional, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateOrderItemDto {
@@ -82,6 +82,10 @@ export class ShippingAddressDto {
 }
 
 export class CreateOrderDto {
+    @IsNotEmpty()
+    @IsUUID()
+    idempotencyKey: string; // Client-provided UUID for duplicate prevention
+
     @IsNotEmpty()
     @IsArray()
     @ValidateNested({ each: true })

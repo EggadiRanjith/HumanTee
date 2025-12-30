@@ -26,7 +26,7 @@ export default function ShippingTab({ data, onChange, errors }: ShippingTabProps
                             type="checkbox"
                             id="isPhysicalProduct"
                             checked={data.isPhysicalProduct}
-                            onChange={(e) => onChange({ isPhysicalProduct: e.target.checked })}
+                            onChange={(e: any) => onChange({ isPhysicalProduct: e.target.checked })}
                             className="w-4 h-4 sm:w-5 sm:h-5 text-black border-gray-300 rounded focus:ring-black"
                         />
                         <label htmlFor="isPhysicalProduct" className="text-sm sm:text-base font-medium text-gray-900">
@@ -42,7 +42,7 @@ export default function ShippingTab({ data, onChange, errors }: ShippingTabProps
                                     type="checkbox"
                                     id="requiresShipping"
                                     checked={data.requiresShipping}
-                                    onChange={(e) => onChange({ requiresShipping: e.target.checked })}
+                                    onChange={(e: any) => onChange({ requiresShipping: e.target.checked })}
                                     className="w-4 h-4 sm:w-5 sm:h-5 text-black border-gray-300 rounded focus:ring-black"
                                 />
                                 <label htmlFor="requiresShipping" className="text-sm sm:text-base text-gray-900">
@@ -60,7 +60,7 @@ export default function ShippingTab({ data, onChange, errors }: ShippingTabProps
                                         <input
                                             type="number"
                                             value={data.weight || ''}
-                                            onChange={(e) =>
+                                            onChange={(e: any) =>
                                                 onChange({
                                                     weight: e.target.value ? Number(e.target.value) : undefined,
                                                 })

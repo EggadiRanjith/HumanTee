@@ -49,14 +49,15 @@ async function bootstrap() {
     next();
   });
 
-  // CORS configuration - Phase 8: Allow both customer and admin apps
+  // CORS configuration
   app.enableCors({
     origin: [
-      'http://localhost:3000',  // Customer app (laptop)
-      'http://localhost:3002',  // Admin app
-      'http://10.113.119.158:3000',  // Customer app (phone/network)
-      process.env.FRONTEND_URL, // Production customer
-      process.env.ADMIN_URL,    // Production admin
+      'http://localhost:3000',      // Customer store (local)
+      'http://localhost:3002',      // Admin panel (local)
+      'http://10.113.119.158:3000', // Customer store (network)
+      'http://10.113.119.158:3002', // Admin panel (network)
+      process.env.FRONTEND_URL,
+      process.env.ADMIN_URL,
     ].filter(Boolean),
     credentials: true,
   });

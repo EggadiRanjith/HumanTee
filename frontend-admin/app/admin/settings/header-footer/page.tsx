@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FiArrowLeft, FiUpload, FiX, FiSave } from 'react-icons/fi';
+import { useAdminSettings } from '@/lib/queries/useSettings';
 import { settingsApi } from '@/lib/api/settings';
 import { useCloudinaryUpload } from '@/hooks/useCloudinaryUpload';
 
@@ -27,26 +28,25 @@ export default function HeaderFooterSettings() {
         scrolling_text: ''
     });
     const [isSaving, setIsSaving] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const { upload, uploading, error: uploadError } = useCloudinaryUpload();
 
-    // Load settings on mount
+    // Use React Query hook - automatic caching and loading states
+    const { data, isLoading } = useAdminSettings('header-footer');
+
+    // Update local state when data loads
     useEffect(() => {
-        settingsApi.getSection('header-footer')
-            .then(data => {
-                setFormData({
-                    brand_name: data.brand_name || '',
-                    logo_url: data.logo_url || '',
-                    tagline: data.tagline || '',
-                    social_links: data.social_links || { instagram: '', maps: '' },
-                    contact: data.contact || { email: '', phone: '' },
-                    scrolling_text: data.scrolling_text || ''
-                });
-            })
-            .catch(error => console.error('Failed to load settings:', error))
-            .finally(() => setIsLoading(false));
-    }, []);
+        if (data) {
+            setFormData({
+                brand_name: data.brand_name || '',
+                logo_url: data.logo_url || '',
+                tagline: data.tagline || '',
+                social_links: data.social_links || { instagram: '', maps: '' },
+                contact: data.contact || { email: '', phone: '' },
+                scrolling_text: data.scrolling_text || ''
+            });
+        }
+    }, [data]);
 
     // Handle logo upload
     const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,7 +76,7 @@ export default function HeaderFooterSettings() {
             setIsEditing(false); // Exit edit mode after save
             alert('Settings saved successfully!');
         } catch (error) {
-            console.error('Save failed:', error);
+            // Save failed
             alert('Failed to save settings');
         } finally {
             setIsSaving(false);
@@ -161,7 +161,7 @@ export default function HeaderFooterSettings() {
                                 <input
                                     type="text"
                                     value={formData.brand_name}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, brand_name: e.target.value }))}
+                                    onChange={(e: any) => setFormData(prev => ({ ...prev, brand_name: e.target.value }))}
                                     placeholder="HUMANTEE"
                                     readOnly={!isEditing}
                                     className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
@@ -244,7 +244,7 @@ export default function HeaderFooterSettings() {
                                 <input
                                     type="text"
                                     value={formData.tagline}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, tagline: e.target.value }))}
+                                    onChange={(e: any) => setFormData(prev => ({ ...prev, tagline: e.target.value }))}
                                     placeholder="Wear Your Story"
                                     readOnly={!isEditing}
                                     className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
@@ -259,7 +259,7 @@ export default function HeaderFooterSettings() {
                                 <input
                                     type="email"
                                     value={formData.contact.email}
-                                    onChange={(e) => setFormData(prev => ({
+                                    onChange={(e: any) => setFormData(prev => ({
                                         ...prev,
                                         contact: { ...prev.contact, email: e.target.value }
                                     }))}
@@ -277,7 +277,7 @@ export default function HeaderFooterSettings() {
                                 <input
                                     type="tel"
                                     value={formData.contact.phone}
-                                    onChange={(e) => setFormData(prev => ({
+                                    onChange={(e: any) => setFormData(prev => ({
                                         ...prev,
                                         contact: { ...prev.contact, phone: e.target.value }
                                     }))}
@@ -296,7 +296,7 @@ export default function HeaderFooterSettings() {
                                     <input
                                         type="url"
                                         value={formData.social_links.instagram}
-                                        onChange={(e) => setFormData(prev => ({
+                                        onChange={(e: any) => setFormData(prev => ({
                                             ...prev,
                                             social_links: { ...prev.social_links, instagram: e.target.value }
                                         }))}
@@ -313,7 +313,7 @@ export default function HeaderFooterSettings() {
                                     <input
                                         type="url"
                                         value={formData.social_links.maps}
-                                        onChange={(e) => setFormData(prev => ({
+                                        onChange={(e: any) => setFormData(prev => ({
                                             ...prev,
                                             social_links: { ...prev.social_links, maps: e.target.value }
                                         }))}
@@ -332,7 +332,7 @@ export default function HeaderFooterSettings() {
                                 <input
                                     type="text"
                                     value={formData.scrolling_text}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, scrolling_text: e.target.value }))}
+                                    onChange={(e: any) => setFormData(prev => ({ ...prev, scrolling_text: e.target.value }))}
                                     placeholder="WEAR HUMANTEE · WEAR CONFIDENCE"
                                     readOnly={!isEditing}
                                     className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}

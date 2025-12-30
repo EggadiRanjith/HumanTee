@@ -34,7 +34,7 @@ export default function ImageUploader({
                 .forEach((file, index) => {
                     if (file.type.startsWith('image/')) {
                         const reader = new FileReader();
-                        reader.onload = (e) => {
+                        reader.onload = (e: any) => {
                             const newImage: ProductImage = {
                                 id: `temp-${Date.now()}-${index}`,
                                 url: e.target?.result as string,
@@ -154,7 +154,7 @@ export default function ImageUploader({
                                 type="file"
                                 multiple
                                 accept="image/*"
-                                onChange={(e) => handleFileSelect(e.target.files)}
+                                onChange={(e: any) => handleFileSelect(e.target.files)}
                                 className="hidden"
                             />
                             <span className="inline-block bg-black hover:bg-gray-900 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm cursor-pointer">

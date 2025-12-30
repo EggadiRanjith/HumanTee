@@ -559,7 +559,10 @@ export class AuthService {
             };
 
         } catch (error) {
-            await queryRunner.rollbackTransaction();
+            // Only rollback if transaction is still active
+            if (queryRunner.isTransactionActive) {
+                await queryRunner.rollbackTransaction();
+            }
             throw error;
         } finally {
             await queryRunner.release();

@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AdminUsersController } from './admin-users.controller';
+import { AuditLogsController } from './audit-logs.controller';
 import { AuthService } from './auth.service';
 import { AuthCronService } from './auth.cron';
 import { LoginAggregationService } from './login-aggregation.service';
@@ -43,7 +44,7 @@ import { ShippingModule } from '../shipping/shipping.module';
         CartModule,
         ShippingModule,
     ],
-    controllers: [AuthController, AdminUsersController],
+    controllers: [AuthController, AdminUsersController, AuditLogsController],
     providers: [AuthService, AuthCronService, LoginAggregationService, JwtStrategy, GoogleStrategy],
     exports: [AuthService],
 })

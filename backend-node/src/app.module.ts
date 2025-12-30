@@ -19,6 +19,9 @@ import { DiscountsModule } from './discounts/discounts.module';
 import { SettingsModule } from './settings/settings.module';
 import { MaintenanceModule } from './settings/maintenance.module';
 import { ObservabilityModule } from './common/observability.module';
+import { AnalyticsModule } from './analytics/analytics.module';
+// import { RedisModule } from './redis/redis.module'; // Disabled - Docker not running
+
 
 
 @Module({
@@ -26,10 +29,13 @@ import { ObservabilityModule } from './common/observability.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 60000,  // 60 seconds
-      limit: 10,   // 10 requests per minute (default)
-    }]),
+    ThrottlerModule.forRoot([
+      { name: 'default', ttl: 60000, limit: 100 }, // 100 req/min default
+      { name: 'webhook', ttl: 60000, limit: 20 },   // 20 req/min for webhooks
+      { name: 'order', ttl: 60000, limit: 5 },      // 5 req/min for orders
+      { name: 'admin', ttl: 60000, limit: 30 },     // 30 req/min for admin
+      { name: 'strict', ttl: 60000, limit: 10 },    // 10 req/min for strict endpoints
+    ]),
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -54,6 +60,8 @@ import { ObservabilityModule } from './common/observability.module';
     SettingsModule,
     MaintenanceModule,
     ObservabilityModule, // Health checks + Prometheus metrics
+    AnalyticsModule, // Admin analytics
+    // RedisModule, // Disabled - Docker not running
   ],
   controllers: [AppController, ProtectedController],
   providers: [AppService],

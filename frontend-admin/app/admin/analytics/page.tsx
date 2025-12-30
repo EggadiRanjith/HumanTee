@@ -7,8 +7,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-
-// Mock data
+import { useAnalytics } from '@/lib/queries/useAnalytics';
 const mockMetrics = {
     totalRevenue: 245680,
     totalOrders: 156,
@@ -46,8 +45,28 @@ const mockTopCustomers = [
 export default function AnalyticsPage() {
     const [dateRange, setDateRange] = useState('7d');
 
-    const maxRevenue = useMemo(() => Math.max(...mockRevenueByDay.map(d => d.revenue)), []);
-    const maxOrders = useMemo(() => Math.max(...mockRevenueByDay.map(d => d.orders)), []);
+    // Use React Query hook - automatic caching and loading states
+    const { data, isLoading } = useAnalytics(dateRange);
+
+    // Use data from API or fallback to empty objects
+    const mockMetrics = data?.metrics || { totalRevenue: 0, totalOrders: 0, avgOrderValue: 0, conversionRate: 0, revenueGrowth: 0, ordersGrowth: 0 };
+    const mockRevenueByDay = data?.revenueByDay || [];
+    const mockTopProducts = data?.topProducts || [];
+    const mockTopCustomers = data?.topCustomers || [];
+
+    const maxRevenue = useMemo(() => Math.max(...mockRevenueByDay.map((d: any) => d.revenue), 1), [mockRevenueByDay]);
+    const maxOrders = useMemo(() => Math.max(...mockRevenueByDay.map((d: any) => d.orders), 1), [mockRevenueByDay]);
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-black/20 border-t-black rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading analytics...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-4 sm:space-y-6">
@@ -59,7 +78,7 @@ export default function AnalyticsPage() {
                 </div>
                 <select
                     value={dateRange}
-                    onChange={(e) => setDateRange(e.target.value)}
+                    onChange={(e: any) => setDateRange(e.target.value)}
                     className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
                 >
                     <option value="7d">Last 7 Days</option>
@@ -97,7 +116,7 @@ export default function AnalyticsPage() {
                 <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
                     <h2 className="text-base sm:text-lg font-semibold text-black mb-4">Revenue Trend</h2>
                     <div className="h-48 sm:h-64 flex items-end justify-between gap-2">
-                        {mockRevenueByDay.map((data, index) => (
+                        {mockRevenueByDay.map((data: typeof mockRevenueByDay[0], index: number) => (
                             <div key={index} className="flex-1 flex flex-col items-center gap-2">
                                 <div
                                     className="w-full bg-black rounded-t hover:bg-gray-800 transition-colors cursor-pointer"
@@ -109,7 +128,7 @@ export default function AnalyticsPage() {
                         ))}
                     </div>
                     <div className="mt-4 text-center text-sm text-gray-600">
-                        Total: ₹{mockRevenueByDay.reduce((sum, d) => sum + d.revenue, 0).toLocaleString()}
+                        Total: ₹{mockRevenueByDay.reduce((sum: number, d: typeof mockRevenueByDay[0]) => sum + d.revenue, 0).toLocaleString()}
                     </div>
                 </div>
 
@@ -117,7 +136,7 @@ export default function AnalyticsPage() {
                 <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
                     <h2 className="text-base sm:text-lg font-semibold text-black mb-4">Orders Trend</h2>
                     <div className="h-48 sm:h-64 flex items-end justify-between gap-2">
-                        {mockRevenueByDay.map((data, index) => (
+                        {mockRevenueByDay.map((data: any, index: number) => (
                             <div key={index} className="flex-1 flex flex-col items-center gap-2">
                                 <div
                                     className="w-full bg-blue-600 rounded-t hover:bg-blue-700 transition-colors cursor-pointer"
@@ -129,7 +148,7 @@ export default function AnalyticsPage() {
                         ))}
                     </div>
                     <div className="mt-4 text-center text-sm text-gray-600">
-                        Total: {mockRevenueByDay.reduce((sum, d) => sum + d.orders, 0)} orders
+                        Total: {mockRevenueByDay.reduce((sum: number, d: typeof mockRevenueByDay[0]) => sum + d.orders, 0)} orders
                     </div>
                 </div>
             </div>
@@ -140,7 +159,7 @@ export default function AnalyticsPage() {
                 <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
                     <h2 className="text-base sm:text-lg font-semibold text-black mb-4">Top Products</h2>
                     <div className="space-y-4">
-                        {mockTopProducts.map((product, index) => (
+                        {mockTopProducts.map((product: any, index: number) => (
                             <div key={index} className="flex items-center justify-between">
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2">
@@ -161,7 +180,7 @@ export default function AnalyticsPage() {
                 <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
                     <h2 className="text-base sm:text-lg font-semibold text-black mb-4">Top Customers</h2>
                     <div className="space-y-4">
-                        {mockTopCustomers.map((customer, index) => (
+                        {mockTopCustomers.map((customer: any, index: number) => (
                             <div key={index} className="flex items-center justify-between">
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2">

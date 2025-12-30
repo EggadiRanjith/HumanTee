@@ -47,6 +47,9 @@ export class Order {
     @Column({ type: 'varchar', unique: true, nullable: true }) // CORRECTED: nullable
     payment_order_id: string | null;
 
+    @Column({ type: 'varchar', length: 36, nullable: true }) // Idempotency key for duplicate prevention
+    idempotency_key: string | null;
+
     @Column({ type: 'timestamp', nullable: true }) // Phase 7: Fulfillment timestamp
     fulfilled_at: Date | null;
 

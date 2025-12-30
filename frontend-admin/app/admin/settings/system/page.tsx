@@ -3,13 +3,16 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FiSave, FiAlertTriangle, FiCheckCircle, FiClock, FiMail, FiLayout, FiArrowLeft, FiEdit3 } from 'react-icons/fi';
+import { useAdminSettings } from '@/lib/queries/useSettings';
 import { settingsApi } from '@/lib/api/settings';
 
 export default function MaintenanceSettingsPage() {
-    const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+    // Use React Query hook - automatic caching and loading states
+    const { data, isLoading } = useAdminSettings('maintenance');
 
     const [settings, setSettings] = useState({
         enabled: false,
@@ -19,28 +22,18 @@ export default function MaintenanceSettingsPage() {
         contactEmail: 'support@humantee.com'
     });
 
-    // Fetch current settings
+    // Update local state when data loads
     useEffect(() => {
-        async function fetchSettings() {
-            try {
-                const data = await settingsApi.getSection('maintenance');
-                if (data) {
-                    setSettings({
-                        enabled: data.enabled ?? false,
-                        title: data.title || "We'll Be Right Back",
-                        message: data.message || "We're making things even better. Check back soon.",
-                        estimatedTime: data.estimatedTime || '2 hours',
-                        contactEmail: data.contactEmail || 'support@humantee.com'
-                    });
-                }
-            } catch (error) {
-                console.error('Failed to fetch maintenance settings:', error);
-            } finally {
-                setIsLoading(false);
-            }
+        if (data) {
+            setSettings({
+                enabled: data.enabled ?? false,
+                title: data.title || "We'll Be Right Back",
+                message: data.message || "We're making things even better. Check back soon.",
+                estimatedTime: data.estimatedTime || '2 hours',
+                contactEmail: data.contactEmail || 'support@humantee.com'
+            });
         }
-        fetchSettings();
-    }, []);
+    }, [data]);
 
     const handleSave = async () => {
         setIsSaving(true);
@@ -160,7 +153,7 @@ export default function MaintenanceSettingsPage() {
                                     className="sr-only peer"
                                     checked={settings.enabled}
                                     disabled={!isEditing}
-                                    onChange={(e) => setSettings({ ...settings, enabled: e.target.checked })}
+                                    onChange={(e: any) => setSettings({ ...settings, enabled: e.target.checked })}
                                 />
                                 <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
                             </label>
@@ -198,7 +191,7 @@ export default function MaintenanceSettingsPage() {
                                     type="text"
                                     value={settings.title}
                                     readOnly={!isEditing}
-                                    onChange={(e) => setSettings({ ...settings, title: e.target.value })}
+                                    onChange={(e: any) => setSettings({ ...settings, title: e.target.value })}
                                     className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : 'bg-white shadow-sm'}`}
                                     placeholder="e.g. We'll Be Right Back"
                                 />
@@ -212,7 +205,7 @@ export default function MaintenanceSettingsPage() {
                                 <textarea
                                     value={settings.message}
                                     readOnly={!isEditing}
-                                    onChange={(e) => setSettings({ ...settings, message: e.target.value })}
+                                    onChange={(e: any) => setSettings({ ...settings, message: e.target.value })}
                                     className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all min-h-[100px] ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : 'bg-white shadow-sm'}`}
                                     placeholder="Explain why the site is down..."
                                 />
@@ -229,7 +222,7 @@ export default function MaintenanceSettingsPage() {
                                         type="text"
                                         value={settings.estimatedTime}
                                         readOnly={!isEditing}
-                                        onChange={(e) => setSettings({ ...settings, estimatedTime: e.target.value })}
+                                        onChange={(e: any) => setSettings({ ...settings, estimatedTime: e.target.value })}
                                         className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : 'bg-white shadow-sm'}`}
                                         placeholder="e.g. 2 hours"
                                     />
@@ -245,7 +238,7 @@ export default function MaintenanceSettingsPage() {
                                         type="email"
                                         value={settings.contactEmail}
                                         readOnly={!isEditing}
-                                        onChange={(e) => setSettings({ ...settings, contactEmail: e.target.value })}
+                                        onChange={(e: any) => setSettings({ ...settings, contactEmail: e.target.value })}
                                         className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : 'bg-white shadow-sm'}`}
                                         placeholder="e.g. support@humantee.com"
                                     />

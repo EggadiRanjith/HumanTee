@@ -71,7 +71,7 @@ export default function CreateDiscountPage() {
                 setRealProducts(prods);
                 setRealCollections(colls);
             } catch (error) {
-                console.error('Failed to fetch data:', error);
+                // Failed to fetch data
             } finally {
                 setIsDataLoading(false);
             }
@@ -151,7 +151,7 @@ export default function CreateDiscountPage() {
             alert('Discount successfully created! 🚀');
             router.push('/admin/discounts');
         } catch (error: any) {
-            console.error('Save failed:', error);
+            // Save failed
             alert(error.response?.data?.message || 'Failed to save discount');
         } finally {
             setIsLoading(false);
@@ -202,7 +202,7 @@ export default function CreateDiscountPage() {
                                 <input
                                     type="text"
                                     value={name}
-                                    onChange={(e) => setName(e.target.value)}
+                                    onChange={(e: any) => setName(e.target.value)}
                                     placeholder="e.g., Welcome Offer"
                                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none"
                                 />
@@ -214,7 +214,7 @@ export default function CreateDiscountPage() {
                                 <input
                                     type="text"
                                     value={code}
-                                    onChange={(e) => setCode(e.target.value.toUpperCase())}
+                                    onChange={(e: any) => setCode(e.target.value.toUpperCase())}
                                     placeholder="e.g., SAVE20"
                                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none font-mono"
                                 />
@@ -227,7 +227,7 @@ export default function CreateDiscountPage() {
                             </label>
                             <textarea
                                 value={description}
-                                onChange={(e) => setDescription(e.target.value)}
+                                onChange={(e: any) => setDescription(e.target.value)}
                                 placeholder="Administrative notes about this discount..."
                                 rows={2}
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none text-sm"
@@ -241,7 +241,7 @@ export default function CreateDiscountPage() {
                                 </label>
                                 <select
                                     value={type}
-                                    onChange={(e) => setType(e.target.value as DiscountType)}
+                                    onChange={(e: any) => setType(e.target.value as DiscountType)}
                                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none"
                                 >
                                     <option value="PERCENT">Percentage (%)</option>
@@ -255,7 +255,7 @@ export default function CreateDiscountPage() {
                                 <input
                                     type="number"
                                     value={value}
-                                    onChange={(e) => setValue(e.target.value === '' ? '' : Number(e.target.value))}
+                                    onChange={(e: any) => setValue(e.target.value === '' ? '' : Number(e.target.value))}
                                     placeholder={type === 'PERCENT' ? '20' : '500'}
                                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none"
                                 />
@@ -270,7 +270,7 @@ export default function CreateDiscountPage() {
                                 <input
                                     type="number"
                                     value={priority}
-                                    onChange={(e) => setPriority(e.target.value === '' ? '' : Number(e.target.value))}
+                                    onChange={(e: any) => setPriority(e.target.value === '' ? '' : Number(e.target.value))}
                                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none"
                                 />
                             </div>
@@ -282,7 +282,7 @@ export default function CreateDiscountPage() {
                                     <input
                                         type="checkbox"
                                         checked={stackable}
-                                        onChange={(e) => setStackable(e.target.checked)}
+                                        onChange={(e: any) => setStackable(e.target.checked)}
                                         className="sr-only peer"
                                     />
                                     <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-black rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
@@ -329,7 +329,7 @@ export default function CreateDiscountPage() {
                                     <input
                                         type="number"
                                         value={minOrder}
-                                        onChange={(e) => setMinOrder(e.target.value === '' ? '' : Number(e.target.value))}
+                                        onChange={(e: any) => setMinOrder(e.target.value === '' ? '' : Number(e.target.value))}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-black outline-none"
                                     />
                                 </div>
@@ -341,7 +341,7 @@ export default function CreateDiscountPage() {
                                         <input
                                             type="number"
                                             value={minUserOrders}
-                                            onChange={(e) => setMinUserOrders(e.target.value === '' ? '' : Number(e.target.value))}
+                                            onChange={(e: any) => setMinUserOrders(e.target.value === '' ? '' : Number(e.target.value))}
                                             placeholder="e.g., 5"
                                             className="w-full px-4 py-2 border border-blue-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none bg-blue-50/30"
                                         />
@@ -355,7 +355,7 @@ export default function CreateDiscountPage() {
                                         <input
                                             type="number"
                                             value={minUserLtv}
-                                            onChange={(e) => setMinUserLtv(e.target.value === '' ? '' : Number(e.target.value))}
+                                            onChange={(e: any) => setMinUserLtv(e.target.value === '' ? '' : Number(e.target.value))}
                                             placeholder="e.g., 10000"
                                             className="w-full px-4 py-2 border border-blue-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none bg-blue-50/30"
                                         />
@@ -371,7 +371,7 @@ export default function CreateDiscountPage() {
                                     <input
                                         type="number"
                                         value={globalLimit}
-                                        onChange={(e) => setGlobalLimit(e.target.value === '' ? '' : Number(e.target.value))}
+                                        onChange={(e: any) => setGlobalLimit(e.target.value === '' ? '' : Number(e.target.value))}
                                         placeholder="No limit"
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-black outline-none"
                                     />
@@ -383,7 +383,7 @@ export default function CreateDiscountPage() {
                                     <input
                                         type="number"
                                         value={perUserLimit}
-                                        onChange={(e) => setPerUserLimit(e.target.value === '' ? '' : Number(e.target.value))}
+                                        onChange={(e: any) => setPerUserLimit(e.target.value === '' ? '' : Number(e.target.value))}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-black outline-none"
                                     />
                                 </div>
@@ -402,7 +402,7 @@ export default function CreateDiscountPage() {
                                         name="scope"
                                         value="PRODUCT"
                                         checked={scope === 'PRODUCT'}
-                                        onChange={(e) => setScope(e.target.value as DiscountScope)}
+                                        onChange={(e: any) => setScope(e.target.value as DiscountScope)}
                                         className="mr-2"
                                     />
                                     <span className="text-sm font-medium text-gray-900">Specific Products</span>
@@ -413,7 +413,7 @@ export default function CreateDiscountPage() {
                                         name="scope"
                                         value="GROUP"
                                         checked={scope === 'GROUP'}
-                                        onChange={(e) => setScope(e.target.value as DiscountScope)}
+                                        onChange={(e: any) => setScope(e.target.value as DiscountScope)}
                                         className="mr-2"
                                     />
                                     <span className="text-sm font-medium text-gray-900">Product Groups</span>
@@ -424,7 +424,7 @@ export default function CreateDiscountPage() {
                                         name="scope"
                                         value="GLOBAL"
                                         checked={scope === 'GLOBAL'}
-                                        onChange={(e) => setScope(e.target.value as DiscountScope)}
+                                        onChange={(e: any) => setScope(e.target.value as DiscountScope)}
                                         className="mr-2"
                                     />
                                     <span className="text-sm font-medium text-gray-900">All Products</span>
@@ -440,13 +440,13 @@ export default function CreateDiscountPage() {
                                                 type="text"
                                                 placeholder="Search products..."
                                                 value={prodSearch}
-                                                onChange={(e) => setProdSearch(e.target.value)}
+                                                onChange={(e: any) => setProdSearch(e.target.value)}
                                                 className="px-3 py-1.5 border border-gray-200 rounded-md text-xs outline-none focus:border-black"
                                             />
                                             <div className="grid grid-cols-2 gap-2">
                                                 <select
                                                     value={prodType}
-                                                    onChange={(e) => setProdType(e.target.value)}
+                                                    onChange={(e: any) => setProdType(e.target.value)}
                                                     className="px-3 py-1.5 border border-gray-200 rounded-md text-xs outline-none bg-white"
                                                 >
                                                     <option value="ALL">All Types</option>
@@ -456,7 +456,7 @@ export default function CreateDiscountPage() {
                                                 </select>
                                                 <select
                                                     value={prodCategory}
-                                                    onChange={(e) => setProdCategory(e.target.value)}
+                                                    onChange={(e: any) => setProdCategory(e.target.value)}
                                                     className="px-3 py-1.5 border border-gray-200 rounded-md text-xs outline-none bg-white"
                                                 >
                                                     <option value="ALL">All Categories</option>
@@ -468,7 +468,7 @@ export default function CreateDiscountPage() {
                                         </div>
                                         <select
                                             value={prodCollection}
-                                            onChange={(e) => setProdCollection(e.target.value)}
+                                            onChange={(e: any) => setProdCollection(e.target.value)}
                                             className="w-full px-3 py-1.5 border border-gray-200 rounded-md text-xs outline-none bg-white"
                                         >
                                             <option value="ALL">All Collections</option>
@@ -490,7 +490,7 @@ export default function CreateDiscountPage() {
                                                     <input
                                                         type="checkbox"
                                                         checked={selectedProducts.includes(product.id)}
-                                                        onChange={(e) => {
+                                                        onChange={(e: any) => {
                                                             if (e.target.checked) {
                                                                 setSelectedProducts([...selectedProducts, product.id]);
                                                             } else {
@@ -562,7 +562,7 @@ export default function CreateDiscountPage() {
                                                 <input
                                                     type="checkbox"
                                                     checked={selectedGroups.includes(group.id)}
-                                                    onChange={(e) => {
+                                                    onChange={(e: any) => {
                                                         if (e.target.checked) {
                                                             setSelectedGroups([...selectedGroups, group.id]);
                                                         } else {
@@ -599,7 +599,7 @@ export default function CreateDiscountPage() {
                                 <input
                                     type="date"
                                     value={startDate}
-                                    onChange={(e) => setStartDate(e.target.value)}
+                                    onChange={(e: any) => setStartDate(e.target.value)}
                                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none"
                                 />
                             </div>
@@ -610,7 +610,7 @@ export default function CreateDiscountPage() {
                                 <input
                                     type="date"
                                     value={endDate}
-                                    onChange={(e) => setEndDate(e.target.value)}
+                                    onChange={(e: any) => setEndDate(e.target.value)}
                                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none"
                                 />
                             </div>

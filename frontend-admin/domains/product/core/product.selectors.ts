@@ -125,6 +125,7 @@ export const selectIsPublishable = (data: ProductFormData): boolean => {
         data.description &&
         data.price > 0 &&
         data.slug &&
+        data.slug.trim().length > 0 &&
         (data.inventoryMode === 'VARIANT' || data.stock >= 0)
     );
 };

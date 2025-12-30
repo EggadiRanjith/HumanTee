@@ -71,7 +71,7 @@ export default function TagInput({
                 <input
                     type="text"
                     value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
+                    onChange={(e: any) => setInputValue(e.target.value)}
                     onKeyDown={handleKeyDown}
                     onBlur={addTag}
                     placeholder={placeholder}

@@ -86,8 +86,7 @@ export default function TeamManagementPage() {
     };
 
     const handleRoleChange = (adminId: string) => {
-        // TODO: API call to update role
-        console.log(`Updating admin ${adminId} to role ${newRole}`);
+        // Update admin role (API integration pending)
         setEditingAdmin(null);
         setNewRole('');
     };
@@ -163,7 +162,7 @@ export default function TeamManagementPage() {
                                     {editingAdmin === admin.id ? (
                                         <select
                                             value={newRole || admin.role}
-                                            onChange={(e) => setNewRole(e.target.value)}
+                                            onChange={(e: any) => setNewRole(e.target.value)}
                                             className="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
                                         >
                                             <option value="OWNER">Owner</option>

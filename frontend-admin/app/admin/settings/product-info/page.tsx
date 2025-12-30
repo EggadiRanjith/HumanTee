@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FiArrowLeft, FiUpload, FiX, FiPlus, FiSave } from 'react-icons/fi';
+import { useAdminSettings } from '@/lib/queries/useSettings';
 import { settingsApi } from '@/lib/api/settings';
 import { useCloudinaryUpload } from '@/hooks/useCloudinaryUpload';
 
@@ -19,24 +20,23 @@ export default function ProductInfoSettings() {
         size_guide_images: [] as string[]
     });
     const [isSaving, setIsSaving] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const { upload, uploading, error: uploadError } = useCloudinaryUpload();
 
-    // Load settings on mount
+    // Use React Query hook - automatic caching and loading states
+    const { data, isLoading } = useAdminSettings('product-info');
+
+    // Update local state when data loads
     useEffect(() => {
-        settingsApi.getSection('product-info')
-            .then(data => {
-                setFormData({
-                    material_care: data.material_care || [],
-                    shipping_returns: data.shipping_returns || [],
-                    size_fit: data.size_fit || [],
-                    size_guide_images: data.size_guide_images || []
-                });
-            })
-            .catch(error => console.error('Failed to load product info settings:', error))
-            .finally(() => setIsLoading(false));
-    }, []);
+        if (data) {
+            setFormData({
+                material_care: data.material_care || [],
+                shipping_returns: data.shipping_returns || [],
+                size_fit: data.size_fit || [],
+                size_guide_images: data.size_guide_images || []
+            });
+        }
+    }, [data]);
 
     // Handle Image Upload (up to 5)
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,7 +88,7 @@ export default function ProductInfoSettings() {
             setIsEditing(false);
             alert('Product information updated successfully!');
         } catch (error) {
-            console.error('Save failed:', error);
+            // Save failed
             alert('Failed to save settings');
         } finally {
             setIsSaving(false);
@@ -259,7 +259,7 @@ function SectionCard({ title, description, value, onChange, isEditing, placehold
                 <textarea
                     rows={5}
                     value={value}
-                    onChange={(e) => onChange(e.target.value)}
+                    onChange={(e: any) => onChange(e.target.value)}
                     placeholder={placeholder}
                     readOnly={!isEditing}
                     className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black resize-none font-mono text-sm leading-relaxed ${!isEditing ? 'bg-gray-50/50 text-gray-500 border-gray-100 cursor-not-allowed' : 'bg-white shadow-inner-sm animate-in fade-in duration-300'}`}

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { Sidebar } from './components/Sidebar';
 import { getServerUser } from '@/lib/auth';
+import { NavigationLoader } from '../components/NavigationLoader';
 
 /**
  * Admin Layout
@@ -20,6 +21,7 @@ export default async function AdminLayout({
 
     return (
         <div className="admin-panel min-h-screen bg-gray-50">
+            <NavigationLoader />
             <Sidebar />
 
             {/* Main Content */}

@@ -8,8 +8,8 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
-import { useState, useEffect, memo, lazy, Suspense } from "react";
-import { HolographicButton, ScrollHint, HeroSkeleton } from "./components";
+import { memo, lazy, Suspense } from "react";
+import { HolographicButton, ScrollHint } from "./components";
 import { useHeroCarousel, useVideoPlayer, useIsMobile } from "./hooks";
 import { isSlideVisible, getSlideContentClasses } from "./utils";
 import { HERO_CONSTANTS, SLIDE_STYLES } from "./constants";
@@ -20,12 +20,11 @@ import { useSectionSettings } from "@/app/hooks/useSettings";
 const HeroError = lazy(() => import("./components/HeroError"));
 
 const Hero = ({ slides: propSlides }: HeroProps = {}) => {
-  const [isLoading, setIsLoading] = useState(true);
   const shouldReducedMotion = useReducedMotion();
   const isMobile = useIsMobile(768);
 
   // Fetch hero settings from centralized cache
-  const { settings: heroSettings, isLoading: settingsLoading } = useSectionSettings('hero');
+  const { settings: heroSettings } = useSectionSettings('hero');
 
   // Use prop slides if provided, otherwise use API/fallback slides
   const slides = propSlides && propSlides.length > 0 ? propSlides : heroSettings?.slides;
@@ -35,23 +34,14 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
     useVideoPlayer(0, isMobile);
   const { currentIndex } = useHeroCarousel(slides?.length || 0, videoHasPlayed);
 
-  // Loading state (wait for both component mount and settings)
-  useEffect(() => {
-    if (!settingsLoading) {
-      const timer = setTimeout(() => setIsLoading(false), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [settingsLoading]);
-
   // Error state (lazy loaded)
   if (!slides || slides.length === 0) {
     return (
-      <Suspense fallback={<HeroSkeleton />}>
+      <Suspense fallback={null}>
         <HeroError />
       </Suspense>
     );
   }
-  if (isLoading) return <HeroSkeleton />;
 
   return (
     <section

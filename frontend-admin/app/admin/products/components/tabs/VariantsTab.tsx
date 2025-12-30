@@ -58,8 +58,8 @@ export default function VariantsTab({ errors }: VariantsTabProps) {
     // Handle variant changes from VariantManager
     const handleVariantsChange = useCallback((updatedVariants: ProductVariant[]) => {
         const currentVariants = Array.isArray(variants) ? variants : [];
-        const currentIds = new Set(currentVariants.map((v) => v.id));
-        const nextIds = new Set(updatedVariants.map((v) => v.id));
+        const currentIds = new Set(currentVariants.map((v: any) => v.id));
+        const nextIds = new Set(updatedVariants.map((v: any) => v.id));
 
         // Remove deleted variants
         currentIds.forEach((id) => {
@@ -70,7 +70,7 @@ export default function VariantsTab({ errors }: VariantsTabProps) {
 
         // Add or update variants
         updatedVariants.forEach((variant) => {
-            const existing = currentVariants.find((v) => v.id === variant.id);
+            const existing = currentVariants.find((v: any) => v.id === variant.id);
 
             if (!existing) {
                 // New variant - add to store
@@ -100,7 +100,7 @@ export default function VariantsTab({ errors }: VariantsTabProps) {
                             type="checkbox"
                             id="hasVariants"
                             checked={enabled}
-                            onChange={(e) => setEnabled(e.target.checked)}
+                            onChange={(e: any) => setEnabled(e.target.checked)}
                             className="w-4 h-4 sm:w-5 sm:h-5 text-black border-gray-300 rounded focus:ring-black"
                         />
                         <label htmlFor="hasVariants" className="text-sm sm:text-base font-medium text-gray-900">

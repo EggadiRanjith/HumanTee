@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { FiChevronLeft, FiSave, FiX } from "react-icons/fi";
+import { useAdminSettings } from '@/lib/queries/useSettings';
 import { settingsApi } from "@/lib/api/settings";
 
 type Section = { title: string; points: string[] };
@@ -10,8 +11,11 @@ type Section = { title: string; points: string[] };
 export default function PoliciesSettingsPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'shipping' | 'terms' | 'privacy'>('shipping');
+
+    // Use React Query hooks - automatic caching and loading states
+    const { data: shippingSettings, isLoading: shippingLoading } = useAdminSettings('shipping');
+    const { data: policiesSettings, isLoading: policiesLoading } = useAdminSettings('policies');
 
     const [shippingData, setShippingData] = useState({
         effective_date: "",
@@ -26,28 +30,26 @@ export default function PoliciesSettingsPage() {
         terms_sections: [] as Section[]
     });
 
-    // Load settings on mount
+    const isLoading = shippingLoading || policiesLoading;
+
+    // Update local state when data loads
     useEffect(() => {
-        Promise.all([
-            settingsApi.getSection('shipping'),
-            settingsApi.getSection('policies')
-        ])
-            .then(([shipping, policies]) => {
-                setShippingData({
-                    effective_date: shipping?.effective_date || "",
-                    intro_text: shipping?.intro_text || "",
-                    sections: shipping?.sections || []
-                });
-                setPoliciesData({
-                    effective_date: policies?.effective_date || "",
-                    intro_text: policies?.intro_text || "",
-                    privacy_sections: policies?.privacy_sections || [],
-                    terms_sections: policies?.terms_sections || []
-                });
-            })
-            .catch(error => console.error('Failed to load settings:', error))
-            .finally(() => setIsLoading(false));
-    }, []);
+        if (shippingSettings) {
+            setShippingData({
+                effective_date: shippingSettings?.effective_date || "",
+                intro_text: shippingSettings?.intro_text || "",
+                sections: shippingSettings?.sections || []
+            });
+        }
+        if (policiesSettings) {
+            setPoliciesData({
+                effective_date: policiesSettings?.effective_date || "",
+                intro_text: policiesSettings?.intro_text || "",
+                privacy_sections: policiesSettings?.privacy_sections || [],
+                terms_sections: policiesSettings?.terms_sections || []
+            });
+        }
+    }, [shippingSettings, policiesSettings]);
 
     // Save settings
     const handleSave = async () => {
@@ -60,7 +62,7 @@ export default function PoliciesSettingsPage() {
             setIsEditing(false);
             alert('Settings saved successfully!');
         } catch (error) {
-            console.error('Save failed:', error);
+            // Save failed
             alert('Failed to save settings');
         } finally {
             setIsSaving(false);
@@ -166,7 +168,7 @@ export default function PoliciesSettingsPage() {
                         <input
                             type="text"
                             value={currentData.effective_date}
-                            onChange={(e) => {
+                            onChange={(e: any) => {
                                 if (activeTab === 'shipping') {
                                     setShippingData(prev => ({ ...prev, effective_date: e.target.value }));
                                 } else {
@@ -186,7 +188,7 @@ export default function PoliciesSettingsPage() {
                         </label>
                         <textarea
                             value={currentData.intro_text}
-                            onChange={(e) => {
+                            onChange={(e: any) => {
                                 if (activeTab === 'shipping') {
                                     setShippingData(prev => ({ ...prev, intro_text: e.target.value }));
                                 } else {
@@ -254,7 +256,7 @@ export default function PoliciesSettingsPage() {
                                         <input
                                             type="text"
                                             value={section.title}
-                                            onChange={(e) => {
+                                            onChange={(e: any) => {
                                                 const newSections = [...currentSections];
                                                 newSections[sectionIndex].title = e.target.value;
 
@@ -276,7 +278,7 @@ export default function PoliciesSettingsPage() {
                                             <div key={pointIndex} className="relative group/point flex gap-2">
                                                 <textarea
                                                     value={point}
-                                                    onChange={(e) => {
+                                                    onChange={(e: any) => {
                                                         const newSections = [...currentSections];
                                                         newSections[sectionIndex].points[pointIndex] = e.target.value;
 

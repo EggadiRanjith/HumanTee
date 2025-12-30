@@ -86,7 +86,7 @@ export default function VariantForm({
                     <input
                         type="text"
                         value={formData.sku}
-                        onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                        onChange={(e: any) => setFormData({ ...formData, sku: e.target.value })}
                         placeholder="e.g., HT-M-BLK-A1B2"
                         className="flex-1 px-4 py-3 border-2 border-gray-400 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black focus:border-black outline-none"
                     />
@@ -108,10 +108,10 @@ export default function VariantForm({
                 <input
                     type="number"
                     value={formData.stock || ''}
-                    onChange={(e) =>
+                    onChange={(e: any) =>
                         setFormData({ ...formData, stock: e.target.value === '' ? 0 : Number(e.target.value) })
                     }
-                    onFocus={(e) => e.target.select()}
+                    onFocus={(e: any) => e.target.select()}
                     placeholder="0"
                     min="0"
                     className="w-full px-4 py-3 bg-white border-2 border-gray-400 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black focus:border-black outline-none"
@@ -126,13 +126,13 @@ export default function VariantForm({
                 <input
                     type="number"
                     value={formData.price || ''}
-                    onChange={(e) =>
+                    onChange={(e: any) =>
                         setFormData({
                             ...formData,
                             price: e.target.value ? Number(e.target.value) : undefined,
                         })
                     }
-                    onFocus={(e) => e.target.select()}
+                    onFocus={(e: any) => e.target.select()}
                     placeholder="Leave empty to use base price"
                     min="0"
                     step="0.01"

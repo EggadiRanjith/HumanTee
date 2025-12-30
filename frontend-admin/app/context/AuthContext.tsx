@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     localStorage.removeItem('humantee-cart');
                 }
             } catch (error) {
-                console.error('Failed to merge guest cart:', error);
+                // Failed to merge guest cart
             }
         }
     };
@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Call logout endpoint (will use refresh token from cookie)
             await apiClient.post('/auth/logout');
         } catch (error) {
-            console.error('Logout failed:', error);
+            // Logout failed
         } finally {
             // Clear memory token and user state
             clearAccessToken();

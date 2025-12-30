@@ -27,10 +27,13 @@ export interface ProductImage {
 export interface Variant {
     id: string; // UUID
     size: string;
+    color?: string; // Optional color name
+    colorHex?: string; // Optional color hex code
     sku: string;
     skuLocked: boolean; // True after publish
     stock: number;
     priceOverride?: number;
+    weight?: number; // Optional weight
 }
 
 export type ProductStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
@@ -71,19 +74,12 @@ export interface ProductFormData {
     productType: string;
     category: string;
 
-    // Media (simplified - array-based)
-    images: ProductImage[];
-
     // Pricing
     price: number;
     compareAtPrice?: number;
     costPerItem?: number;
     currency: string;
     taxable: boolean;
-
-    // Variants (array-based, not Map)
-    hasVariants: boolean;
-    variants: Variant[];
 
     // Inventory
     inventoryMode: InventoryMode;
@@ -92,6 +88,16 @@ export interface ProductFormData {
     sku?: string;
     continueSellingWhenOutOfStock: boolean;
     lowStockThreshold?: number;
+
+    // Variants (array-based, not Map)
+    hasVariants: boolean;
+    variants: Variant[];
+
+    // Media (simplified - array-based)
+    images: ProductImage[];
+
+    // SEO
+    slug: string; // Added this property
 
     // Organization
     status: ProductStatus;

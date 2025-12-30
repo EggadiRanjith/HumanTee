@@ -212,7 +212,7 @@ export default function NewProductPage() {
 
             // Threshold Validation
             const totalStockCount = draftRequest.hasVariants
-                ? draftRequest.variants.reduce((sum, v) => sum + v.stock, 0)
+                ? draftRequest.variants.reduce((sum: number, v) => sum + v.stock, 0)
                 : (draftRequest.stock || 0);
 
             if (draftRequest.lowStockThreshold && draftRequest.lowStockThreshold > totalStockCount) {
@@ -229,7 +229,7 @@ export default function NewProductPage() {
             alert('Draft saved to database!');
             router.push(`/admin/products/${created.id}`);
         } catch (error) {
-            console.error('Failed to save draft:', error);
+            // Failed to save draft
             alert(error instanceof Error ? error.message : 'Failed to save draft');
         } finally {
             setIsSaving(false);
@@ -283,7 +283,7 @@ export default function NewProductPage() {
     const validateVariants = (): boolean => {
         const productData = aggregateProductData();
 
-        console.log('Validating Variants:', productData.variants);
+        // Validating Variants
 
         if (!productData.hasVariants || !productData.variants || productData.variants.length === 0) {
             // Show error message for variants
@@ -463,7 +463,7 @@ export default function NewProductPage() {
 
             // Threshold Validation
             const totalStockCount = publishRequest.hasVariants
-                ? publishRequest.variants.reduce((sum, v) => sum + v.stock, 0)
+                ? publishRequest.variants.reduce((sum: number, v) => sum + v.stock, 0)
                 : (publishRequest.stock || 0);
 
             if (publishRequest.lowStockThreshold && publishRequest.lowStockThreshold > totalStockCount) {

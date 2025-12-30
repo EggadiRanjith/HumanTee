@@ -53,15 +53,12 @@ export const hydrateStoresFromDraft = (draft: ProductDraft): void => {
     useVariantsStore.setState({
         enabled: data.hasVariants,
         variants: data.variants,
-        order: data.variantOrder,
         isDirty: false,
     });
 
     // Media
     useMediaStore.setState({
         images: data.images,
-        order: data.imageOrder,
-        primaryImageId: data.primaryImageId,
         isDirty: false,
     });
 

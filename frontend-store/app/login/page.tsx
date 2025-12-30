@@ -52,6 +52,16 @@ export default function LoginPage() {
                     -webkit-backface-visibility: hidden;
                 }
                 
+                /* Autofill styling fix - Bulletproof version */
+                input:-webkit-autofill,
+                input:-webkit-autofill:hover,
+                input:-webkit-autofill:focus,
+                input:-webkit-autofill:active {
+                    -webkit-box-shadow: 0 0 0 1000px #060010 inset !important;
+                    -webkit-text-fill-color: white !important;
+                    transition: background-color 5000s ease-in-out 0s, color 5000s ease-in-out 0s !important;
+                }
+                
                 @media (max-width: 768px) {
                     .laser-responsive {
                         transform: translate3d(-50%, -25%, 0) scale(0.88) !important;

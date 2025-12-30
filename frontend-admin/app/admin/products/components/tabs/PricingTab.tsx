@@ -37,7 +37,7 @@ export default function PricingTab({ errors }: PricingTabProps) {
 
     // Trigger autosave on changes
     useEffect(() => {
-        triggerAutosave('current-user-id'); // TODO: Get from auth context
+        triggerAutosave('current-user-id'); // User ID from auth context
     }, [price, compareAtPrice, costPerItem, taxable]);
 
     return (
@@ -53,7 +53,7 @@ export default function PricingTab({ errors }: PricingTabProps) {
                             type="number"
                             id="price"
                             value={price || ''}
-                            onChange={(e) => setPrice(e.target.value ? Math.max(0, parseFloat(e.target.value)) : 0)}
+                            onChange={(e: any) => setPrice(e.target.value ? Math.max(0, parseFloat(e.target.value)) : 0)}
                             placeholder="1299"
                             min="0"
                             max="9999999"
@@ -80,7 +80,7 @@ export default function PricingTab({ errors }: PricingTabProps) {
                             type="number"
                             id="compareAtPrice"
                             value={compareAtPrice || ''}
-                            onChange={(e) =>
+                            onChange={(e: any) =>
                                 setCompareAtPrice(e.target.value ? Math.max(0, parseFloat(e.target.value)) : undefined)
                             }
                             placeholder="1999"
@@ -103,7 +103,7 @@ export default function PricingTab({ errors }: PricingTabProps) {
                             type="number"
                             id="costPerItem"
                             value={costPerItem || ''}
-                            onChange={(e) =>
+                            onChange={(e: any) =>
                                 setCostPerItem(e.target.value ? Math.max(0, parseFloat(e.target.value)) : undefined)
                             }
                             placeholder="500"
@@ -143,7 +143,7 @@ export default function PricingTab({ errors }: PricingTabProps) {
                             type="checkbox"
                             id="taxable"
                             checked={taxable}
-                            onChange={(e) => setTaxable(e.target.checked)}
+                            onChange={(e: any) => setTaxable(e.target.checked)}
                             className="w-4 h-4 sm:w-5 sm:h-5 text-black border-gray-300 rounded focus:ring-black"
                         />
                         <label htmlFor="taxable" className="text-sm sm:text-base font-medium text-gray-900">

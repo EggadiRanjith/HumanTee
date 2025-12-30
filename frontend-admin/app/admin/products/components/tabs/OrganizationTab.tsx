@@ -37,7 +37,7 @@ export default function OrganizationTab() {
                         <label className="block text-sm font-medium text-gray-900 mb-2">Status</label>
                         <select
                             value={status}
-                            onChange={(e) => setStatus(e.target.value as ProductStatus)}
+                            onChange={(e: any) => setStatus(e.target.value as ProductStatus)}
                             className="w-full px-3 py-2.5 sm:px-4 sm:py-3 bg-white border-2 border-gray-400 rounded-lg text-gray-900 focus:ring-2 focus:ring-black focus:border-black outline-none transition-colors cursor-pointer text-sm sm:text-base"
                         >
                             <option value="DRAFT">Draft</option>
@@ -57,7 +57,7 @@ export default function OrganizationTab() {
                             type="checkbox"
                             id="isFeatured"
                             checked={isFeatured}
-                            onChange={(e) => setFeatured(e.target.checked)}
+                            onChange={(e: any) => setFeatured(e.target.checked)}
                             className="w-4 h-4 sm:w-5 sm:h-5 text-black border-gray-300 rounded focus:ring-black"
                         />
                         <label htmlFor="isFeatured" className="text-sm sm:text-base text-gray-900">
@@ -79,7 +79,7 @@ export default function OrganizationTab() {
                                     type="checkbox"
                                     id={`collection-${collection}`}
                                     checked={collections.includes(collection)}
-                                    onChange={(e) => handleCollectionToggle(collection, e.target.checked)}
+                                    onChange={(e: any) => handleCollectionToggle(collection, e.target.checked)}
                                     className="w-4 h-4 sm:w-5 sm:h-5 text-black border-gray-300 rounded focus:ring-black"
                                 />
                                 <label
