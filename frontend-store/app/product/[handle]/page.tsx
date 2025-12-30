@@ -16,14 +16,20 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
     const product = adaptProduct(apiProduct);
 
     return {
-      title: product.title,
+      title: `${product.title} | HumanTee`,
       description: product.subtitle || product.title,
       keywords: ["t-shirt", product.title, "premium clothing", "HumanTee"],
       openGraph: {
         title: `${product.title} | HumanTee`,
         description: product.subtitle || product.title,
-        images: [{ url: product.image }],
+        images: product.images?.map(url => ({ url })) || [{ url: product.image }],
       },
+      twitter: {
+        card: 'summary_large_image',
+        title: `${product.title} | HumanTee`,
+        description: product.subtitle || product.title,
+        images: product.images || [product.image],
+      }
     };
   } catch {
     return {};
@@ -33,19 +39,16 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
 export default async function ProductPage({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params;
 
-  let product;
+  let apiProduct;
   try {
-    const apiProduct = await fetchProductBySlug(handle);
-    product = adaptProduct(apiProduct);
+    apiProduct = await fetchProductBySlug(handle);
   } catch {
     notFound();
   }
 
-  // Convert single image to array for gallery component
-  const productImages = product.image ? [product.image] : ['/images/placeholder.jpg'];
+  const product = adaptProduct(apiProduct);
 
   // Extract actual sizes from variants (from API response)
-  const apiProduct = await fetchProductBySlug(handle);
   const availableSizes = apiProduct.variants
     ?.filter((v: any) => v.isActive)
     .map((v: any) => v.size) || [];
@@ -53,13 +56,13 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
   // Extend Product to ProductDetail with required fields
   const productDetail = {
     ...product,
-    description: product.subtitle || '', // Removed hardcoded 'Premium quality product'
-    details: [], // Removed hardcoded default details
+    description: product.subtitle || '',
+    details: [],
     sizes: availableSizes.length > 0 ? availableSizes : ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-    images: productImages,
+    images: product.images || [product.image],
     vendor: 'HumanTee',
     productType: 'T-Shirt',
-    variants: apiProduct.variants || [] // ✅ Pass variants to ProductInfo
+    variants: apiProduct.variants || []
   };
 
   return (
@@ -71,7 +74,7 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
 
           {/* Image Gallery */}
           <ProductImageGallery
-            images={productImages}
+            images={productDetail.images}
             title={product.title}
             subtitle={product.subtitle || ''}
             productId={product.id as any}

@@ -1,7 +1,6 @@
-/**
+﻿/**
  * ShopFilters Component
- * Enhanced filter controls with sort dropdown
- * Integrates with URL-based state management
+ * Pyramid layout with natural wrapping - no horizontal scroll
  */
 
 "use client";
@@ -35,133 +34,99 @@ export default function ShopFilters({
     const [selectedCollection, setSelectedCollection] = useState<string>(currentFilters.collection || '');
     const [selectedSort, setSelectedSort] = useState<string>(currentFilters.sort || '');
 
-    // Sync with URL changes
     useEffect(() => {
         setSelectedCategory(currentFilters.category || '');
         setSelectedCollection(currentFilters.collection || '');
         setSelectedSort(currentFilters.sort || '');
     }, [currentFilters]);
 
-    // Update filters when selections change
     useEffect(() => {
         onFilterChange({
             category: selectedCategory || undefined,
             collection: selectedCollection || undefined,
             sort: selectedSort || undefined,
         });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedCategory, selectedCollection, selectedSort]);
 
     return (
-        <div className="mb-8 sm:mb-10">
-            <div className="flex flex-wrap items-center justify-center gap-4">
-                {/* Category Filter */}
+        <div className="mb-6 sm:mb-8">
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
                 <div className="relative">
                     <select
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="
-              appearance-none
-              px-4 xs:px-6 py-3 pr-10 xs:pr-12
-              bg-white/5 backdrop-blur-sm
-              border border-white/10
-              rounded-lg
-              text-white text-xs xs:text-sm
-              tracking-wide
-              cursor-pointer
-              transition-all duration-200
-              hover:bg-white/10 hover:border-white/20
-              focus:outline-none focus:ring-2 focus:ring-white/20
-              min-w-[140px] xs:min-w-[160px]
-            "
+                        aria-label="Filter by category"
+                        className="appearance-none px-4 py-2.5 pr-9 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full text-white text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-white/10 hover:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/20 min-w-[140px]"
                     >
-                        <option value="" className="bg-black">All Categories</option>
-                        {categories.map((category) => (
-                            <option key={category} value={category} className="bg-black">
-                                {category}
-                            </option>
-                        ))}
+                        <option value="" style={{ backgroundColor: '#1f2937', color: '#ffffff' }}>All Categories</option>
+                        {categories.length === 0 ? (
+                            <option disabled style={{ backgroundColor: '#1f2937', color: '#9ca3af' }}>No categories</option>
+                        ) : (
+                            categories.map((category) => (
+                                <option key={category} value={category} style={{ backgroundColor: '#1f2937', color: '#ffffff' }}>
+                                    {category}
+                                </option>
+                            ))
+                        )}
                     </select>
-                    <div className="absolute right-3 xs:right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
                         <svg className="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                     </div>
                 </div>
-
-                {/* Collection Filter */}
                 <div className="relative">
                     <select
                         value={selectedCollection}
                         onChange={(e) => setSelectedCollection(e.target.value)}
-                        className="
-              appearance-none
-              px-4 xs:px-6 py-3 pr-10 xs:pr-12
-              bg-white/5 backdrop-blur-sm
-              border border-white/10
-              rounded-lg
-              text-white text-xs xs:text-sm
-              tracking-wide
-              cursor-pointer
-              transition-all duration-200
-              hover:bg-white/10 hover:border-white/20
-              focus:outline-none focus:ring-2 focus:ring-white/20
-              min-w-[140px] xs:min-w-[160px]
-            "
+                        aria-label="Filter by collection"
+                        className="appearance-none px-4 py-2.5 pr-9 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full text-white text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-white/10 hover:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/20 min-w-[140px]"
                     >
-                        <option value="" className="bg-black">All Collections</option>
-                        {collections.map((collection) => (
-                            <option key={collection} value={collection} className="bg-black">
-                                {collection.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                            </option>
-                        ))}
+                        <option value="" style={{ backgroundColor: '#1f2937', color: '#ffffff' }}>All Collections</option>
+                        {collections.length === 0 ? (
+                            <option disabled style={{ backgroundColor: '#1f2937', color: '#9ca3af' }}>No collections</option>
+                        ) : (
+                            collections.map((collection) => (
+                                <option key={collection} value={collection} style={{ backgroundColor: '#1f2937', color: '#ffffff' }}>
+                                    {collection.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                </option>
+                            ))
+                        )}
                     </select>
-                    <div className="absolute right-3 xs:right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
                         <svg className="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                     </div>
                 </div>
-
-                {/* Sort Dropdown */}
                 <div className="relative">
                     <select
                         value={selectedSort}
                         onChange={(e) => setSelectedSort(e.target.value)}
-                        className="
-              appearance-none
-              px-4 xs:px-6 py-3 pr-10 xs:pr-12
-              bg-white/5 backdrop-blur-sm
-              border border-white/10
-              rounded-lg
-              text-white text-xs xs:text-sm
-              tracking-wide
-              cursor-pointer
-              transition-all duration-200
-              hover:bg-white/10 hover:border-white/20
-              focus:outline-none focus:ring-2 focus:ring-white/20
-              min-w-[140px] xs:min-w-[180px]
-            "
+                        aria-label="Sort products"
+                        className="appearance-none text-center px-4 py-2.5 pr-9 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full text-white text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-white/10 hover:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/20 min-w-[140px]"
                     >
-                        <option value="" className="bg-black">Sort By</option>
-                        {sortOptions.map((option) => (
-                            <option key={option.value} value={option.value} className="bg-black">
-                                {option.label}
-                            </option>
-                        ))}
+                        <option value="" style={{ backgroundColor: '#1f2937', color: '#ffffff' }}>Sort By</option>
+                        {sortOptions.length === 0 ? (
+                            <option disabled style={{ backgroundColor: '#1f2937', color: '#9ca3af' }}>No options</option>
+                        ) : (
+                            sortOptions.map((option) => (
+                                <option key={option.value} value={option.value} style={{ backgroundColor: '#1f2937', color: '#ffffff' }}>
+                                    {option.label}
+                                </option>
+                            ))
+                        )}
                     </select>
-                    <div className="absolute right-3 xs:right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
                         <svg className="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                     </div>
                 </div>
-
-                {/* Active Filter Count Badge */}
                 {activeFilterCount > 0 && (
-                    <div className="flex items-center gap-2 px-3 py-2 bg-violet-500/20 border border-violet-500/30 rounded-lg">
-                        <span className="text-xs text-violet-300 font-medium">
-                            {activeFilterCount} {activeFilterCount === 1 ? 'Filter' : 'Filters'} Active
+                    <div className="flex items-center gap-2 px-3 py-2 bg-violet-500/20 border border-violet-500/30 rounded-full">
+                        <span className="text-xs text-violet-300 font-medium whitespace-nowrap">
+                            {activeFilterCount} Active
                         </span>
                     </div>
                 )}

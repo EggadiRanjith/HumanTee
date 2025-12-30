@@ -24,12 +24,7 @@ export default function PaymentPage() {
         handlePlaceOrder,
     } = usePaymentFlow();
 
-    // Redirect to login if not authenticated
-    useEffect(() => {
-        if (!authLoading && !isAuthenticated) {
-            router.push('/login');
-        }
-    }, [authLoading, isAuthenticated, router]);
+    // Optional redirect to login has been removed for guest checkout support
 
     // Check if shipping data is complete
     const hasShippingData = shippingData.fullName && shippingData.email && shippingData.address;

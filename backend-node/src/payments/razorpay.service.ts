@@ -70,4 +70,21 @@ export class RazorpayService {
 
         return expected === signature;
     }
+
+    /**
+     * Verify payment signature (Checkout)
+     * Matches razorpay_order_id + "|" + razorpay_payment_id
+     */
+    verifyPaymentSignature(orderId: string, paymentId: string, signature: string): boolean {
+        const keySecret = process.env.RAZORPAY_KEY_SECRET;
+        if (!keySecret) return false;
+
+        const body = orderId + "|" + paymentId;
+        const expectedSignature = crypto
+            .createHmac('sha256', keySecret)
+            .update(body.toString())
+            .digest('hex');
+
+        return expectedSignature === signature;
+    }
 }

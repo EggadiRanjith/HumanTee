@@ -2,8 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WebhookController } from './webhook.controller';
 import { RazorpayService } from './razorpay.service';
-import { Payment } from './entities/payment.entity';
-import { Order } from '../orders/entities/order.entity';
+import { Payment, Order } from '../entities';
 
 @Module({
     imports: [TypeOrmModule.forFeature([Payment, Order])],

@@ -4,6 +4,7 @@ import { useState, FormEvent } from 'react';
 import { GradientOverlay } from '@/app/components/ui/layout';
 import Link from 'next/link';
 import { FiMail, FiInstagram, FiClock, FiSend } from 'react-icons/fi';
+import { submitContactForm } from '@/lib/api/contact';
 
 export default function ContactPage() {
     const [formData, setFormData] = useState({
@@ -48,23 +49,31 @@ export default function ContactPage() {
         }
 
         setIsSubmitting(true);
+        setErrors({}); // Clear any previous errors
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        try {
+            // Call real backend API
+            const response = await submitContactForm(formData);
 
-        setIsSubmitting(false);
-        setSubmitSuccess(true);
+            setIsSubmitting(false);
+            setSubmitSuccess(true);
 
-        // Reset form
-        setFormData({
-            name: '',
-            email: '',
-            subject: '',
-            message: ''
-        });
+            // Reset form
+            setFormData({
+                name: '',
+                email: '',
+                subject: '',
+                message: ''
+            });
 
-        // Hide success message after 5 seconds
-        setTimeout(() => setSubmitSuccess(false), 5000);
+            // Hide success message after 5 seconds
+            setTimeout(() => setSubmitSuccess(false), 5000);
+        } catch (error) {
+            setIsSubmitting(false);
+            setErrors({
+                submit: error instanceof Error ? error.message : 'Failed to send message. Please try again.'
+            });
+        }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -101,6 +110,15 @@ export default function ContactPage() {
                     </div>
                 )}
 
+                {/* Submit Error Message */}
+                {errors.submit && (
+                    <div className="mb-8 p-4 rounded-lg luxury-glass border border-red-500/30 bg-red-500/10" role="alert">
+                        <p className="text-red-400 text-center text-sm">
+                            {errors.submit}
+                        </p>
+                    </div>
+                )}
+
                 {/* Main Content Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
 
@@ -122,6 +140,10 @@ export default function ContactPage() {
                                     name="name"
                                     value={formData.name}
                                     onChange={handleChange}
+                                    required
+                                    aria-required="true"
+                                    aria-invalid={!!errors.name}
+                                    aria-describedby={errors.name ? "name-error" : undefined}
                                     className={`
                     w-full px-4 py-3 rounded-lg
                     bg-white/5 border ${errors.name ? 'border-red-500/50' : 'border-white/10'}
@@ -132,7 +154,7 @@ export default function ContactPage() {
                                     placeholder="Your Name"
                                 />
                                 {errors.name && (
-                                    <p className="mt-1 text-red-400 text-xs">{errors.name}</p>
+                                    <p id="name-error" role="alert" className="mt-1 text-red-400 text-xs">{errors.name}</p>
                                 )}
                             </div>
 
@@ -147,6 +169,10 @@ export default function ContactPage() {
                                     name="email"
                                     value={formData.email}
                                     onChange={handleChange}
+                                    required
+                                    aria-required="true"
+                                    aria-invalid={!!errors.email}
+                                    aria-describedby={errors.email ? "email-error" : undefined}
                                     className={`
                     w-full px-4 py-3 rounded-lg
                     bg-white/5 border ${errors.email ? 'border-red-500/50' : 'border-white/10'}
@@ -157,7 +183,7 @@ export default function ContactPage() {
                                     placeholder="your.email@example.com"
                                 />
                                 {errors.email && (
-                                    <p className="mt-1 text-red-400 text-xs">{errors.email}</p>
+                                    <p id="email-error" role="alert" className="mt-1 text-red-400 text-xs">{errors.email}</p>
                                 )}
                             </div>
 
@@ -172,6 +198,10 @@ export default function ContactPage() {
                                     name="subject"
                                     value={formData.subject}
                                     onChange={handleChange}
+                                    required
+                                    aria-required="true"
+                                    aria-invalid={!!errors.subject}
+                                    aria-describedby={errors.subject ? "subject-error" : undefined}
                                     className={`
                     w-full px-4 py-3 rounded-lg
                     bg-white/5 border ${errors.subject ? 'border-red-500/50' : 'border-white/10'}
@@ -182,7 +212,7 @@ export default function ContactPage() {
                                     placeholder="How can we help?"
                                 />
                                 {errors.subject && (
-                                    <p className="mt-1 text-red-400 text-xs">{errors.subject}</p>
+                                    <p id="subject-error" role="alert" className="mt-1 text-red-400 text-xs">{errors.subject}</p>
                                 )}
                             </div>
 
@@ -197,6 +227,10 @@ export default function ContactPage() {
                                     value={formData.message}
                                     onChange={handleChange}
                                     rows={6}
+                                    required
+                                    aria-required="true"
+                                    aria-invalid={!!errors.message}
+                                    aria-describedby={errors.message ? "message-error" : undefined}
                                     className={`
                     w-full px-4 py-3 rounded-lg
                     bg-white/5 border ${errors.message ? 'border-red-500/50' : 'border-white/10'}
@@ -208,7 +242,7 @@ export default function ContactPage() {
                                     placeholder="Tell us more about your inquiry..."
                                 />
                                 {errors.message && (
-                                    <p className="mt-1 text-red-400 text-xs">{errors.message}</p>
+                                    <p id="message-error" role="alert" className="mt-1 text-red-400 text-xs">{errors.message}</p>
                                 )}
                             </div>
 
@@ -216,12 +250,15 @@ export default function ContactPage() {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
+                                aria-label={isSubmitting ? "Sending message" : "Send message"}
+                                aria-busy={isSubmitting}
                                 className={`
                   w-full py-4 rounded-lg
                   bg-white text-black
                   font-medium uppercase tracking-[0.18em] text-[13px]
                   transition-all duration-300
                   flex items-center justify-center gap-2
+                  min-h-[48px]
                   ${isSubmitting
                                         ? 'opacity-50 cursor-not-allowed'
                                         : 'hover:bg-white/90 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]'
@@ -230,12 +267,12 @@ export default function ContactPage() {
                             >
                                 {isSubmitting ? (
                                     <>
-                                        <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                                        <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" role="status" aria-label="Loading" />
                                         Sending...
                                     </>
                                 ) : (
                                     <>
-                                        <FiSend size={16} />
+                                        <FiSend size={16} aria-hidden="true" />
                                         Send Message
                                     </>
                                 )}

@@ -92,7 +92,7 @@ function Reviews({ reviews: propReviews, enabled: propEnabled }: ReviewsProps) {
             <ReviewCard
               key={`review-${index}`}
               review={review}
-              className="w-[85vw] sm:w-auto shrink-0 !min-w-[auto] sm:!min-w-[300px] md:!min-w-[360px]"
+              className="w-[80vw] sm:w-auto shrink-0 !min-w-[auto] sm:!min-w-[300px] md:!min-w-[360px]"
             />
           ))}
         </div>

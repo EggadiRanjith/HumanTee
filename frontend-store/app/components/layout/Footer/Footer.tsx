@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState, useEffect } from "react";
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useMediaQuery } from "@/app/hooks/useMediaQuery";
@@ -11,7 +11,7 @@ import { FOOTER_NAV_SECTIONS } from "./constants";
 
 function Footer() {
   // Get header-footer settings from centralized cache
-  const { settings } = useSectionSettings('header-footer');
+  const { settings, isLoading } = useSectionSettings('header-footer');
   const pathname = usePathname();
 
   if (pathname?.startsWith('/maintenance')) {
@@ -19,14 +19,6 @@ function Footer() {
   }
 
   const isDesktop = useMediaQuery('(min-width: 640px)');
-  const [brandLoaded, setBrandLoaded] = useState(false);
-
-  // Track when brand loads (prevents re-render after initial load)
-  useEffect(() => {
-    if (settings?.brand_name && !brandLoaded) {
-      setBrandLoaded(true);
-    }
-  }, [settings?.brand_name, brandLoaded]);
 
   return (
     <>
@@ -52,7 +44,7 @@ function Footer() {
 
         {/* CONTENT GRID */}
         <div className="relative max-w-screen-xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-8">
-          {!brandLoaded ? (
+          {isLoading ? (
             <FooterSkeleton />
           ) : (
             <>

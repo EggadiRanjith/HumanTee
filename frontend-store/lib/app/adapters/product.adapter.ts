@@ -26,6 +26,8 @@ interface BackendProduct {
     slug: string;
     description: string;
     status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
+    category?: string;  // For filtering
+    collection?: string;  // For filtering (if returned as string)
     variants: BackendVariant[];
     images?: BackendImage[];  // Added images array
 }
@@ -83,6 +85,13 @@ export function adaptProduct(apiProduct: BackendProduct): Product {
         // Optional fields
         originalPrice: undefined, // No sale pricing yet
         badge: undefined, // No badge logic yet
+
+        // Filter fields
+        category: apiProduct.category,
+        collection: apiProduct.collection,
+
+        // Multi-image support
+        images: images.filter(img => img.status === 'ACTIVE' || !img.status).map(img => img.url),
     };
 }
 

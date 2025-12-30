@@ -20,6 +20,7 @@ import { SettingsModule } from './settings/settings.module';
 import { MaintenanceModule } from './settings/maintenance.module';
 import { ObservabilityModule } from './common/observability.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { ContactModule } from './contact/contact.module';
 // import { RedisModule } from './redis/redis.module'; // Disabled - Docker not running
 
 
@@ -61,6 +62,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     MaintenanceModule,
     ObservabilityModule, // Health checks + Prometheus metrics
     AnalyticsModule, // Admin analytics
+    ContactModule, // Public contact form
     // RedisModule, // Disabled - Docker not running
   ],
   controllers: [AppController, ProtectedController],

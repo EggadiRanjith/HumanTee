@@ -39,12 +39,7 @@ export default function ShippingPage() {
         saveAddress,
     } = useShippingData(user?.id);
 
-    // Redirect to login if not authenticated
-    useEffect(() => {
-        if (!authLoading && !isAuthenticated) {
-            router.push('/login');
-        }
-    }, [authLoading, isAuthenticated, router]);
+    // Optional redirect to login has been removed for guest checkout support
 
     const handleContinueToPayment = () => {
         const selectedAddress = addresses.find(

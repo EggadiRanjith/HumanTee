@@ -24,8 +24,9 @@ export function SizeSelector({ sizes, selected, onChange, error }: SizeSelectorP
                     <button
                         key={size}
                         onClick={() => onChange(size)}
+                        aria-label={`Select size ${size}`}
                         className={`
-              py-2.5 rounded-lg 
+              py-3.5 rounded-lg 
               border transition-all
               text-[0.75rem] uppercase tracking-[0.15em]
               ${selected === size

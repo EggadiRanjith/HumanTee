@@ -57,4 +57,22 @@ export class EmailService {
             // Don't throw - welcome email is nice-to-have, not critical
         }
     }
+
+    async sendEmail(options: { to: string; subject: string; html?: string; text?: string }): Promise<void> {
+        const mailOptions = {
+            from: process.env.SMTP_FROM || `HumanTee <${process.env.SMTP_USER}>`,
+            to: options.to,
+            subject: options.subject,
+            html: options.html,
+            text: options.text,
+        };
+
+        try {
+            await this.transporter.sendMail(mailOptions);
+            this.logger.log(`Email sent to ${options.to}`);
+        } catch (error) {
+            this.logger.error(`Failed to send email: ${error.message}`);
+            throw error;
+        }
+    }
 }

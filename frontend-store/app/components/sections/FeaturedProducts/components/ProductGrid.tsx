@@ -29,6 +29,7 @@ export function ProductGrid({ products, showViewAll = true }: ProductGridProps) 
                     <Link
                         href="/shop"
                         className="
+                flex items-center justify-center
                 min-h-[44px] min-w-[120px]
                 brand-text-muted text-step--1 tracking-wide 
                 border border-white/10 rounded-full

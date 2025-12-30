@@ -4,9 +4,7 @@ import { Repository, IsNull, In, Not } from 'typeorm';
 import { Discount, DiscountType, DiscountScope, DiscountAudience } from '../entities/discount.entity';
 import { DiscountTargetGroup, DiscountGroupType } from '../entities/discount-target-group.entity';
 import { DiscountUsage } from '../entities/discount-usage.entity';
-import { AuthUser } from '../entities/auth-user.entity';
-import { Order } from '../orders/entities/order.entity';
-import { OrderStatus } from '../orders/enums/order-status.enum';
+import { AuthUser, Order, OrderStatus } from '../entities';
 
 @Injectable()
 export class DiscountsService {
@@ -153,7 +151,7 @@ export class DiscountsService {
         return { message: 'Discount deleted successfully' };
     }
 
-    async validateCode(code: string, userId?: string, cartTotal?: number, items?: any[]) {
+    async validateCode(code: string, userId: string | null = null, cartTotal?: number, items?: any[]) {
         const discount = await this.discountRepository.findOne({
             where: {
                 code: code.toUpperCase(),
@@ -228,7 +226,7 @@ export class DiscountsService {
                 // Check if product belongs to collection
                 const map = await this.orderRepository.manager.getRepository('product_collection_map').findOne({
                     where: { product_id: item.productId, collection_id: target.groupValueUuid }
-                });
+                } as any);
                 if (map) return true;
             }
         }
@@ -248,8 +246,8 @@ export class DiscountsService {
         if (discount.audience === DiscountAudience.FREQUENT || discount.minUserOrders > 0) {
             const threshold = discount.minUserOrders || 5;
             const orderCount = await this.orderRepository.count({
-                where: { user_id: userId, status: Not(In([OrderStatus.CANCELLED])) } as any
-            });
+                where: { userId: userId, status: Not(In([OrderStatus.CANCELLED])) }
+            } as any);
             if (orderCount < threshold) {
                 throw new BadRequestException(`This discount requires at least ${threshold} previous orders`);
             }
@@ -259,8 +257,8 @@ export class DiscountsService {
             const threshold = discount.minUserLtv || 10000;
             const stats = await this.orderRepository
                 .createQueryBuilder('order')
-                .select('SUM(order.total_amount)', 'ltv')
-                .where('order.user_id = :userId', { userId })
+                .select('SUM(order.totalAmount)', 'ltv')
+                .where('order.userId = :userId', { userId })
                 .andWhere('order.status != :status', { status: OrderStatus.CANCELLED })
                 .getRawOne();
 
@@ -271,7 +269,7 @@ export class DiscountsService {
         }
     }
 
-    async recordUsage(discountId: string, orderId: string, userId?: string) {
+    async recordUsage(discountId: string, orderId: string, userId: string | null = null) {
         const usage = this.usageRepository.create({
             discountId,
             orderId,
@@ -284,7 +282,7 @@ export class DiscountsService {
      * Get discount suggestions for a cart
      * Returns all applicable discounts sorted by savings (best first)
      */
-    async getSuggestions(cartTotal: number, items: any[], userId?: string) {
+    async getSuggestions(cartTotal: number, items: any[], userId: string | null = null) {
         const now = new Date();
 
         // Find all active discounts

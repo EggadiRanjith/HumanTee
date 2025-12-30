@@ -7,6 +7,7 @@ import { FiCheck } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import apiClient from "@/lib/api-client";
 import successAnimation from "@/public/animation/lottie/order-status/success_order_placed.json";
 
 // Dynamic import to prevent SSR issues
@@ -184,10 +185,23 @@ export default function SuccessPage() {
                                     <motion.button
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
-                                        onClick={() => router.push("/orders")}
+                                        onClick={async () => {
+                                            // Find order ID if not in context
+                                            try {
+                                                const response = await apiClient.get(`/orders?orderNumber=${orderNumber}`);
+                                                const orderId = response.data.orders?.[0]?.id || response.data?.[0]?.id;
+                                                if (orderId) {
+                                                    router.push(`/orders/${orderId}`);
+                                                } else {
+                                                    router.push("/orders");
+                                                }
+                                            } catch {
+                                                router.push("/orders");
+                                            }
+                                        }}
                                         className="px-5 sm:px-7 py-3 sm:py-3.5 border-2 border-white/20 text-white rounded-full text-[10px] sm:text-xs uppercase tracking-wider hover:bg-white/5 transition-colors min-h-[44px] sm:min-h-[48px]"
                                     >
-                                        View Orders
+                                        View Order Details
                                     </motion.button>
                                     <motion.button
                                         whileHover={{ scale: 1.02 }}

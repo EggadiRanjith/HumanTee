@@ -6,24 +6,26 @@
 import { Address, Payment } from '../../types';
 
 interface OrderSummaryProps {
-    address: Address;
-    payments: Payment[];
-    subtotal: number;
-    shippingAmount: number;
-    taxAmount: number;
-    discountAmount: number;
+    address?: Address;
+    payments?: Payment[];
+    subtotal?: number;
+    shippingAmount?: number;
+    taxAmount?: number;
+    discountAmount?: number;
     totalAmount: number;
 }
 
 export function OrderSummary({
     address,
     payments,
-    subtotal,
-    shippingAmount,
-    taxAmount,
-    discountAmount,
+    subtotal = 0,
+    shippingAmount = 0,
+    taxAmount = 0,
+    discountAmount = 0,
     totalAmount
 }: OrderSummaryProps) {
+    if (!address) return null;
+
     return (
         <>
             {/* Shipping & Payment Grid */}

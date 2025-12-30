@@ -33,12 +33,12 @@ export function usePaymentFlow() {
         try {
             // SECURITY: Backend calculates prices (frontend sends ONLY items + quantities)
             const response = await apiClient.post('/orders', {
+                idempotencyKey: crypto.randomUUID(), // Prevent duplicate order creation on network retry
                 items: items.map(item => ({
                     productId: String(item.id),
                     variantId: item.variantId || String(item.id),
                     quantity: item.quantity,
                     imageUrlSnapshot: item.image,
-                    // NO PRICES - backend fetches from database
                 })),
                 shippingAddress: {
                     fullName: shippingData.fullName,
@@ -50,7 +50,6 @@ export function usePaymentFlow() {
                     postalCode: shippingData.postalCode,
                     country: shippingData.country || 'India',
                 },
-                // NO PRICES - backend calculates
             });
 
             const { orderNumber, razorpayOrderId, totalAmount } = response.data;

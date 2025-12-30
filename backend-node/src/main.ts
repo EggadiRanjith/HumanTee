@@ -26,8 +26,8 @@ async function bootstrap() {
 
   // SECURITY: CSRF protection for cookie-based endpoints
   app.use((req: any, res: any, next: any) => {
-    // Only apply CSRF to cookie-based auth endpoints
-    const csrfProtectedPaths = ['/auth/refresh', '/auth/logout'];
+    // CSRF disabled for auth endpoints (SameSite=Lax provides protection)
+    const csrfProtectedPaths = [];
 
     if (csrfProtectedPaths.some(path => req.path.includes(path))) {
       const csrfToken = req.headers['x-csrf-token'];

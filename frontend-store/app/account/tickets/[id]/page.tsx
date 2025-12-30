@@ -101,11 +101,10 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
     }, [ticket]);
 
     useEffect(() => {
-        // DISABLED: Do not auto-scroll to bottom at all
-        // Only scroll when user sends a message manually
-        // if (ticket?.messages && !isInitialLoad) {
-        //     scrollToBottom();
-        // }
+        // Auto-scroll to bottom when new messages arrive
+        if (ticket?.messages && !isInitialLoad) {
+            scrollToBottom();
+        }
     }, [ticket?.messages, isInitialLoad]);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,9 +151,17 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         setAttachments(prev => prev.filter((_, i) => i !== index));
     };
 
+    const consecutiveUserMessages = ticket?.messages
+        ? [...ticket.messages].reverse().findIndex(msg => msg.isAdminReply) === -1
+            ? ticket.messages.length
+            : [...ticket.messages].reverse().findIndex(msg => msg.isAdminReply)
+        : 0;
+
+    const isLimitReached = consecutiveUserMessages >= 5;
+
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newMessage.trim() || isSending || isUploading) return;
+        if (!newMessage.trim() || isSending || isUploading || isLimitReached) return;
 
         setIsSending(true);
         setError(null);
@@ -180,9 +187,11 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
             setTimeout(() => {
                 setIsSending(false);
             }, 2000);
-        } catch (err) {
+        } catch (err: any) {
             logError(err, "Failed to send message");
-            setError("Failed to send message. Please try again.");
+            // Extract specific error message from backend
+            const errorMessage = err.response?.data?.message || err.message || "Failed to send message. Please try again.";
+            setError(errorMessage);
             setIsSending(false);
         }
     };
@@ -232,30 +241,30 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
             <div className="max-w-screen-lg mx-auto w-full px-4 sm:px-6 lg:px-10 pb-10 pt-8 flex-1 flex flex-col">
 
                 {/* Header Section */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8">
                     <div className="flex items-center gap-4">
                         <Link href={ticket.orderId ? `/orders/${ticket.orderId}` : "/account/tickets"}>
                             <button className="p-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all">
                                 <FiArrowLeft className="w-5 h-5" />
                             </button>
                         </Link>
-                        <div>
+                        <div className="min-w-0">
                             <div className="flex items-center gap-3">
-                                <h1 className="text-xl sm:text-2xl font-light text-white tracking-wide">{ticket.ticketNumber}</h1>
-                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider ${currentStatus.bg} ${currentStatus.text}`}>
+                                <h1 className="text-xl sm:text-2xl font-light text-white tracking-wide truncate">{ticket.ticketNumber}</h1>
+                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider flex-shrink-0 ${currentStatus.bg} ${currentStatus.text}`}>
                                     {currentStatus.label}
                                 </span>
                             </div>
-                            <p className="text-white/40 text-xs mt-1 uppercase tracking-widest">
-                                {ticket.category.replace('_', ' ')} • Opened on {new Date(ticket.createdAt).toLocaleDateString()}
+                            <p className="text-white/40 text-[10px] sm:text-xs mt-1 uppercase tracking-widest truncate">
+                                {ticket.category.replace('_', ' ')} • Opened {new Date(ticket.createdAt).toLocaleDateString()}
                             </p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <div className="text-right hidden sm:block">
+                        <div className="text-left sm:text-right">
                             <p className="text-white/30 text-[10px] uppercase tracking-widest">Subject</p>
-                            <p className="text-white/70 text-sm font-light mt-0.5">{ticket.subject}</p>
+                            <p className="text-white/70 text-sm font-light mt-0.5 max-w-xs">{ticket.subject}</p>
                         </div>
                     </div>
                 </div>
@@ -269,8 +278,12 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                         {/* Messages Area */}
                         <div
                             ref={messagesContainerRef}
-                            className="flex-1 p-6 space-y-6 min-h-[400px]"
-                            style={{ overflowY: 'auto', scrollBehavior: 'auto' }}
+                            className="flex-1 p-4 sm:p-6 space-y-6 overflow-y-auto"
+                            style={{
+                                maxHeight: '600px',
+                                minHeight: '400px',
+                                scrollBehavior: 'auto'
+                            }}
                         >
                             {ticket.messages.map((msg: any) => {
                                 const isMe = msg.userId === user?.id && !msg.isAdminReply;
@@ -280,11 +293,11 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                                         className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
                                     >
                                         <div className={`flex gap-3 max-w-[85%] sm:max-w-[70%] ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
-                                            <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${msg.isAdminReply ? 'bg-fuchsia-600/20 text-fuchsia-400' : 'bg-white/10 text-white/40'}`}>
+                                            <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center mt-auto ${msg.isAdminReply ? 'bg-fuchsia-600/20 text-fuchsia-400' : 'bg-white/10 text-white/40'}`}>
                                                 {msg.isAdminReply ? <FiShield className="w-4 h-4" /> : <FiUser className="w-4 h-4" />}
                                             </div>
-                                            <div className="space-y-1">
-                                                <div className={`flex items-center gap-2 mb-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                            <div className={`flex flex-col space-y-1 ${isMe ? 'items-end' : 'items-start'}`}>
+                                                <div className="flex items-center gap-2 mb-1 px-1">
                                                     <span className="text-[10px] text-white/30 uppercase tracking-widest">
                                                         {msg.isAdminReply ? 'Customer Support' : (isMe ? 'You' : msg.user?.name || 'Customer')}
                                                     </span>
@@ -328,13 +341,34 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
                         {/* Input Area */}
                         {['resolved', 'closed'].includes(ticket.status) ? (
-                            <div className="p-6 bg-white/[0.03] border-t border-white/5 text-center">
-                                <p className="text-white/30 text-xs uppercase tracking-widest font-light">
-                                    This ticket is {ticket.status}. Re-open it by sending a new message.
+                            <div className="p-6 bg-white/[0.03] border-t border-white/5 text-center space-y-4">
+                                <p className="text-white/40 text-[10px] uppercase tracking-[0.2em] font-medium">
+                                    This ticket is {ticket.status}.
+                                </p>
+                                <p className="text-white/30 text-[10px] uppercase tracking-widest leading-relaxed">
+                                    Our support team usually reviews tickets within 24-48 business hours.<br />
+                                    <span className="text-violet-400/50">Note: You can send up to 5 consecutive messages before needing an admin reply.</span><br />
+                                    You will receive an email notification when an admin replies.
                                 </p>
                             </div>
                         ) : (
                             <form onSubmit={handleSendMessage} className="p-4 bg-white/[0.03] border-t border-white/5 space-y-4">
+                                {/* Error Message */}
+                                {error && (
+                                    <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs" role="alert">
+                                        <FiAlertCircle className="w-4 h-4 flex-shrink-0" />
+                                        <p>{error}</p>
+                                    </div>
+                                )}
+
+                                {/* Safe Message Limit Note */}
+                                {isLimitReached && (
+                                    <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs" role="status">
+                                        <FiAlertCircle className="w-4 h-4 flex-shrink-0" />
+                                        <p>You have reached the limit of 5 consecutive messages. Please wait for an admin response before sending more.</p>
+                                    </div>
+                                )}
+
                                 {attachments.length > 0 && (
                                     <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
                                         {attachments.map((file, idx) => (
@@ -352,11 +386,11 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                                     </div>
                                 )}
 
-                                <div className="relative flex items-end gap-3">
+                                <div className="relative flex items-end gap-2 sm:gap-3">
                                     <label className={`
-                                        p-3 px-4 rounded-xl border border-white/10 bg-white/5 
+                                        p-3 px-3 sm:px-4 rounded-xl border border-white/10 bg-white/5 
                                         text-white/40 hover:text-white hover:border-white/20 transition-all cursor-pointer
-                                        flex items-center justify-center
+                                        flex items-center justify-center flex-shrink-0
                                         ${isUploading ? 'opacity-50 pointer-events-none' : ''}
                                     `}>
                                         <input
@@ -383,14 +417,15 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                                                 handleSendMessage(e);
                                             }
                                         }}
-                                        placeholder="Type your message here..."
+                                        placeholder={isLimitReached ? "Waiting for admin response..." : "Type message..."}
                                         rows={1}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-white/30 transition-all resize-none max-h-32 scrollbar-none"
+                                        disabled={isLimitReached}
+                                        className={`flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-white/30 transition-all resize-none max-h-32 scrollbar-none ${isLimitReached ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     />
                                     <button
                                         type="submit"
-                                        disabled={(!newMessage.trim() && attachments.length === 0) || isSending || isUploading}
-                                        className="p-3.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:brightness-110 transition-all shadow-lg shadow-violet-500/20 disabled:grayscale disabled:opacity-50"
+                                        disabled={(!newMessage.trim() && attachments.length === 0) || isSending || isUploading || isLimitReached}
+                                        className="p-3.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:brightness-110 transition-all shadow-lg shadow-violet-500/20 disabled:grayscale disabled:opacity-50 flex-shrink-0"
                                     >
                                         {isSending ? <FiLoader className="w-5 h-5 animate-spin" /> : <FiSend className="w-5 h-5" />}
                                     </button>

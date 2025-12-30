@@ -164,19 +164,19 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
                   {index === 1 && slide.subheading1 ? (
                     <>
                       <h1
-                        className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-1 sm:mb-2 tracking-wide leading-[1.2] font-bold px-2 xs:px-3 sm:px-4 md:px-6"
+                        className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-1 sm:mb-2 tracking-wide leading-[1.2] font-bold"
                         style={SLIDE_STYLES.heading}
                       >
                         {slide.heading}
                       </h1>
                       <h2
-                        className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-3 sm:mb-4 md:mb-6 tracking-wide leading-[1.2] font-bold px-2 xs:px-3 sm:px-4 md:px-6"
+                        className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-3 sm:mb-4 md:mb-6 tracking-wide leading-[1.2] font-bold"
                         style={SLIDE_STYLES.heading}
                       >
                         {slide.subheading1}
                       </h2>
                       {slide.subheading2 && (
-                        <h3 className="text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl text-white mb-4 sm:mb-6 md:mb-8 font-semibold tracking-[0.15em] xs:tracking-[0.20em] uppercase px-2 xs:px-3 sm:px-4 md:px-6">
+                        <h3 className="text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl text-white mb-4 sm:mb-6 md:mb-8 font-semibold tracking-[0.15em] xs:tracking-[0.20em] uppercase">
                           {slide.subheading2}
                         </h3>
                       )}
@@ -185,19 +185,19 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
                     /* Banner 2 - Cursive */
                     <>
                       <h1
-                        className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl text-white mb-1 sm:mb-2 tracking-normal leading-[1.2] font-bold px-2 sm:px-4 md:px-6"
+                        className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl text-white mb-1 sm:mb-2 tracking-normal leading-[1.2] font-bold"
                         style={SLIDE_STYLES.cursive}
                       >
                         {slide.heading}
                       </h1>
                       {slide.subheading1 && (
-                        <h2 className="text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl text-white mb-3 sm:mb-4 md:mb-6 font-semibold tracking-[0.20em] uppercase px-2 sm:px-4 md:px-6">
+                        <h2 className="text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl text-white mb-3 sm:mb-4 md:mb-6 font-semibold tracking-[0.20em] uppercase">
                           {slide.subheading1}
                         </h2>
                       )}
                       {slide.subheading2 && (
                         <h3
-                          className="text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 mb-4 sm:mb-6 md:mb-8 font-geist font-light tracking-[0.08em] px-2 sm:px-4 md:px-6"
+                          className="text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 mb-4 sm:mb-6 md:mb-8 font-geist font-light tracking-[0.08em]"
                           style={SLIDE_STYLES.tanPearl}
                         >
                           {slide.subheading2}
@@ -206,7 +206,7 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
                     </>
                   ) : (
                     <h1
-                      className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 sm:mb-6 tracking-[0.02em] leading-[1.3] font-geist font-light uppercase px-2 sm:px-4 md:px-6"
+                      className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 sm:mb-6 tracking-[0.02em] leading-[1.3] font-geist font-light uppercase"
                       style={SLIDE_STYLES.tanPearl}
                     >
                       {slide.heading}
@@ -217,9 +217,7 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
 
               {/* Luxury Button */}
               {slide.buttonText && (
-                <div className="px-2 sm:px-4 md:px-6">
-                  <HolographicButton text={slide.buttonText} />
-                </div>
+                <HolographicButton text={slide.buttonText} />
               )}
             </div>
           </div>

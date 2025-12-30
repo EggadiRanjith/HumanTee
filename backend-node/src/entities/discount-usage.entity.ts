@@ -26,7 +26,7 @@ export class DiscountUsage {
     user: AuthUser;
 
     @Column({ name: 'user_id', type: 'uuid', nullable: true })
-    userId: string;
+    userId: string | null;
 
     @Column({ name: 'order_id', type: 'uuid' })
     orderId: string;

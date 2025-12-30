@@ -74,4 +74,12 @@ export class ProductResponseDto {
     @ValidateNested({ each: true })
     @Type(() => ImageResponseDto)
     images?: ImageResponseDto[];
+
+    @IsString()
+    @IsOptional()
+    category?: string;
+
+    @IsString()
+    @IsOptional()
+    collection?: string;
 }

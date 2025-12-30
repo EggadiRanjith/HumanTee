@@ -9,10 +9,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Payment } from './entities/payment.entity';
-import { Order } from '../orders/entities/order.entity';
-import { OrderStatus } from '../orders/enums/order-status.enum';
-import { PaymentStatus } from './enums/payment-status.enum';
+import { Payment, Order, OrderStatus, PaymentStatus } from '../entities';
 import { RazorpayService } from './razorpay.service';
 import type { Request } from 'express';
 
@@ -56,12 +53,12 @@ export class WebhookController {
 
         // 2. CORRECTED: Idempotency check enforced in code
         const existingPayment = await this.paymentRepo.findOne({
-            where: { provider_payment_id: paymentEntity.id },
+            where: { providerPaymentId: paymentEntity.id },
         });
 
         if (
             existingPayment &&
-            existingPayment.status !== PaymentStatus.CREATED
+            existingPayment.status !== PaymentStatus.INITIATED
         ) {
             // Already processed - return 200 (idempotent)
             return { status: 'ok', message: 'Already processed' };
@@ -69,7 +66,7 @@ export class WebhookController {
 
         // 3. Find order
         const order = await this.orderRepo.findOne({
-            where: { payment_order_id: paymentEntity.order_id },
+            where: { paymentOrderId: paymentEntity.order_id },
         });
 
         if (!order) {
@@ -104,30 +101,29 @@ export class WebhookController {
     ) {
         // Update or create payment
         let payment = await this.paymentRepo.findOne({
-            where: { order_id: orderId },
+            where: { orderId: orderId },
         });
 
         if (payment) {
-            payment.provider_payment_id = paymentId;
-            payment.status = PaymentStatus.SUCCESS;
-            payment.raw_payload = payload;
+            payment.providerPaymentId = paymentId;
+            payment.status = PaymentStatus.CAPTURED;
+            // No raw_payload in central entity, maybe add it or skip
         } else {
             payment = this.paymentRepo.create({
-                order_id: orderId,
+                orderId: orderId,
                 provider: 'RAZORPAY',
-                provider_payment_id: paymentId,
-                provider_order_id: payload.payload.payment.entity.order_id,
-                status: PaymentStatus.SUCCESS,
+                providerPaymentId: paymentId,
+                providerOrderId: payload.payload.payment.entity.order_id,
+                status: PaymentStatus.CAPTURED,
                 amount: payload.payload.payment.entity.amount / 100,
                 currency: payload.payload.payment.entity.currency,
-                raw_payload: payload,
             });
         }
         await this.paymentRepo.save(payment);
 
         // Update order
         await this.orderRepo.update(orderId, {
-            status: OrderStatus.PAID,
+            status: OrderStatus.PROCESSING,
         });
     }
 
@@ -142,19 +138,18 @@ export class WebhookController {
     ) {
         // Update payment
         let payment = await this.paymentRepo.findOne({
-            where: { order_id: orderId },
+            where: { orderId: orderId },
         });
 
         if (payment) {
-            payment.provider_payment_id = paymentId;
+            payment.providerPaymentId = paymentId;
             payment.status = PaymentStatus.FAILED;
-            payment.raw_payload = payload;
             await this.paymentRepo.save(payment);
         }
 
         // Update order
         await this.orderRepo.update(orderId, {
-            status: OrderStatus.FAILED,
+            status: OrderStatus.PAYMENT_FAILED,
         });
 
         // NO stock restore - per no-refunds policy

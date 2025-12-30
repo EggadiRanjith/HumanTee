@@ -11,9 +11,10 @@ export const metadata: Metadata = {
     description: "We're making things even better. Check back soon.",
 };
 
-export default function MaintenancePage() {
-    // Hardcoded settings - no API calls
-    const settings = {
+export default async function MaintenancePage() {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+    let settings = {
         enabled: true,
         title: "We'll Be Right Back",
         message: "We're making things even better. Check back soon.",
@@ -23,6 +24,22 @@ export default function MaintenancePage() {
         logoUrl: null,
         tagline: 'Premium Handcrafted T-Shirts Since 1931'
     };
+
+    try {
+        const response = await fetch(`${API_URL}/public-settings/maintenance`, {
+            cache: 'no-store',
+            // short timeout to prevent hanging the page if backend is down
+            signal: AbortSignal.timeout(5000)
+        } as any);
+
+        if (response.ok) {
+            const data = await response.json();
+            settings = { ...settings, ...data };
+        }
+    } catch (error) {
+        console.error('[MaintenancePage] Failed to fetch settings:', error);
+        // Fail-closed stays enabled: true
+    }
 
     return <MaintenanceView initialSettings={settings} />;
 }

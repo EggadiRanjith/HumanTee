@@ -34,19 +34,23 @@ const TicketCardComponent = ({ ticket }: TicketCardProps) => {
                     <h3 className="text-white/80 text-sm font-light line-clamp-1 group-hover:text-white transition-colors">
                         {ticket.subject}
                     </h3>
-                    <div className="flex items-center gap-4 text-[11px] text-white/30 uppercase tracking-widest">
-                        <span>{new Date(ticket.createdAt).toLocaleDateString()}</span>
-                        <span className="w-1 h-1 rounded-full bg-white/10" />
+                    <div className="flex items-center gap-3 text-[11px] text-white/30 uppercase tracking-widest mt-1">
                         <span>Category: {ticket.category.replace('_', ' ')}</span>
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 border-white/5 pt-4 sm:pt-0">
-                    <div className="text-right">
-                        <p className="text-white/40 text-[10px] uppercase tracking-widest">Last Activity</p>
-                        <p className="text-white/60 text-xs mt-0.5">{new Date(ticket.updatedAt).toLocaleDateString()}</p>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t sm:border-t-0 border-white/5 pt-4 sm:pt-0 min-w-fit">
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-4 sm:gap-1.5">
+                        <div className="flex flex-col items-start sm:items-end">
+                            <p className="text-white/20 text-[9px] uppercase tracking-widest">Opened</p>
+                            <p className="text-white/40 text-[10px] sm:text-xs font-light tracking-wide">{new Date(ticket.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <div className="flex flex-col items-end sm:items-end">
+                            <p className="text-white/30 text-[9px] uppercase tracking-widest">Last Activity</p>
+                            <p className="text-white/60 text-[11px] sm:text-xs font-medium tracking-wide">{new Date(ticket.updatedAt).toLocaleDateString()}</p>
+                        </div>
                     </div>
-                    <FiChevronRight className="w-5 h-5 text-white/20 group-hover:text-white/60 group-hover:translate-x-1 transition-all" />
+                    <FiChevronRight className="w-5 h-5 text-white/20 group-hover:text-white/60 group-hover:translate-x-1 transition-all hidden sm:block" />
                 </div>
             </div>
         </Link>

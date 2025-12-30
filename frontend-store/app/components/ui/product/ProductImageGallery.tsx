@@ -224,6 +224,7 @@ const ProductImageGalleryComponent = ({ images, title, subtitle, productId }: Pr
             {isZoomed && (
                 <div
                     className="fixed inset-0 z-[9999] bg-black"
+                    style={{ touchAction: 'none' }}
                     onClick={() => setIsZoomed(false)}
                 >
                     {/* Modal Container */}
@@ -273,6 +274,7 @@ const ProductImageGalleryComponent = ({ images, title, subtitle, productId }: Pr
                             {/* Image Container - Ultra Responsive */}
                             <div
                                 className="relative w-full h-full px-14 sm:px-20 md:px-24 lg:px-28 xl:px-32"
+                                style={{ touchAction: 'none' }}
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 <div
@@ -309,8 +311,8 @@ const ProductImageGalleryComponent = ({ images, title, subtitle, productId }: Pr
                         </div>
 
                         {/* Zoom Controls - Fixed Bottom */}
-                        <div className="flex-shrink-0 flex justify-center px-4 sm:px-6 lg:px-10 pb-4 sm:pb-6">
-                            <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-full bg-black border border-white/20 shadow-2xl">
+                        <div className="flex-shrink-0 flex justify-center px-4 sm:px-6 lg:px-10 pb-4 sm:pb-6 relative z-50">
+                            <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-full bg-black border border-white/20 shadow-2xl relative z-50">
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();

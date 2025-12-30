@@ -66,12 +66,13 @@ export class AuthController {
             userAgent,
         );
 
-        // Set refresh token as httpOnly cookie
+        // Set refresh token as httpOnly cookie (no domain = works for localhost and 127.0.0.1)
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000,
+            path: '/',
         });
 
         // Phase 1.5: Delegate to aggregation service
@@ -98,12 +99,13 @@ export class AuthController {
             userAgent,
         );
 
-        // Set refresh token as httpOnly cookie with proper security
+        // Set refresh token as httpOnly cookie with proper security (no domain = works for localhost and 127.0.0.1)
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax', // CSRF protection
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            path: '/',
         });
 
         // Phase 1.5: Delegate to aggregation service
@@ -135,12 +137,13 @@ export class AuthController {
             userAgent,
         );
 
-        // Set new refresh token as httpOnly cookie
+        // Set new refresh token as httpOnly cookie (no domain = works for localhost and 127.0.0.1)
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000,
+            path: '/',
         });
 
         return {
@@ -152,8 +155,8 @@ export class AuthController {
     @UseGuards(JwtAuthGuard)
     @Post('logout')
     async logout(@Req() req: any, @Res({ passthrough: true }) res: Response) {
-        // Clear the refresh token cookie
-        res.clearCookie('refreshToken');
+        // Clear the refresh token cookie (must match exactly how it was set)
+        res.clearCookie('refreshToken', { path: '/' });
 
         return this.authService.logout(req.user.userId);
     }

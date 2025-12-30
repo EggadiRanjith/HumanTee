@@ -40,7 +40,8 @@ export function useAuthFlow() {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://localhost:3001/auth/send-otp', {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+            const response = await fetch(`${apiUrl}/auth/send-otp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),
@@ -72,7 +73,8 @@ export function useAuthFlow() {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://localhost:3001/auth/verify-otp', {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+            const response = await fetch(`${apiUrl}/auth/verify-otp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, otp }),
@@ -103,7 +105,8 @@ export function useAuthFlow() {
         setError("");
 
         try {
-            const response = await fetch('http://localhost:3001/auth/google', {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+            const response = await fetch(`${apiUrl}/auth/google`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',

@@ -140,8 +140,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
           productId: item.id.toString(),
           variantId: item.variantId || item.id.toString(),
           quantity,
-          price: item.price,
-          currency: item.currency,
         });
         await loadBackendCart();
         onSuccess?.();

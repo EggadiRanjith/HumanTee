@@ -33,31 +33,31 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const { hydrateCart } = useCart();
+    // TEMP: Commented out to break circular dependency
+    // const { hydrateCart } = useCart();
     const queryClient = useQueryClient();
 
     // Check authentication status on mount
-    // Skip auth check on login page to prevent redirect loops
+    // Use refresh token to restore session
     useEffect(() => {
         const checkAuth = async () => {
-            // Skip auth check if on login page or maintenance page
-            if (typeof window !== 'undefined' && (
-                window.location.pathname === '/login' ||
-                window.location.pathname.startsWith('/maintenance')
-            )) {
-                setIsLoading(false);
-                return;
-            }
-
             try {
-                // Try to verify session with refresh token (httpOnly cookie)
-                const response = await apiClient.get('/auth/me');
+                // Try to refresh session using httpOnly cookie
+                const response = await apiClient.post('/auth/refresh');
 
                 if (response.data) {
-                    setUser(response.data);
+                    // Set access token and user from refresh response
+                    setAccessToken(response.data.accessToken);
+                    setUser(response.data.user);
+
+                    // Set Sentry context
+                    setUserContext({
+                        id: response.data.user.id,
+                        email: response.data.user.email,
+                    });
                 }
             } catch (error) {
-                // Auth check failed - user will be redirected by interceptor if needed
+                // Refresh failed - user is not logged in
                 setUser(null);
                 clearAccessToken();
             } finally {
@@ -80,11 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         productId: item.id.toString(),
                         variantId: item.variantId,
                         quantity: item.quantity,
-                        price: item.price,
-                        currency: item.currency || 'USD',
-                        productTitle: item.title,
-                        productImage: item.image,
-                        size: item.size,
+                        price: item.price, // Required by merge endpoint
                     }));
 
                     await apiClient.post('/cart/merge', { items: backendItems });
@@ -124,15 +120,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             );
         }
 
+        // TEMP: Commented out to break circular dependency
         // Phase 1: Hydrate cart
-        if (cart) {
-            hydrateCart(cart);
-        }
+        // if (cart) {
+        //     hydrateCart(cart);
+        // }
 
-        // Merge guest cart (only if no cart data provided)
-        if (!cart) {
-            await mergeGuestCart();
-        }
+        // Always merge guest cart on login
+        await mergeGuestCart();
     };
 
     const logout = async () => {
@@ -157,7 +152,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (typeof window !== 'undefined') {
                 localStorage.removeItem('checkout-data');
                 localStorage.removeItem('shipping-address');
+                localStorage.removeItem('humantee-cart'); // Clear guest cart too
                 sessionStorage.clear();
+
+                // Manually clear refresh token cookie (must match exact domain and path)
+                const domain = window.location.hostname;
+                document.cookie = `refreshToken=; path=/; domain=${domain}; max-age=0; SameSite=Lax`;
+                document.cookie = `auth_token=; path=/; domain=${domain}; max-age=0; SameSite=Lax`;
             }
 
             // PRODUCTION: Broadcast logout to all tabs

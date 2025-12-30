@@ -31,13 +31,13 @@ export function OrderHeader({ orderNumber, createdAt, status }: OrderHeaderProps
 
     return (
         <div className="p-5 rounded-2xl luxury-glass border border-white/10 bg-white/5 backdrop-blur-xl mb-8">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h2 className="text-xl text-white tracking-wide font-light">
-                        {orderNumber}
+            <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-4">
+                <div className="min-w-0 flex-1">
+                    <h2 className="text-xl text-white tracking-wide font-light break-all xs:break-normal">
+                        {orderNumber || 'Order'}
                     </h2>
-                    <p className="text-white/50 text-sm mt-1">
-                        Placed on {new Date(createdAt).toLocaleDateString('en-IN', {
+                    <p className="text-white/50 text-xs xs:text-sm mt-1">
+                        Placed on {new Date(createdAt).toLocaleDateString(undefined, {
                             day: 'numeric',
                             month: 'short',
                             year: 'numeric'
@@ -45,7 +45,7 @@ export function OrderHeader({ orderNumber, createdAt, status }: OrderHeaderProps
                     </p>
                 </div>
 
-                <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg">
+                <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg shrink-0">
                     <StatusIcon className={`w-4 h-4 ${statusConfig.class}`} />
                     <span className="uppercase text-[10px] tracking-[0.2em] text-white/70">
                         {statusConfig.label}

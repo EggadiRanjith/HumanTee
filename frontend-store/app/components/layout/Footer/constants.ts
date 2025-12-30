@@ -11,7 +11,6 @@ export const FOOTER_NAV_SECTIONS: NavSection[] = [
             { name: 'Orders', url: '/orders' },
             { name: 'Account', url: '/account' },
             { name: 'All Products', url: '/shop' },
-            { name: 'Featured Projects', url: '/featured' },
         ],
     },
     {

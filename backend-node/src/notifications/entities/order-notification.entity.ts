@@ -7,7 +7,7 @@ import {
     JoinColumn,
     Index,
 } from 'typeorm';
-import { Order } from '../../orders/entities/order.entity';
+import { Order } from '../../entities';
 import { NotificationType } from '../enums/notification-type.enum';
 
 /**
@@ -17,13 +17,13 @@ import { NotificationType } from '../enums/notification-type.enum';
  * - Unique constraint on order_id + type
  */
 @Entity('order_notifications')
-@Index(['order_id', 'type'], { unique: true }) // CORRECTED: Idempotency
+@Index(['orderId', 'type'], { unique: true }) // CORRECTED: Idempotency
 export class OrderNotification {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({ type: 'uuid' })
-    order_id: string;
+    @Column({ type: 'uuid', name: 'order_id' })
+    orderId: string;
 
     @Column({
         type: 'enum',
@@ -34,8 +34,8 @@ export class OrderNotification {
     @Column({ type: 'varchar' })
     recipient: string; // Email address
 
-    @CreateDateColumn()
-    sent_at: Date;
+    @CreateDateColumn({ name: 'sent_at' })
+    sentAt: Date;
 
     // Relations
     @ManyToOne(() => Order)

@@ -38,8 +38,13 @@ function NavigationLoaderContent() {
 
     // Auto-hide loader after route change
     useEffect(() => {
+        // Scroll to top when route changes
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+
         const timer = setTimeout(() => {
             setLoading(false);
+            // Scroll to top again after loader hides
+            setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }), 0);
         }, 1000);
 
         return () => clearTimeout(timer);
@@ -90,16 +95,21 @@ function NavigationLoaderContent() {
         return () => document.removeEventListener("click", handleClick);
     }, [setLoading]);
 
-    // Critical Fix #2: ARIA busy state
+    // Critical Fix #2: ARIA busy state + prevent scrolling
     useEffect(() => {
         if (isLoading) {
             document.body.setAttribute('aria-busy', 'true');
+            // Prevent scrolling while loading
+            document.body.style.overflow = 'hidden';
         } else {
             document.body.removeAttribute('aria-busy');
+            // Restore scrolling
+            document.body.style.overflow = '';
         }
 
         return () => {
             document.body.removeAttribute('aria-busy');
+            document.body.style.overflow = '';
         };
     }, [isLoading]);
 

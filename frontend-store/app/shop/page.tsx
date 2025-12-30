@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { logError } from '@/lib/logger';
 import { GradientOverlay } from '@/app/components/ui/layout';
 import { fetchShopProducts } from '@/lib/app/api/products';
@@ -23,7 +23,15 @@ import {
   ShopError
 } from './components';
 import ShopFilters from './ShopFilters';
-import { useSectionSettings } from "@/app/hooks/useSettings";
+import { publicSettingsApi } from '@/lib/app/api/public-settings';
+
+interface ShopSettings {
+  categories?: string[];
+  collections?: string[];
+  sort_options?: { value: string; label: string }[];
+  items_per_page?: number;
+  show_filters?: boolean;
+}
 
 function ShopPageContent() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -39,8 +47,27 @@ function ShopPageContent() {
   const collection = filters.collection;
   const page = filters.page;
 
-  // Get shop settings from centralized cache
-  const { settings: shopSettings, isLoading: settingsLoading } = useSectionSettings('shop');
+  // Shop settings state (API only, no fallbacks)
+  const [shopSettings, setShopSettings] = useState<ShopSettings | null>(null);
+  const [settingsLoading, setSettingsLoading] = useState(true);
+
+  // Load shop settings from API (no fallbacks)
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const allSettings = await publicSettingsApi.getAll();
+        const shopData = allSettings?.shop;
+        setShopSettings(shopData || null);
+      } catch (err) {
+        logError(err, 'Failed to load shop settings');
+        setShopSettings(null); // No fallback, just null
+      } finally {
+        setSettingsLoading(false);
+      }
+    }
+    loadSettings();
+  }, []);
+
   const itemsPerPage = shopSettings?.items_per_page || 12;
 
   // Load products when filters change
@@ -91,6 +118,31 @@ function ShopPageContent() {
     setFilters({ [key]: undefined });
   };
 
+  // Extract unique categories and collections from products
+  const uniqueCategories = React.useMemo(() => {
+    const cats = new Set<string>();
+    products.forEach(p => {
+      if (p.category) cats.add(p.category);
+    });
+    return Array.from(cats).sort();
+  }, [products]);
+
+  const uniqueCollections = React.useMemo(() => {
+    const colls = new Set<string>();
+    products.forEach(p => {
+      if (p.collection) colls.add(p.collection);
+    });
+    return Array.from(colls).sort();
+  }, [products]);
+
+  // Standard sort options
+  const sortOptions = [
+    { value: 'newest', label: 'Newest First' },
+    { value: 'price_asc', label: 'Price: Low to High' },
+    { value: 'price_desc', label: 'Price: High to Low' },
+    { value: 'popular', label: 'Most Popular' }
+  ];
+
   return (
     <div className="min-h-screen brand-bg pt-[var(--header-height)]">
       <GradientOverlay variant="violet" />
@@ -103,9 +155,9 @@ function ShopPageContent() {
         {shopSettings?.show_filters !== false && (
           <ShopFilters
             onFilterChange={handleFilterChange}
-            categories={shopSettings?.categories || []}
-            collections={shopSettings?.collections || []}
-            sortOptions={shopSettings?.sort_options || []}
+            categories={uniqueCategories}
+            collections={uniqueCollections}
+            sortOptions={sortOptions}
             currentFilters={filters}
             activeFilterCount={activeFilterCount}
           />
@@ -122,7 +174,7 @@ function ShopPageContent() {
         {loading || settingsLoading ? (
           <ShopSkeleton />
         ) : error ? (
-          <ShopError />
+          <ShopEmpty />
         ) : products.length === 0 ? (
           <ShopEmpty />
         ) : (

@@ -9,12 +9,14 @@ import {
     OrderStatusHistory,
     OrderStatus,
     PaymentStatus,
+    Product,
+    ProductVariant,
+    Shipment,
+    ShipmentStatus,
 } from '../entities';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { DiscountsService } from '../discounts/discounts.service';
 import { OrderDiscount } from '../entities/order-discount.entity';
-import { Product } from '../products/entities/product.entity';
-import { ProductVariant } from '../products/entities/product-variant.entity';
 import { RazorpayService } from '../payments/razorpay.service';
 import { randomBytes } from 'crypto';
 
@@ -53,7 +55,7 @@ export class OrderService {
      * Create order with atomic transaction
      * SECURITY: Server-side price calculation (frontend prices ignored)
      */
-    async createOrder(userId: string, orderData: CreateOrderDto): Promise<Order> {
+    async createOrder(userId: string | null, orderData: CreateOrderDto): Promise<Order> {
         return await this.dataSource.transaction(async (manager) => {
             // 1. Fetch products and variants from database
             const productIds = orderData.items.map(i => i.productId);
@@ -117,7 +119,7 @@ export class OrderService {
                 discountAmount,
                 totalAmount,
                 currency: 'INR',
-                payment_order_id: razorpayOrderId,
+                paymentOrderId: razorpayOrderId,
             });
             await manager.save(Order, order);
 
@@ -168,12 +170,12 @@ export class OrderService {
 
             // 10. Create payment record (PENDING)
             const payment = manager.create(Payment, {
-                order_id: order.id,
+                orderId: order.id,
                 amount: totalAmount,
                 currency: 'INR',
                 status: PaymentStatus.INITIATED,
                 provider: 'RAZORPAY',
-                provider_order_id: razorpayOrderId,
+                providerOrderId: razorpayOrderId,
             });
             await manager.save(Payment, payment);
 
@@ -205,7 +207,7 @@ export class OrderService {
                 orderId: order.id,
                 fromStatus: undefined,
                 toStatus: OrderStatus.PENDING_PAYMENT,
-                changedBy: userId,
+                changedBy: userId || 'GUEST',
                 reason: 'Order created, awaiting payment',
             });
             await manager.save(OrderStatusHistory, history);
@@ -262,14 +264,51 @@ export class OrderService {
     }
 
     /**
-     * Get all orders for a user
+     * Get all orders for a user with filtering and pagination
      */
-    async findUserOrders(userId: string): Promise<Order[]> {
-        return await this.orderRepository.find({
-            where: { userId },
+    async findUserOrders(userId: string, query: { status?: string, page?: number, limit?: number } = {}): Promise<{ orders: Order[], total: number, page: number, totalPages: number }> {
+        const { status, page = 1, limit = 20 } = query;
+        const skip = (page - 1) * limit;
+
+        const where: any = { userId };
+        if (status && status !== 'all') {
+            where.status = status;
+        }
+
+        const [orders, total] = await this.orderRepository.findAndCount({
+            where,
             relations: ['items', 'address', 'payments'],
             order: { createdAt: 'DESC' },
+            skip,
+            take: limit,
         });
+
+        // Convert decimals to numbers
+        const formattedOrders = orders.map(order => this.formatOrder(order));
+
+        return {
+            orders: formattedOrders,
+            total,
+            page,
+            totalPages: Math.ceil(total / limit)
+        };
+    }
+
+    private formatOrder(order: Order): Order {
+        order.totalAmount = parseFloat(order.totalAmount.toString());
+        order.subtotal = parseFloat(order.subtotal.toString());
+        order.taxAmount = parseFloat(order.taxAmount.toString());
+        order.shippingAmount = parseFloat(order.shippingAmount.toString());
+        order.discountAmount = parseFloat(order.discountAmount.toString());
+
+        if (order.items) {
+            order.items = order.items.map(item => ({
+                ...item,
+                unitPrice: parseFloat(item.unitPrice.toString()),
+                lineTotal: parseFloat(item.lineTotal.toString())
+            } as any));
+        }
+        return order;
     }
 
     /**
@@ -285,7 +324,7 @@ export class OrderService {
             throw new NotFoundException('Order not found');
         }
 
-        return order;
+        return this.formatOrder(order);
     }
 
     /**
@@ -429,8 +468,9 @@ export class OrderService {
             [OrderStatus.PENDING_PAYMENT]: [OrderStatus.PROCESSING, OrderStatus.PAYMENT_FAILED, OrderStatus.CANCELLED],
             [OrderStatus.PAYMENT_FAILED]: [OrderStatus.CANCELLED],
             [OrderStatus.PROCESSING]: [OrderStatus.SHIPPED, OrderStatus.CANCELLED],
-            [OrderStatus.SHIPPED]: [OrderStatus.DELIVERED, OrderStatus.CANCELLED],
-            [OrderStatus.DELIVERED]: [], // Final state
+            [OrderStatus.SHIPPED]: [OrderStatus.DELIVERED, OrderStatus.CANCELLED, OrderStatus.REFUNDED],
+            [OrderStatus.DELIVERED]: [OrderStatus.REFUNDED],
+            [OrderStatus.REFUNDED]: [], // Final state
             [OrderStatus.CANCELLED]: [], // Final state
         };
 
@@ -455,7 +495,6 @@ export class OrderService {
             }
 
             // Create shipment
-            const { Shipment, ShipmentStatus } = await import('../entities/index.js');
             const shipment = manager.create(Shipment, {
                 orderId: order.id,
                 carrier: shipmentData.carrier,
@@ -526,5 +565,36 @@ export class OrderService {
             ordersByStatus,
             recentOrders,
         };
+    }
+    /**
+     * Verify Razorpay payment and update order status
+     */
+    async verifyPayment(data: {
+        razorpayPaymentId: string;
+        razorpayOrderId: string;
+        razorpaySignature: string;
+    }): Promise<void> {
+        // 1. Verify signature
+        const isValid = this.razorpayService.verifyPaymentSignature(
+            data.razorpayOrderId,
+            data.razorpayPaymentId,
+            data.razorpaySignature
+        );
+
+        if (!isValid) {
+            throw new BadRequestException('Invalid payment signature');
+        }
+
+        // 2. Find order
+        const order = await this.orderRepository.findOne({
+            where: { paymentOrderId: data.razorpayOrderId }
+        });
+
+        if (!order) {
+            throw new NotFoundException('Order not found');
+        }
+
+        // 3. Mark as paid
+        await this.markOrderPaid(order.id, data.razorpayPaymentId);
     }
 }

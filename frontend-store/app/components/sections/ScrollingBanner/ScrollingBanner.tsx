@@ -52,7 +52,7 @@ const ScrollingBanner = ({ messages: propMessages }: ScrollingBannerProps = {}) 
           {[...messages, ...messages].map((message, index) => (
             <div
               key={index}
-              className="inline-flex items-center px-6 xs:px-8 text-[10px] xs:text-[11px] uppercase tracking-[0.25em] xs:tracking-[0.3em] text-gray-800 font-light"
+              className="inline-flex items-center px-6 xs:px-8 text-[11px] xs:text-[12px] uppercase tracking-[0.25em] xs:tracking-[0.3em] text-gray-800 font-light"
             >
               <span className="text-gray-400 mx-2">•</span>
               {message}

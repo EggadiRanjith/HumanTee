@@ -6,7 +6,7 @@ import {
     JoinColumn,
 } from 'typeorm';
 import { Discount } from './discount.entity';
-import { Order } from '../orders/entities/order.entity';
+import { Order } from './order.entity';
 
 @Entity('order_discounts')
 export class OrderDiscount {

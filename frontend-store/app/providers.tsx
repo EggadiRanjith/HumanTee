@@ -9,6 +9,7 @@ import { CheckoutProvider } from "./contexts/CheckoutContext";
 import { ToastProvider } from "./contexts/ToastContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { NavigationLoader } from "./components/ui/loaders";
+import ScrollToTop from "./components/ui/ScrollToTop";
 
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -26,16 +27,17 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <LoadingProvider>
         <HeaderProvider>
-          <CartProvider>
-            <AuthProvider>
+          <AuthProvider>
+            <CartProvider>
               <CheckoutProvider>
                 <ToastProvider>
+                  <ScrollToTop />
                   <NavigationLoader />
                   {children}
                 </ToastProvider>
               </CheckoutProvider>
-            </AuthProvider>
-          </CartProvider>
+            </CartProvider>
+          </AuthProvider>
         </HeaderProvider>
       </LoadingProvider>
     </QueryClientProvider>

@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
 import type { NavSection } from "../types";
 import { FOCUS_RING } from "../../shared/design-tokens";
 
@@ -17,6 +18,7 @@ interface FooterNavProps {
 
 export default function FooterNav({ section, isDesktop }: FooterNavProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const pathname = usePathname();
     const containerRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
     const contentId = `footer-nav-${section.title.toLowerCase().replace(/\s+/g, '-')}`;
@@ -27,6 +29,11 @@ export default function FooterNav({ section, isDesktop }: FooterNavProps) {
             setIsOpen(false);
         }
     }, [isDesktop]);
+
+    // Auto-close on pathname change
+    useEffect(() => {
+        setIsOpen(false);
+    }, [pathname]);
 
     // Scroll into view when opened
     useEffect(() => {

@@ -19,11 +19,14 @@ import { Shipment } from './shipment.entity';
 import { OrderStatusHistory } from './order-status-history.entity';
 
 export enum OrderStatus {
+    PENDING = 'pending_payment',
     PENDING_PAYMENT = 'pending_payment',
     PAYMENT_FAILED = 'payment_failed',
     PROCESSING = 'processing',
     SHIPPED = 'shipped',
     DELIVERED = 'delivered',
+    FULFILLED = 'delivered', // Alias for delivered
+    REFUNDED = 'refunded',
     CANCELLED = 'cancelled',
 }
 
@@ -35,12 +38,12 @@ export class Order {
     @Column({ unique: true, name: 'order_number' })
     orderNumber: string;
 
-    @Column({ name: 'user_id' })
-    userId: string;
+    @Column({ type: 'uuid', name: 'user_id', nullable: true })
+    userId: string | null;
 
-    @ManyToOne(() => AuthUser)
+    @ManyToOne(() => AuthUser, { nullable: true })
     @JoinColumn({ name: 'user_id' })
-    user: AuthUser;
+    user: AuthUser | null;
 
     @Column({
         type: 'enum',
@@ -48,6 +51,9 @@ export class Order {
         default: OrderStatus.PENDING_PAYMENT,
     })
     status: OrderStatus;
+
+    @Column({ type: 'varchar', name: 'payment_order_id', nullable: true })
+    paymentOrderId: string | null;
 
     // IMMUTABLE FINANCIAL FIELDS AFTER PAYMENT
     @Column({ type: 'decimal', precision: 10, scale: 2 })

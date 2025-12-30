@@ -36,8 +36,9 @@ export const Pagination: React.FC<PaginationProps> = ({
                 <button
                     key={i}
                     onClick={() => onPageChange(i)}
+                    aria-label={`Go to page ${i}`}
                     className={`
-                        w-10 h-10 rounded-lg flex items-center justify-center text-sm transition-all duration-300
+                        w-11 h-11 rounded-lg flex items-center justify-center text-sm transition-all duration-300
                         ${currentPage === i
                             ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/25'
                             : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'}

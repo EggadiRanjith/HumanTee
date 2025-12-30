@@ -21,7 +21,7 @@ function Header() {
   const { user, isAuthenticated } = useAuth();
   const pathname = usePathname();
   // Get header-footer settings from centralized cache
-  const { settings } = useSectionSettings('header-footer');
+  const { settings, isLoading } = useSectionSettings('header-footer');
 
   // Hide header on maintenance page
   if (pathname?.startsWith('/maintenance')) {
@@ -32,14 +32,6 @@ function Header() {
   const { setHeaderHeight } = useHeaderContext();
   const [open, setOpen] = useState(false);
   const [currentHeight, setCurrentHeight] = useState(60);
-  const [brandLoaded, setBrandLoaded] = useState(false);
-
-  // Track when brand name loads (prevents re-render after initial load)
-  useEffect(() => {
-    if (settings?.brand_name && !brandLoaded) {
-      setBrandLoaded(true);
-    }
-  }, [settings?.brand_name, brandLoaded]);
 
   // Sync header height to global CSS var
   useEffect(() => {
@@ -109,7 +101,7 @@ function Header() {
         "
         style={{ zIndex: HEADER_Z_INDEX.HEADER }}
       >
-        {!brandLoaded ? (
+        {isLoading ? (
           <HeaderSkeleton />
         ) : (
           <>
@@ -117,9 +109,10 @@ function Header() {
             <button
               onClick={handleMenuToggle}
               className="
-            md:hidden p-1.5 sm:p-2 text-white 
+            md:hidden p-2.5 sm:p-3 text-white 
             hover:text-white/90 hover:bg-white/5 rounded-lg
             active:scale-95 transition-all duration-200
+            min-w-[44px] min-h-[44px]
             ${FOCUS_RING.subtle}
           "
               aria-label="Navigation menu"
@@ -145,7 +138,24 @@ function Header() {
                   alt={settings?.brand_name || 'Brand Logo'}
                   width={160}
                   height={40}
-                  className="h-[28px] xs:h-[30px] sm:h-[32px] md:h-[36px] lg:h-[40px] w-auto flex-shrink-0 border border-white/20 rounded p-1.5"
+                  className="h-[32px] xs:h-[36px] sm:h-[40px] md:h-[44px] lg:h-[48px] w-auto flex-shrink-0"
+                  priority
+                  onError={(e) => {
+                    // Fallback to local logo on error
+                    const img = e.target as HTMLImageElement;
+                    img.src = '/images/humantee-logo.png';
+                  }}
+                />
+              )}
+
+              {/* Fallback to local logo if no URL from DB */}
+              {(!settings?.logo_url || settings.logo_url.trim() === '') && (
+                <Image
+                  src="/images/humantee-logo.png"
+                  alt={settings?.brand_name || 'HumanTee Logo'}
+                  width={160}
+                  height={40}
+                  className="h-[32px] xs:h-[36px] sm:h-[40px] md:h-[44px] lg:h-[48px] w-auto flex-shrink-0"
                   priority
                 />
               )}
@@ -155,7 +165,7 @@ function Header() {
                 text-white font-bold uppercase tracking-[0.14em] sm:tracking-[0.16em]
                 text-[16px] xs:text-[17px] sm:text-[18px] md:text-[20px] lg:text-[22px] xl:text-[24px]
                 select-none leading-none
-                max-w-[120px] xs:max-w-[140px] sm:max-w-[180px] md:max-w-none
+                max-w-[160px] xs:max-w-[200px] sm:max-w-[240px] md:max-w-none
                 overflow-hidden text-ellipsis whitespace-nowrap
               "
                 title={settings?.brand_name}

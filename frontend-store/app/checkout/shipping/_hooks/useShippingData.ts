@@ -55,7 +55,20 @@ export function useShippingData(userId?: string) {
     // Fetch addresses
     useEffect(() => {
         const fetchAddresses = async () => {
-            if (!userId) return;
+            if (!userId) {
+                const localAddress = typeof window !== 'undefined' ? localStorage.getItem('guest_address') : null;
+                if (localAddress) {
+                    try {
+                        const parsed = JSON.parse(localAddress);
+                        setAddresses([parsed]);
+                        setSelectedAddressId(parsed.id);
+                    } catch (e) {
+                        console.error('Failed to parse guest address', e);
+                    }
+                }
+                setIsLoadingAddresses(false);
+                return;
+            }
 
             setIsLoadingAddresses(true);
             try {
@@ -79,9 +92,7 @@ export function useShippingData(userId?: string) {
             }
         };
 
-        if (userId) {
-            fetchAddresses();
-        }
+        fetchAddresses();
     }, [userId]);
 
     const openAddressModal = () => {
@@ -139,6 +150,22 @@ export function useShippingData(userId?: string) {
         setAddressError('');
 
         try {
+            if (!userId) {
+                // GUEST FLOW: Save locally
+                const guestAddress: ShippingAddress = {
+                    ...addressForm,
+                    id: `guest_${Date.now()}`,
+                    isDefault: true
+                };
+                setAddresses([guestAddress]);
+                setSelectedAddressId(guestAddress.id);
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem('guest_address', JSON.stringify(guestAddress));
+                }
+                setShowAddressModal(false);
+                return true;
+            }
+
             const response = await apiClient.post('/shipping-addresses', {
                 ...addressForm,
                 isDefault: addresses.length === 0,

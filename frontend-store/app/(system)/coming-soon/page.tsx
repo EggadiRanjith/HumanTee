@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import comingSoonAnimation from "@/public/animation/lottie/system-animation/comingsoon.json";
 
@@ -25,9 +25,16 @@ function BigComingSoon() {
    Main Page
 ------------------------------------------------------------ */
 export default function ComingSoon() {
+  const [isSubscribed, setIsSubscribed] = useState(false);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const handleNotifyMe = () => {
+    setIsSubscribed(true);
+    // In a real app, this would call a newsletter signup API
+  };
 
   return (
     <div
@@ -94,11 +101,41 @@ export default function ComingSoon() {
               px-2
             "
         >
-          A new chapter of digital luxury is being crafted — with precision, elegance, and vision.
+          {isSubscribed
+            ? "Thank you for joining us. We will reach out as soon as the collection unveils."
+            : "A new chapter of digital luxury is being crafted — with precision, elegance, and vision."}
         </p>
 
         {/* CTA — Luxury Button */}
-        <div>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          {!isSubscribed && (
+            <button
+              onClick={handleNotifyMe}
+              className="
+                    group
+                    relative
+                    inline-flex
+                    items-center
+                    justify-center
+                    px-10
+                    py-4
+                    rounded-xl
+                    text-[13px]
+                    tracking-[0.12em]
+                    uppercase
+                    font-geist
+                    text-white/90
+                    border border-white/20
+                    luxury-glass
+                    transition-all
+                    duration-500
+                    hover:bg-white/10
+                "
+            >
+              Notify Me
+            </button>
+          )}
+
           <Link
             href="/"
             className="
@@ -107,61 +144,23 @@ export default function ComingSoon() {
                 inline-flex
                 items-center
                 justify-center
-                px-6 xs:px-8 sm:px-10 md:px-12
-                py-3 xs:py-3.5 sm:py-4
+                px-10
+                py-4
                 rounded-xl
-                text-[13px] xs:text-step-0
-                tracking-[0.10em] xs:tracking-[0.12em]
+                text-[13px]
+                tracking-[0.12em]
                 uppercase
                 font-geist
-                text-white/90
-                min-h-[44px] xs:min-h-[48px]
-                border border-white/15
-                luxury-glass
-                shadow-floating
-                backdrop-blur-xl
-                overflow-hidden
+                text-white/60
+                border border-white/5
+                bg-white/5
                 transition-all
-                duration-[700ms]
-                ease-[cubic-bezier(0.25,1,0.3,1)]
-                touch-target
+                duration-500
+                hover:text-white
+                hover:border-white/20
               "
           >
-            <span className="
-                absolute inset-0 
-                rounded-xl 
-                bg-white/5
-                opacity-0
-                group-hover:opacity-10
-                transition-opacity
-                duration-700
-              " />
-
-            <span
-              className="
-                  pointer-events-none
-                  absolute
-                  top-0 left-0
-                  h-full w-[90px]
-                  bg-gradient-to-r
-                  from-transparent
-                  via-white/40
-                  to-transparent
-                  opacity-0
-                  group-hover:opacity-70
-                  blur-[22px]
-                  translate-x-[-120%]
-                  group-hover:translate-x-[180%]
-
-                  transition-all
-                  duration-[1200ms]
-                  ease-[cubic-bezier(0.25,1,0.3,1)]
-                "
-            />
-
-            <span className="relative z-10 tracking-wider font-medium">
-              Notify Me
-            </span>
+            Return Home
           </Link>
         </div>
 

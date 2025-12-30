@@ -6,8 +6,7 @@ import * as handlebars from 'handlebars';
 import * as fs from 'fs';
 import * as path from 'path';
 import { OrderNotification } from './entities/order-notification.entity';
-import { Order } from '../orders/entities/order.entity';
-import { AuthUser } from '../entities/auth-user.entity';
+import { Order, AuthUser } from '../entities';
 import { NotificationType } from './enums/notification-type.enum';
 
 /**
@@ -84,7 +83,7 @@ export class EmailService {
         // CORRECTED: Check if already sent
         const existing = await this.notificationRepo.findOne({
             where: {
-                order_id: order.id,
+                orderId: order.id,
                 type: NotificationType.ORDER_CONFIRMATION,
             },
         });
@@ -106,13 +105,13 @@ export class EmailService {
             orderNumber: order.id.substring(0, 8).toUpperCase(),
             customerName: user.email,
             items: order.items?.map((item) => ({
-                productTitle: item.product_title,
-                variantLabel: item.variant_label,
+                productTitle: item.productNameSnapshot,
+                variantLabel: item.variantLabelSnapshot,
                 quantity: item.quantity,
-                priceSnapshot: parseFloat(item.price_snapshot.toString()),
-                currency: item.currency,
+                priceSnapshot: parseFloat(item.unitPrice.toString()),
+                currency: order.currency,
             })),
-            totalAmount: parseFloat(order.total_amount.toString()),
+            totalAmount: parseFloat(order.totalAmount.toString()),
             currency: order.currency,
             supportEmail: process.env.SUPPORT_EMAIL || 'support@humantee.com',
         });
@@ -127,7 +126,7 @@ export class EmailService {
 
         // CORRECTED: Record sent notification
         const notification = this.notificationRepo.create({
-            order_id: order.id,
+            orderId: order.id,
             type: NotificationType.ORDER_CONFIRMATION,
             recipient: user.email,
         });
@@ -148,7 +147,7 @@ export class EmailService {
         // CORRECTED: Check if already sent
         const existing = await this.notificationRepo.findOne({
             where: {
-                order_id: order.id,
+                orderId: order.id,
                 type: NotificationType.ORDER_FULFILLED,
             },
         });
@@ -182,7 +181,7 @@ export class EmailService {
 
         // CORRECTED: Record sent notification
         const notification = this.notificationRepo.create({
-            order_id: order.id,
+            orderId: order.id,
             type: NotificationType.ORDER_FULFILLED,
             recipient: user.email,
         });

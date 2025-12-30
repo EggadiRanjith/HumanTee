@@ -128,6 +128,7 @@ const ProductCard = ({
                                 e.preventDefault();
                                 onQuickView?.(product.id);
                             }}
+                            aria-label={`Quick view ${product.title}`}
                         >
                             QUICK VIEW
                         </button>

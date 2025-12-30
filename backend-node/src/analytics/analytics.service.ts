@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, Not } from 'typeorm';
-import { Order } from '../orders/entities/order.entity';
-import { OrderStatus } from '../orders/enums/order-status.enum';
+import { Order, OrderStatus } from '../entities';
 import {
     RevenueType,
     RevenueMetrics,
@@ -37,30 +36,30 @@ export class AnalyticsService {
         // Get all orders in period (excluding cancelled)
         const orders = await this.orderRepo.find({
             where: {
-                created_at: Between(period.startDate, period.endDate),
+                createdAt: Between(period.startDate, period.endDate),
                 status: Not(OrderStatus.CANCELLED),
             },
-        });
+        } as any);
 
         // Calculate gross revenue
-        const gross = orders.reduce((sum, order) => sum + Number(order.total_amount), 0);
+        const gross = orders.reduce((sum, order) => sum + Number(order.totalAmount), 0);
 
         // Calculate refunds
         const refundedOrders = orders.filter(o => o.status === OrderStatus.REFUNDED);
-        const refunds = refundedOrders.reduce((sum, order) => sum + Number(order.total_amount), 0);
+        const refunds = refundedOrders.reduce((sum, order) => sum + Number(order.totalAmount), 0);
 
         // Calculate discounts
-        const discounts = orders.reduce((sum, order) => sum + Number(order.discount_amount || 0), 0);
+        const discounts = orders.reduce((sum, order) => sum + Number(order.discountAmount || 0), 0);
 
         // Calculate net
         const net = gross - refunds - discounts;
 
         // Calculate collected (only PAID and FULFILLED orders)
         const collectedOrders = orders.filter(
-            o => o.payment_status === 'PAID' || o.status === OrderStatus.FULFILLED
+            o => o.status === OrderStatus.PROCESSING || o.status === OrderStatus.SHIPPED || o.status === OrderStatus.DELIVERED
         );
         const collected = collectedOrders.reduce(
-            (sum, order) => sum + Number(order.total_amount) - Number(order.discount_amount || 0),
+            (sum, order) => sum + Number(order.totalAmount) - Number(order.discountAmount || 0),
             0,
         );
 
@@ -85,9 +84,9 @@ export class AnalyticsService {
     async getOrderMetrics(period: TimePeriod): Promise<OrderMetrics> {
         const allOrders = await this.orderRepo.find({
             where: {
-                created_at: Between(period.startDate, period.endDate),
+                createdAt: Between(period.startDate, period.endDate),
             },
-        });
+        } as any);
 
         const pending = allOrders.filter(o => o.status === OrderStatus.PENDING).length;
         const processing = allOrders.filter(o => o.status === OrderStatus.PROCESSING).length;
@@ -118,20 +117,20 @@ export class AnalyticsService {
     ): Promise<DailyRevenue[]> {
         const orders = await this.orderRepo.find({
             where: {
-                created_at: Between(period.startDate, period.endDate),
+                createdAt: Between(period.startDate, period.endDate),
                 status: Not(OrderStatus.CANCELLED),
             },
             order: {
-                created_at: 'ASC',
+                createdAt: 'ASC',
             },
-        });
+        } as any);
 
         // Group by date (timezone-aware)
         const grouped = new Map<string, { revenue: number; orders: number }>();
 
         for (const order of orders) {
             // Convert to timezone
-            const date = this.toTimezone(order.created_at, period.timezone);
+            const date = this.toTimezone(order.createdAt, period.timezone);
             const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
 
             if (!grouped.has(dateKey)) {
@@ -141,17 +140,17 @@ export class AnalyticsService {
             const data = grouped.get(dateKey)!;
 
             // Calculate revenue based on type
-            let revenue = Number(order.total_amount);
+            let revenue = Number(order.totalAmount);
             if (type === RevenueType.NET) {
-                revenue -= Number(order.discount_amount || 0);
+                revenue -= Number(order.discountAmount || 0);
                 if (order.status === OrderStatus.REFUNDED) {
                     revenue = 0; // Exclude refunded from net
                 }
             } else if (type === RevenueType.COLLECTED) {
-                if (order.payment_status !== 'PAID' && order.status !== OrderStatus.FULFILLED) {
+                if (order.status === OrderStatus.PENDING || order.status === OrderStatus.PAYMENT_FAILED) {
                     revenue = 0; // Only count collected
                 } else {
-                    revenue -= Number(order.discount_amount || 0);
+                    revenue -= Number(order.discountAmount || 0);
                 }
             }
 
@@ -185,11 +184,11 @@ export class AnalyticsService {
     async getTopCustomers(period: TimePeriod, limit: number = 10): Promise<TopCustomer[]> {
         const orders = await this.orderRepo.find({
             where: {
-                created_at: Between(period.startDate, period.endDate),
+                createdAt: Between(period.startDate, period.endDate),
                 status: Not(OrderStatus.CANCELLED),
             },
             relations: ['user', 'user.profile'],
-        });
+        } as any);
 
         // Group by customer
         const customerMap = new Map<string, {
@@ -212,8 +211,8 @@ export class AnalyticsService {
                     email: order.user.email,
                     totalSpent: 0,
                     totalOrders: 0,
-                    firstOrderDate: order.created_at,
-                    lastOrderDate: order.created_at,
+                    firstOrderDate: order.createdAt,
+                    lastOrderDate: order.createdAt,
                 });
             }
 
@@ -221,16 +220,16 @@ export class AnalyticsService {
 
             // Calculate net spent (exclude refunds)
             if (order.status !== OrderStatus.REFUNDED) {
-                customer.totalSpent += Number(order.total_amount) - Number(order.discount_amount || 0);
+                customer.totalSpent += Number(order.totalAmount) - Number(order.discountAmount || 0);
             }
 
             customer.totalOrders += 1;
 
-            if (order.created_at < customer.firstOrderDate) {
-                customer.firstOrderDate = order.created_at;
+            if (order.createdAt < customer.firstOrderDate) {
+                customer.firstOrderDate = order.createdAt;
             }
-            if (order.created_at > customer.lastOrderDate) {
-                customer.lastOrderDate = order.created_at;
+            if (order.createdAt > customer.lastOrderDate) {
+                customer.lastOrderDate = order.createdAt;
             }
         }
 

@@ -28,7 +28,23 @@ export default function BrandSection({ brandName, logoUrl, tagline, socialLinks 
                         alt={brandName || 'Brand Logo'}
                         width={144}
                         height={36}
-                        className="h-[32px] sm:h-[36px] w-auto flex-shrink-0 border border-white/20 rounded p-1.5"
+                        className="h-[36px] sm:h-[40px] w-auto flex-shrink-0"
+                        onError={(e) => {
+                            // Fallback to local logo on error
+                            const img = e.target as HTMLImageElement;
+                            img.src = '/images/humantee-logo.png';
+                        }}
+                    />
+                )}
+
+                {/* Fallback to local logo if no URL from DB */}
+                {(!logoUrl || logoUrl.trim() === '') && (
+                    <Image
+                        src="/images/humantee-logo.png"
+                        alt={brandName || 'HumanTee Logo'}
+                        width={144}
+                        height={36}
+                        className="h-[36px] sm:h-[40px] w-auto flex-shrink-0"
                     />
                 )}
 

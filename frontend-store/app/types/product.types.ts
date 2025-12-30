@@ -17,6 +17,9 @@ export interface Product {
     badge?: BadgeVariant;
     stock: number;
     handle?: string;
+    category?: string; // For filtering
+    collection?: string; // For filtering
+    images?: string[]; // Multiple images support
 }
 
 export interface StockInfo {

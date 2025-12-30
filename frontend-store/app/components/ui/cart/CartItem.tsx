@@ -73,13 +73,14 @@ export function CartItem({ item, index, onUpdateQuantity, onRemove }: CartItemPr
                     <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                         <button
                             onClick={() => onUpdateQuantity(item.id, item.size || '', item.quantity - 1)}
+                            aria-label="Decrease quantity"
                             className="
-                w-7 h-7 sm:w-8 sm:h-8 rounded-lg luxury-glass border border-white/10
+                w-11 h-11 sm:w-12 sm:h-12 rounded-lg luxury-glass border border-white/10
                 text-white/70 hover:text-white hover:bg-white/10
                 transition-colors flex items-center justify-center flex-shrink-0
               "
                         >
-                            <FiMinus size={12} className="sm:w-3.5 sm:h-3.5" />
+                            <FiMinus size={14} className="sm:w-4 sm:h-4" />
                         </button>
 
                         <span className="text-white text-sm font-light min-w-[1.5rem] sm:min-w-[2rem] text-center">
@@ -88,13 +89,14 @@ export function CartItem({ item, index, onUpdateQuantity, onRemove }: CartItemPr
 
                         <button
                             onClick={() => onUpdateQuantity(item.id, item.size || '', item.quantity + 1)}
+                            aria-label="Increase quantity"
                             className="
-                w-7 h-7 sm:w-8 sm:h-8 rounded-lg luxury-glass border border-white/10
+                w-11 h-11 sm:w-12 sm:h-12 rounded-lg luxury-glass border border-white/10
                 text-white/70 hover:text-white hover:bg-white/10
                 transition-colors flex items-center justify-center flex-shrink-0
               "
                         >
-                            <FiPlus size={12} className="sm:w-3.5 sm:h-3.5" />
+                            <FiPlus size={14} className="sm:w-4 sm:h-4" />
                         </button>
                     </div>
 
@@ -115,10 +117,11 @@ export function CartItem({ item, index, onUpdateQuantity, onRemove }: CartItemPr
             {/* Remove Button */}
             <button
                 onClick={() => onRemove(item.id, item.size)}
+                aria-label={`Remove ${item.title} from cart`}
                 className="
           self-start p-2 rounded-lg flex-shrink-0
           text-white/40 hover:text-red-400 hover:bg-red-500/10
-          transition-colors
+          transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center
         "
             >
                 <FiTrash2 size={16} className="sm:w-[18px] sm:h-[18px]" />

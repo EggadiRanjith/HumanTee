@@ -81,16 +81,16 @@ const OrderCardComponent = ({ order }: OrderCardProps) => {
                         </span>
                     </div>
 
-                    <p className="text-white/50 text-sm mb-1">
-                        {new Date(order.createdAt).toLocaleDateString('en-IN', {
+                    <p className="text-white/50 text-xs sm:text-sm mb-1 leading-relaxed">
+                        {new Date(order.createdAt).toLocaleDateString(undefined, {
                             day: 'numeric',
                             month: 'short',
                             year: 'numeric'
                         })} • {order.items?.length || 0} items
                     </p>
 
-                    {order.tracking && (
-                        <p className="text-white/40 text-xs">Tracking: {order.tracking}</p>
+                    {order.trackingNumber && (
+                        <p className="text-white/40 text-xs text-right">Tracking: {order.trackingNumber}</p>
                     )}
                 </div>
 

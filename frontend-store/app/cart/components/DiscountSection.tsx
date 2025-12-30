@@ -71,7 +71,7 @@ export function DiscountSection({
                                 </h3>
                                 <button
                                     onClick={onCloseManualEntry}
-                                    className="p-2 rounded-lg hover:bg-white/10 transition-colors touch-target"
+                                    className="p-3 rounded-lg hover:bg-white/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                                     aria-label="Close"
                                 >
                                     <FiX className="w-5 h-5 text-white/60" />

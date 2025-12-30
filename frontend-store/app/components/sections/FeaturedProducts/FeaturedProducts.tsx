@@ -59,9 +59,16 @@ function FeaturedProducts() {
     return <FeaturedProductsSkeleton />;
   }
 
-  // Error state
+  // Error state - show empty instead of error
   if (error) {
-    return <FeaturedProductsError />;
+    return (
+      <section className="relative w-full pt-12 pb-20 px-4 sm:px-6 md:px-10 lg:px-14 cinematic-bg-dusk">
+        <GradientOverlay variant="aurora" />
+        <div className="relative max-w-screen-xl mx-auto">
+          <FeaturedProductsEmpty />
+        </div>
+      </section>
+    );
   }
 
   // Empty state
@@ -107,6 +114,6 @@ function FeaturedProducts() {
 
 // Memo with comparison function
 export default memo(FeaturedProducts, () => {
-  // No props to compare - always re-render on parent update
-  return false;
+  // No props - prevent re-renders
+  return true;
 });

@@ -99,6 +99,17 @@ apiClient.interceptors.request.use(
     }
 );
 
+// Helper: Check if current route requires authentication
+function isProtectedRoute(pathname: string): boolean {
+    const protectedPrefixes = [
+        '/account',
+        '/orders',
+        '/checkout/shipping',
+        '/checkout/payment',
+    ];
+    return protectedPrefixes.some(prefix => pathname.startsWith(prefix));
+}
+
 // Response interceptor: Handle 401 with refresh-on-retry
 apiClient.interceptors.response.use(
     (response) => response,
@@ -117,10 +128,15 @@ apiClient.interceptors.response.use(
 
         // Prevent infinite retry loops
         if (originalRequest._retry) {
-            // Refresh failed, logout user
+            // Refresh failed, clear tokens
             clearAccessToken();
-            if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-                window.location.href = '/login?error=session_expired';
+
+            // Only redirect to login if on a protected route
+            if (typeof window !== 'undefined') {
+                const currentPath = window.location.pathname;
+                if (isProtectedRoute(currentPath) && currentPath !== '/login') {
+                    window.location.href = '/login?error=session_expired';
+                }
             }
             return Promise.reject(error);
         }
@@ -161,10 +177,15 @@ apiClient.interceptors.response.use(
             originalRequest.headers.Authorization = `Bearer ${newToken}`;
             return apiClient(originalRequest);
         } catch (refreshError) {
-            // Refresh failed, logout user
+            // Refresh failed, clear tokens
             clearAccessToken();
-            if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-                window.location.href = '/login?error=session_expired';
+
+            // Only redirect to login if on a protected route
+            if (typeof window !== 'undefined') {
+                const currentPath = window.location.pathname;
+                if (isProtectedRoute(currentPath) && currentPath !== '/login') {
+                    window.location.href = '/login?error=session_expired';
+                }
             }
             return Promise.reject(refreshError);
         } finally {

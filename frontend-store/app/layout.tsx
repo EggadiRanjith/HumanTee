@@ -131,6 +131,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
 
         {/* Preload critical assets */}
+        <link rel="preload" href="/images/humantee-logo.png" as="image" type="image/png" />
         <link rel="preload" href="/videos/hero-video.mp4" as="video" type="video/mp4" />
 
       </head>

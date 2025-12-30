@@ -25,7 +25,7 @@ export class ProductsService {
                 status: ProductStatus.ACTIVE,
                 is_featured: true
             },
-            relations: ['variants', 'images'],  // ✅ Added images
+            relations: ['variants', 'images', 'collectionMaps', 'collectionMaps.collection'],  // ✅ Added collections
         });
 
         return products.map((product) => this.transformProduct(product));
@@ -38,7 +38,7 @@ export class ProductsService {
     async findBySlug(slug: string): Promise<ProductResponseDto> {
         const product = await this.productRepo.findOne({
             where: { slug, status: ProductStatus.ACTIVE },
-            relations: ['variants', 'images'],  // ✅ Added images
+            relations: ['variants', 'images', 'collectionMaps', 'collectionMaps.collection'],  // ✅ Added collections
         });
 
         if (!product) {
@@ -84,6 +84,8 @@ export class ProductsService {
             .createQueryBuilder('product')
             .leftJoinAndSelect('product.variants', 'variants')
             .leftJoinAndSelect('product.images', 'images')
+            .leftJoinAndSelect('product.collectionMaps', 'collectionMaps')
+            .leftJoinAndSelect('collectionMaps.collection', 'collection')
             .where('product.status = :status', { status: ProductStatus.ACTIVE });
 
         // Filter by product type
@@ -136,6 +138,11 @@ export class ProductsService {
             slug: product.slug,
             description: product.description,
             status: product.status,
+            category: product.category,
+            // Map the first collection's name/slug if available
+            collection: product.collectionMaps && product.collectionMaps.length > 0
+                ? product.collectionMaps[0].collection?.name
+                : undefined,
             // Filter only active variants and transform
             variants: product.variants
                 ? product.variants

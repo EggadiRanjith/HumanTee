@@ -78,6 +78,7 @@ export function CartSummary({ subtotal, totalItems, onCheckout, discount, total 
 
             <button
                 onClick={onCheckout}
+                aria-label={`Proceed to checkout with ${totalItems} ${totalItems === 1 ? 'item' : 'items'}`}
                 className="
           w-full py-4 rounded-full
           bg-white text-black

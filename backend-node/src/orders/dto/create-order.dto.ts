@@ -10,17 +10,17 @@ export class CreateOrderItemDto {
     @IsString()
     variantId: string;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
-    productNameSnapshot: string;
+    productNameSnapshot?: string;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
-    variantLabelSnapshot: string;
+    variantLabelSnapshot?: string;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
-    skuSnapshot: string;
+    skuSnapshot?: string;
 
     @IsOptional()
     @IsString()
@@ -30,13 +30,13 @@ export class CreateOrderItemDto {
     @IsNumber()
     quantity: number;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsNumber()
-    unitPrice: number;
+    unitPrice?: number;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsNumber()
-    lineTotal: number;
+    lineTotal?: number;
 }
 
 export class ShippingAddressDto {
@@ -82,9 +82,9 @@ export class ShippingAddressDto {
 }
 
 export class CreateOrderDto {
-    @IsNotEmpty()
+    @IsOptional()
     @IsUUID()
-    idempotencyKey: string; // Client-provided UUID for duplicate prevention
+    idempotencyKey?: string; // Client-provided UUID for duplicate prevention
 
     @IsNotEmpty()
     @IsArray()
@@ -97,13 +97,13 @@ export class CreateOrderDto {
     @Type(() => ShippingAddressDto)
     shippingAddress: ShippingAddressDto;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsNumber()
-    subtotal: number;
+    subtotal?: number;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsNumber()
-    totalAmount: number;
+    totalAmount?: number;
 
     @IsOptional()
     @IsNumber()

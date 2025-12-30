@@ -1,19 +1,8 @@
-/**
- * Orders Skeleton Loader
- * Loading state for orders list
- */
-
-import { OrderCardSkeleton } from '@/app/components/ui/loaders';
-
-interface OrdersSkeletonProps {
-    count?: number;
-}
-
-export function OrdersSkeleton({ count = 6 }: OrdersSkeletonProps) {
+export function OrdersSkeleton({ count = 3 }: { count?: number }) {
     return (
-        <div className="space-y-5">
-            {Array.from({ length: count }).map((_, index) => (
-                <OrderCardSkeleton key={index} />
+        <div className="space-y-4">
+            {Array.from({ length: count }).map((_, i) => (
+                <div key={i} className="h-48 rounded-xl bg-white/5 animate-pulse" />
             ))}
         </div>
     );
