@@ -6,6 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import Link from 'next/link';
 import { FiArrowLeft, FiPlus, FiEdit2, FiTrash2, FiSave } from 'react-icons/fi';
 import { useAdminSettings } from '@/lib/queries/useSettings';
@@ -75,10 +76,10 @@ export default function ShippingTaxesSettings() {
             });
 
             setIsEditing(false);
-            alert('Shipping & tax settings saved successfully!');
+            toast.success('Shipping & tax settings saved successfully!');
         } catch (error) {
             // Failed to save settings
-            alert('Failed to save settings. Please try again.');
+            toast.error('Failed to save settings. Please try again.');
         } finally {
             setIsSaving(false);
         }

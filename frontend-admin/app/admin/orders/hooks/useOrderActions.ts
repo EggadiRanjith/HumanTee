@@ -42,7 +42,6 @@ export function useOrderActions() {
     // Bulk update status (future implementation)
     const bulkUpdateStatus = useCallback(async (orderIds: string[], status: string) => {
         // TODO: Implement bulk status update API call
-        console.log('Bulk update:', orderIds, status);
         await refreshOrders();
     }, [refreshOrders]);
 

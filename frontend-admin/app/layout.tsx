@@ -3,7 +3,9 @@ import "./globals.css";
 import { AuthProvider } from "./context/AuthContext";
 import { QueryProvider } from "./context/QueryProvider";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { Toaster } from "sonner";
 import localFont from "next/font/local";
+import { getBrandName, BRAND_CONFIG } from "@/lib/config/brand";
 
 // Geist font (matching store)
 const geist = localFont({
@@ -16,10 +18,14 @@ const geist = localFont({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: "HumanTee Admin",
-  description: "Admin operations panel",
-};
+// Generate metadata with dynamic brand name
+export async function generateMetadata(): Promise<Metadata> {
+  const brandName = await getBrandName();
+  return {
+    title: `${brandName} ${BRAND_CONFIG.adminSuffix}`,
+    description: `${brandName} admin operations panel`,
+  };
+}
 
 export default function RootLayout({
   children,
@@ -36,6 +42,7 @@ export default function RootLayout({
             </AuthProvider>
           </QueryProvider>
         </ErrorBoundary>
+        <Toaster position="top-right" richColors expand={true} />
       </body>
     </html>
   );

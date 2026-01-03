@@ -32,7 +32,7 @@ export const settingsApi = {
 
             if (!response.ok) {
                 console.warn('Settings API failed, using fallback configuration');
-                return fallbackSettings as AppSettings;
+                return fallbackSettings as unknown as AppSettings;
             }
 
             const result = await response.json();
@@ -42,14 +42,14 @@ export const settingsApi = {
                 return {
                     ...fallbackSettings,
                     ...result.data,
-                } as AppSettings;
+                } as unknown as AppSettings;
             } else {
                 console.warn('Settings API returned error, using fallback configuration');
-                return fallbackSettings as AppSettings;
+                return fallbackSettings as unknown as AppSettings;
             }
         } catch (error) {
             console.error('Settings API error, using fallback configuration:', error);
-            return fallbackSettings as AppSettings; // Return fallback on error
+            return fallbackSettings as unknown as AppSettings; // Return fallback on error
         }
     }
 };

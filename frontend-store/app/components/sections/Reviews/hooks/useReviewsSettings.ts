@@ -6,6 +6,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { settingsApi } from "@/lib/api/settings";
 import fallbackSettings from "@/config/fallback-settings.json";
 import { Review } from "@/app/types/review.types";
 
@@ -27,22 +28,15 @@ export function useReviewsSettings() {
     useEffect(() => {
         async function fetchReviewsSettings() {
             try {
-                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-                const response = await fetch(`${apiUrl}/api/settings/reviews`, {
-                    cache: "no-store",
-                });
+                const data = await settingsApi.getPublicSettings();
 
-                if (!response.ok) {
-                    throw new Error(`API responded with status: ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                if (data) {
+                // Extract reviews from the unified settings response
+                const reviewsData = data?.['homepage-reviews' as keyof typeof data] as any;
+                if (reviewsData) {
                     setSettings({
-                        enabled: data.enabled ?? true,
-                        title: data.title || "What Our Customers Say",
-                        items: data.items || data.reviews || [],
+                        enabled: reviewsData.enabled ?? true,
+                        title: reviewsData.title || "What Our Customers Say",
+                        items: reviewsData.items || reviewsData.reviews || [],
                     });
                 }
             } catch (err) {

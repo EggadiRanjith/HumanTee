@@ -60,22 +60,22 @@ const OrderCardComponent = ({ order }: OrderCardProps) => {
     return (
         <div
             className="
-        p-6 rounded-2xl luxury-glass border border-white/10 
+        p-4 sm:p-6 rounded-xl sm:rounded-2xl luxury-glass border border-white/10 
         bg-white/5 backdrop-blur-xl
-        flex flex-col sm:flex-row justify-between gap-6
+        flex flex-col sm:flex-row justify-between gap-4 sm:gap-6
       "
         >
             {/* Left Content */}
             <div className="flex-1 flex flex-col justify-between">
                 <div>
-                    <div className="flex items-center gap-3 mb-1">
-                        <h3 className="text-white text-lg font-light tracking-wide">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-1">
+                        <h3 className="text-white text-base sm:text-lg font-light tracking-wide">
                             {order.orderNumber}
                         </h3>
 
                         <span className={`flex items-center gap-1.5 px-2 py-1 ${status.bg} rounded-md`}>
-                            <Icon className={`w-3.5 h-3.5 ${status.class}`} />
-                            <span className={`text-[10px] uppercase tracking-[0.18em] ${status.class}`}>
+                            <Icon className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${status.class}`} />
+                            <span className={`text-[9px] sm:text-[10px] uppercase tracking-[0.18em] ${status.class}`}>
                                 {status.label}
                             </span>
                         </span>
@@ -95,14 +95,14 @@ const OrderCardComponent = ({ order }: OrderCardProps) => {
                 </div>
 
                 {/* Amount + CTA */}
-                <div className="flex items-center gap-6 mt-4">
-                    <p className="text-white text-xl font-light">₹{Number(order.totalAmount).toFixed(2)}</p>
+                <div className="flex items-center gap-4 sm:gap-6 mt-3 sm:mt-4">
+                    <p className="text-white text-lg sm:text-xl font-light">₹{Number(order.totalAmount).toFixed(2)}</p>
 
                     <Link
                         href={`/orders/${order.id}`}
                         className="
-              px-4 py-2 rounded-xl border border-white/10 
-              text-white/80 text-xs uppercase tracking-[0.18em]
+              px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-white/10 
+              text-white/80 text-[10px] sm:text-xs uppercase tracking-[0.18em]
               hover:text-white hover:border-white/20 transition-colors
             "
                     >
@@ -112,11 +112,11 @@ const OrderCardComponent = ({ order }: OrderCardProps) => {
             </div>
 
             {/* Right Image Cluster */}
-            <div className="flex-shrink-0 flex gap-2 sm:gap-3">
+            <div className="flex-shrink-0 flex gap-1.5 sm:gap-2">
                 {order.items?.slice(0, 3).map((item: any, i: number) => (
                     <div
                         key={i}
-                        className="relative w-16 h-20 sm:w-20 sm:h-24 rounded-lg overflow-hidden border border-white/10"
+                        className="relative w-14 h-16 sm:w-16 sm:h-20 md:w-20 md:h-24 rounded-lg overflow-hidden border border-white/10"
                     >
                         <Image
                             src={item.imageUrlSnapshot || '/placeholder.png'}

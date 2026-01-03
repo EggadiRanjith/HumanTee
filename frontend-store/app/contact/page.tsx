@@ -89,11 +89,11 @@ export default function ContactPage() {
         <div className="min-h-screen brand-bg relative pt-[var(--header-height)]">
             <GradientOverlay variant="violet" />
 
-            <div className="relative max-w-screen-xl mx-auto px-4 sm:px-6 md:px-10 lg:px-14 pb-20 pt-12">
+            <div className="relative max-w-screen-xl mx-auto px-4 sm:px-6 md:px-10 lg:px-14 pb-20 pt-8 sm:pt-12">
 
                 {/* Page Header */}
-                <div className="mb-12 text-center">
-                    <h1 className="text-[26px] sm:text-[34px] lg:text-[42px] font-light uppercase tracking-[0.14em] brand-text-primary mb-3">
+                <div className="mb-10 sm:mb-12 text-center">
+                    <h1 className="text-[22px] sm:text-[26px] md:text-[34px] lg:text-[42px] font-light uppercase tracking-[0.14em] brand-text-primary mb-3">
                         Get In Touch
                     </h1>
                     <p className="brand-text-muted text-[11px] sm:text-[12px] uppercase tracking-[0.22em]">

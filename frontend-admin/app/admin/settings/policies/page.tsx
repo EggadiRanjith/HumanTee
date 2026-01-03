@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import Link from "next/link";
 import { FiChevronLeft, FiSave, FiX } from "react-icons/fi";
 import { useAdminSettings } from '@/lib/queries/useSettings';
@@ -60,10 +61,10 @@ export default function PoliciesSettingsPage() {
                 settingsApi.saveSection('policies', policiesData)
             ]);
             setIsEditing(false);
-            alert('Settings saved successfully!');
+            toast.success('Settings saved successfully!');
         } catch (error) {
             // Save failed
-            alert('Failed to save settings');
+            toast.error('Failed to save settings');
         } finally {
             setIsSaving(false);
         }

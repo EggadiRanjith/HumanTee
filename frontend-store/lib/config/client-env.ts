@@ -7,7 +7,7 @@ import { z } from 'zod';
 
 const clientEnvSchema = z.object({
     NEXT_PUBLIC_API_URL: z.string().url('API_URL must be a valid URL'),
-    NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
+    NEXT_PUBLIC_SENTRY_DSN: z.union([z.string().url(), z.literal(''), z.undefined()]).optional(),
     NEXT_PUBLIC_APP_VERSION: z.string().default('dev'),
     NEXT_PUBLIC_GA_ID: z.string().optional(),
 });

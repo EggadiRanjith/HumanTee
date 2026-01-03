@@ -39,7 +39,7 @@ interface DashboardData {
 }
 
 export function useDashboardData() {
-    return useQuery({
+    const query = useQuery({
         queryKey: ['dashboard'],
         queryFn: async (): Promise<DashboardData> => {
             const response = await apiClient.get('/admin/orders', {
@@ -83,4 +83,6 @@ export function useDashboardData() {
         staleTime: 30000, // 30 seconds
         refetchInterval: 60000, // Refetch every minute
     });
+
+    return query;
 }

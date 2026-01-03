@@ -1,6 +1,7 @@
-// @ts-nocheck
 'use client';
 
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { FiTrash2, FiPlus } from 'react-icons/fi';
 import { useCloudinaryUpload } from '@/hooks/useCloudinaryUpload';
 
@@ -35,7 +36,7 @@ export function ReviewsManager({ reviews, enabled, onChange, onEnabledChange, is
             newReviews[reviewIndex].avatar = url;
             onChange(newReviews);
         } catch (error) {
-            alert('Failed to upload avatar');
+            toast.error('Failed to upload avatar');
         }
     };
 

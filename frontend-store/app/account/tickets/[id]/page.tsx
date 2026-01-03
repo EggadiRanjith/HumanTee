@@ -241,44 +241,44 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
             <div className="max-w-screen-lg mx-auto w-full px-4 sm:px-6 lg:px-10 pb-10 pt-8 flex-1 flex flex-col">
 
                 {/* Header Section */}
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8">
-                    <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
+                    <div className="flex items-center gap-3 sm:gap-4">
                         <Link href={ticket.orderId ? `/orders/${ticket.orderId}` : "/account/tickets"}>
-                            <button className="p-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all">
-                                <FiArrowLeft className="w-5 h-5" />
+                            <button className="p-2 sm:p-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all">
+                                <FiArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                             </button>
                         </Link>
                         <div className="min-w-0">
-                            <div className="flex items-center gap-3">
-                                <h1 className="text-xl sm:text-2xl font-light text-white tracking-wide truncate">{ticket.ticketNumber}</h1>
+                            <div className="flex items-center gap-2 sm:gap-3">
+                                <h1 className="text-lg sm:text-xl md:text-2xl font-light text-white tracking-wide truncate">{ticket.ticketNumber}</h1>
                                 <span className={`px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider flex-shrink-0 ${currentStatus.bg} ${currentStatus.text}`}>
                                     {currentStatus.label}
                                 </span>
                             </div>
-                            <p className="text-white/40 text-[10px] sm:text-xs mt-1 uppercase tracking-widest truncate">
+                            <p className="text-white/40 text-[9px] sm:text-[10px] md:text-xs mt-1 uppercase tracking-widest truncate">
                                 {ticket.category.replace('_', ' ')} • Opened {new Date(ticket.createdAt).toLocaleDateString()}
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
                         <div className="text-left sm:text-right">
-                            <p className="text-white/30 text-[10px] uppercase tracking-widest">Subject</p>
-                            <p className="text-white/70 text-sm font-light mt-0.5 max-w-xs">{ticket.subject}</p>
+                            <p className="text-white/30 text-[9px] sm:text-[10px] uppercase tracking-widest">Subject</p>
+                            <p className="text-white/70 text-xs sm:text-sm font-light mt-0.5 max-w-xs">{ticket.subject}</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Main Content Area */}
-                <div className="flex-1 flex flex-col lg:flex-row gap-6">
+                <div className="flex-1 flex flex-col lg:flex-row gap-4 sm:gap-6">
 
                     {/* Chat Window */}
-                    <div className="flex-1 flex flex-col luxury-glass border border-white/10 rounded-2xl bg-white/5 overflow-hidden">
+                    <div className="flex-1 flex flex-col luxury-glass border border-white/10 rounded-xl sm:rounded-2xl bg-white/5 overflow-hidden">
 
                         {/* Messages Area */}
                         <div
                             ref={messagesContainerRef}
-                            className="flex-1 p-4 sm:p-6 space-y-6 overflow-y-auto"
+                            className="flex-1 p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 overflow-y-auto"
                             style={{
                                 maxHeight: '600px',
                                 minHeight: '400px',

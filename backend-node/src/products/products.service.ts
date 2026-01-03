@@ -5,6 +5,7 @@ import { Product } from './entities/product.entity';
 import { ProductVariant } from './entities/product-variant.entity';
 import { ProductStatus } from './enums/product-status.enum';
 import { ProductResponseDto, VariantResponseDto } from './dto/product-response.dto';
+import { CacheService } from '../redis/cache.service';
 
 @Injectable()
 export class ProductsService {
@@ -13,39 +14,51 @@ export class ProductsService {
         private readonly productRepo: Repository<Product>,
         @InjectRepository(ProductVariant)
         private readonly variantRepo: Repository<ProductVariant>,
+        private readonly cacheService: CacheService,
     ) { }
 
     /**
-     * FIX 3: Enforce ACTIVE-only queries
-     * Get all ACTIVE and FEATURED products with their ACTIVE variants
+     * Get all ACTIVE and FEATURED products with Redis caching
+     * Cache: 10 minutes (featured products change rarely)
      */
     async findAll(): Promise<ProductResponseDto[]> {
-        const products = await this.productRepo.find({
-            where: {
-                status: ProductStatus.ACTIVE,
-                is_featured: true
+        return this.cacheService.remember(
+            'products:featured',
+            async () => {
+                const products = await this.productRepo.find({
+                    where: {
+                        status: ProductStatus.ACTIVE,
+                        is_featured: true
+                    },
+                    relations: ['variants', 'images', 'collectionMaps', 'collectionMaps.collection'],
+                });
+                return products.map((product) => this.transformProduct(product));
             },
-            relations: ['variants', 'images', 'collectionMaps', 'collectionMaps.collection'],  // ✅ Added collections
-        });
-
-        return products.map((product) => this.transformProduct(product));
+            { ttl: 600 } // 10 minutes
+        );
     }
 
     /**
-     * FIX 3: Enforce ACTIVE-only queries
-     * Get single ACTIVE product by slug
+     * Get single ACTIVE product by slug with Redis caching
+     * Cache: 5 minutes (product details change occasionally)
      */
     async findBySlug(slug: string): Promise<ProductResponseDto> {
-        const product = await this.productRepo.findOne({
-            where: { slug, status: ProductStatus.ACTIVE },
-            relations: ['variants', 'images', 'collectionMaps', 'collectionMaps.collection'],  // ✅ Added collections
-        });
+        return this.cacheService.remember(
+            `product:slug:${slug}`,
+            async () => {
+                const product = await this.productRepo.findOne({
+                    where: { slug, status: ProductStatus.ACTIVE },
+                    relations: ['variants', 'images', 'collectionMaps', 'collectionMaps.collection'],
+                });
 
-        if (!product) {
-            throw new NotFoundException(`Product with slug "${slug}" not found`);
-        }
+                if (!product) {
+                    throw new NotFoundException(`Product with slug "${slug}" not found`);
+                }
 
-        return this.transformProduct(product);
+                return this.transformProduct(product);
+            },
+            { ttl: 300 } // 5 minutes
+        );
     }
 
     /**
@@ -60,8 +73,8 @@ export class ProductsService {
     }
 
     /**
-     * Shop Page: Get all ACTIVE products with optional filters
-     * Supports filtering by productType, category, and collection
+     * Shop Page: Get all ACTIVE products with optional filters and Redis caching
+     * Cache: 5 minutes per filter combination
      */
     async findForShop(filters?: {
         productType?: string;
@@ -78,53 +91,63 @@ export class ProductsService {
     }> {
         const page = filters?.page || 1;
         const limit = filters?.limit || 12;
-        const skip = (page - 1) * limit;
 
-        const query = this.productRepo
-            .createQueryBuilder('product')
-            .leftJoinAndSelect('product.variants', 'variants')
-            .leftJoinAndSelect('product.images', 'images')
-            .leftJoinAndSelect('product.collectionMaps', 'collectionMaps')
-            .leftJoinAndSelect('collectionMaps.collection', 'collection')
-            .where('product.status = :status', { status: ProductStatus.ACTIVE });
+        // Create cache key from filters
+        const cacheKey = `shop:${filters?.productType || 'all'}:${filters?.category || 'all'}:${filters?.collection || 'all'}:${page}:${limit}`;
 
-        // Filter by product type
-        if (filters?.productType) {
-            query.andWhere('product.product_type = :productType', {
-                productType: filters.productType,
-            });
-        }
+        return this.cacheService.remember(
+            cacheKey,
+            async () => {
+                const skip = (page - 1) * limit;
 
-        // Filter by category (Drop 1, Drop 2, etc.)
-        if (filters?.category) {
-            query.andWhere('product.category = :category', {
-                category: filters.category,
-            });
-        }
+                const query = this.productRepo
+                    .createQueryBuilder('product')
+                    .leftJoinAndSelect('product.variants', 'variants')
+                    .leftJoinAndSelect('product.images', 'images')
+                    .leftJoinAndSelect('product.collectionMaps', 'collectionMaps')
+                    .leftJoinAndSelect('collectionMaps.collection', 'collection')
+                    .where('product.status = :status', { status: ProductStatus.ACTIVE });
 
-        // Filter by collection (requires join with collection map)
-        if (filters?.collection) {
-            query
-                .innerJoin('product.collectionMaps', 'collectionMap')
-                .innerJoin('collectionMap.collection', 'collection')
-                .andWhere('collection.slug = :collectionSlug', {
-                    collectionSlug: filters.collection,
-                })
-                .andWhere('collection.is_active = :isActive', { isActive: true });
-        }
+                // Filter by product type
+                if (filters?.productType) {
+                    query.andWhere('product.product_type = :productType', {
+                        productType: filters.productType,
+                    });
+                }
 
-        const [products, total] = await query
-            .skip(skip)
-            .take(limit)
-            .getManyAndCount();
+                // Filter by category
+                if (filters?.category) {
+                    query.andWhere('product.category = :category', {
+                        category: filters.category,
+                    });
+                }
 
-        return {
-            products: products.map((product) => this.transformProduct(product)),
-            total,
-            page,
-            limit,
-            totalPages: Math.ceil(total / limit),
-        };
+                // Filter by collection
+                if (filters?.collection) {
+                    query
+                        .innerJoin('product.collectionMaps', 'collectionMap')
+                        .innerJoin('collectionMap.collection', 'collection')
+                        .andWhere('collection.slug = :collectionSlug', {
+                            collectionSlug: filters.collection,
+                        })
+                        .andWhere('collection.is_active = :isActive', { isActive: true });
+                }
+
+                const [products, total] = await query
+                    .skip(skip)
+                    .take(limit)
+                    .getManyAndCount();
+
+                return {
+                    products: products.map((product) => this.transformProduct(product)),
+                    total,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(total / limit),
+                };
+            },
+            { ttl: 300 } // 5 minutes
+        );
     }
 
     /**

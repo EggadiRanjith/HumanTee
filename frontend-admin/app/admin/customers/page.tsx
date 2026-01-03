@@ -1,9 +1,9 @@
-// @ts-nocheck
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAdminCustomers } from '@/lib/queries/useCustomers';
+import { useDebounce } from '../hooks/useDebounce';
 import { CustomersHeader, CustomersSkeleton, CustomersEmpty, CustomersError } from './components';
 import {
     FiSearch, FiFilter, FiLoader, FiUser,
@@ -13,15 +13,30 @@ import {
 
 export default function CustomersPage() {
     const [searchQuery, setSearchQuery] = useState('');
+    const debouncedSearch = useDebounce(searchQuery, 300);
     const [sort, setSort] = useState('newest');
     const [activeFilter, setActiveFilter] = useState('all');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 20;
 
     // Use React Query hook
     const { data, isLoading, error, refetch } = useAdminCustomers({
-        search: searchQuery || undefined,
+        search: debouncedSearch || undefined,
     });
 
     const customers = data || [];
+
+    // Paginated customers
+    const totalPages = Math.ceil(customers.length / itemsPerPage);
+    const paginatedCustomers = customers.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    // Reset to page 1 when search changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [debouncedSearch, activeFilter]);
 
     // Loading state
     if (isLoading) return <CustomersSkeleton />;
@@ -77,20 +92,20 @@ export default function CustomersPage() {
 
             {/* Filters Bar */}
             <div className="flex flex-col md:flex-row gap-4 bg-white p-4 rounded-xl border border-gray-200">
-                <form onSubmit={handleSearch} className="flex-1 relative">
+                <div className="flex-1 relative">
                     <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                         type="text"
                         placeholder="Search by name or email..."
                         value={searchQuery}
-                        onChange={(e: any) => setSearchQuery(e.target.value)}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-black transition-all"
                     />
-                </form>
+                </div>
                 <div className="flex gap-2">
                     <select
                         value={sort}
-                        onChange={(e: any) => setSort(e.target.value)}
+                        onChange={(e) => setSort(e.target.value)}
                         className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-black transition-all cursor-pointer"
                     >
                         <option value="newest">Newest First</option>
@@ -128,7 +143,7 @@ export default function CustomersPage() {
                                     </td>
                                 </tr>
                             ) : (
-                                customers.map((customer: any) => (
+                                paginatedCustomers.map((customer: any) => (
                                     <tr key={customer.id} className="hover:bg-gray-50/50 transition-colors group">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
@@ -175,6 +190,57 @@ export default function CustomersPage() {
                     </table>
                 </div>
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-4">
+                    <div className="text-sm text-gray-600">
+                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, customers.length)} of {customers.length} customers
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Previous
+                        </button>
+                        <div className="flex gap-1">
+                            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                                let page;
+                                if (totalPages <= 5) {
+                                    page = i + 1;
+                                } else if (currentPage <= 3) {
+                                    page = i + 1;
+                                } else if (currentPage >= totalPages - 2) {
+                                    page = totalPages - 4 + i;
+                                } else {
+                                    page = currentPage - 2 + i;
+                                }
+                                return (
+                                    <button
+                                        key={page}
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`px-3 py-1 border rounded-lg text-sm ${currentPage === page
+                                                ? 'bg-black text-white border-black'
+                                                : 'border-gray-300 hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        {page}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

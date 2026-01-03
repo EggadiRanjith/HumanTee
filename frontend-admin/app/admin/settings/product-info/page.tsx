@@ -6,6 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import Link from 'next/link';
 import { FiArrowLeft, FiUpload, FiX, FiPlus, FiSave } from 'react-icons/fi';
 import { useAdminSettings } from '@/lib/queries/useSettings';
@@ -45,7 +46,7 @@ export default function ProductInfoSettings() {
 
         // Check if we already have 5 images
         if (formData.size_guide_images.length >= 5) {
-            alert('Maximum 5 images allowed for size guide');
+            toast.error('Maximum 5 images allowed for size guide');
             return;
         }
 
@@ -86,10 +87,10 @@ export default function ProductInfoSettings() {
         try {
             await settingsApi.saveSection('product-info', formData);
             setIsEditing(false);
-            alert('Product information updated successfully!');
+            toast.success('Product information updated successfully!');
         } catch (error) {
             // Save failed
-            alert('Failed to save settings');
+            toast.error('Failed to save settings');
         } finally {
             setIsSaving(false);
         }

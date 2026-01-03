@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Logger } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
@@ -8,6 +8,8 @@ import { DataSource } from 'typeorm';
  */
 @Controller('health')
 export class HealthController {
+    private readonly logger = new Logger(HealthController.name);
+
     constructor(
         @InjectDataSource()
         private dataSource: DataSource,
@@ -63,7 +65,7 @@ export class HealthController {
             await this.dataSource.query('SELECT 1');
             return true;
         } catch (error) {
-            console.error('Database health check failed:', error);
+            this.logger.error('Database health check failed:', error);
             return false;
         }
     }

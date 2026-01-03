@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { CartService } from './cart.service';
 import { MergeCartDto } from './dto/merge-cart.dto';
@@ -7,6 +8,7 @@ import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 
 @Controller('cart')
 @UseGuards(JwtAuthGuard)
+@Throttle({ default: { limit: 30, ttl: 60000 } }) // 30 requests per minute
 export class CartController {
     constructor(private readonly cartService: CartService) { }
 

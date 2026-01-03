@@ -1,9 +1,11 @@
 import { Controller, Get, Post, Body, Param, Request, UseGuards, Query } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 
 @Controller('orders')
+@Throttle({ default: { limit: 20, ttl: 60000 } }) // 20 requests per minute
 export class OrderController {
     constructor(private readonly orderService: OrderService) { }
 

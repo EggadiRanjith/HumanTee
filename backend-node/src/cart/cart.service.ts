@@ -7,6 +7,7 @@ import { ProductStatus } from '../products/enums/product-status.enum';
 import { MergeCartDto } from './dto/merge-cart.dto';
 import { AddToCartDto } from './dto/add-to-cart.dto';
 import { UpdateCartItemDto } from './dto/update-cart-item.dto';
+import { CacheService } from '../redis/cache.service';
 
 @Injectable()
 export class CartService {
@@ -17,6 +18,7 @@ export class CartService {
         private cartItemRepository: Repository<CartItem>,
         @InjectRepository(ProductVariant)
         private variantRepo: Repository<ProductVariant>,
+        private readonly cacheService: CacheService,
     ) { }
 
     /**
@@ -59,24 +61,31 @@ export class CartService {
     }
 
     /**
-     * Get active cart with items
+     * Get active cart with items and Redis caching
+     * Cache: 1 hour (invalidated on cart updates)
      */
     async getActiveCart(userId: string): Promise<Cart> {
-        const cart = await this.cartRepository.findOne({
-            where: { user_id: userId, status: CartStatus.ACTIVE },
-            relations: ['items'],
-        });
+        return this.cacheService.remember(
+            `cart:${userId}`,
+            async () => {
+                const cart = await this.cartRepository.findOne({
+                    where: { user_id: userId, status: CartStatus.ACTIVE },
+                    relations: ['items'],
+                });
 
-        if (!cart) {
-            // Return empty cart structure
-            return this.cartRepository.create({
-                user_id: userId,
-                status: CartStatus.ACTIVE,
-                items: [],
-            });
-        }
+                if (!cart) {
+                    // Return empty cart structure
+                    return this.cartRepository.create({
+                        user_id: userId,
+                        status: CartStatus.ACTIVE,
+                        items: [],
+                    });
+                }
 
-        return cart;
+                return cart;
+            },
+            { ttl: 3600 } // 1 hour
+        );
     }
 
     /**
@@ -171,6 +180,9 @@ export class CartService {
             }
         }
 
+        // Invalidate cache after merge
+        await this.cacheService.forget(`cart:${userId}`);
+
         return {
             cart: await this.getActiveCart(userId),
             droppedItems,
@@ -243,6 +255,9 @@ export class CartService {
             await this.cartItemRepository.save(newItem);
         }
 
+        // Invalidate cache after adding item
+        await this.cacheService.forget(`cart:${userId}`);
+
         return this.getActiveCart(userId);
     }
 
@@ -286,6 +301,9 @@ export class CartService {
         item.quantity = dto.quantity;
         await this.cartItemRepository.save(item);
 
+        // Invalidate cache after update
+        await this.cacheService.forget(`cart:${userId}`);
+
         return this.getActiveCart(userId);
     }
 
@@ -303,6 +321,10 @@ export class CartService {
         }
 
         await this.cartItemRepository.remove(item);
+
+        // Invalidate cache after removing item
+        await this.cacheService.forget(`cart:${userId}`);
+
         return this.getActiveCart(userId);
     }
 
@@ -315,6 +337,9 @@ export class CartService {
         if (cart.id) {
             await this.cartItemRepository.delete({ cart_id: cart.id });
         }
+
+        // Invalidate cache after clearing
+        await this.cacheService.forget(`cart:${userId}`);
 
         return this.getActiveCart(userId);
     }

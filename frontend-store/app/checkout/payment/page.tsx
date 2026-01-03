@@ -42,13 +42,13 @@ export default function PaymentPage() {
                 <div className="py-6 sm:py-8 md:py-10">
                     <CheckoutProgress currentStep={2} />
 
-                    <h1 className="text-white text-xl sm:text-2xl md:text-3xl font-normal mb-6 sm:mb-8 text-center sm:text-left">
+                    <h1 className="text-white text-base sm:text-lg md:text-xl lg:text-2xl font-normal mb-5 sm:mb-6 md:mb-8 text-center sm:text-left">
                         Payment Method
                     </h1>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
                         {/* Left Column - Payment Selection & Delivery Info */}
-                        <div className="lg:col-span-2 space-y-6">
+                        <div className="lg:col-span-2 space-y-4 sm:space-y-5 md:space-y-6">
                             {/* Payment Methods - CRITICAL RENDER */}
                             <PaymentForm
                                 paymentMethod={paymentMethod}

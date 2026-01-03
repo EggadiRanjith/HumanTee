@@ -1,8 +1,10 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Logger } from '@nestjs/common';
 import { SettingsService } from './settings.service';
 
 @Controller('public/settings')
 export class PublicSettingsController {
+    private readonly logger = new Logger(PublicSettingsController.name);
+
     constructor(private readonly settingsService: SettingsService) { }
 
     /**
@@ -28,7 +30,7 @@ export class PublicSettingsController {
                 }
             };
         } catch (error) {
-            console.error('Failed to load public settings:', error);
+            this.logger.error('Failed to load public settings:', error);
             return {
                 success: false,
                 error: 'Failed to load settings'
@@ -50,7 +52,7 @@ export class PublicSettingsController {
                 data
             };
         } catch (error) {
-            console.error(`Failed to load ${section} settings:`, error);
+            this.logger.error(`Failed to load ${section} settings:`, error);
             return {
                 success: false,
                 error: `Failed to load ${section} settings`

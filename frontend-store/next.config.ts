@@ -13,8 +13,8 @@ const nextConfig: NextConfig = {
     } : false,
   },
 
-  // Enable React DevTools and strict mode in development
-  reactStrictMode: process.env.NODE_ENV === 'development',
+  // Enable React Strict Mode for better error detection
+  reactStrictMode: true,
 
   images: {
     remotePatterns: [
@@ -73,10 +73,8 @@ const nextConfig: NextConfig = {
             value: 'camera=(), microphone=(), geolocation=()',
           },
           {
-            // CSP in report-only mode
-            // Development: allows unsafe-eval for React dev tools
-            // Production: strict CSP without unsafe-eval
-            key: 'Content-Security-Policy-Report-Only',
+            // CSP: Report-only in development, enforcing in production
+            key: isDev ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy',
             value: `
               default-src 'self';
               script-src 'self' https://cdn.sentry.io https://checkout.razorpay.com ${isDev ? "'unsafe-eval'" : ''};

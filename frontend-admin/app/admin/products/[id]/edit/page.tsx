@@ -1,0 +1,204 @@
+/**
+ * Product Edit Page
+ * Reuses the same form as product creation but loads existing product data
+ */
+
+'use client';
+
+import { use, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
+import apiClient from '@/lib/api-client';
+import type { TabKey } from '@/types/product-form.types';
+import TabNavigation from '../../components/TabNavigation';
+import BasicInfoTab from '../../components/tabs/BasicInfoTab';
+import MediaTab from '../../components/tabs/MediaTab';
+import PricingTab from '../../components/tabs/PricingTab';
+import VariantsTab from '../../components/tabs/VariantsTab';
+import InventoryTab from '../../components/tabs/InventoryTab';
+import OrganizationTab from '../../components/tabs/OrganizationTab';
+import { useBasicInfoStore } from '@/domains/product/basic-info/basic-info.store';
+import { useMediaStore } from '@/domains/product/media/media.store';
+import { usePricingStore } from '@/domains/product/pricing/pricing.store';
+import { useInventoryStore } from '@/domains/product/inventory/inventory.store';
+import { useVariantsStore } from '@/domains/product/variants/variants.store';
+import { useOrganizationStore } from '@/domains/product/organization/organization.store';
+import { aggregateProductData, markAllDomainsClean } from '@/domains/product/autosave/autosave.service';
+import { toast } from 'sonner';
+
+interface ProductEditPageProps {
+    params: Promise<{ id: string }>;
+}
+
+export default function ProductEditPage({ params }: ProductEditPageProps) {
+    const { id } = use(params);
+    const router = useRouter();
+    const [activeTab, setActiveTab] = useState<TabKey>('basic');
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    // Fetch product data
+    const { data: product, isLoading } = useQuery({
+        queryKey: ['product', id],
+        queryFn: async () => {
+            const response = await apiClient.get(`/admin/products/${id}`);
+            return response.data;
+        },
+    });
+
+    // Load product data into stores
+    useEffect(() => {
+        if (product && !isLoaded) {
+            const basicInfoStore = useBasicInfoStore.getState();
+            const pricingStore = usePricingStore.getState();
+            const inventoryStore = useInventoryStore.getState();
+            const variantsStore = useVariantsStore.getState();
+            const mediaStore = useMediaStore.getState();
+            const organizationStore = useOrganizationStore.getState();
+
+            // Reset all stores first
+            basicInfoStore.reset();
+            pricingStore.reset();
+            inventoryStore.reset();
+            variantsStore.reset();
+            mediaStore.reset();
+            organizationStore.reset();
+
+            // Load basic info
+            basicInfoStore.setName(product.name || '');
+            basicInfoStore.setDescription(product.description || '');
+            basicInfoStore.setProductType(product.productType || '');
+            basicInfoStore.setCategory(product.category || '');
+
+            // Load pricing
+            pricingStore.setPrice(product.basePrice || 0);
+            pricingStore.setCompareAtPrice(product.compareAtPrice || 0);
+            pricingStore.setCostPerItem(product.costPerItem || 0);
+            pricingStore.setTaxable(product.taxable || false);
+
+            // Load inventory
+            inventoryStore.setSku(product.sku || '');
+            inventoryStore.setBarcode(product.barcode || '');
+            inventoryStore.setTrackQuantity(product.trackQuantity !== false);
+
+            // Load variants
+            if (product.variants && product.variants.length > 0) {
+                variantsStore.setVariants(product.variants.map((v: any) => ({
+                    id: v.id,
+                    size: v.size,
+                    color: v.color,
+                    sku: v.sku,
+                    price: v.price,
+                    stockQuantity: v.stockQuantity,
+                    isActive: v.isActive !== false,
+                })));
+            }
+
+            // Load media
+            if (product.images && product.images.length > 0) {
+                mediaStore.setImages(product.images.map((img: any) => ({
+                    id: img.id,
+                    url: img.url,
+                    altText: img.altText || '',
+                    isPrimary: img.isPrimary || false,
+                })));
+            }
+
+            // Load organization
+            organizationStore.setStatus(product.status || 'DRAFT');
+            organizationStore.setTags(product.tags || []);
+            organizationStore.setIsFeatured(product.isFeatured || false);
+
+            // Mark as clean after loading
+            markAllDomainsClean();
+            setIsLoaded(true);
+        }
+    }, [product, isLoaded]);
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            const productData = aggregateProductData();
+            await apiClient.patch(`/admin/products/${id}`, productData);
+            toast.success('Product updated successfully!');
+            markAllDomainsClean();
+            router.push(`/admin/products/${id}`);
+        } catch (error) {
+            toast.error('Failed to update product');
+            console.error(error);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleCancel = () => {
+        router.push(`/admin/products/${id}`);
+    };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading product...</p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            {/* Header */}
+            <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-2xl font-bold text-black">Edit Product</h1>
+                            <p className="text-sm text-gray-600 mt-1">{product?.name}</p>
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={handleCancel}
+                                disabled={isSaving}
+                                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                disabled={isSaving}
+                                className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50 flex items-center gap-2"
+                            >
+                                {isSaving ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        Saving...
+                                    </>
+                                ) : (
+                                    'Save Changes'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Tab Navigation */}
+            <div className="bg-white border-b border-gray-200">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+                </div>
+            </div>
+
+            {/* Tab Content */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {activeTab === 'basic' && <BasicInfoTab />}
+                {activeTab === 'media' && <MediaTab />}
+                {activeTab === 'pricing' && <PricingTab />}
+                {activeTab === 'variants' && <VariantsTab />}
+                {activeTab === 'inventory' && <InventoryTab />}
+                {activeTab === 'organization' && <OrganizationTab />}
+            </div>
+        </div>
+    );
+}

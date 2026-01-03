@@ -9,6 +9,7 @@ import {
     UseGuards,
     Request,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { ShippingService } from './shipping.service';
 import { CreateShippingAddressDto } from './dto/create-shipping-address.dto';
 import { UpdateShippingAddressDto } from './dto/update-shipping-address.dto';
@@ -16,6 +17,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 
 @Controller('shipping-addresses')
 @UseGuards(JwtAuthGuard)
+@Throttle({ default: { limit: 30, ttl: 60000 } }) // 30 requests per minute
 export class ShippingController {
     constructor(private readonly shippingService: ShippingService) { }
 

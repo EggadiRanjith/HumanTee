@@ -96,22 +96,21 @@ export default function ShippingPage() {
             <GradientOverlay variant="violet" />
 
             <div className="relative max-w-screen-xl mx-auto px-3 sm:px-6 md:px-8 lg:px-10">
-                <div className="py-8 sm:py-10 md:py-12">
+                <div className="py-6 sm:py-8 md:py-10 lg:py-12">
                     <CheckoutProgress currentStep={1} />
 
-                    <h1 className="text-white text-base sm:text-lg md:text-xl lg:text-2xl font-light mb-3 sm:mb-5 uppercase tracking-wide text-center sm:text-left">
+                    <h1 className="text-white text-sm sm:text-base md:text-lg lg:text-xl font-light mb-4 sm:mb-5 uppercase tracking-wide text-center sm:text-left">
                         Select Shipping Address
                     </h1>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
                         {/* Address Selection - CRITICAL RENDER */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5 }}
-                            className="lg:col-span-2 space-y-3 sm:space-y-5"
-                        >
-                            <div className="p-3 sm:p-5 md:p-7 rounded-lg sm:rounded-xl luxury-glass border border-white/10">
+                            className="lg:col-span-2 space-y-3 sm:space-y-4 md:space-y-5">
+                            <div className="p-3 sm:p-4 md:p-5 lg:p-7 rounded-lg sm:rounded-xl luxury-glass border border-white/10">
                                 <AddressSelector
                                     addresses={addresses}
                                     selectedAddressId={selectedAddressId}

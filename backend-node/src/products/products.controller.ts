@@ -1,4 +1,5 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { ProductsService } from './products.service';
 import { ProductResponseDto, VariantResponseDto } from './dto/product-response.dto';
 import { ShopQueryDto } from './dto/shop-query.dto';
@@ -8,6 +9,7 @@ import { ShopQueryDto } from './dto/shop-query.dto';
  * Read-only endpoints for Phase 1
  */
 @Controller('products')
+@Throttle({ default: { limit: 60, ttl: 60000 } }) // 60 requests per minute
 export class ProductsController {
     constructor(private readonly productsService: ProductsService) { }
 

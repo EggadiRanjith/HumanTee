@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import Razorpay from 'razorpay';
 import * as crypto from 'crypto';
 
@@ -8,6 +8,7 @@ import * as crypto from 'crypto';
  */
 @Injectable()
 export class RazorpayService {
+    private readonly logger = new Logger(RazorpayService.name);
     private razorpay: any;
     private webhookSecret: string;
     private isConfigured: boolean;
@@ -18,7 +19,7 @@ export class RazorpayService {
 
         // Gracefully handle missing credentials
         if (!keyId || !keySecret) {
-            console.warn('⚠️  Razorpay credentials not configured. Payment features will be unavailable.');
+            this.logger.warn('⚠️  Razorpay credentials not configured. Payment features will be unavailable.');
             this.isConfigured = false;
             this.razorpay = null;
             this.webhookSecret = '';
@@ -59,7 +60,7 @@ export class RazorpayService {
      */
     verifyWebhookSignature(rawBody: string, signature: string): boolean {
         if (!this.isConfigured || !this.webhookSecret) {
-            console.warn('⚠️  Razorpay webhook secret not configured. Signature verification skipped.');
+            this.logger.warn('⚠️  Razorpay webhook secret not configured. Signature verification skipped.');
             return false;
         }
 

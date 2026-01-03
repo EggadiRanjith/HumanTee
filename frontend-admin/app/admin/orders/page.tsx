@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Orders List Page (PRODUCTION-GRADE)
  * Features: Real API integration, Search, filters, status badges, responsive layout
@@ -8,7 +7,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useAdminOrders } from '@/lib/queries/useOrders';
 import { OrdersHeader, OrdersSkeleton, OrdersEmpty, OrdersError } from './components';
 
@@ -62,6 +61,8 @@ export default function OrdersPage() {
     const [statusFilter, setStatusFilter] = useState<OrderStatus | 'ALL'>('ALL');
     const [sortBy, setSortBy] = useState<'date' | 'total'>('date');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 20;
 
     // Use React Query hook - automatic caching, refetching, loading states
     const { data, isLoading, error, refetch } = useAdminOrders({
@@ -88,6 +89,18 @@ export default function OrdersPage() {
 
         return filtered;
     }, [orders, sortBy, sortOrder]);
+
+    // Paginated orders
+    const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+    const paginatedOrders = filteredOrders.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    // Reset to page 1 when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, statusFilter]);
 
     // Loading state
     if (isLoading) return <OrdersSkeleton />;
@@ -152,7 +165,7 @@ export default function OrdersPage() {
 
             {/* Orders Cards (Mobile) */}
             <div className="lg:hidden space-y-3">
-                {filteredOrders.map((order) => (
+                {paginatedOrders.map((order) => (
                     <Link
                         key={order.id}
                         href={`/admin/orders/${order.id}`}
@@ -217,7 +230,7 @@ export default function OrdersPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                        {filteredOrders.map((order) => (
+                        {paginatedOrders.map((order) => (
                             <tr key={order.id} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4 font-mono text-sm text-black">{order.orderNumber}</td>
                                 <td className="px-6 py-4">
@@ -254,6 +267,57 @@ export default function OrdersPage() {
                     </tbody>
                 </table>
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-4">
+                    <div className="text-sm text-gray-600">
+                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredOrders.length)} of {filteredOrders.length} orders
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Previous
+                        </button>
+                        <div className="flex gap-1">
+                            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                                let page;
+                                if (totalPages <= 5) {
+                                    page = i + 1;
+                                } else if (currentPage <= 3) {
+                                    page = i + 1;
+                                } else if (currentPage >= totalPages - 2) {
+                                    page = totalPages - 4 + i;
+                                } else {
+                                    page = currentPage - 2 + i;
+                                }
+                                return (
+                                    <button
+                                        key={page}
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`px-3 py-1 border rounded-lg text-sm ${currentPage === page
+                                            ? 'bg-black text-white border-black'
+                                            : 'border-gray-300 hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        {page}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Empty State */}
             {

@@ -123,7 +123,7 @@ export class AuthService {
                     // Send welcome email (async, don't wait)
                     this.emailService.sendWelcomeEmail(email, payload.name).catch(err => {
                         // Log but don't fail login
-                        console.error('Welcome email failed:', err);
+                        this.logger.error('Welcome email failed:', err);
                     });
                 }
             }
@@ -174,10 +174,15 @@ export class AuthService {
     }
 
     private async generateRefreshToken(userId: string): Promise<string> {
+        const refreshSecret = process.env.JWT_REFRESH_SECRET;
+        if (!refreshSecret || refreshSecret.length < 32) {
+            throw new Error('FATAL: JWT_REFRESH_SECRET required and must be 32+ chars');
+        }
+
         const token = this.jwtService.sign(
             { sub: userId, type: 'refresh' },
             {
-                secret: process.env.JWT_REFRESH_SECRET || 'refresh-secret-change-in-production',
+                secret: refreshSecret,
                 expiresIn: '7d',
             },
         );
@@ -213,7 +218,7 @@ export class AuthService {
             await this.loginAuditLogRepository.save(log);
         } catch (error) {
             // Don't fail the request if audit logging fails
-            console.error('Failed to create login audit log:', error);
+            this.logger.error('Failed to create login audit log:', error);
         }
     }
 
@@ -227,8 +232,13 @@ export class AuthService {
     async refreshToken(refreshToken: string, ipAddress: string, userAgent: string) {
         try {
             // Verify the refresh token JWT
+            const refreshSecret = process.env.JWT_REFRESH_SECRET;
+            if (!refreshSecret || refreshSecret.length < 32) {
+                throw new UnauthorizedException('Server configuration error');
+            }
+
             const payload = this.jwtService.verify(refreshToken, {
-                secret: process.env.JWT_REFRESH_SECRET || 'refresh-secret-change-in-production',
+                secret: refreshSecret,
             });
 
             if (payload.type !== 'refresh') {
@@ -523,7 +533,7 @@ export class AuthService {
 
                 // Send welcome email (async, don't wait) - no name for OTP users
                 this.emailService.sendWelcomeEmail(normalizedEmail).catch(err => {
-                    console.error('Welcome email failed:', err);
+                    this.logger.error('Welcome email failed:', err);
                 });
             } else {
                 this.logger.log(`✅ EMAIL OTP LOGIN - Existing user: ${normalizedEmail} | Role: ${authUser.role} | ID: ${authUser.id}`);

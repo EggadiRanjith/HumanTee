@@ -91,7 +91,7 @@ export default function LoginPage() {
                             paddingBottom: "300px",
                         }}
                     >
-                        {/* LASER FIELD */}
+                        {/* LASER FIELD with Loading Placeholder */}
                         <div
                             className="laser-responsive"
                             style={{
@@ -105,6 +105,7 @@ export default function LoginPage() {
                                 height: "60%",
                                 zIndex: 1,
                                 clipPath: "inset(20% 0 0 0)",
+                                background: "radial-gradient(circle at 50% 30%, rgba(139, 92, 246, 0.15), transparent 60%), radial-gradient(circle at 70% 70%, rgba(168, 85, 247, 0.1), transparent 50%)",
                             }}
                         >
                             <LaserFlow
@@ -143,11 +144,8 @@ export default function LoginPage() {
                                 height: "auto",
                                 minHeight: "60%",
                                 background: "linear-gradient(to bottom, rgba(6,0,16,0) 0%, rgba(6,0,16,0.8) 40%, #060010 100%)",
-                                borderRadius: "0px",
-                                borderWidth: "2px",
-                                borderStyle: "solid",
-                                borderImage: "linear-gradient(to bottom, transparent 0%, #FF79C6 50%) 1",
-                                borderTop: "none",
+                                borderRadius: "24px",
+                                border: "2px solid rgba(255, 121, 198, 0.3)",
                                 zIndex: 10,
                             }}
                             className="flex flex-col lg:flex-row overflow-hidden card-responsive"

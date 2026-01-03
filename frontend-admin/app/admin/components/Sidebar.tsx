@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { BRAND_CONFIG } from '@/lib/config/brand';
 
 /**
  * Admin Sidebar
@@ -14,6 +16,25 @@ export function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [brandName, setBrandName] = useState(BRAND_CONFIG.fallback);
+    const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+    // Fetch brand name and logo from API
+    useEffect(() => {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings/header-footer`)
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (data?.brand_name) {
+                    setBrandName(data.brand_name);
+                }
+                if (data?.logo_url) {
+                    setLogoUrl(data.logo_url);
+                }
+            })
+            .catch(() => {
+                // Use fallback on error
+            });
+    }, []);
 
     const links = [
         { href: '/admin', label: 'Dashboard', icon: '📊' },
@@ -38,7 +59,7 @@ export function Sidebar() {
             {/* Mobile Header */}
             <div className="lg:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
                 <div className="flex items-center justify-between p-4">
-                    <h1 className="text-lg font-semibold text-black">Admin</h1>
+                    <h1 className="text-lg font-semibold text-black">{brandName} {BRAND_CONFIG.adminSuffix}</h1>
                     <button
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                         className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-black"
@@ -74,8 +95,27 @@ export function Sidebar() {
             >
                 {/* Header */}
                 <div className="p-6 border-b border-gray-200">
-                    <h1 className="text-xl font-semibold text-black">HumanTee</h1>
-                    <p className="text-xs text-gray-600 mt-1">Admin Panel</p>
+                    {logoUrl ? (
+                        <div className="flex items-center gap-3">
+                            <Image
+                                src={logoUrl}
+                                alt={brandName}
+                                width={40}
+                                height={40}
+                                className="object-contain"
+                                priority
+                            />
+                            <div>
+                                <h1 className="text-xl font-semibold text-black">{brandName}</h1>
+                                <p className="text-xs text-gray-600">{BRAND_CONFIG.adminSuffix} Panel</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <h1 className="text-xl font-semibold text-black">{brandName}</h1>
+                            <p className="text-xs text-gray-600 mt-1">{BRAND_CONFIG.adminSuffix} Panel</p>
+                        </>
+                    )}
                 </div>
 
                 {/* Navigation */}

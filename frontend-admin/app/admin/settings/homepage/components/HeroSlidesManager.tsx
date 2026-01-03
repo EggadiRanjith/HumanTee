@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { FiTrash2, FiPlus } from 'react-icons/fi';
 import { useCloudinaryUpload } from '@/hooks/useCloudinaryUpload';
 
@@ -39,7 +40,7 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
             const duration = video.duration;
 
             if (duration < 4 || duration > 7) {
-                alert(`Video must be 4-7 seconds. Yours is ${duration.toFixed(1)}s.`);
+                toast.error(`Video must be 4-7 seconds. Yours is ${duration.toFixed(1)}s.`);
                 e.target.value = '';
                 return;
             }
@@ -68,10 +69,10 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
                     const newSlides = [...slides];
                     (newSlides[videoSlideIndex] as VideoSlide).video = url;
                     onChange(newSlides);
-                    alert('Video uploaded! Remember to save changes.');
+                    toast.success('Video uploaded! Remember to save changes.');
                 }
             } catch (error: any) {
-                alert(`Failed to upload: ${error.message}`);
+                toast.error(`Failed to upload: ${error.message}`);
             } finally {
                 setUploadingVideo(false);
             }
@@ -91,7 +92,7 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
             (newSlides[slideIndex] as ImageSlide)[field] = url;
             onChange(newSlides);
         } catch (error) {
-            alert('Failed to upload image');
+            toast.error('Failed to upload image');
         }
     };
 

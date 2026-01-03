@@ -38,7 +38,6 @@ export function useProductActions() {
 
     const bulkUpdateStatus = useCallback(async (productIds: string[], status: string) => {
         // TODO: Implement bulk status update
-        console.log('Bulk update:', productIds, status);
         await refreshProducts();
     }, [refreshProducts]);
 

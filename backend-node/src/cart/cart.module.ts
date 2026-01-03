@@ -3,9 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CartController } from './cart.controller';
 import { CartService } from './cart.service';
 import { Cart, CartItem, ProductVariant } from '../entities';
+import { RedisModule } from '../redis/redis.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Cart, CartItem, ProductVariant])],
+    imports: [
+        TypeOrmModule.forFeature([Cart, CartItem, ProductVariant]),
+        RedisModule,
+    ],
     controllers: [CartController],
     providers: [CartService],
     exports: [CartService],

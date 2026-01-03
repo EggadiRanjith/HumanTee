@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Products List Page (PRODUCTION-GRADE)
  * Features: Search, filters, sorting, responsive layout
@@ -13,20 +12,25 @@ import { useAdminProducts } from '@/lib/queries/useProducts';
 import { ProductsHeader, ProductsSkeleton, ProductsEmpty, ProductsError } from './components';
 import { useProductFilters } from './hooks';
 import { FiPlus, FiSearch, FiPackage, FiAlertCircle, FiEdit2, FiLoader } from 'react-icons/fi';
+import { useDebounce } from '../hooks/useDebounce';
+import { useEffect } from 'react';
 
 type ProductStatus = 'ACTIVE' | 'DRAFT' | 'ARCHIVED';
 
 export default function ProductsPage() {
     const [searchQuery, setSearchQuery] = useState('');
+    const debouncedSearch = useDebounce(searchQuery, 300);
     const [status, setStatus] = useState<ProductStatus | 'ALL'>('ALL');
     const [category, setCategory] = useState('ALL');
     const [sortBy, setSortBy] = useState<'name' | 'price' | 'stock' | 'date'>('date');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 20;
 
     // Use React Query hook
     const { data, isLoading, error, refetch } = useAdminProducts({
         status: status !== 'ALL' ? status : undefined,
-        search: searchQuery || undefined,
+        search: debouncedSearch || undefined,
     });
 
     const products = data || [];
@@ -73,6 +77,18 @@ export default function ProductsPage() {
 
         return filtered;
     }, [products, searchQuery, status, category, sortBy, sortOrder]);
+
+    // Paginated products
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+    const paginatedProducts = filteredProducts.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    // Reset to page 1 when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, status, category]);
 
     // Loading state
     if (isLoading) return <ProductsSkeleton />;
@@ -160,8 +176,8 @@ export default function ProductsPage() {
             </div>
 
             {/* Products Grid (Mobile) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:hidden gap-3 sm:gap-4">
-                {filteredProducts.map((product) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:hidden gap-3 sm:gap-4">
+                {paginatedProducts.map((product) => (
                     <Link
                         key={product.id}
                         href={`/admin/products/${product.id}`}
@@ -251,7 +267,7 @@ export default function ProductsPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                        {filteredProducts.map((product) => (
+                        {paginatedProducts.map((product) => (
                             <tr key={product.id} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -318,6 +334,45 @@ export default function ProductsPage() {
                 </table>
             </div>
 
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-4">
+                    <div className="text-sm text-gray-600">
+                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredProducts.length)} of {filteredProducts.length} products
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Previous
+                        </button>
+                        <div className="flex gap-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <button
+                                    key={page}
+                                    onClick={() => setCurrentPage(page)}
+                                    className={`px-3 py-1 border rounded-lg text-sm ${currentPage === page
+                                        ? 'bg-black text-white border-black'
+                                        : 'border-gray-300 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+                        </div>
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Empty State */}
             {filteredProducts.length === 0 && (
                 <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
@@ -329,8 +384,8 @@ export default function ProductsPage() {
                     <button
                         onClick={() => {
                             setSearchQuery('');
-                            setStatusFilter('ALL');
-                            setCategoryFilter('ALL');
+                            setStatus('ALL');
+                            setCategory('ALL');
                         }}
                         className="text-sm text-black hover:underline font-medium"
                     >

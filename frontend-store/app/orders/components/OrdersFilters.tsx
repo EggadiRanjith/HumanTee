@@ -15,10 +15,10 @@ export function OrdersFilters({
     hasActiveFilters
 }: OrdersFiltersProps) {
     return (
-        <div className="mb-10">
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="mb-6 sm:mb-10">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center justify-between">
                 {/* Filters */}
-                <div className="flex flex-wrap gap-3 items-center">
+                <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
                     {/* Status Select with Icon */}
                     <div className="relative">
                         <select
@@ -28,9 +28,9 @@ export function OrdersFilters({
                                 luxury-glass
                                 border border-white/10
                                 rounded-lg
-                                px-4 py-2.5
-                                pr-10
-                                text-[13px]
+                                px-3 sm:px-4 py-2 sm:py-2.5
+                                pr-9 sm:pr-10
+                                text-[11px] sm:text-[13px]
                                 text-white/90
                                 tracking-wide
                                 focus:outline-none
@@ -61,7 +61,7 @@ export function OrdersFilters({
                         onClick={onClearFilters}
                         className="
                             text-white/50
-                            text-[13px]
+                            text-[11px] sm:text-[13px]
                             tracking-wide
                             hover:text-white
                             transition-colors

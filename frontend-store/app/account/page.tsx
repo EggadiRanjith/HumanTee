@@ -108,11 +108,11 @@ export default function AccountPage() {
                     <div className="mb-6 sm:mb-8 md:mb-10">
                         <div className="flex items-center gap-3 sm:gap-4">
                             {/* Avatar */}
-                            <div className="w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-white/20 to-white/5 border border-white/20 flex items-center justify-center text-xl sm:text-2xl md:text-3xl font-bold text-white shadow-lg flex-shrink-0">
+                            <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 lg:w-20 lg:h-20 rounded-full bg-gradient-to-br from-white/20 to-white/5 border border-white/20 flex items-center justify-center text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white shadow-lg flex-shrink-0">
                                 {getInitials()}
                             </div>
                             <div className="min-w-0 flex-1">
-                                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-light text-white tracking-wide truncate">
+                                <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-light text-white tracking-wide truncate">
                                     {profile.fullName || 'Welcome'}
                                 </h1>
                                 <p className="text-white/60 text-xs sm:text-sm mt-1 truncate">

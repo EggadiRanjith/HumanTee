@@ -18,7 +18,7 @@ export default function AdminLoginPage() {
     const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
 
     const [brandName, setBrandName] = useState("HumanTee");
-    const [logo, setLogo] = useState<string | null>(null);
+    const [logo, setLogo] = useState<string>("/images/humantee-logo.png"); // Default to local logo
 
     // Fetch brand config (non-blocking, silent fail)
     useEffect(() => {
@@ -27,7 +27,10 @@ export default function AdminLoginPage() {
             .then(data => {
                 if (data?.success) {
                     setBrandName(data.data?.brand_name || "HumanTee");
-                    setLogo(data.data?.logo_url || null);
+                    // Only override logo if API provides one
+                    if (data.data?.logo_url) {
+                        setLogo(data.data.logo_url);
+                    }
                 }
             })
             .catch(() => { });
@@ -110,15 +113,13 @@ export default function AdminLoginPage() {
                     {/* Header */}
                     <div className="text-center mb-6">
                         <div className="mx-auto mb-4 h-16 w-16 rounded-lg bg-black flex items-center justify-center">
-                            {logo && (
-                                <Image
-                                    src={logo}
-                                    alt={brandName}
-                                    width={48}
-                                    height={48}
-                                    className="object-contain"
-                                />
-                            )}
+                            <Image
+                                src={logo}
+                                alt={brandName}
+                                width={48}
+                                height={48}
+                                className="object-contain"
+                            />
                         </div>
 
                         <h1 className="text-xl font-semibold text-black">{brandName}</h1>

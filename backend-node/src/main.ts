@@ -26,10 +26,17 @@ async function bootstrap() {
 
   // SECURITY: CSRF protection for cookie-based endpoints
   app.use((req: any, res: any, next: any) => {
-    // CSRF disabled for auth endpoints (SameSite=Lax provides protection)
-    const csrfProtectedPaths = [];
+    // CSRF protection for state-changing operations
+    const csrfProtectedPaths = [
+      '/auth/refresh',
+      '/cart',
+      '/orders',
+      '/shipping',
+      '/payments',
+    ];
 
-    if (csrfProtectedPaths.some(path => req.path.includes(path))) {
+    if (csrfProtectedPaths.some(path => req.path.includes(path)) &&
+      ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
       const csrfToken = req.headers['x-csrf-token'];
       const cookieToken = req.cookies['csrf-token'];
 
@@ -52,12 +59,20 @@ async function bootstrap() {
   // CORS configuration
   app.enableCors({
     origin: [
-      'http://localhost:3000',      // Customer store (local)
-      'http://localhost:3002',      // Admin panel (local)
-      'http://10.113.119.158:3000', // Customer store (network)
-      'http://10.113.119.158:3002', // Admin panel (network)
       process.env.FRONTEND_URL,
       process.env.ADMIN_URL,
+      // Allow localhost in development only
+      ...(process.env.NODE_ENV === 'development'
+        ? [
+          'http://localhost:3000',
+          'http://localhost:3002',
+          'http://10.139.121.158:3000', // Mobile access - store
+          'http://10.139.121.158:3002', // Mobile access - admin
+          'http://192.168.131.1:3000',  // Alternative IP - store
+          'http://192.168.131.1:3002',  // Alternative IP - admin
+        ]
+        : []
+      ),
     ].filter(Boolean),
     credentials: true,
   });
@@ -65,9 +80,9 @@ async function bootstrap() {
   await app.listen(port, '0.0.0.0');
 
   logger.log(`🚀 Server is running on: http://localhost:${port}`);
-  logger.log(`📱 Network access: http://10.113.119.158:${port}`);
   logger.log(`✅ Database connected successfully`);
   logger.log(`🔒 Security: CSRF protection enabled`);
   logger.log(`🔒 Security: Rate limiting enabled`);
+  logger.log(`📊 Health check: /health`);
 }
 bootstrap();

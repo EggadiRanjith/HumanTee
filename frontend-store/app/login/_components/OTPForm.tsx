@@ -39,7 +39,7 @@ export default memo(function OTPForm({
         <>
             <form
                 onSubmit={onSubmit}
-                className="space-y-6"
+                className="space-y-4"
                 aria-label="OTP verification form"
             >
                 {/* OTP Input */}
@@ -68,7 +68,7 @@ export default memo(function OTPForm({
                         aria-required="true"
                         aria-invalid={!!error}
                         aria-describedby="otp-description otp-error otp-success"
-                        className="w-full px-4 py-4 rounded-xl bg-black/40 border border-white/10 text-white text-center text-2xl font-mono tracking-[0.5em] placeholder:text-white/20 placeholder:tracking-[0.5em] focus:border-white/30 focus:bg-black/60 focus:outline-none transition-all disabled:opacity-50"
+                        className="w-full px-4 py-3 rounded-3xl bg-black/40 border border-white/10 text-white text-center text-2xl font-mono tracking-[0.5em] placeholder:text-white/20 placeholder:tracking-[0.5em] focus:border-white/30 focus:bg-black/60 focus:outline-none transition-all disabled:opacity-50"
                     />
                     <p
                         id="otp-description"
@@ -108,7 +108,7 @@ export default memo(function OTPForm({
                     disabled={isLoading}
                     aria-busy={isLoading}
                     aria-label={isLoading ? "Verifying OTP code" : "Verify and login"}
-                    className="w-full py-4 bg-white text-black rounded-xl font-bold uppercase tracking-wider hover:bg-white/90 shadow-lg shadow-white/10 transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[48px]"
+                    className="w-full py-3 bg-white text-black rounded-3xl font-bold uppercase tracking-wider hover:bg-white/90 shadow-lg shadow-white/10 transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[44px]"
                 >
                     {isLoading ? (
                         <>

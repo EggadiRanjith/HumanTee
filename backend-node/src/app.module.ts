@@ -21,6 +21,7 @@ import { MaintenanceModule } from './settings/maintenance.module';
 import { ObservabilityModule } from './common/observability.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ContactModule } from './contact/contact.module';
+import { HealthModule } from './health/health.module';
 // import { RedisModule } from './redis/redis.module'; // Disabled - Docker not running
 
 
@@ -47,6 +48,15 @@ import { ContactModule } from './contact/contact.module';
       database: process.env.DB_DATABASE || 'humantee',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: false, // Phase 1: Migrations only, no auto-sync
+      // Connection pooling for production
+      extra: {
+        max: 20,                      // Maximum pool size
+        min: 5,                       // Minimum pool size
+        idleTimeoutMillis: 30000,     // Close idle connections after 30s
+        connectionTimeoutMillis: 2000, // Fail fast if can't connect in 2s
+      },
+      // Logging
+      logging: false, // Disabled SQL logging - enable for debugging if needed
     }),
     AuthModule,
     CartModule,
@@ -63,6 +73,7 @@ import { ContactModule } from './contact/contact.module';
     ObservabilityModule, // Health checks + Prometheus metrics
     AnalyticsModule, // Admin analytics
     ContactModule, // Public contact form
+    HealthModule, // Health check endpoint
     // RedisModule, // Disabled - Docker not running
   ],
   controllers: [AppController, ProtectedController],

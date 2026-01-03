@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { BackgroundJob } from './entities/background-job.entity';
@@ -11,6 +11,8 @@ import { JobStatus, JobType, JobResult } from './job.types';
  */
 @Injectable()
 export class JobMonitorService {
+    private readonly logger = new Logger(JobMonitorService.name);
+
     constructor(
         @InjectRepository(BackgroundJob)
         private readonly jobRepo: Repository<BackgroundJob>,
@@ -40,7 +42,7 @@ export class JobMonitorService {
         const job = await this.jobRepo.findOne({ where: { id: jobId } });
 
         if (!job) {
-            console.error(`Job ${jobId} not found`);
+            this.logger.error(`Job ${jobId} not found`);
             return;
         }
 
@@ -63,7 +65,7 @@ export class JobMonitorService {
         const job = await this.jobRepo.findOne({ where: { id: jobId } });
 
         if (!job) {
-            console.error(`Job ${jobId} not found`);
+            this.logger.error(`Job ${jobId} not found`);
             return;
         }
 

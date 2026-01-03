@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Discounts List Page (FRONTEND-ONLY)
  * 
@@ -11,11 +10,12 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { discountsApi } from '@/lib/api/discounts';
 import { useAdminDiscounts } from '@/lib/queries/useDiscounts';
 import { DiscountsHeader, DiscountsSkeleton, DiscountsEmpty, DiscountsError } from './components';
+import { toast } from 'sonner';
 
 type DiscountType = 'PERCENT' | 'FLAT';
 type DiscountScope = 'GLOBAL' | 'PRODUCT' | 'GROUP';
@@ -39,19 +39,20 @@ export default function DiscountsPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
     const [typeFilter, setTypeFilter] = useState<'ALL' | DiscountType>('ALL');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 20;
 
     // Use React Query hook
     const { data: discounts = [], isLoading, error, refetch } = useAdminDiscounts();
 
     // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
     const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this discount?')) return;
         try {
             await discountsApi.delete(id);
-            alert('Discount deleted successfully!');
-            window.location.reload();
+            toast.success('Discount deleted successfully!');
+            refetch();
         } catch (err) {
-            alert('Failed to delete discount');
+            toast.error('Failed to delete discount');
         }
     };
 
@@ -82,6 +83,18 @@ export default function DiscountsPage() {
 
         return filtered;
     }, [discounts, statusFilter, searchQuery]);
+
+    // Paginated discounts
+    const totalPages = Math.ceil(filteredDiscounts.length / itemsPerPage);
+    const paginatedDiscounts = filteredDiscounts.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    // Reset to page 1 when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, statusFilter]);
 
     // NOW conditional returns are safe
     if (isLoading) return <DiscountsSkeleton />;
@@ -121,12 +134,12 @@ export default function DiscountsPage() {
                         type="text"
                         placeholder="Search discounts..."
                         value={searchQuery}
-                        onChange={(e: any) => setSearchQuery(e.target.value)}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
                     />
                     <select
                         value={statusFilter}
-                        onChange={(e: any) => setStatusFilter(e.target.value)}
+                        onChange={(e) => setStatusFilter(e.target.value as any)}
                         className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
                     >
                         <option value="ALL">All Status</option>
@@ -167,7 +180,7 @@ export default function DiscountsPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                        {filteredDiscounts.map((discount) => (
+                        {paginatedDiscounts.map((discount) => (
                             <tr key={discount.id} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="text-sm font-medium text-black">{discount.name}</div>
@@ -217,7 +230,7 @@ export default function DiscountsPage() {
                     <div className="bg-white rounded-lg border border-gray-200 p-12 text-center text-gray-500">
                         Loading...
                     </div>
-                ) : filteredDiscounts.map((discount) => {
+                ) : paginatedDiscounts.map((discount) => {
                     const status = getStatus(discount);
                     return (
                         <div key={discount.id} className="bg-white rounded-lg border border-gray-200 p-4">
@@ -279,13 +292,64 @@ export default function DiscountsPage() {
                             onClick={() => {
                                 setSearchQuery('');
                                 setStatusFilter('ALL');
-                                fetchDiscounts();
+                                if (error) refetch();
                             }}
                             className="text-sm text-black hover:underline font-medium"
                         >
                             {error ? 'Retry' : 'Clear filters'}
                         </button>
                     )}
+                </div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-4">
+                    <div className="text-sm text-gray-600">
+                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredDiscounts.length)} of {filteredDiscounts.length} discounts
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Previous
+                        </button>
+                        <div className="flex gap-1">
+                            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                                let page;
+                                if (totalPages <= 5) {
+                                    page = i + 1;
+                                } else if (currentPage <= 3) {
+                                    page = i + 1;
+                                } else if (currentPage >= totalPages - 2) {
+                                    page = totalPages - 4 + i;
+                                } else {
+                                    page = currentPage - 2 + i;
+                                }
+                                return (
+                                    <button
+                                        key={page}
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`px-3 py-1 border rounded-lg text-sm ${currentPage === page
+                                                ? 'bg-black text-white border-black'
+                                                : 'border-gray-300 hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        {page}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Next
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import apiClient from '@/lib/api-client';
+import { toast } from 'sonner';
 import {
     FiArrowLeft, FiSend, FiClock, FiCheckCircle,
     FiAlertCircle, FiUser, FiShield, FiLoader,
@@ -71,7 +72,7 @@ export default function TicketDetailPage() {
             await fetchTicket();
         } catch (err: any) {
             // Failed to send reply
-            alert("Failed to send reply. Please try again.");
+            toast.error("Failed to send reply. Please try again.");
         } finally {
             setIsActionLoading(false);
         }
@@ -88,10 +89,10 @@ export default function TicketDetailPage() {
             });
             setUpdateNote('');
             await fetchTicket();
-            alert("Ticket updated successfully!");
+            toast.success("Ticket updated successfully!");
         } catch (err: any) {
             // Failed to update ticket
-            alert("Failed to update ticket attributes.");
+            toast.error("Failed to update ticket attributes.");
         } finally {
             setIsActionLoading(false);
         }

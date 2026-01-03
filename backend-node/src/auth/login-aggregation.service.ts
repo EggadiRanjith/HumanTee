@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CartService } from '../cart/cart.service';
 import { ShippingService } from '../shipping/shipping.service';
 
@@ -16,6 +16,8 @@ export interface LoginPayload {
 
 @Injectable()
 export class LoginAggregationService {
+    private readonly logger = new Logger(LoginAggregationService.name);
+
     constructor(
         private readonly cartService: CartService,
         private readonly shippingService: ShippingService,
@@ -33,14 +35,14 @@ export class LoginAggregationService {
         // Batch fetch user data (cart + addresses) in parallel
         const [cart, addresses] = await Promise.all([
             this.cartService.getActiveCart(user.id).catch((err) => {
-                console.warn('[LOGIN_AGGREGATION] Cart fetch failed', {
+                this.logger.warn('[LOGIN_AGGREGATION] Cart fetch failed', {
                     userId: user.id,
                     error: err.message,
                 });
                 return { items: [] };
             }),
             this.shippingService.findAll(user.id).catch((err) => {
-                console.warn('[LOGIN_AGGREGATION] Address fetch failed', {
+                this.logger.warn('[LOGIN_AGGREGATION] Address fetch failed', {
                     userId: user.id,
                     error: err.message,
                 });

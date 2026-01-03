@@ -6,6 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import Link from 'next/link';
 import { FiArrowLeft } from 'react-icons/fi';
 import { useHomepageSettings, useUpdateHomepageSettings } from '@/lib/queries/useHomepageSettings';
@@ -44,13 +45,13 @@ export default function HomepageSettings() {
 
         try {
             await updateMutation.mutateAsync(payload);
-            alert('Homepage settings saved successfully!');
+            toast.success('Homepage settings saved successfully!');
             setIsEditing(false);
         } catch (error: any) {
             if (error.response?.status === 403) {
-                alert('Permission denied! Contact admin.');
+                toast.error('Permission denied! Contact admin.');
             } else {
-                alert(`Failed to save: ${error.message}`);
+                toast.error(`Failed to save: ${error.message}`);
             }
         }
     };

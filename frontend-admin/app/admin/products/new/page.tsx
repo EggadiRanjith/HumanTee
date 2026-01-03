@@ -25,8 +25,7 @@ import { useOrganizationStore } from '@/domains/product/organization/organizatio
 import { observeHasUnsavedChanges, aggregateProductData, markAllDomainsClean } from '@/domains/product/autosave/autosave.service';
 import { attemptDraftRecovery, discardDraft } from '@/domains/product/autosave/draft.recovery';
 import { ConfirmActionModal } from '@/app/admin/components/ConfirmActionModal';
-import { useToast } from '@/app/admin/hooks/useToast';
-import { ToastContainer } from '@/app/admin/components/Toast';
+import { toast } from 'sonner';
 
 export default function NewProductPage() {
     const router = useRouter();
@@ -158,7 +157,7 @@ export default function NewProductPage() {
 
     const handleSaveDraft = async () => {
         if (!name) {
-            alert('Product name is required to save a draft');
+            toast.error('Product name is required to save a draft');
             setActiveTab('basic');
             return;
         }
@@ -216,7 +215,7 @@ export default function NewProductPage() {
                 : (draftRequest.stock || 0);
 
             if (draftRequest.lowStockThreshold && draftRequest.lowStockThreshold > totalStockCount) {
-                alert(`Low stock threshold (${draftRequest.lowStockThreshold}) cannot exceed total stock (${totalStockCount})`);
+                toast.error(`Low stock threshold (${draftRequest.lowStockThreshold}) cannot exceed total stock (${totalStockCount})`);
                 return;
             }
 
@@ -226,11 +225,11 @@ export default function NewProductPage() {
             markAllDomainsClean();
             discardDraft();
 
-            alert('Draft saved to database!');
+            toast.success('Draft saved to database!');
             router.push(`/admin/products/${created.id}`);
         } catch (error) {
             // Failed to save draft
-            alert(error instanceof Error ? error.message : 'Failed to save draft');
+            toast.error(error instanceof Error ? error.message : 'Failed to save draft');
         } finally {
             setIsSaving(false);
         }
@@ -467,7 +466,7 @@ export default function NewProductPage() {
                 : (publishRequest.stock || 0);
 
             if (publishRequest.lowStockThreshold && publishRequest.lowStockThreshold > totalStockCount) {
-                alert(`Low stock threshold (${publishRequest.lowStockThreshold}) cannot exceed total stock (${totalStockCount})`);
+                toast.error(`Low stock threshold (${publishRequest.lowStockThreshold}) cannot exceed total stock (${totalStockCount})`);
                 return;
             }
 
@@ -487,7 +486,7 @@ export default function NewProductPage() {
             useVariantsStore.getState().reset();
             useOrganizationStore.getState().reset();
 
-            alert('Product published successfully!');
+            toast.success('Product published successfully!');
             router.push('/admin/products');
         } catch (error: any) {
 
@@ -504,7 +503,7 @@ export default function NewProductPage() {
                 errorMessage = error.message;
             }
 
-            alert(errorMessage);
+            toast.error(errorMessage);
         } finally {
             setIsSaving(false);
         }
