@@ -152,7 +152,9 @@ export class AdminProductsService {
             let totalStock = 0;
             // Create new variants
             for (const variantDto of dto.variants) {
-                totalStock += (Number(variantDto.stock) || 0);
+                const variantStock = Number(variantDto.stock) || 0;
+                totalStock += variantStock;
+
                 const variant = this.variantRepo.create({
                     product_id: id,
                     size: variantDto.size,
@@ -160,7 +162,7 @@ export class AdminProductsService {
                     sku_locked: false,
                     price: product.base_price,
                     price_override: variantDto.priceOverride,
-                    stock_quantity: variantDto.stock,
+                    stock_quantity: variantStock,
                     is_active: true,
                 });
                 await this.variantRepo.save(variant);

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
 import {
@@ -22,6 +22,8 @@ import { randomBytes } from 'crypto';
 
 @Injectable()
 export class OrderService {
+    private readonly logger = new Logger(OrderService.name);
+
     constructor(
         @InjectRepository(Order)
         private orderRepository: Repository<Order>,
@@ -105,14 +107,31 @@ export class OrderService {
             // 4. Generate secure order number
             const orderNumber = this.generateSecureOrderNumber();
 
-            // 5. Create Razorpay order
-            const razorpayOrderId = await this.razorpayService.createOrder(totalAmount);
+            // 5. Create Razorpay order (skip if payment bypass enabled)
+            let razorpayOrderId: string;
+            let initialStatus: OrderStatus;
+            let paymentStatus: PaymentStatus;
+
+            const paymentBypassEnabled = process.env.PAYMENT_BYPASS_ENABLED === 'true';
+
+            if (paymentBypassEnabled) {
+                // Payment bypass mode: Skip payment, mark as paid
+                razorpayOrderId = `dev_${Date.now()}`;
+                initialStatus = OrderStatus.PROCESSING; // Skip payment, go straight to processing
+                paymentStatus = PaymentStatus.CAPTURED; // Use CAPTURED instead of COMPLETED
+                this.logger.log(`⚠️  Payment bypass enabled - Order will auto-complete`);
+            } else {
+                // Production mode: Create Razorpay order
+                razorpayOrderId = await this.razorpayService.createOrder(totalAmount);
+                initialStatus = OrderStatus.PENDING_PAYMENT;
+                paymentStatus = PaymentStatus.INITIATED;
+            }
 
             // 6. Create order
             const order = manager.create(Order, {
                 orderNumber,
                 userId,
-                status: OrderStatus.PENDING_PAYMENT,
+                status: initialStatus,
                 subtotal,
                 taxAmount,
                 shippingAmount,
@@ -120,6 +139,7 @@ export class OrderService {
                 totalAmount,
                 currency: 'INR',
                 paymentOrderId: razorpayOrderId,
+                completedAt: process.env.NODE_ENV === 'development' ? new Date() : undefined,
             });
             await manager.save(Order, order);
 
@@ -168,14 +188,16 @@ export class OrderService {
             });
             await manager.save(OrderAddress, address);
 
-            // 10. Create payment record (PENDING)
+            // 10. Create payment record
             const payment = manager.create(Payment, {
                 orderId: order.id,
                 amount: totalAmount,
                 currency: 'INR',
-                status: PaymentStatus.INITIATED,
-                provider: 'RAZORPAY',
+                status: paymentStatus,
+                provider: process.env.NODE_ENV === 'development' ? 'DEVELOPMENT' : 'RAZORPAY',
                 providerOrderId: razorpayOrderId,
+                providerPaymentId: process.env.NODE_ENV === 'development' ? `dev_payment_${Date.now()}` : undefined,
+                completedAt: process.env.NODE_ENV === 'development' ? new Date() : undefined,
             });
             await manager.save(Payment, payment);
 
@@ -206,9 +228,11 @@ export class OrderService {
             const history = manager.create(OrderStatusHistory, {
                 orderId: order.id,
                 fromStatus: undefined,
-                toStatus: OrderStatus.PENDING_PAYMENT,
+                toStatus: initialStatus,
                 changedBy: userId || 'GUEST',
-                reason: 'Order created, awaiting payment',
+                reason: process.env.NODE_ENV === 'development'
+                    ? 'Order created and auto-paid (development mode)'
+                    : 'Order created, awaiting payment',
             });
             await manager.save(OrderStatusHistory, history);
 

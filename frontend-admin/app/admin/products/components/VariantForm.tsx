@@ -112,6 +112,7 @@ export default function VariantForm({
                         setFormData({ ...formData, stock: e.target.value === '' ? 0 : Number(e.target.value) })
                     }
                     onFocus={(e: any) => e.target.select()}
+                    onWheel={(e: any) => e.target.blur()} // Prevent scroll wheel from changing value
                     placeholder="0"
                     min="0"
                     className="w-full px-4 py-3 bg-white border-2 border-gray-400 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black focus:border-black outline-none"

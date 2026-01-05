@@ -13,9 +13,9 @@ export enum ProductTypeEnum {
 }
 
 export enum CategoryEnum {
-    DROP1 = 'drop1',
-    DROP2 = 'drop2',
-    DROP3 = 'drop3',
+    DROP1 = 'Drop 1',
+    DROP2 = 'Drop 2',
+    DROP3 = 'Drop 3',
 }
 
 export enum ProductStatusEnum {

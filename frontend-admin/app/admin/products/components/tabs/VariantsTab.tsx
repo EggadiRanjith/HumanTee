@@ -50,7 +50,7 @@ export default function VariantsTab({ errors }: VariantsTabProps) {
             id: variant.id,
             sku: variant.sku,
             size: variant.size,
-            stock: variant.stock,
+            stock: variant.stock || 0,
             price: variant.priceOverride,
         }));
     }, [variants]);
@@ -79,6 +79,7 @@ export default function VariantsTab({ errors }: VariantsTabProps) {
                     stock: variant.stock,
                     priceOverride: variant.price,
                 }, productName || 'Product');
+            } else {
                 // Update existing variant
                 updateVariant(variant.id, {
                     sku: variant.sku,
@@ -94,55 +95,38 @@ export default function VariantsTab({ errors }: VariantsTabProps) {
         <div className="space-y-6 sm:space-y-8">
             <FormSection title="Product Variants">
                 <div className="space-y-4 sm:space-y-5">
-                    {/* Enable Variants Toggle */}
-                    <div className="flex items-center gap-3">
-                        <input
-                            type="checkbox"
-                            id="hasVariants"
-                            checked={enabled}
-                            onChange={(e: any) => setEnabled(e.target.checked)}
-                            className="w-4 h-4 sm:w-5 sm:h-5 text-black border-gray-300 rounded focus:ring-black"
-                        />
-                        <label htmlFor="hasVariants" className="text-sm sm:text-base font-medium text-gray-900">
-                            This product has multiple variants (sizes, colors)
-                        </label>
+                    {/* Info Message */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <p className="text-sm text-blue-800">
+                            <strong>Note:</strong> All products require at least one variant (size). Add all available sizes for this product.
+                        </p>
                     </div>
 
-                    {enabled && (
-                        <>
-                            {/* Professional Stats Card */}
-                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 sm:p-5">
-                                <div className="flex items-center justify-between mb-3">
-                                    <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Variant Overview</h4>
-                                    <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">Active</span>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-white rounded-lg p-3 shadow-sm">
-                                        <div className="text-xs text-gray-500 mb-1">Total Variants</div>
-                                        <div className="text-2xl font-bold text-gray-900">{variants.length}</div>
-                                    </div>
-                                    <div className="bg-white rounded-lg p-3 shadow-sm">
-                                        <div className="text-xs text-gray-500 mb-1">Total Stock</div>
-                                        <div className="text-2xl font-bold text-gray-900">{totalStock}</div>
-                                        <div className="text-xs text-gray-500 mt-1">units</div>
-                                    </div>
-                                </div>
+                    {/* Professional Stats Card */}
+                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 sm:p-5">
+                        <div className="flex items-center justify-between mb-3">
+                            <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Variant Overview</h4>
+                            <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">Active</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-white rounded-lg p-3 shadow-sm">
+                                <div className="text-xs text-gray-500 mb-1">Total Variants</div>
+                                <div className="text-2xl font-bold text-gray-900">{variants.length}</div>
                             </div>
+                            <div className="bg-white rounded-lg p-3 shadow-sm">
+                                <div className="text-xs text-gray-500 mb-1">Total Stock</div>
+                                <div className="text-2xl font-bold text-gray-900">{totalStock}</div>
+                                <div className="text-xs text-gray-500 mt-1">units</div>
+                            </div>
+                        </div>
+                    </div>
 
-                            {/* Variant Manager */}
-                            <VariantManager
-                                variants={variantsArray}
-                                onChange={handleVariantsChange}
-                                productName={productName}
-                            />
-                        </>
-                    )}
-
-                    {!enabled && (
-                        <p className="text-sm text-gray-500">
-                            Enable variants to manage different sizes and colors for this product.
-                        </p>
-                    )}
+                    {/* Variant Manager */}
+                    <VariantManager
+                        variants={variantsArray}
+                        onChange={handleVariantsChange}
+                        productName={productName}
+                    />
 
                     {errors?.variants && (
                         <p className="mt-2 text-sm text-red-600 flex items-center gap-1">

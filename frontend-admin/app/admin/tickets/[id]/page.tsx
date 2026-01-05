@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import apiClient from '@/lib/api-client';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import {
     FiArrowLeft, FiSend, FiClock, FiCheckCircle,
     FiAlertCircle, FiUser, FiShield, FiLoader,
@@ -14,6 +15,7 @@ import {
 export default function TicketDetailPage() {
     const params = useParams();
     const router = useRouter();
+    const queryClient = useQueryClient();
     const ticketId = params.id as string;
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -30,7 +32,7 @@ export default function TicketDetailPage() {
     const [updateNote, setUpdateNote] = useState('');
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
     };
 
     useEffect(() => {
@@ -61,17 +63,19 @@ export default function TicketDetailPage() {
     };
 
     const handleSendReply = async () => {
-        if (!replyText.trim() || isActionLoading) return;
+        if (!replyText.trim()) return;
         setIsActionLoading(true);
         try {
             await apiClient.post(`/admin/tickets/${ticketId}/reply`, {
-                message: replyText.trim()
+                message: replyText,
+                attachments: []
             });
             setReplyText('');
-            // Refresh ticket to show new message
             await fetchTicket();
+            // Invalidate tickets cache so list page shows updated data
+            queryClient.invalidateQueries({ queryKey: ['admin-tickets'] });
+            toast.success("Reply sent successfully!");
         } catch (err: any) {
-            // Failed to send reply
             toast.error("Failed to send reply. Please try again.");
         } finally {
             setIsActionLoading(false);
@@ -89,6 +93,8 @@ export default function TicketDetailPage() {
             });
             setUpdateNote('');
             await fetchTicket();
+            // Invalidate tickets cache so list page shows updated data
+            queryClient.invalidateQueries({ queryKey: ['admin-tickets'] });
             toast.success("Ticket updated successfully!");
         } catch (err: any) {
             // Failed to update ticket
@@ -132,24 +138,24 @@ export default function TicketDetailPage() {
     return (
         <div className="space-y-6">
             {/* Top Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-3 sm:p-4 rounded-xl border border-gray-200 shadow-sm">
                 <div className="flex items-center gap-4">
                     <Link href="/admin/tickets">
                         <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                             <FiArrowLeft className="w-5 h-5 text-gray-600" />
                         </button>
                     </Link>
-                    <div>
-                        <div className="flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                             <h1 className="text-xl font-bold text-black font-mono">{ticket.ticketNumber}</h1>
                             <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold border ${getStatusStyle(ticket.status)}`}>
                                 {ticket.status.replace(/_/g, ' ')}
                             </span>
                         </div>
-                        <p className="text-sm text-gray-500 mt-0.5">{ticket.subject}</p>
+                        <p className="text-xs sm:text-sm text-gray-500 mt-0.5 line-clamp-1">{ticket.subject}</p>
                     </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                     <button
                         onClick={() => router.push(`/admin/orders/${ticket.orderId}`)}
                         className="px-4 py-2 border border-gray-200 rounded-lg text-xs font-medium hover:bg-gray-50 transition-all flex items-center gap-2"
@@ -165,10 +171,10 @@ export default function TicketDetailPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 {/* Chat History */}
-                <div className="lg:col-span-2 flex flex-col h-[700px] bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="lg:col-span-2 flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 250px)', maxHeight: '700px', minHeight: '500px' }}>
                     {/* Messages Area */}
                     <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50/30">
                         {ticket.messages?.map((msg: any) => {
@@ -251,8 +257,8 @@ export default function TicketDetailPage() {
                     </div>
                 </div>
 
-                {/* Sidebar Controls */}
-                <div className="space-y-6">
+                {/* Sidebar Controls - Stack on mobile */}
+                <div className="space-y-4 lg:space-y-6">
 
                     {/* Customer & Order Card */}
                     <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">

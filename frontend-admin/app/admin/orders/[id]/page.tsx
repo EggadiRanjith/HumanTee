@@ -121,6 +121,8 @@ export default function OrderDetailPage() {
             await refetch();
             setShowStatusModal(false);
         } catch (err) {
+            console.error('Order status update error:', err);
+            console.error('Error response:', err.response?.data);
             alert(err instanceof Error ? err.message : 'Failed to update status');
         } finally {
             setIsUpdating(false);

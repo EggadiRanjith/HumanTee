@@ -11,22 +11,13 @@ export function ProductCardSkeleton() {
         <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent" />
       </div>
 
-      {/* Content skeleton */}
-      <div className="p-4 space-y-3">
+      {/* Content skeleton - compressed */}
+      <div className="p-3 space-y-2">
         {/* Title */}
         <div className="h-4 bg-white/10 rounded w-3/4" />
 
-        {/* Subtitle/Description */}
-        <div className="h-3 bg-white/5 rounded w-1/2" />
-
         {/* Price */}
-        <div className="flex items-center gap-2 mt-2">
-          <div className="h-5 bg-white/10 rounded w-20" />
-          <div className="h-4 bg-white/5 rounded w-16" />
-        </div>
-
-        {/* Stock indicator */}
-        <div className="h-3 bg-white/5 rounded w-24 mt-1" />
+        <div className="h-4 bg-white/10 rounded w-20" />
       </div>
     </div>
   );

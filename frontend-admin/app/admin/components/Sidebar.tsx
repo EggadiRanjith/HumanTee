@@ -45,6 +45,7 @@ export function Sidebar() {
         { href: '/admin/tickets', label: 'Support', icon: '💬' },
         { href: '/admin/analytics', label: 'Analytics', icon: '📈' },
         { href: '/admin/audit-logs', label: 'Audit Logs', icon: '📋' },
+        { href: '/admin/user-logs', label: 'User Logs', icon: '👥' },
         { href: '/admin/settings', label: 'Settings', icon: '⚙️' },
     ];
 

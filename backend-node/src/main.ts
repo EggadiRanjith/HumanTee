@@ -26,6 +26,13 @@ async function bootstrap() {
 
   // SECURITY: CSRF protection for cookie-based endpoints
   app.use((req: any, res: any, next: any) => {
+    // Read CSRF setting from environment
+    const csrfEnabled = process.env.CSRF_ENABLED === 'true';
+
+    if (!csrfEnabled) {
+      return next();
+    }
+
     // CSRF protection for state-changing operations
     const csrfProtectedPaths = [
       '/auth/refresh',
@@ -56,32 +63,32 @@ async function bootstrap() {
     next();
   });
 
-  // CORS configuration
-  app.enableCors({
-    origin: [
-      process.env.FRONTEND_URL,
-      process.env.ADMIN_URL,
-      // Allow localhost in development only
-      ...(process.env.NODE_ENV === 'development'
-        ? [
-          'http://localhost:3000',
-          'http://localhost:3002',
-          'http://10.139.121.158:3000', // Mobile access - store
-          'http://10.139.121.158:3002', // Mobile access - admin
-          'http://192.168.131.1:3000',  // Alternative IP - store
-          'http://192.168.131.1:3002',  // Alternative IP - admin
-        ]
-        : []
-      ),
-    ].filter(Boolean),
-    credentials: true,
-  });
+  // CORS configuration from environment
+  const corsEnabled = process.env.CORS_ENABLED === 'true';
+  const corsOrigins = process.env.CORS_ORIGINS?.split(',').map(o => o.trim()) || [];
+  const corsCredentials = process.env.CORS_CREDENTIALS === 'true';
+
+  if (corsEnabled) {
+    app.enableCors({
+      origin: corsOrigins.length > 0 ? corsOrigins : true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-TOKEN'],
+      credentials: corsCredentials,
+    });
+    logger.log(`🌐 CORS: Enabled for origins: ${corsOrigins.join(', ')}`);
+  } else {
+    logger.warn('⚠️  CORS: DISABLED');
+  }
 
   await app.listen(port, '0.0.0.0');
 
   logger.log(`🚀 Server is running on: http://localhost:${port}`);
   logger.log(`✅ Database connected successfully`);
-  logger.log(`🔒 Security: CSRF protection enabled`);
+
+  // Read CSRF setting for logging
+  const csrfEnabled = process.env.CSRF_ENABLED === 'true';
+  logger.log(`🔒 Security: CSRF protection ${csrfEnabled ? 'ENABLED' : 'DISABLED'}`);
+  logger.log(`🌐 Security: CORS ${corsEnabled ? `ENABLED (${corsOrigins.length} origins)` : 'DISABLED'}`);
   logger.log(`🔒 Security: Rate limiting enabled`);
   logger.log(`📊 Health check: /health`);
 }

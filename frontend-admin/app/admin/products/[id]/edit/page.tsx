@@ -77,9 +77,11 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
             pricingStore.setTaxable(product.taxable || false);
 
             // Load inventory
-            inventoryStore.setSku(product.sku || '');
-            inventoryStore.setBarcode(product.barcode || '');
-            inventoryStore.setTrackQuantity(product.trackQuantity !== false);
+            inventoryStore.setSKU(product.sku || '');
+            inventoryStore.setTrackInventory(product.trackQuantity !== false);
+            if (product.stock !== undefined) {
+                inventoryStore.setStock(product.stock);
+            }
 
             // Load variants
             if (product.variants && product.variants.length > 0) {
@@ -89,7 +91,7 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
                     color: v.color,
                     sku: v.sku,
                     price: v.price,
-                    stockQuantity: v.stockQuantity,
+                    stock: v.stock || v.stock_quantity || 0,
                     isActive: v.isActive !== false,
                 })));
             }
@@ -106,8 +108,7 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
 
             // Load organization
             organizationStore.setStatus(product.status || 'DRAFT');
-            organizationStore.setTags(product.tags || []);
-            organizationStore.setIsFeatured(product.isFeatured || false);
+            organizationStore.setFeatured(product.isFeatured || false);
 
             // Mark as clean after loading
             markAllDomainsClean();
@@ -119,13 +120,53 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
         setIsSaving(true);
         try {
             const productData = aggregateProductData();
-            await apiClient.patch(`/admin/products/${id}`, productData);
+
+            // Sanitize data - remove fields backend doesn't accept
+            const sanitizedData = {
+                name: productData.name,
+                description: productData.description,
+                productType: productData.productType,
+                category: productData.category,
+                price: productData.price,
+                compareAtPrice: productData.compareAtPrice,
+                costPerItem: productData.costPerItem,
+                taxable: productData.taxable,
+                hasVariants: productData.hasVariants,
+                trackInventory: productData.trackInventory,
+                stock: productData.stock,
+                sku: productData.sku,
+                continueSellingWhenOutOfStock: productData.continueSellingWhenOutOfStock,
+                lowStockThreshold: productData.lowStockThreshold,
+                status: productData.status,
+                isFeatured: productData.isFeatured,
+                collections: productData.collections,
+                // Sanitize images - remove id but keep order
+                images: productData.images.map((img: any, index: number) => ({
+                    url: img.url,
+                    altText: img.altText,
+                    isPrimary: img.isPrimary,
+                    order: index,
+                })),
+                // Sanitize variants - remove id, stockQuantity, isActive and rename to stock
+                variants: productData.variants.map((v: any) => ({
+                    size: v.size,
+                    sku: v.sku,
+                    price: v.price,
+                    stock: v.stockQuantity || v.stock || 0,
+                })),
+            };
+
+            console.log('Saving sanitized product data:', sanitizedData);
+            await apiClient.put(`/admin/products/${id}`, sanitizedData);
             toast.success('Product updated successfully!');
             markAllDomainsClean();
-            router.push(`/admin/products/${id}`);
-        } catch (error) {
-            toast.error('Failed to update product');
-            console.error(error);
+
+            // Force page reload to show updated data
+            router.push(`/admin/products/${id}?t=${Date.now()}`);
+        } catch (error: any) {
+            console.error('Save error:', error);
+            console.error('Error response:', error.response?.data);
+            toast.error(error.response?.data?.message || 'Failed to update product');
         } finally {
             setIsSaving(false);
         }
@@ -186,7 +227,18 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
             {/* Tab Navigation */}
             <div className="bg-white border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+                    <TabNavigation
+                        activeTab={activeTab}
+                        onTabChange={setActiveTab}
+                        tabs={[
+                            { key: 'basic', label: 'Basic Info', icon: '📝', hasErrors: false },
+                            { key: 'media', label: 'Media', icon: '🖼️', hasErrors: false },
+                            { key: 'pricing', label: 'Pricing', icon: '💰', hasErrors: false },
+                            { key: 'variants', label: 'Variants', icon: '🎨', hasErrors: false },
+                            { key: 'inventory', label: 'Inventory', icon: '📦', hasErrors: false },
+                            { key: 'organization', label: 'Organization', icon: '🏷️', hasErrors: false },
+                        ]}
+                    />
                 </div>
             </div>
 
@@ -198,6 +250,45 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
                 {activeTab === 'variants' && <VariantsTab />}
                 {activeTab === 'inventory' && <InventoryTab />}
                 {activeTab === 'organization' && <OrganizationTab />}
+
+                {/* Tab Navigation Buttons */}
+                <div className="mt-8 flex items-center justify-between border-t border-gray-200 pt-6">
+                    <button
+                        onClick={() => {
+                            const tabs: TabKey[] = ['basic', 'media', 'pricing', 'variants', 'inventory', 'organization'];
+                            const currentIndex = tabs.indexOf(activeTab);
+                            if (currentIndex > 0) {
+                                setActiveTab(tabs[currentIndex - 1]);
+                            }
+                        }}
+                        disabled={activeTab === 'basic'}
+                        className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        ← Back
+                    </button>
+
+                    {activeTab !== 'organization' ? (
+                        <button
+                            onClick={() => {
+                                const tabs: TabKey[] = ['basic', 'media', 'pricing', 'variants', 'inventory', 'organization'];
+                                const currentIndex = tabs.indexOf(activeTab);
+                                if (currentIndex < tabs.length - 1) {
+                                    setActiveTab(tabs[currentIndex + 1]);
+                                }
+                            }}
+                            className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors"
+                        >
+                            Continue →
+                        </button>
+                    ) : (
+                        <button
+                            disabled
+                            className="px-6 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed"
+                        >
+                            End of Form - Use "Save Changes" Above
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );

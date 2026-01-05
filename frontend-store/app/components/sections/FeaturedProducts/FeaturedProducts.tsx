@@ -54,9 +54,23 @@ function FeaturedProducts() {
   // Don't render if explicitly disabled
   if (enabled === false) return null;
 
-  // Loading state
+  // Loading state - show header + skeleton
   if (settingsLoading || isLoadingProducts) {
-    return <FeaturedProductsSkeleton />;
+    return (
+      <section className="relative w-full pt-12 pb-20 px-4 sm:px-6 md:px-10 lg:px-14 cinematic-bg-dusk">
+        <GradientOverlay variant="aurora" />
+        <div className="relative max-w-screen-xl mx-auto">
+          {/* Show header even while loading */}
+          <SectionHeader
+            title={title}
+            actionText={settings?.actionText}
+            actionHref={settings?.actionHref}
+          />
+          {/* Product grid skeleton */}
+          <FeaturedProductsSkeleton />
+        </div>
+      </section>
+    );
   }
 
   // Error state - show empty instead of error
@@ -98,8 +112,8 @@ function FeaturedProducts() {
         {/* Header */}
         <SectionHeader
           title={title}
-          actionText={settings?.actionText}
-          actionHref={settings?.actionHref}
+          actionText={settings?.actionText || "View All"}
+          actionHref={settings?.actionHref || "/shop"}
         />
 
         {/* Product Grid */}

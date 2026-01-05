@@ -19,13 +19,15 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     const { id } = use(params);
     const router = useRouter();
 
-    // Fetch product data
+    // Fetch product data - add timestamp to force refresh
     const { data: product, isLoading, error } = useQuery({
         queryKey: ['product', id],
         queryFn: async () => {
             const response = await apiClient.get(`/admin/products/${id}`);
             return response.data;
         },
+        staleTime: 0, // Always fetch fresh data
+        refetchOnMount: 'always', // Refetch when component mounts
     });
 
     if (isLoading) {

@@ -121,9 +121,9 @@ export default function BasicInfoTab({ errors }: BasicInfoTabProps) {
                                     }`}
                             >
                                 <option value="">Select category</option>
-                                <option value="drop1">Drop 1</option>
-                                <option value="drop2">Drop 2</option>
-                                <option value="drop3">Drop 3</option>
+                                <option value="Drop 1">Drop 1</option>
+                                <option value="Drop 2">Drop 2</option>
+                                <option value="Drop 3">Drop 3</option>
                             </select>
                             {errors?.category && (
                                 <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">

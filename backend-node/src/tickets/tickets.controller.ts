@@ -8,6 +8,7 @@ import {
     Query,
     UseGuards,
     Request,
+    UseInterceptors,
 } from '@nestjs/common';
 import { TicketsService } from './tickets.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
@@ -16,6 +17,7 @@ import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { Throttle } from '@nestjs/throttler';
+import { AuditInterceptor } from '../common/interceptors/audit.interceptor';
 
 @Controller('tickets')
 @UseGuards(JwtAuthGuard)
@@ -78,6 +80,7 @@ export class TicketsController {
  */
 @Controller('admin/tickets')
 @UseGuards(JwtAuthGuard, AdminGuard)
+@UseInterceptors(AuditInterceptor)
 export class AdminTicketsController {
     constructor(private readonly ticketsService: TicketsService) { }
 

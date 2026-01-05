@@ -230,7 +230,7 @@ export default function EditDiscountPage() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 pb-24 lg:pb-6">
             {/* Header */}
             <div>
                 <Link
@@ -246,16 +246,6 @@ export default function EditDiscountPage() {
                             Update discount rules (Live Connection)
                         </p>
                     </div>
-                    <button
-                        onClick={handleSave}
-                        disabled={isLoading}
-                        className={`${isLoading ? 'bg-gray-400' : 'bg-black hover:bg-gray-900'} text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm flex items-center gap-2`}
-                    >
-                        {isLoading && (
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        )}
-                        {isLoading ? 'Updating...' : 'Update Discount'}
-                    </button>
                 </div>
             </div>
 
@@ -741,6 +731,20 @@ export default function EditDiscountPage() {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Sticky Bottom Save Button (Mobile Only) */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-50">
+                <button
+                    onClick={handleSave}
+                    disabled={isLoading}
+                    className={`w-full ${isLoading ? 'bg-gray-400' : 'bg-black hover:bg-gray-900'} text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2`}
+                >
+                    {isLoading && (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    )}
+                    {isLoading ? 'Updating...' : 'Update Discount'}
+                </button>
             </div>
         </div>
     );

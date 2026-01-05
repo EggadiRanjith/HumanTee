@@ -22,18 +22,22 @@ export function usePaymentFlow() {
     const [error, setError] = useState('');
 
     const handlePlaceOrder = async () => {
+        console.log('🔵 Place Order clicked!', { paymentMethod, itemsCount: items.length });
+
         if (!paymentMethod) {
+            console.log('❌ No payment method selected');
             setError('Please select a payment method');
             return;
         }
 
+        console.log('✅ Starting order creation...');
         setIsProcessing(true);
         setError('');
 
         try {
             // SECURITY: Backend calculates prices (frontend sends ONLY items + quantities)
+            console.log('📤 Sending order request...');
             const response = await apiClient.post('/orders', {
-                idempotencyKey: crypto.randomUUID(), // Prevent duplicate order creation on network retry
                 items: items.map(item => ({
                     productId: String(item.id),
                     variantId: item.variantId || String(item.id),
@@ -52,12 +56,30 @@ export function usePaymentFlow() {
                 },
             });
 
+            console.log('✅ Order response received:', response.data);
+
             const { orderNumber, razorpayOrderId, totalAmount } = response.data;
 
             // Set order number
             setOrderNumber(orderNumber);
 
-            // Open Razorpay checkout
+            console.log('🔍 Checking order type:', { orderNumber, razorpayOrderId });
+
+            // Check if this is a development order (backend returns dev_timestamp)
+            const isDevelopmentOrder = razorpayOrderId?.startsWith('dev_');
+
+            console.log('🎯 Is development order?', isDevelopmentOrder);
+
+            if (isDevelopmentOrder) {
+                // Development mode: Skip payment, go straight to success
+                console.log('🚀 Development mode detected! Redirecting to success...');
+                clearCart();
+                setLoading(true);
+                router.push("/checkout/status/success");
+                return;
+            }
+
+            // Production mode: Open Razorpay checkout
             const options = {
                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
                 amount: Math.round(totalAmount * 100), // Convert to paise
@@ -112,11 +134,22 @@ export function usePaymentFlow() {
             razorpay.open();
 
         } catch (err: any) {
+            console.error('❌ Order creation failed:', err);
+            console.error('Error details:', {
+                message: err.message,
+                response: err.response?.data,
+                status: err.response?.status,
+                isTimeout: err.isTimeout
+            });
+            console.error('Full response data:', err.response?.data);
+
             // Error handling
             if (err.isTimeout) {
                 setError('The request took too long. Please try again.');
             } else if (err.response?.status === 400) {
-                setError(err.response?.data?.message || 'Please check your order details and try again.');
+                const errorMessage = err.response?.data?.message || 'Please check your order details and try again.';
+                console.error('Backend validation error:', errorMessage);
+                setError(errorMessage);
             } else if (err.response?.status === 402) {
                 setError('Payment was declined. Please try another method.');
             } else {

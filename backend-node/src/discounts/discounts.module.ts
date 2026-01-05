@@ -7,9 +7,11 @@ import { OrderDiscount } from '../entities/order-discount.entity';
 import { Order } from '../entities';
 import { DiscountsService } from './discounts.service';
 import { DiscountsController, PublicDiscountsController } from './discounts.controller';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
     imports: [
+        AuthModule,
         TypeOrmModule.forFeature([
             Discount,
             DiscountTargetGroup,

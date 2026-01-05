@@ -33,7 +33,7 @@ interface VariantsState {
 }
 
 const initialState = {
-    enabled: false,
+    enabled: true, // Always enabled for t-shirt products (sizes required)
     variants: [] as Variant[],
     isDirty: false,
 };

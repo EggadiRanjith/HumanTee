@@ -15,10 +15,12 @@ import { Product } from '../products/entities/product.entity';
 import { ProductVariant } from '../products/entities/product-variant.entity';
 import { DiscountsModule } from '../discounts/discounts.module';
 import { RazorpayService } from '../payments/razorpay.service';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
     imports: [
         DiscountsModule,
+        AuthModule,
         TypeOrmModule.forFeature([
             Order,
             OrderItem,

@@ -8,11 +8,13 @@ import {
     Body,
     UseGuards,
     Req,
+    UseInterceptors,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { OrderService } from './order.service';
 import { UpdateOrderStatusDto, AddShipmentDto, OrderFiltersDto } from './dto/admin-order.dto';
+import { AuditInterceptor } from '../common/interceptors/audit.interceptor';
 
 /**
  * AdminOrdersController
@@ -20,6 +22,7 @@ import { UpdateOrderStatusDto, AddShipmentDto, OrderFiltersDto } from './dto/adm
  */
 @Controller('admin/orders')
 @UseGuards(JwtAuthGuard, AdminGuard)
+@UseInterceptors(AuditInterceptor)
 export class AdminOrdersController {
     constructor(private readonly orderService: OrderService) { }
 

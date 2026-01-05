@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useAdminCustomers } from '@/lib/queries/useCustomers';
 import { useDebounce } from '../hooks/useDebounce';
-import { CustomersHeader, CustomersSkeleton, CustomersEmpty, CustomersError } from './components';
+import { CustomersHeader, CustomersSkeleton, CustomersEmpty, CustomersError, CustomerCard } from './components';
 import {
     FiSearch, FiFilter, FiLoader, FiUser,
     FiShoppingBag, FiCalendar, FiArrowRight,
@@ -13,7 +13,9 @@ import {
 
 export default function CustomersPage() {
     const [searchQuery, setSearchQuery] = useState('');
-    const debouncedSearch = useDebounce(searchQuery, 300);
+    // Sanitize search input for security
+    const sanitizedSearch = searchQuery.trim().replace(/[<>"']/g, '');
+    const debouncedSearch = useDebounce(sanitizedSearch, 300);
     const [sort, setSort] = useState('newest');
     const [activeFilter, setActiveFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
@@ -26,11 +28,18 @@ export default function CustomersPage() {
 
     const customers = data || [];
 
-    // Paginated customers
-    const totalPages = Math.ceil(customers.length / itemsPerPage);
-    const paginatedCustomers = customers.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
+    // Memoized pagination calculations for performance
+    const totalPages = useMemo(() =>
+        Math.ceil(customers.length / itemsPerPage),
+        [customers.length, itemsPerPage]
+    );
+
+    const paginatedCustomers = useMemo(() =>
+        customers.slice(
+            (currentPage - 1) * itemsPerPage,
+            currentPage * itemsPerPage
+        ),
+        [customers, currentPage, itemsPerPage]
     );
 
     // Reset to page 1 when search changes
@@ -99,7 +108,7 @@ export default function CustomersPage() {
                         placeholder="Search by name or email..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-black transition-all"
+                        className="w-full pl-10 pr-4 py-2 md:py-2 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm md:text-sm text-base focus:outline-none focus:border-black transition-all"
                     />
                 </div>
                 <div className="flex gap-2">
@@ -116,8 +125,8 @@ export default function CustomersPage() {
                 </div>
             </div>
 
-            {/* Table */}
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+            {/* Desktop: Table */}
+            <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
@@ -191,6 +200,23 @@ export default function CustomersPage() {
                 </div>
             </div>
 
+            {/* Mobile: Cards */}
+            <div className="md:hidden space-y-3">
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                        <FiLoader className="w-6 h-6 animate-spin text-gray-400" />
+                    </div>
+                ) : customers.length === 0 ? (
+                    <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-500 text-sm">
+                        No customers found.
+                    </div>
+                ) : (
+                    paginatedCustomers.map((customer: any) => (
+                        <CustomerCard key={customer.id} customer={customer} />
+                    ))
+                )}
+            </div>
+
             {/* Pagination */}
             {totalPages > 1 && (
                 <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-4">
@@ -222,8 +248,8 @@ export default function CustomersPage() {
                                         key={page}
                                         onClick={() => setCurrentPage(page)}
                                         className={`px-3 py-1 border rounded-lg text-sm ${currentPage === page
-                                                ? 'bg-black text-white border-black'
-                                                : 'border-gray-300 hover:bg-gray-50'
+                                            ? 'bg-black text-white border-black'
+                                            : 'border-gray-300 hover:bg-gray-50'
                                             }`}
                                     >
                                         {page}

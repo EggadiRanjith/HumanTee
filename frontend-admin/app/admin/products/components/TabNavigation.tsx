@@ -17,7 +17,7 @@ export default function TabNavigation({ activeTab, onTabChange, tabs }: TabNavig
     return (
         <div className="border-b border-gray-200 bg-white sticky top-0 z-10">
             <div className="flex overflow-x-auto scrollbar-hide">
-                {tabs.map((tab) => (
+                {(tabs || []).map((tab) => (
                     <div
                         key={tab.key}
                         className={`

@@ -3,20 +3,32 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useAdminTickets } from '@/lib/queries/useTickets';
-import { TicketsHeader, TicketsSkeleton, TicketsEmpty, TicketsError } from './components';
+import { TicketsHeader, TicketsSkeleton, TicketsEmpty, TicketsError, TicketCard } from './components';
 import { FiSearch, FiFilter, FiLoader, FiAlertCircle, FiClock, FiCheckCircle, FiMessageSquare } from 'react-icons/fi';
 
 export default function TicketsPage() {
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [priorityFilter, setPriorityFilter] = useState('ALL');
     const [searchQuery, setSearchQuery] = useState('');
+    // Sanitize search input for security
+    const sanitizedSearch = searchQuery.trim().replace(/[<>"']/g, '');
 
     // Use React Query hook - automatic caching and loading states
     const { data: tickets = [], isLoading, error, refetch } = useAdminTickets({
         status: statusFilter !== 'ALL' ? statusFilter.toLowerCase() : undefined,
         priority: priorityFilter !== 'ALL' ? priorityFilter.toLowerCase() : undefined,
-        search: searchQuery || undefined,
+        search: sanitizedSearch || undefined,
     });
+
+    // Calculate stats - MUST be before conditional returns to maintain hook order
+    const stats = useMemo(() => {
+        return {
+            open: tickets.filter(t => t.status === 'open').length,
+            inProgress: tickets.filter(t => t.status === 'in_progress').length,
+            waiting: tickets.filter(t => t.status === 'waiting_on_customer').length,
+            resolved: tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length
+        };
+    }, [tickets]);
 
     // Loading state
     if (isLoading) return <TicketsSkeleton />;
@@ -26,15 +38,6 @@ export default function TicketsPage() {
 
     // Empty state
     if (tickets.length === 0) return <TicketsEmpty />;
-
-    const stats = useMemo(() => {
-        return {
-            open: tickets.filter(t => t.status === 'open').length,
-            inProgress: tickets.filter(t => t.status === 'in_progress').length,
-            waiting: tickets.filter(t => t.status === 'waiting_on_customer').length,
-            resolved: tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length
-        };
-    }, [tickets]);
 
     const getStatusStyle = (status: string) => {
         switch (status.toLowerCase()) {
@@ -176,8 +179,8 @@ export default function TicketsPage() {
                 </div>
             )}
 
-            {/* Table/List */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            {/* Desktop: Table */}
+            <div className="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-gray-50/50 border-b border-gray-200">
@@ -247,6 +250,19 @@ export default function TicketsPage() {
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            {/* Mobile: Cards */}
+            <div className="md:hidden space-y-3">
+                {tickets.map((ticket: any) => (
+                    <TicketCard
+                        key={ticket.id}
+                        ticket={ticket}
+                        getStatusStyle={getStatusStyle}
+                        getPriorityStyle={getPriorityStyle}
+                        getTimeAgo={getTimeAgo}
+                    />
+                ))}
             </div>
         </div>
     );

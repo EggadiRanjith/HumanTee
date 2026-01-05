@@ -15,16 +15,16 @@ export class AnalyticsController {
     constructor(private readonly analyticsService: AnalyticsService) { }
 
     /**
-     * Get analytics data
-     * GET /admin/analytics?timeRange=7d
+     * Get advanced analytics data with comparison metrics
+     * GET /admin/analytics?dateRange=30d
      */
     @Get()
-    async getAnalytics(@Query('timeRange') timeRange: string = '7d') {
-        // Convert timeRange to period
+    async getAnalytics(@Query('dateRange') dateRange: string = '30d') {
+        // Convert dateRange to period
         const now = new Date();
         let startDate = new Date();
 
-        switch (timeRange) {
+        switch (dateRange) {
             case '7d':
                 startDate.setDate(now.getDate() - 7);
                 break;
@@ -34,16 +34,19 @@ export class AnalyticsController {
             case '90d':
                 startDate.setDate(now.getDate() - 90);
                 break;
+            case '1y':
+                startDate.setFullYear(now.getFullYear() - 1);
+                break;
             default:
-                startDate.setDate(now.getDate() - 7);
+                startDate.setDate(now.getDate() - 30);
         }
 
         const period = {
             startDate,
             endDate: now,
-            timezone: 'Asia/Kolkata', // TODO: Get from settings
+            timezone: 'Asia/Kolkata',
         };
 
-        return this.analyticsService.getDashboard(period, RevenueType.NET);
+        return this.analyticsService.getAdvancedAnalytics(period, RevenueType.NET);
     }
 }

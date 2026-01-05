@@ -73,8 +73,8 @@ export class RedisService implements OnModuleDestroy {
                 await this.redis.set(key, serialized);
             }
         } catch (error) {
-            this.logger.error(`Failed to set key ${key}:`, error);
-            throw error;
+            this.logger.error(`Failed to set key ${key}:`);
+            // Don't throw - allow app to continue without Redis
         }
     }
 

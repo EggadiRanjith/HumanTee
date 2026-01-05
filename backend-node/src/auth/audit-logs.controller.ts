@@ -6,13 +6,16 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
+import { AdminAuditService } from './admin-audit.service';
 
 @Controller('admin/audit-logs')
 @UseGuards(JwtAuthGuard, AdminGuard)
 export class AuditLogsController {
+    constructor(private readonly auditService: AdminAuditService) { }
+
     /**
-     * Get audit logs
-     * GET /admin/audit-logs?action=login&userId=123
+     * Get audit logs with filters
+     * GET /admin/audit-logs?action=PRODUCT_UPDATED&userId=123
      */
     @Get()
     async getAuditLogs(
@@ -21,8 +24,12 @@ export class AuditLogsController {
         @Query('startDate') startDate?: string,
         @Query('endDate') endDate?: string,
     ) {
-        // TODO: Implement actual audit logs when audit log system is built
-        // For now, return empty array to prevent 404
-        return [];
+        return this.auditService.getAuditLogs({
+            action,
+            userId,
+            startDate,
+            endDate,
+            limit: 100,
+        });
     }
 }

@@ -62,21 +62,12 @@ export default function VariantManager({
                             ) : (
                                 <div className="flex items-center justify-between gap-4">
                                     <div className="flex items-center gap-4 flex-1">
-                                        {/* Color Swatch */}
-                                        <div
-                                            className="w-10 h-10 rounded border border-gray-300 flex-shrink-0"
-                                            style={{ backgroundColor: variant.colorHex }}
-                                            title={variant.color}
-                                        />
-
                                         {/* Variant Info */}
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <span className="font-medium text-black">
+                                                <span className="font-medium text-black text-lg">
                                                     {variant.size}
                                                 </span>
-                                                <span className="text-gray-400">•</span>
-                                                <span className="text-gray-900">{variant.color}</span>
                                                 {variant.price && (
                                                     <>
                                                         <span className="text-gray-400">•</span>
@@ -85,7 +76,7 @@ export default function VariantManager({
                                                 )}
                                             </div>
                                             <div className="text-sm text-gray-600 mt-1">
-                                                SKU: {variant.sku} • Stock: {variant.stock}
+                                                SKU: {variant.sku} • Stock: {variant.stock ?? 0}
                                                 {variant.weight && ` • ${variant.weight}g`}
                                             </div>
                                         </div>

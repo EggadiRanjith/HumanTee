@@ -21,10 +21,10 @@ export function ProductPreview({ product, onEdit }: ProductPreviewProps) {
         subtitle: product.description || '',
         description: product.description || '',
         image: product.images?.[0]?.url || '',
-        images: product.images?.map((img: any) => img.url) || [],
+        images: (product.images || []).map((img: any) => img.url),
         price: product.basePrice,
         compareAtPrice: product.compareAtPrice,
-        sizes: product.variants?.map((v: any) => v.size) || ['S', 'M', 'L', 'XL'],
+        sizes: (product.variants || []).map((v: any) => v.size),
         variants: product.variants || [],
         vendor: 'HumanTee',
         productType: product.category || 'T-Shirt',
@@ -36,10 +36,10 @@ export function ProductPreview({ product, onEdit }: ProductPreviewProps) {
             {/* Back Button */}
             <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10 pt-4 sm:pt-6">
                 <button
-                    onClick={() => window.history.back()}
+                    onClick={() => window.location.href = '/admin/products'}
                     className="text-xs sm:text-sm text-white/60 hover:text-white flex items-center gap-1 transition-colors"
                 >
-                    ← Back
+                    ← Back to Products
                 </button>
             </div>
 

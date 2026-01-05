@@ -14,7 +14,7 @@ import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { discountsApi } from '@/lib/api/discounts';
 import { useAdminDiscounts } from '@/lib/queries/useDiscounts';
-import { DiscountsHeader, DiscountsSkeleton, DiscountsEmpty, DiscountsError } from './components';
+import { DiscountsHeader, DiscountsSkeleton, DiscountsEmpty, DiscountsError, DiscountCard } from './components';
 import { toast } from 'sonner';
 
 type DiscountType = 'PERCENT' | 'FLAT';
@@ -37,6 +37,8 @@ interface Discount {
 
 export default function DiscountsPage() {
     const [searchQuery, setSearchQuery] = useState('');
+    // Sanitize search input for security
+    const sanitizedSearch = searchQuery.trim().replace(/[<>"']/g, '');
     const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
     const [typeFilter, setTypeFilter] = useState<'ALL' | DiscountType>('ALL');
     const [currentPage, setCurrentPage] = useState(1);
@@ -74,27 +76,34 @@ export default function DiscountsPage() {
             });
         }
 
-        if (searchQuery) {
+        if (sanitizedSearch) {
             filtered = filtered.filter((d: Discount) =>
-                d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                d.code.toLowerCase().includes(searchQuery.toLowerCase())
+                d.name.toLowerCase().includes(sanitizedSearch.toLowerCase()) ||
+                d.code.toLowerCase().includes(sanitizedSearch.toLowerCase())
             );
         }
 
         return filtered;
-    }, [discounts, statusFilter, searchQuery]);
+    }, [discounts, statusFilter, sanitizedSearch]);
 
-    // Paginated discounts
-    const totalPages = Math.ceil(filteredDiscounts.length / itemsPerPage);
-    const paginatedDiscounts = filteredDiscounts.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
+    // Memoized pagination calculations for performance
+    const totalPages = useMemo(() =>
+        Math.ceil(filteredDiscounts.length / itemsPerPage),
+        [filteredDiscounts.length, itemsPerPage]
+    );
+
+    const paginatedDiscounts = useMemo(() =>
+        filteredDiscounts.slice(
+            (currentPage - 1) * itemsPerPage,
+            currentPage * itemsPerPage
+        ),
+        [filteredDiscounts, currentPage, itemsPerPage]
     );
 
     // Reset to page 1 when filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, statusFilter]);
+    }, [sanitizedSearch, statusFilter]);
 
     // NOW conditional returns are safe
     if (isLoading) return <DiscountsSkeleton />;
@@ -226,53 +235,13 @@ export default function DiscountsPage() {
 
             {/* Discounts Cards (Mobile) */}
             <div className="lg:hidden space-y-3">
-                {isLoading ? (
-                    <div className="bg-white rounded-lg border border-gray-200 p-12 text-center text-gray-500">
-                        Loading...
-                    </div>
-                ) : paginatedDiscounts.map((discount) => {
-                    const status = getStatus(discount);
-                    return (
-                        <div key={discount.id} className="bg-white rounded-lg border border-gray-200 p-4">
-                            <div className="flex justify-between items-start mb-3">
-                                <div>
-                                    <div className="text-sm font-medium text-black">{discount.name}</div>
-                                    <div className="text-[10px] font-mono text-gray-400 uppercase mt-0.5">{discount.code}</div>
-                                    <div className="text-xs text-gray-600 mt-1">
-                                        {discount.type === 'PERCENT' ? `${discount.value}%` : `₹${discount.value}`} •{' '}
-                                        {discount.scope}
-                                    </div>
-                                </div>
-                                <span
-                                    className={`px-2 py-1 text-xs font-medium rounded ${status.color}`}
-                                >
-                                    {status.label}
-                                </span>
-                            </div>
-                            <div className="text-xs text-gray-600 mb-2">
-                                {new Date(discount.startDate).toLocaleDateString()}
-                                {discount.endDate ? ` → ${new Date(discount.endDate).toLocaleDateString()}` : ' → ∞'}
-                            </div>
-                            <div className="text-xs text-gray-600 mb-3">
-                                Usage: {discount.usedCount || 0} / {discount.globalUsageLimit || '∞'}
-                            </div>
-                            <div className="flex gap-4">
-                                <Link
-                                    href={`/admin/discounts/${discount.id}`}
-                                    className="text-sm text-black hover:underline font-medium"
-                                >
-                                    Edit
-                                </Link>
-                                <button
-                                    onClick={() => handleDelete(discount.id)}
-                                    className="text-sm text-red-600 hover:underline font-medium"
-                                >
-                                    Delete
-                                </button>
-                            </div>
-                        </div>
-                    );
-                })}
+                {paginatedDiscounts.map((discount) => (
+                    <DiscountCard
+                        key={discount.id}
+                        discount={discount}
+                        onDelete={handleDelete}
+                    />
+                ))}
             </div>
 
             {/* Empty State */}
@@ -333,8 +302,8 @@ export default function DiscountsPage() {
                                         key={page}
                                         onClick={() => setCurrentPage(page)}
                                         className={`px-3 py-1 border rounded-lg text-sm ${currentPage === page
-                                                ? 'bg-black text-white border-black'
-                                                : 'border-gray-300 hover:bg-gray-50'
+                                            ? 'bg-black text-white border-black'
+                                            : 'border-gray-300 hover:bg-gray-50'
                                             }`}
                                     >
                                         {page}
