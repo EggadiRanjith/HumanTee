@@ -170,6 +170,14 @@ module.exports = {
         "aurora-move": "auroraMove 20s ease infinite",
         "pulse-text": "pulseText 2s ease-in-out infinite",
         "glow-pulse": "glowPulse var(--glow-pulse-duration) ease-in-out infinite",
+        "scroll": "scroll 40s linear infinite",
+      },
+
+      keyframes: {
+        scroll: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
       },
 
       transitionTimingFunction: {

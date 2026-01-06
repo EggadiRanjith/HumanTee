@@ -141,10 +141,17 @@ export default memo(function ProfileSection({
                                 id="phone-input"
                                 type="tel"
                                 value={editedPhone}
-                                onChange={(e) => setEditedPhone(e.target.value)}
-                                placeholder="Enter your phone number"
+                                onChange={(e) => {
+                                    // Only allow digits and + symbol
+                                    const value = e.target.value.replace(/[^0-9+]/g, '');
+                                    setEditedPhone(value);
+                                }}
+                                placeholder="+91 1234567890"
                                 autoComplete="tel"
-                                inputMode="tel"
+                                inputMode="numeric"
+                                pattern="[+]?[0-9]{10,15}"
+                                minLength={10}
+                                maxLength={15}
                                 aria-label="Phone number"
                                 className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all text-sm sm:text-base min-h-[44px]"
                             />

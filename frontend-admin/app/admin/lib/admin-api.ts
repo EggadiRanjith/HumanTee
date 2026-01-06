@@ -29,12 +29,19 @@ export async function handleAdminAction(
     action: () => Promise<Response>,
     onSuccess?: () => void
 ): Promise<void> {
+    // Dynamic import to avoid circular dependency
+    const { toast } = await import('@/lib/toast');
+
+    const loadingToast = toast.loading('Processing...');
+
     try {
         const response = await action();
 
+        toast.dismiss(loadingToast);
+
         // Auth errors → redirect
         if (response.status === 401) {
-            window.location.href = '/admin/login';
+            window.location.href = '/login';
             return;
         }
 
@@ -47,21 +54,26 @@ export async function handleAdminAction(
         if (!response.ok) {
             const data = await response.json().catch(() => ({}));
             const message = data.message || 'Action failed';
+            toast.error(message);
             throw new Error(message);
         }
 
         // Success
+        toast.success('Action completed successfully');
+
         if (onSuccess) {
             onSuccess();
         }
 
     } catch (error) {
-        // Show error (no branching logic)
+        toast.dismiss(loadingToast);
+
+        // Show error
         const message = error instanceof Error
             ? error.message
             : 'Network error. Please check your connection.';
 
-        alert(message);
+        toast.error(message);
         throw error;
     }
 }

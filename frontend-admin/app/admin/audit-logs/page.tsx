@@ -20,6 +20,21 @@ import {
 
 type AuditCategory = 'ALL' | 'PRODUCTS' | 'ORDERS' | 'TICKETS' | 'DISCOUNTS' | 'SYSTEM' | 'LOGIN';
 
+interface AuditLog {
+    id: string;
+    adminEmail: string;
+    eventType: string;
+    entityType: string;
+    entityId: string;
+    entityName: string;
+    before: any;
+    after: any;
+    changes: any;
+    ipAddress: string;
+    userAgent?: string;
+    createdAt: string;
+}
+
 export default function AuditLogsPage() {
     const [selectedCategory, setSelectedCategory] = useState<AuditCategory>('ALL');
     const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
@@ -81,7 +96,7 @@ export default function AuditLogsPage() {
     const categoryCounts = useMemo(() => {
         const counts: Record<string, number> = {};
         categories.forEach(cat => {
-            counts[cat.id] = auditLogs.filter(log =>
+            counts[cat.id] = auditLogs.filter((log: AuditLog) =>
                 cat.events.includes(log.eventType)
             ).length;
         });
@@ -96,24 +111,24 @@ export default function AuditLogsPage() {
         if (selectedCategory !== 'ALL') {
             const category = categories.find(c => c.id === selectedCategory);
             if (category) {
-                filtered = filtered.filter(log => category.events.includes(log.eventType));
+                filtered = filtered.filter((log: AuditLog) => category.events.includes(log.eventType));
             }
         }
 
         // Filter by specific event type within category
         if (eventTypeFilter !== 'ALL') {
-            filtered = filtered.filter(log => log.eventType === eventTypeFilter);
+            filtered = filtered.filter((log: AuditLog) => log.eventType === eventTypeFilter);
         }
 
         // Filter by settings page (for System category)
         if (selectedCategory === 'SYSTEM' && settingsPageFilter !== 'ALL') {
-            filtered = filtered.filter(log => log.entityName === settingsPageFilter);
+            filtered = filtered.filter((log: AuditLog) => log.entityName === settingsPageFilter);
         }
 
         // Search filter - search by entity ID, entity name, or admin email
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
-            filtered = filtered.filter(log =>
+            filtered = filtered.filter((log: AuditLog) =>
                 log.entityId?.toLowerCase().includes(query) ||
                 log.entityName?.toLowerCase().includes(query) ||
                 log.adminEmail?.toLowerCase().includes(query)
@@ -122,16 +137,16 @@ export default function AuditLogsPage() {
 
         // Filter by date range
         if (startDate) {
-            filtered = filtered.filter(log => new Date(log.createdAt) >= new Date(startDate));
+            filtered = filtered.filter((log: AuditLog) => new Date(log.createdAt) >= new Date(startDate));
         }
         if (endDate) {
             const end = new Date(endDate);
             end.setHours(23, 59, 59, 999); // Include the entire end date
-            filtered = filtered.filter(log => new Date(log.createdAt) <= end);
+            filtered = filtered.filter((log: AuditLog) => new Date(log.createdAt) <= end);
         }
 
         return filtered;
-    }, [auditLogs, selectedCategory, eventTypeFilter, searchQuery, startDate, endDate]);
+    }, [auditLogs, selectedCategory, eventTypeFilter, settingsPageFilter, searchQuery, startDate, endDate]);
 
     const toggleRow = (id: string) => {
         const newExpanded = new Set(expandedRows);
@@ -197,7 +212,7 @@ export default function AuditLogsPage() {
                         <h2 className="text-base sm:text-lg font-semibold text-black">Recent Activity</h2>
                     </div>
                     <div className="divide-y divide-gray-100">
-                        {auditLogs.slice(0, 10).map((log) => (
+                        {auditLogs.slice(0, 10).map((log: AuditLog) => (
                             <div key={log.id} className="px-4 sm:px-6 py-3 hover:bg-gray-50 transition-colors">
                                 <div className="flex items-center justify-between gap-3">
                                     <div className="flex-1 min-w-0">
@@ -353,13 +368,10 @@ export default function AuditLogsPage() {
                                     <th className="px-4 sm:px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden lg:table-cell">
                                         Entity
                                     </th>
-                                    <th className="px-4 sm:px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                        Actions
-                                    </th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
-                                {filteredLogs.map((log) => (
+                                {filteredLogs.map((log: AuditLog) => (
                                     <React.Fragment key={log.id}>
                                         <tr className="hover:bg-gray-50 transition-colors">
                                             <td className="px-4 sm:px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
@@ -378,56 +390,27 @@ export default function AuditLogsPage() {
                                                 </span>
                                             </td>
                                             <td className="px-4 sm:px-6 py-4 hidden lg:table-cell">
-                                                <div className="text-sm font-medium text-gray-900">
-                                                    {log.entityName || `${log.entityType} (${log.entityId.substring(0, 8)}...)`}
-                                                </div>
-                                                {log.entityName && (
-                                                    <div className="text-xs text-gray-400 font-mono truncate max-w-xs mt-1">
-                                                        ID: {log.entityId.substring(0, 8)}...
-                                                    </div>
+                                                {log.eventType.includes('LOGIN') || log.eventType.includes('LOGOUT') ? (
+                                                    <>
+                                                        <div className="text-sm font-medium text-gray-900">
+                                                            {log.after?.loginMethod || 'Unknown Method'}
+                                                        </div>
+                                                        <div className="text-xs text-gray-500 truncate max-w-xs mt-1">
+                                                            {log.userAgent || 'Unknown Device'}
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <div className="text-sm font-medium text-gray-900">
+                                                            {log.entityName || `${log.entityType} (${log.entityId.substring(0, 8)}...)`}
+                                                        </div>
+                                                        {log.entityName && (
+                                                            <div className="text-xs text-gray-400 font-mono truncate max-w-xs mt-1">
+                                                                ID: {log.entityId.substring(0, 8)}...
+                                                            </div>
+                                                        )}
+                                                    </>
                                                 )}
-                                            </td>
-                                            <td className="px-4 sm:px-6 py-4">
-                                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                                                    <button
-                                                        onClick={() => toggleRow(log.id)}
-                                                        className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
-                                                    >
-                                                        {expandedRows.has(log.id) ? 'Hide Changes' : 'View Changes'}
-                                                    </button>
-                                                    {/* Clickable link to entity - only for non-deleted items */}
-                                                    {!log.eventType.includes('DELETED') && (() => {
-                                                        let href = '';
-                                                        let label = '';
-                                                        if (log.entityType === 'product') {
-                                                            href = `/admin/products/${log.entityId}`;
-                                                            label = 'Go to Product';
-                                                        } else if (log.entityType === 'order') {
-                                                            href = `/admin/orders/${log.entityId}`;
-                                                            label = 'Go to Order';
-                                                        } else if (log.entityType === 'ticket') {
-                                                            href = `/admin/tickets/${log.entityId}`;
-                                                            label = 'Go to Ticket';
-                                                        } else if (log.entityType === 'discount') {
-                                                            href = `/admin/discounts/${log.entityId}`;
-                                                            label = 'Go to Discount';
-                                                        }
-
-                                                        return href ? (
-                                                            <a
-                                                                href={href}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="text-sm font-medium text-green-600 hover:text-green-800 hover:underline inline-flex items-center gap-1"
-                                                            >
-                                                                {label}
-                                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                                </svg>
-                                                            </a>
-                                                        ) : null;
-                                                    })()}
-                                                </div>
                                             </td>
                                         </tr>
                                         {expandedRows.has(log.id) && (

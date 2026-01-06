@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 export interface ShippingData {
     fullName: string;
@@ -39,14 +39,54 @@ const initialShippingData: ShippingData = {
 };
 
 export function CheckoutProvider({ children }: { children: ReactNode }) {
-    const [shippingData, setShippingData] = useState<ShippingData>(initialShippingData);
-    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("razorpay");
+    // Load from sessionStorage on mount
+    const [shippingData, setShippingData] = useState<ShippingData>(() => {
+        if (typeof window === 'undefined') return initialShippingData;
+
+        const saved = sessionStorage.getItem('checkout-shipping');
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch {
+                return initialShippingData;
+            }
+        }
+        return initialShippingData;
+    });
+
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(() => {
+        if (typeof window === 'undefined') return "razorpay";
+
+        const saved = sessionStorage.getItem('checkout-payment-method');
+        return (saved as PaymentMethod) || "razorpay";
+    });
+
     const [orderNumber, setOrderNumber] = useState("");
+
+    // Persist shipping data to sessionStorage
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            sessionStorage.setItem('checkout-shipping', JSON.stringify(shippingData));
+        }
+    }, [shippingData]);
+
+    // Persist payment method to sessionStorage
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            sessionStorage.setItem('checkout-payment-method', paymentMethod);
+        }
+    }, [paymentMethod]);
 
     const clearCheckoutData = () => {
         setShippingData(initialShippingData);
         setPaymentMethod("razorpay");
         setOrderNumber("");
+
+        // Clear from sessionStorage
+        if (typeof window !== 'undefined') {
+            sessionStorage.removeItem('checkout-shipping');
+            sessionStorage.removeItem('checkout-payment-method');
+        }
     };
 
     return (

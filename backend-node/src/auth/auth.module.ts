@@ -6,11 +6,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AdminUsersController } from './admin-users.controller';
 import { AuditLogsController } from './audit-logs.controller';
-import { UserAuditLogsController } from './user-audit-logs.controller';
+import { AdminUserAuditController } from './admin-user-audit.controller';
 import { AuthService } from './auth.service';
 import { AuthCronService } from './auth.cron';
 import { LoginAggregationService } from './login-aggregation.service';
 import { AdminAuditService } from './admin-audit.service';
+import { LoginAuditService } from './login-audit.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { AuthUser } from '../entities/auth-user.entity';
@@ -20,6 +21,8 @@ import { EmailOtp } from '../entities/email-otp.entity';
 import { UserProfile } from '../entities/user-profile.entity';
 import { LoginAuditLog } from '../entities/login-audit-log.entity';
 import { AdminAuditLog } from '../entities/admin-audit-log.entity';
+import { UserAuditLog } from '../entities/user-audit-log.entity';
+import { UserAuditService } from './user-audit.service';
 import { EmailModule } from '../email/email.module';
 import { CartModule } from '../cart/cart.module';
 import { ShippingModule } from '../shipping/shipping.module';
@@ -43,13 +46,14 @@ import { ShippingModule } from '../shipping/shipping.module';
             UserProfile,
             LoginAuditLog,
             AdminAuditLog,
+            UserAuditLog,
         ]),
         EmailModule,
         CartModule,
         ShippingModule,
     ],
-    controllers: [AuthController, AdminUsersController, AuditLogsController, UserAuditLogsController],
-    providers: [AuthService, AuthCronService, LoginAggregationService, AdminAuditService, JwtStrategy, GoogleStrategy],
-    exports: [AuthService, AdminAuditService],
+    controllers: [AuthController, AdminUsersController, AuditLogsController, AdminUserAuditController],
+    providers: [AuthService, AuthCronService, LoginAggregationService, AdminAuditService, LoginAuditService, UserAuditService, JwtStrategy, GoogleStrategy],
+    exports: [AuthService, AdminAuditService, LoginAuditService, UserAuditService],
 })
 export class AuthModule { }

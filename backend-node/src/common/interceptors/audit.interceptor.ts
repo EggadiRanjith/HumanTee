@@ -38,6 +38,13 @@ export class AuditInterceptor implements NestInterceptor {
             tap(async (response) => {
                 // Only log successful operations
                 if (response && entityInfo) {
+                    // If entity name wasn't in request, try to get it from response
+                    if (!entityInfo.name && response.order?.orderNumber) {
+                        entityInfo.name = response.order.orderNumber;
+                    } else if (!entityInfo.name && response.orderNumber) {
+                        entityInfo.name = response.orderNumber;
+                    }
+
                     const after = this.extractAfterState(response);
                     const changes = this.auditService.calculateChanges(before, after);
 

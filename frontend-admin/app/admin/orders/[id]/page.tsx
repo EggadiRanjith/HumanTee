@@ -103,11 +103,11 @@ export default function OrderDetailPage() {
     });
 
     // Set initial status when order loads
-    useState(() => {
+    useEffect(() => {
         if (order) {
             setNewStatus(order.status);
         }
-    });
+    }, [order]);
 
     const handleStatusUpdate = async () => {
         if (!order || newStatus === order.status) {

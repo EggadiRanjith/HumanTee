@@ -29,24 +29,27 @@ export function useTickets(filters: TicketFilters = {}) {
                     ? `/tickets/order/${filters.orderId}`
                     : '/tickets';
 
-                // Add other filters
-                if (filters.status && filters.status !== 'all') {
-                    params.append('status', filters.status);
-                }
-                if (filters.category && filters.category !== 'all') {
-                    params.append('category', filters.category);
-                }
-                if (filters.search) {
-                    params.append('search', filters.search);
-                }
-                if (filters.sortBy) {
-                    params.append('sortBy', filters.sortBy);
-                }
-                if (filters.page) {
-                    params.append('page', String(filters.page));
-                }
-                if (filters.limit) {
-                    params.append('limit', String(filters.limit));
+                // Only add filters if NOT fetching for a specific order
+                // (order endpoint returns ALL tickets for that order)
+                if (!filters.orderId) {
+                    if (filters.status && filters.status !== 'all') {
+                        params.append('status', filters.status);
+                    }
+                    if (filters.category && filters.category !== 'all') {
+                        params.append('category', filters.category);
+                    }
+                    if (filters.search) {
+                        params.append('search', filters.search);
+                    }
+                    if (filters.sortBy) {
+                        params.append('sortBy', filters.sortBy);
+                    }
+                    if (filters.page) {
+                        params.append('page', String(filters.page));
+                    }
+                    if (filters.limit) {
+                        params.append('limit', String(filters.limit));
+                    }
                 }
 
                 const queryString = params.toString();

@@ -3,27 +3,111 @@ import { Throttle } from '@nestjs/throttler';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
+import { UserAuditService } from '../auth/user-audit.service';
 
 @Controller('orders')
 @Throttle({ default: { limit: 20, ttl: 60000 } }) // 20 requests per minute
 export class OrderController {
-    constructor(private readonly orderService: OrderService) { }
+    constructor(
+        private readonly orderService: OrderService,
+        private readonly userAuditService: UserAuditService,
+    ) { }
 
     /**
-     * Create new order
-     * POST /orders
+     * Prepare order - Calculate and create Razorpay order WITHOUT saving to DB
+     * POST /orders/prepare
      */
-    @Post()
-    async createOrder(@Request() req, @Body() createOrderDto: CreateOrderDto) {
+    @Post('prepare')
+    async prepareOrder(@Request() req, @Body() createOrderDto: CreateOrderDto) {
         const userId = req.user?.userId || null;
-        const order = await this.orderService.createOrder(userId, createOrderDto);
+        const result = await this.orderService.prepareOrder(userId, createOrderDto) as any;
+
+        return {
+            success: true,
+            razorpayOrderId: result.razorpayOrderId,
+            totalAmount: result.totalAmount,
+            currency: result.currency,
+            orderData: result.orderData, // Pass this back in confirm request
+        };
+    }
+
+    /**
+     * Confirm order - Verify payment and save to database
+     * POST /orders/confirm
+     * Requires authentication to link order to user
+     */
+    @Post('confirm')
+    @UseGuards(JwtAuthGuard)
+    async confirmOrder(@Request() req, @Body() data: {
+        razorpayOrderId: string;
+        razorpayPaymentId: string;
+        razorpaySignature: string;
+        orderData: any;
+    }) {
+        // Get userId from authenticated request (not from orderData which might be null)
+        const userId = req.user?.userId || null;
+
+        // Override userId in orderData with the authenticated user's ID
+        const orderDataWithUserId = {
+            ...data.orderData,
+            userId: userId,
+        };
+
+        const order = await this.orderService.confirmOrder(
+            data.razorpayOrderId,
+            data.razorpayPaymentId,
+            data.razorpaySignature,
+            orderDataWithUserId,
+        );
+
+        // Log order creation for logged-in users
+        if (userId && req.user?.email) {
+            const ipAddress = req.ip || req.connection?.remoteAddress || 'unknown';
+            const userAgent = req.headers?.['user-agent'] || 'unknown';
+
+            await this.userAuditService.logAction({
+                userId,
+                userEmail: req.user.email,
+                eventType: 'ORDER_CREATED',
+                entityType: 'order',
+                entityId: order.id,
+                entityName: order.orderNumber,
+                before: null,
+                after: {
+                    orderNumber: order.orderNumber,
+                    totalAmount: order.totalAmount,
+                    currency: order.currency,
+                    itemCount: data.orderData.items?.length || 0,
+                },
+                changes: null,
+                ipAddress,
+                userAgent,
+            });
+
+            // Log payment success
+            await this.userAuditService.logAction({
+                userId,
+                userEmail: req.user.email,
+                eventType: 'PAYMENT_SUCCESS',
+                entityType: 'payment',
+                entityId: data.razorpayPaymentId,
+                entityName: order.orderNumber,
+                before: null,
+                after: {
+                    orderNumber: order.orderNumber,
+                    amount: order.totalAmount,
+                    paymentId: data.razorpayPaymentId,
+                },
+                changes: null,
+                ipAddress,
+                userAgent,
+            });
+        }
+
         return {
             success: true,
             orderNumber: order.orderNumber,
             orderId: order.id,
-            razorpayOrderId: (order as any).razorpayOrderId,
-            amount: order.totalAmount,
-            currency: order.currency,
         };
     }
 

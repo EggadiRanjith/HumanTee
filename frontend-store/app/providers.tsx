@@ -11,17 +11,17 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { NavigationLoader } from "./components/ui/loaders";
 import ScrollToTop from "./components/ui/ScrollToTop";
 
+// Create QueryClient outside component to prevent recreation on remount
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  // Create QueryClient instance per component mount (not shared)
-  const [queryClient] = useState(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 1000 * 60 * 5, // 5 minutes
-        refetchOnWindowFocus: false,
-      },
-    },
-  }));
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -36,52 +36,57 @@ const ScrollingBanner = ({ messages: propMessages }: ScrollingBannerProps = {}) 
   if (isLoading) return <BannerSkeleton />;
 
   return (
-    <section
-      className="relative w-full py-3 xs:py-4 overflow-hidden bg-white border-y border-gray-200"
-      aria-label="Promotional announcements"
-      role="region"
-    >
-      {/* Gradient overlays for smooth fade effect - Mobile optimized */}
-      <div className="absolute left-0 top-0 bottom-0 w-12 xs:w-16 sm:w-20 bg-gradient-to-r from-white to-transparent z-10" />
-      <div className="absolute right-0 top-0 bottom-0 w-12 xs:w-16 sm:w-20 bg-gradient-to-l from-white to-transparent z-10" />
-
-      {/* Scrolling container - Pure CSS Animation */}
-      <div className="relative flex items-center">
-        <div className="flex whitespace-nowrap animate-marquee">
-          {/* Render messages twice for seamless loop */}
-          {[...messages, ...messages].map((message, index) => (
-            <div
-              key={index}
-              className="inline-flex items-center px-6 xs:px-8 text-[11px] xs:text-[12px] uppercase tracking-[0.25em] xs:tracking-[0.3em] text-gray-800 font-light"
-            >
-              <span className="text-gray-400 mx-2">•</span>
-              {message}
-              <span className="text-gray-400 mx-2">•</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* CSS Animation */}
+    <>
       <style jsx>{`
         @keyframes marquee {
           0% {
-            transform: translateX(0);
+            transform: translate3d(0, 0, 0);
           }
           100% {
-            transform: translateX(-50%);
+            transform: translate3d(-50%, 0, 0);
           }
         }
 
-        .animate-marquee {
-          animation: marquee 30s linear infinite;
+        @-webkit-keyframes marquee {
+          0% {
+            -webkit-transform: translate3d(0, 0, 0);
+          }
+          100% {
+            -webkit-transform: translate3d(-50%, 0, 0);
+          }
         }
 
-        .animate-marquee:hover {
-          animation-play-state: paused;
+        .scrolling-banner {
+          animation: marquee 50s linear infinite;
+          -webkit-animation: marquee 50s linear infinite;
+          will-change: transform;
+          -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
         }
       `}</style>
-    </section>
+
+      <section
+        className="relative w-full py-3 xs:py-4 overflow-hidden bg-white border-y border-gray-200"
+        aria-label="Promotional announcements"
+        role="region"
+      >
+        <div className="relative flex items-center">
+          <div className="scrolling-banner flex whitespace-nowrap">
+            {/* Render messages twice for seamless loop */}
+            {[...messages, ...messages].map((message, index) => (
+              <div
+                key={index}
+                className="inline-flex items-center px-6 xs:px-8 text-[11px] xs:text-[12px] uppercase tracking-[0.25em] xs:tracking-[0.3em] text-gray-800 font-light"
+              >
+                <span className="text-gray-400 mx-2">•</span>
+                {message}
+                <span className="text-gray-400 mx-2">•</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
   );
 };
 

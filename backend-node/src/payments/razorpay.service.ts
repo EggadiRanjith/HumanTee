@@ -57,6 +57,7 @@ export class RazorpayService {
      * Verify webhook signature (CORRECTED)
      * Uses HMAC-SHA256 of raw body with webhook secret
      * NOT the same as checkout signature verification
+     * SECURITY: Uses timing-safe comparison
      */
     verifyWebhookSignature(rawBody: string, signature: string): boolean {
         if (!this.isConfigured || !this.webhookSecret) {
@@ -69,12 +70,24 @@ export class RazorpayService {
             .update(rawBody)
             .digest('hex');
 
-        return expected === signature;
+        try {
+            const expectedBuffer = Buffer.from(expected, 'hex');
+            const providedBuffer = Buffer.from(signature, 'hex');
+
+            if (expectedBuffer.length !== providedBuffer.length) {
+                return false;
+            }
+
+            return crypto.timingSafeEqual(expectedBuffer, providedBuffer);
+        } catch {
+            return false;
+        }
     }
 
     /**
      * Verify payment signature (Checkout)
      * Matches razorpay_order_id + "|" + razorpay_payment_id
+     * SECURITY: Uses timing-safe comparison to prevent timing attacks
      */
     verifyPaymentSignature(orderId: string, paymentId: string, signature: string): boolean {
         const keySecret = process.env.RAZORPAY_KEY_SECRET;
@@ -86,6 +99,26 @@ export class RazorpayService {
             .update(body.toString())
             .digest('hex');
 
-        return expectedSignature === signature;
+        // CRITICAL: Timing-safe comparison to prevent signature guessing
+        try {
+            const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+            const providedBuffer = Buffer.from(signature, 'hex');
+
+            if (expectedBuffer.length !== providedBuffer.length) {
+                return false;
+            }
+
+            return crypto.timingSafeEqual(expectedBuffer, providedBuffer);
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Verify payment (alias for verifyPaymentSignature)
+     * Used by confirmOrder to verify Razorpay payment
+     */
+    async verifyPayment(orderId: string, paymentId: string, signature: string): Promise<boolean> {
+        return this.verifyPaymentSignature(orderId, paymentId, signature);
     }
 }

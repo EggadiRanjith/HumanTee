@@ -146,9 +146,8 @@ export default function ShippingPage() {
                     isOpen={showAddressModal}
                     onClose={closeAddressModal}
                     onSave={async (data) => {
-                        // Map the data to addressForm format
-                        setAddressForm(data);
-                        await saveAddress();
+                        // Pass data directly to saveAddress to avoid async state issues
+                        await saveAddress(data);
                     }}
                     editingAddress={null}
                     defaultFormData={{

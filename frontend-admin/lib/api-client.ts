@@ -1,80 +1,48 @@
 /**
- * Centralized API Client with Auth Interceptors
- * Handles automatic token refresh on 401 with retry guard
+ * Admin API Client - httpOnly Cookie Authentication
+ * SECURITY: Uses httpOnly cookies, no token storage in JavaScript
+ * Includes CSRF protection for state-changing operations
  */
 
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-// Memory-only token storage
-let accessToken: string | null = null;
-
-// Prevent concurrent refresh calls
-let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
-
-// Notify all queued requests when refresh completes
-function onRefreshed(token: string) {
-    refreshSubscribers.forEach(callback => callback(token));
-    refreshSubscribers = [];
-}
-
-// Queue requests while refresh is in progress
-function addRefreshSubscriber(callback: (token: string) => void) {
-    refreshSubscribers.push(callback);
-}
-
-// Token management (memory + cookie for server-side pages)
-export function getAccessToken(): string | null {
-    // If memory token is gone (e.g. page refresh), try to recover from cookie
-    if (!accessToken && typeof document !== 'undefined') {
-        const match = document.cookie.match(/(^|;)\s*auth_token=([^;]+)/);
-        if (match) {
-            accessToken = match[2];
-        }
-    }
-    return accessToken;
-}
-
-export function setAccessToken(token: string | null) {
-    accessToken = token;
-
-    // Phase 8: Also store in cookie for server-side pages (like /post-login)
-    if (typeof document !== 'undefined') {
-        if (token) {
-            document.cookie = `auth_token=${token}; path=/; max-age=900; SameSite=Lax`;
-        } else {
-            document.cookie = 'auth_token=; path=/; max-age=0';
-        }
-    }
-}
-
-export function clearAccessToken() {
-    accessToken = null;
-
-    // Phase 8: Also clear cookie
-    if (typeof document !== 'undefined') {
-        document.cookie = 'auth_token=; path=/; max-age=0';
-    }
-}
-
-// Create axios instance
+// Create axios instance with cookie support
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
-    withCredentials: true, // Send cookies with requests
+    withCredentials: true,  // CRITICAL: Send httpOnly cookies automatically
     headers: {
         'Content-Type': 'application/json',
     },
 });
 
-// Request interceptor: Add access token to headers
+/**
+ * Get CSRF token from cookie
+ * SECURITY: Protects against CSRF attacks
+ */
+function getCsrfToken(): string | null {
+    if (typeof document === 'undefined') return null;
+
+    const match = document.cookie.match(/(^|;)\s*csrf-token=([^;]+)/);
+    return match ? match[2] : null;
+}
+
+/**
+ * Request interceptor: Add CSRF token for state-changing operations
+ * SECURITY: CSRF protection for POST/PUT/PATCH/DELETE
+ */
 apiClient.interceptors.request.use(
     (config) => {
-        const token = getAccessToken();
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+        // Add CSRF token for state-changing operations
+        if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase() || '')) {
+            const csrfToken = getCsrfToken();
+            if (csrfToken) {
+                config.headers['X-CSRF-Token'] = csrfToken;
+            }
         }
+
+        // NO Authorization header - cookies are sent automatically ✅
         return config;
     },
     (error) => {
@@ -82,73 +50,50 @@ apiClient.interceptors.request.use(
     }
 );
 
-// Response interceptor: Handle 401 with refresh-on-retry
+/**
+ * Response interceptor: Handle errors
+ * SECURITY: Redirect to login on 401
+ */
 apiClient.interceptors.response.use(
     (response) => response,
     async (error: AxiosError) => {
-        const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
-
-        // Only handle 401 errors
-        if (error.response?.status !== 401) {
-            return Promise.reject(error);
-        }
-
-        // Prevent infinite retry loops
-        if (originalRequest._retry) {
-            // Refresh failed, logout user
-            clearAccessToken();
+        // Handle 401 Unauthorized
+        if (error.response?.status === 401) {
+            // Clear any local state
             if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
                 window.location.href = '/login?error=session_expired';
             }
             return Promise.reject(error);
         }
 
-        // Mark this request as retried
-        originalRequest._retry = true;
-
-        // If already refreshing, queue this request
-        if (isRefreshing) {
-            return new Promise((resolve) => {
-                addRefreshSubscriber((token: string) => {
-                    originalRequest.headers.Authorization = `Bearer ${token}`;
-                    resolve(apiClient(originalRequest));
-                });
-            });
-        }
-
-        // Start refresh process
-        isRefreshing = true;
-
-        try {
-            // Call refresh endpoint (uses httpOnly cookie)
-            const response = await axios.post(
-                `${API_BASE_URL}/auth/refresh`,
-                {},
-                { withCredentials: true }
-            );
-
-            const { accessToken: newToken } = response.data;
-
-            // Update token in memory
-            setAccessToken(newToken);
-
-            // Notify all queued requests
-            onRefreshed(newToken);
-
-            // Retry original request with new token
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
-            return apiClient(originalRequest);
-        } catch (refreshError) {
-            // Refresh failed, logout user
-            clearAccessToken();
-            if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-                window.location.href = '/login?error=session_expired';
+        // Handle 403 Forbidden (CSRF or permission denied)
+        if (error.response?.status === 403) {
+            const errorData = error.response.data as any;
+            if (errorData?.message?.includes('CSRF')) {
+                console.error('CSRF token invalid or missing');
             }
-            return Promise.reject(refreshError);
-        } finally {
-            isRefreshing = false;
+            return Promise.reject(error);
         }
+
+        return Promise.reject(error);
     }
 );
 
 export default apiClient;
+
+/**
+ * DEPRECATED: These functions are no longer needed with httpOnly cookies
+ * Kept for backward compatibility, but they do nothing
+ */
+export function getAccessToken(): string | null {
+    console.warn('getAccessToken() is deprecated - using httpOnly cookies');
+    return null;
+}
+
+export function setAccessToken(token: string | null) {
+    console.warn('setAccessToken() is deprecated - using httpOnly cookies');
+}
+
+export function clearAccessToken() {
+    console.warn('clearAccessToken() is deprecated - using httpOnly cookies');
+}

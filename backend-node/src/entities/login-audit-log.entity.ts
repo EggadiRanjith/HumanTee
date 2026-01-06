@@ -6,22 +6,34 @@ export class LoginAuditLog {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({ nullable: true })  // Nullable for OTP events before user identified
-    user_id: string;
+    @Column({ type: 'uuid', name: 'user_id' })
+    userId: string;
 
-    @Column({ type: 'text', nullable: false })
-    ip_address: string;
+    @Column({ type: 'varchar', length: 255, name: 'user_email' })
+    userEmail: string;
 
-    @Column({ type: 'text', nullable: false })
-    user_agent: string;
+    @Column({ type: 'varchar', length: 20, name: 'user_type' })
+    userType: string; // 'USER' or 'ADMIN'
 
-    @Column({ nullable: false })
+    @Column({ type: 'varchar', length: 50, name: 'event_type' })
+    eventType: string; // 'LOGIN', 'LOGOUT', 'TOKEN_REFRESH'
+
+    @Column({ type: 'varchar', length: 50, nullable: true, name: 'login_method' })
+    loginMethod: string; // 'OTP', 'Google', etc.
+
+    @Column({ type: 'varchar', length: 45, name: 'ip_address' })
+    ipAddress: string;
+
+    @Column({ type: 'text', nullable: true, name: 'user_agent' })
+    userAgent: string;
+
+    @Column({ type: 'boolean', default: true })
     success: boolean;
 
-    @CreateDateColumn()
-    created_at: Date;
+    @CreateDateColumn({ name: 'created_at' })
+    createdAt: Date;
 
-    @ManyToOne(() => AuthUser, (user) => user.login_audit_logs, { onDelete: 'CASCADE' })
+    @ManyToOne(() => AuthUser, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
     user: AuthUser;
 }

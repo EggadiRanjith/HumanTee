@@ -1,7 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, OneToOne } from 'typeorm';
 import { RefreshToken } from './refresh-token.entity';
 import { UserProfile } from './user-profile.entity';
-import { LoginAuditLog } from './login-audit-log.entity';
 import { OAuthAccount } from './oauth-account.entity';
 import { Order } from './order.entity';
 import { Ticket } from './ticket.entity';
@@ -44,8 +43,6 @@ export class AuthUser {
     @OneToOne(() => UserProfile, (profile) => profile.auth_user)
     profile: UserProfile;
 
-    @OneToMany(() => LoginAuditLog, (log) => log.user)
-    login_audit_logs: LoginAuditLog[];
 
     @OneToMany(() => Order, (order) => order.user)
     orders: Order[];

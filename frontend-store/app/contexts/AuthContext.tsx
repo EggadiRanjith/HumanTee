@@ -95,6 +95,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Phase 1 + Phase 2: Login with cache hydration
     const login = async (accessToken: string, userData: User, cart?: any, addresses?: any[]) => {
         setAccessToken(accessToken);
+
+        // CRITICAL FIX: Merge guest cart BEFORE setting user
+        // This prevents CartContext from loading backend cart too early
+        // which would cause a race condition and lose guest cart items
+        await mergeGuestCart();
+
+        // NOW set user (this triggers CartContext to load backend cart with merged items)
         setUser(userData);
 
         // PRODUCTION: Set Sentry user context for error tracking
@@ -119,15 +126,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 addresses
             );
         }
-
-        // TEMP: Commented out to break circular dependency
-        // Phase 1: Hydrate cart
-        // if (cart) {
-        //     hydrateCart(cart);
-        // }
-
-        // Always merge guest cart on login
-        await mergeGuestCart();
     };
 
     const logout = async () => {
@@ -155,10 +153,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 localStorage.removeItem('humantee-cart'); // Clear guest cart too
                 sessionStorage.clear();
 
-                // Manually clear refresh token cookie (must match exact domain and path)
-                const domain = window.location.hostname;
-                document.cookie = `refreshToken=; path=/; domain=${domain}; max-age=0; SameSite=Lax`;
-                document.cookie = `auth_token=; path=/; domain=${domain}; max-age=0; SameSite=Lax`;
+                // Manually clear refresh token cookie (NO domain = current hostname only)
+                // This prevents session fixation via subdomain attacks
+                document.cookie = `refreshToken=; path=/; max-age=0; SameSite=Lax`;
+                document.cookie = `auth_token=; path=/; max-age=0; SameSite=Lax`;
             }
 
             // PRODUCTION: Broadcast logout to all tabs

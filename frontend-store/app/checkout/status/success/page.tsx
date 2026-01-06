@@ -5,7 +5,7 @@ import { useCheckout } from "@/app/contexts/CheckoutContext";
 import { GradientOverlay } from "@/app/components/ui/layout";
 import { FiCheck } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
 import apiClient from "@/lib/api-client";
 import successAnimation from "@/public/animation/lottie/order-status/success_order_placed.json";
@@ -17,6 +17,10 @@ export default function SuccessPage() {
     const router = useRouter();
     const { orderNumber, shippingData } = useCheckout();
     const [showSplash, setShowSplash] = useState(true);
+    const [isLoadingOrder, setIsLoadingOrder] = useState(false);
+
+    // Ref to track Lottie completion timeout
+    const splashTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         // If no order number, redirect to checkout
@@ -26,20 +30,21 @@ export default function SuccessPage() {
     }, [orderNumber, router]);
 
     useEffect(() => {
-        // Lock scroll when splash is visible
-        if (showSplash) {
-            document.body.style.overflow = 'hidden';
-            // Hide scrollbar completely
-            document.body.style.paddingRight = '15px'; // Prevent layout shift
-        } else {
-            document.body.style.overflow = 'auto';
-            document.body.style.paddingRight = '0px';
-        }
+        // Only lock when splash is visible
+        if (!showSplash) return;
 
-        // Cleanup on unmount
+        // Save original styles before modification
+        const originalOverflow = document.body.style.overflow;
+        const originalPadding = document.body.style.paddingRight;
+
+        // Apply splash screen styles
+        document.body.style.overflow = 'hidden';
+        document.body.style.paddingRight = '15px'; // Prevent layout shift
+
+        // Cleanup: restore original styles, not hardcoded values
         return () => {
-            document.body.style.overflow = 'auto';
-            document.body.style.paddingRight = '0px';
+            document.body.style.overflow = originalOverflow;
+            document.body.style.paddingRight = originalPadding;
         };
     }, [showSplash]);
 
@@ -69,7 +74,11 @@ export default function SuccessPage() {
                                 animationData={successAnimation}
                                 loop={false}
                                 autoplay
-                                onComplete={() => setTimeout(() => setShowSplash(false), 500)} // Small buffer after animation
+                                onComplete={() => {
+                                    splashTimeoutRef.current = setTimeout(() => {
+                                        setShowSplash(false);
+                                    }, 500);
+                                }}
                                 className="w-[200px] h-[200px] sm:w-[250px] sm:h-[250px] md:w-[300px] md:h-[300px]"
                             />
                         </motion.div>

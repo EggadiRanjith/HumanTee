@@ -117,7 +117,7 @@ const ProductInfoComponent = ({ product }: ProductInfoProps) => {
 
             {/* Title */}
             <div className="space-y-1">
-                <h1 className="text-white text-[1.7rem] sm:text-[2.2rem] lg:text-[2.6rem] font-light tracking-wide leading-tight">
+                <h1 className="text-white text-[1.1rem] sm:text-[1.3rem] lg:text-[1.5rem] font-light tracking-wide leading-tight break-words overflow-wrap-anywhere max-w-full">
                     {product.title}
                 </h1>
                 {(product.vendor || product.productType) && (

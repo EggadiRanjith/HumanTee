@@ -136,35 +136,36 @@ const ProductCard = ({
                 </Link>
             </motion.div>
 
-            {/* Product Info */}
-            <div className="mt-3 sm:mt-4 text-center">
-                <h3 className="brand-text-primary text-step-0 tracking-tight font-heading">
+            {/* Product Info - Fixed overflow and spacing */}
+            <div className="mt-3 sm:mt-4 px-1">
+                {/* Product Title - Truncate to 2 lines */}
+                <h3 className="brand-text-primary text-step-0 tracking-tight font-heading line-clamp-2 min-h-[2.5rem] text-center">
                     {product.title}
                 </h3>
 
-                {/* Pricing */}
+                {/* Pricing - Prevent overflow */}
                 <div className="flex items-center justify-center gap-2 mt-2 mb-1 flex-wrap">
                     {product.originalPrice && (
-                        <span className="text-white/40 text-step--1 line-through">
+                        <span className="text-white/40 text-step--1 line-through whitespace-nowrap">
                             {product.currency} {product.originalPrice.toFixed(2)}
                         </span>
                     )}
-                    <span className="brand-text-primary text-step-0 font-heading">
+                    <span className="brand-text-primary text-step-0 font-heading whitespace-nowrap">
                         {product.currency} {product.price.toFixed(2)}
                     </span>
                 </div>
 
-                {/* Savings Display */}
+                {/* Savings Display - Truncate if needed */}
                 {product.originalPrice && product.originalPrice > product.price && (
-                    <div className="mb-2">
-                        <span className="inline-block px-2.5 py-0.5 text-[0.7rem] font-bold tracking-wider uppercase bg-gradient-to-r from-violet-500 to-fuchsia-400 text-white rounded-full shadow-glow-violet-medium">
+                    <div className="mb-2 flex justify-center">
+                        <span className="inline-block px-2.5 py-0.5 text-[0.7rem] font-bold tracking-wider uppercase bg-gradient-to-r from-violet-500 to-fuchsia-400 text-white rounded-full shadow-glow-violet-medium whitespace-nowrap max-w-full truncate">
                             Save {product.currency} {(product.originalPrice - product.price).toFixed(2)}
                         </span>
                     </div>
                 )}
 
                 {/* Stock Indicator */}
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center min-h-[1.5rem]">
                     <StockIndicator stock={product.stock} />
                 </div>
             </div>

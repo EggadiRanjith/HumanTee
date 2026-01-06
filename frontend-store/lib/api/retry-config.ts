@@ -15,6 +15,8 @@ const DANGEROUS_ENDPOINTS = [
     '/checkout',
     '/payment',
     '/order',
+    '/orders/confirm',   // ← CRITICAL: Prevent duplicate order confirmation
+    '/orders/prepare',   // ← CRITICAL: Prevent duplicate Razorpay order creation
     '/purchase',
     '/transaction',
 ];

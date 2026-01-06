@@ -47,14 +47,42 @@ export function OrderSummary({
                 {/* Payment Method */}
                 <div className="p-4 sm:p-5 rounded-lg sm:rounded-xl luxury-glass border border-white/10 bg-white/5">
                     <h3 className="text-white/70 text-[10px] sm:text-xs uppercase tracking-[0.18em] mb-2">
-                        Payment Method
+                        Payment Information
                     </h3>
                     <p className="text-white/90 text-xs sm:text-sm">
                         {payments?.[0]?.paymentMethod || 'Razorpay'}
                     </p>
-                    <p className="text-white/60 text-[10px] sm:text-xs mt-1">
-                        Status: {payments?.[0]?.status || 'Captured'}
-                    </p>
+
+                    {/* Payment Status */}
+                    <div className="mt-2 flex items-center gap-2">
+                        <span className="text-white/60 text-[10px] sm:text-xs">Status:</span>
+                        {payments?.[0]?.status?.toUpperCase() === 'CAPTURED' ? (
+                            <span className="text-green-400 text-[10px] sm:text-xs font-medium flex items-center gap-1">
+                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                                Payment Successful
+                            </span>
+                        ) : payments?.[0]?.status?.toUpperCase() === 'FAILED' ? (
+                            <span className="text-red-400 text-[10px] sm:text-xs font-medium flex items-center gap-1">
+                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                </svg>
+                                Payment Failed
+                            </span>
+                        ) : (
+                            <span className="text-yellow-400 text-[10px] sm:text-xs font-medium">
+                                {payments?.[0]?.status || 'Processing'}
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Payment ID */}
+                    {payments?.[0]?.id && (
+                        <p className="text-white/40 text-[9px] sm:text-[10px] mt-2 font-mono">
+                            ID: {payments[0].id.slice(0, 20)}...
+                        </p>
+                    )}
                 </div>
             </div>
 

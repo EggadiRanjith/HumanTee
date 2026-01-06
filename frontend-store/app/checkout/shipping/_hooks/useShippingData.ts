@@ -117,30 +117,39 @@ export function useShippingData(userId?: string) {
         setAddressError('');
     };
 
-    const validateAddress = (): string | null => {
-        if (!addressForm.fullName.trim()) return 'Full name is required';
-        if (!/^[0-9]{10}$/.test(addressForm.phone)) {
+    // Single validation function - used by both validateAddress and saveAddress
+    const validateAddressData = (data: AddressFormData): string | null => {
+        if (!data.fullName.trim()) return 'Full name is required';
+        if (!/^[0-9]{10}$/.test(data.phone)) {
             return 'Please enter a valid 10-digit mobile number';
         }
-        if (!addressForm.email.trim() || !/\S+@\S+\.\S+/.test(addressForm.email)) {
+        if (!data.email.trim() || !/\S+@\S+\.\S+/.test(data.email)) {
             return 'Valid email is required';
         }
         if (
-            !addressForm.houseNumber.trim() ||
-            !addressForm.address.trim() ||
-            !addressForm.city.trim() ||
-            !addressForm.state.trim()
+            !data.houseNumber.trim() ||
+            !data.address.trim() ||
+            !data.city.trim() ||
+            !data.state.trim()
         ) {
             return 'All address fields are required';
         }
-        if (!/^[0-9]{6}$/.test(addressForm.postalCode)) {
+        if (!/^[0-9]{6}$/.test(data.postalCode)) {
             return 'Please enter a valid 6-digit pincode';
         }
         return null;
     };
 
-    const saveAddress = async (): Promise<boolean> => {
-        const validationError = validateAddress();
+    const validateAddress = (): string | null => {
+        return validateAddressData(addressForm);
+    };
+
+    const saveAddress = async (dataToSave?: AddressFormData): Promise<boolean> => {
+        // Use provided data or fall back to state
+        const addressData = dataToSave || addressForm;
+
+        // Validate using shared function
+        const validationError = validateAddressData(addressData);
         if (validationError) {
             setAddressError(validationError);
             return false;
@@ -153,7 +162,7 @@ export function useShippingData(userId?: string) {
             if (!userId) {
                 // GUEST FLOW: Save locally
                 const guestAddress: ShippingAddress = {
-                    ...addressForm,
+                    ...addressData,
                     id: `guest_${Date.now()}`,
                     isDefault: true
                 };
@@ -167,7 +176,7 @@ export function useShippingData(userId?: string) {
             }
 
             const response = await apiClient.post('/shipping-addresses', {
-                ...addressForm,
+                ...addressData,
                 isDefault: addresses.length === 0,
             });
             setAddresses((prev) => [...prev, response.data]);

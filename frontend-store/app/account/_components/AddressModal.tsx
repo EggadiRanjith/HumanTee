@@ -1,6 +1,4 @@
-"use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiX } from "react-icons/fi";
 
 interface ShippingAddress {
@@ -50,6 +48,29 @@ export default function AddressModal({
             country: 'India',
         };
     });
+
+    // Reset form data when modal opens or editingAddress changes
+    useEffect(() => {
+        if (isOpen) {
+            if (editingAddress) {
+                setFormData(editingAddress);
+            } else {
+                setFormData({
+                    fullName: defaultFormData?.fullName || '',
+                    phone: defaultFormData?.phone || '',
+                    email: defaultFormData?.email || '',
+                    houseNumber: '',
+                    address: '',
+                    landmark: '',
+                    city: '',
+                    state: '',
+                    postalCode: '',
+                    country: 'India',
+                });
+            }
+            setError('');
+        }
+    }, [isOpen, editingAddress, defaultFormData]);
 
     const validateForm = (): string | null => {
         if (!formData.fullName.trim()) return 'Full name is required';

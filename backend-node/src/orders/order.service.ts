@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException, Logger, Inject, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
+import { RedisService } from '../redis/redis.service';
 import {
     Order,
     OrderItem,
@@ -34,6 +35,7 @@ export class OrderService {
         private dataSource: DataSource,
         private discountsService: DiscountsService,
         private razorpayService: RazorpayService,
+        @Optional() @Inject(RedisService) private redisService?: RedisService,
     ) { }
 
     /**
@@ -51,6 +53,243 @@ export class OrderService {
         }
 
         return `${prefix}-${code}`;
+    }
+
+    /**
+     * Prepare order - Calculate everything and create Razorpay order WITHOUT saving to DB
+     * This is called when user clicks "Place Order" - actual order creation happens after payment
+     */
+    async prepareOrder(userId: string | null, orderData: CreateOrderDto) {
+        // 0. IDEMPOTENCY: Validate and check for duplicates
+        if (orderData.idempotencyKey) {
+            // Validate format (UUID-like)
+            if (orderData.idempotencyKey.length < 16 || orderData.idempotencyKey.length > 64) {
+                throw new BadRequestException('Invalid idempotency key format');
+            }
+
+            // Check Redis for duplicate preparation
+            const cacheKey = `order:prep:${userId || 'guest'}:${orderData.idempotencyKey}`;
+            try {
+                const cached = await this.redisService?.get(cacheKey);
+                if (cached) {
+                    this.logger.warn(`Idempotent request detected: ${orderData.idempotencyKey}`);
+                    return cached; // Redis auto-deserializes JSON
+                }
+            } catch (err) {
+                // Redis unavailable - continue without idempotency (graceful degradation)
+                this.logger.warn('Redis unavailable for idempotency check');
+            }
+        }
+
+        // 1. Fetch products and variants from database
+        const productIds = orderData.items.map(i => i.productId);
+        const variantIds = orderData.items.map(i => i.variantId);
+
+        const variants = await this.variantRepository.find({
+            where: { id: In(variantIds) },
+            relations: ['product'],
+        });
+
+        if (variants.length !== orderData.items.length) {
+            throw new BadRequestException('Some products or variants not found');
+        }
+
+        // 2. Calculate prices SERVER-SIDE (ignore frontend prices)
+        let subtotal = 0;
+        const validatedItems = orderData.items.map(item => {
+            const variant = variants.find(v => v.id === item.variantId);
+            if (!variant) {
+                throw new BadRequestException(`Variant ${item.variantId} not found`);
+            }
+
+            // Check stock
+            if (variant.stock_quantity < item.quantity) {
+                throw new BadRequestException(`Insufficient stock for ${variant.product.name}`);
+            }
+
+            const lineTotal = Number(variant.price) * item.quantity;
+            subtotal += lineTotal;
+
+            return {
+                ...item,
+                unitPrice: Number(variant.price),
+                lineTotal,
+                productNameSnapshot: variant.product.name,
+                variantLabelSnapshot: variant.size,
+                skuSnapshot: variant.sku,
+            };
+        });
+
+        // 3. Calculate totals
+        const taxAmount = subtotal * 0.18; // 18% GST
+        const shippingAmount = 0; // Free shipping
+        const discountAmount = 0; // TODO: Apply discount if code provided
+        const totalAmount = subtotal + taxAmount + shippingAmount - discountAmount;
+
+        // 4. Create Razorpay order (payment gateway integration)
+        const razorpayOrderId = await this.razorpayService.createOrder(totalAmount);
+
+        // 5. Return all calculated data (DO NOT SAVE TO DATABASE)
+        const response = {
+            razorpayOrderId,
+            totalAmount,
+            currency: 'INR',
+            orderData: {
+                userId,
+                items: validatedItems,
+                shippingAddress: orderData.shippingAddress,
+                subtotal,
+                taxAmount,
+                shippingAmount,
+                discountAmount,
+                totalAmount,
+            },
+        };
+
+        // 6. Cache response for idempotency (30 min TTL)
+        if (orderData.idempotencyKey) {
+            const cacheKey = `order:prep:${userId || 'guest'}:${orderData.idempotencyKey}`;
+            try {
+                await this.redisService?.set(cacheKey, response, 1800);
+            } catch (err) {
+                // Non-critical if cache fails
+                this.logger.warn('Failed to cache prepared order');
+            }
+        }
+
+        return response;
+    }
+
+    /**
+     * Confirm order - Verify payment and save order to database
+     * This is called AFTER successful Razorpay payment
+     */
+    async confirmOrder(
+        razorpayOrderId: string,
+        razorpayPaymentId: string,
+        razorpaySignature: string,
+        preparedOrderData: any,
+    ): Promise<Order> {
+        // 1. Verify Razorpay payment signature
+        const isValid = await this.razorpayService.verifyPayment(
+            razorpayOrderId,
+            razorpayPaymentId,
+            razorpaySignature,
+        );
+
+        if (!isValid) {
+            throw new BadRequestException('Invalid payment signature');
+        }
+
+        // 2. Now save order to database in transaction
+        return await this.dataSource.transaction(async (manager) => {
+            const { userId, items, shippingAddress, subtotal, taxAmount, shippingAmount, discountAmount, totalAmount } = preparedOrderData;
+
+            // Generate secure order number
+            const orderNumber = this.generateSecureOrderNumber();
+
+            // Create order with PAID status
+            const order = manager.create(Order, {
+                orderNumber,
+                userId,
+                status: OrderStatus.PROCESSING, // Already paid, go straight to processing
+                subtotal,
+                taxAmount,
+                shippingAmount,
+                discountAmount,
+                totalAmount,
+                currency: 'INR',
+                paymentOrderId: razorpayOrderId,
+                completedAt: new Date(),
+            });
+            await manager.save(Order, order);
+
+            // Create order items
+            const orderItems = items.map((item: any) =>
+                manager.create(OrderItem, {
+                    orderId: order.id,
+                    productId: item.productId,
+                    variantId: item.variantId,
+                    productNameSnapshot: item.productNameSnapshot,
+                    variantLabelSnapshot: item.variantLabelSnapshot,
+                    skuSnapshot: item.skuSnapshot,
+                    imageUrlSnapshot: item.imageUrlSnapshot || '',
+                    quantity: item.quantity,
+                    unitPrice: item.unitPrice,
+                    taxAmount: 0,
+                    discountAmount: 0,
+                    lineTotal: item.lineTotal,
+                }),
+            );
+            await manager.save(OrderItem, orderItems);
+
+            // CRITICAL: Atomic stock decrement with validation
+            // Prevents race condition where two concurrent orders can oversell
+            for (const item of items) {
+                const result = await manager
+                    .createQueryBuilder()
+                    .update(ProductVariant)
+                    .set({ stock_quantity: () => `stock_quantity - ${item.quantity}` })
+                    .where('id = :id AND stock_quantity >= :required', {
+                        id: item.variantId,
+                        required: item.quantity
+                    })
+                    .execute();
+
+                if (result.affected === 0) {
+                    // Either variant doesn't exist OR insufficient stock
+                    // This is an edge case - stock was available during prepare but sold out during confirm
+                    const variant = await manager.findOne(ProductVariant, { where: { id: item.variantId } });
+                    if (!variant) {
+                        throw new BadRequestException(`Variant ${item.variantId} not found`);
+                    }
+                    throw new ConflictException(
+                        `Stock depleted during checkout. Available: ${variant.stock_quantity}, Required: ${item.quantity}`
+                    );
+                }
+            }
+
+            // Create shipping address snapshot
+            const address = manager.create(OrderAddress, {
+                orderId: order.id,
+                fullName: shippingAddress.fullName,
+                email: shippingAddress.email,
+                phone: shippingAddress.phone,
+                addressLine1: shippingAddress.addressLine1,
+                addressLine2: shippingAddress.addressLine2,
+                landmark: shippingAddress.landmark,
+                city: shippingAddress.city,
+                state: shippingAddress.state,
+                postalCode: shippingAddress.postalCode,
+                country: shippingAddress.country,
+            });
+            await manager.save(OrderAddress, address);
+
+            // Create payment record with CAPTURED status
+            const payment = manager.create(Payment, {
+                orderId: order.id,
+                amount: totalAmount,
+                currency: 'INR',
+                status: PaymentStatus.CAPTURED,
+                provider: 'RAZORPAY',
+                providerOrderId: razorpayOrderId,
+                providerPaymentId: razorpayPaymentId,
+                completedAt: new Date(),
+            });
+            await manager.save(Payment, payment);
+
+            // Create status history
+            const history = manager.create(OrderStatusHistory, {
+                orderId: order.id,
+                fromStatus: undefined,
+                toStatus: OrderStatus.PROCESSING,
+                changedBy: userId || 'GUEST',
+                reason: `Order created and paid via Razorpay: ${razorpayPaymentId}`,
+            });
+            await manager.save(OrderStatusHistory, history);
+
+            return order;
+        });
     }
 
     /**

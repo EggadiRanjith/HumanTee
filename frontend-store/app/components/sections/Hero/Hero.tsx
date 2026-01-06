@@ -8,7 +8,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
-import { memo, lazy, Suspense } from "react";
+import { memo } from "react";
 import { HolographicButton, ScrollHint } from "./components";
 import { useHeroCarousel, useVideoPlayer, useIsMobile } from "./hooks";
 import { isSlideVisible, getSlideContentClasses } from "./utils";
@@ -16,8 +16,7 @@ import { HERO_CONSTANTS, SLIDE_STYLES } from "./constants";
 import { HeroProps } from "./types";
 import { useSectionSettings } from "@/app/hooks/useSettings";
 
-// Lazy load error state (rarely needed)
-const HeroError = lazy(() => import("./components/HeroError"));
+
 
 const Hero = ({ slides: propSlides }: HeroProps = {}) => {
   const shouldReducedMotion = useReducedMotion();
@@ -34,12 +33,16 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
     useVideoPlayer(0, isMobile);
   const { currentIndex } = useHeroCarousel(slides?.length || 0, videoHasPlayed);
 
-  // Error state (lazy loaded)
+
+  // Loading state - show skeleton instead of error page
   if (!slides || slides.length === 0) {
     return (
-      <Suspense fallback={null}>
-        <HeroError />
-      </Suspense>
+      <section
+        className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden -mt-[var(--header-height)] pt-[var(--header-height)] px-4"
+        aria-label="Hero section loading"
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-black animate-pulse" />
+      </section>
     );
   }
 

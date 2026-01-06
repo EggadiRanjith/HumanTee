@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
 import { Product } from './entities/product.entity';
 import { ProductVariant } from './entities/product-variant.entity';
 import { ProductImage } from './entities/product-image.entity';
@@ -21,6 +23,11 @@ import { AdminVariantsController } from './admin/admin-variants.controller';
             Collection,
             ProductCollectionMap,
         ]),
+        PassportModule,
+        JwtModule.register({
+            secret: process.env.JWT_SECRET || 'your-secret-key',
+            signOptions: { expiresIn: '15m' },
+        }),
     ],
     controllers: [
         ProductsController,

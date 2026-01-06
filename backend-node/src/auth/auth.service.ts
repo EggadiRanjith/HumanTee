@@ -9,7 +9,6 @@ import { AuthUser } from '../entities/auth-user.entity';
 import { RefreshToken } from '../entities/refresh-token.entity';
 import { OAuthAccount } from '../entities/oauth-account.entity';
 import { UserProfile } from '../entities/user-profile.entity';
-import { LoginAuditLog } from '../entities/login-audit-log.entity';
 import { EmailOtp } from '../entities/email-otp.entity';
 import { EmailService } from '../email/email.service';
 
@@ -27,8 +26,6 @@ export class AuthService {
         private oauthAccountRepository: Repository<OAuthAccount>,
         @InjectRepository(UserProfile)
         private userProfileRepository: Repository<UserProfile>,
-        @InjectRepository(LoginAuditLog)
-        private loginAuditLogRepository: Repository<LoginAuditLog>,
         @InjectRepository(EmailOtp)
         private emailOtpRepository: Repository<EmailOtp>,
         private jwtService: JwtService,
@@ -159,10 +156,7 @@ export class AuthService {
             }
             throw new InternalServerErrorException('Google authentication failed');
         } finally {
-            // 5️⃣ Audit logging
-            if (userId) {
-                await this.createLoginAuditLog(userId, ipAddress, userAgent, success);
-            }
+            // Audit logging handled by UserAuditService in controller
         }
     }
 
@@ -200,26 +194,6 @@ export class AuthService {
         await this.refreshTokenRepository.save(refreshToken);
 
         return token;
-    }
-
-    private async createLoginAuditLog(
-        userId: string | null,
-        ipAddress: string,
-        userAgent: string,
-        success: boolean,
-    ): Promise<void> {
-        try {
-            const log = this.loginAuditLogRepository.create({
-                user_id: userId || undefined,  // Convert null to undefined for TypeORM
-                ip_address: ipAddress,
-                user_agent: userAgent,
-                success,
-            });
-            await this.loginAuditLogRepository.save(log);
-        } catch (error) {
-            // Don't fail the request if audit logging fails
-            this.logger.error('Failed to create login audit log:', error);
-        }
     }
 
     /**
@@ -290,7 +264,7 @@ export class AuthService {
             const newRefreshToken = await this.generateRefreshToken(user.id);
 
             // Audit log
-            await this.createLoginAuditLog(userId, ipAddress, userAgent, true);
+
 
             return {
                 accessToken: newAccessToken,
@@ -442,7 +416,7 @@ export class AuthService {
             });
 
             // Audit log (no OTP in log)
-            await this.createLoginAuditLog(null, ipAddress, 'otp_sent', true);
+
 
         } catch (error) {
             this.logger.error(`Send OTP failed: ${error.message}`);
@@ -486,7 +460,7 @@ export class AuthService {
             // 4. Check if OTP exists and not exceeded attempts
             if (!otpRecord) {
                 await queryRunner.rollbackTransaction();
-                await this.createLoginAuditLog(null, ipAddress, 'otp_verify_failed_not_found', false);
+
                 throw new UnauthorizedException('Invalid OTP');
             }
 
@@ -499,7 +473,7 @@ export class AuthService {
                     attempt_count: otpRecord.attempt_count + 1,
                 });
                 await queryRunner.commitTransaction();
-                await this.createLoginAuditLog(null, ipAddress, 'otp_verify_failed_invalid_code', false);
+
                 throw new UnauthorizedException('Invalid OTP');
             }
 
@@ -555,7 +529,7 @@ export class AuthService {
             const refreshToken = await this.generateRefreshToken(authUser.id);
 
             // 10. Audit log success
-            await this.createLoginAuditLog(userId, ipAddress, userAgent, true);
+
 
             // 11. Return response
             return {
