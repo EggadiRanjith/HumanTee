@@ -103,50 +103,70 @@ export default function CartPage() {
             </AnimatePresence>
 
             {/* Main Content - Mobile-first responsive */}
-            <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10 pt-12">
+            <div className="max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-10 pt-6 sm:pt-8 lg:pt-12">
 
                 {/* Header Component */}
                 <CartHeader totalItems={cartSummary.itemCount} />
 
                 {/* Grid Layout - Mobile: 1 col, Desktop: 3 cols (2+1) */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-8">
 
-                    {/* Cart Items - Mobile: Full width, Desktop: 2/3 width */}
-                    <div className="lg:col-span-2 space-y-4">
-                        {items.map((item, index) => (
-                            <CartItem
-                                key={`${item.id}-${item.size}`}
-                                item={item}
-                                index={index}
-                                onUpdateQuantity={handleUpdateQuantity}
-                                onRemove={handleRemoveItem}
-                            />
-                        ))}
+                    {/* Cart Items Section - Mobile: Full width, Desktop: 2/3 width */}
+                    <div className="lg:col-span-2">
+                        {/* Section Container */}
+                        <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-3 sm:p-4 lg:p-6">
+                            {/* Section Header */}
+                            <h2 className="text-white text-sm sm:text-base font-medium mb-3 sm:mb-4 lg:mb-6">
+                                Cart Items ({items.length})
+                            </h2>
+                            {/* Items List */}
+                            <div className="space-y-3 sm:space-y-4">
+                                {items.map((item, index) => (
+                                    <CartItem
+                                        key={`${item.id}-${item.size}`}
+                                        item={item}
+                                        index={index}
+                                        onUpdateQuantity={handleUpdateQuantity}
+                                        onRemove={handleRemoveItem}
+                                    />
+                                ))}
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Order Summary - Mobile: Full width, Desktop: 1/3 width, Sticky */}
-                    <div className="lg:col-span-1 space-y-4 lg:sticky lg:top-24 lg:self-start">
-                        {/* Discount Section Component */}
-                        <DiscountSection
-                            suggestions={suggestions}
-                            appliedDiscount={appliedDiscount}
-                            isLoadingSuggestions={isLoadingSuggestions}
-                            showManualEntry={showManualEntry}
-                            cartTotal={cartSummary.subtotal}
-                            onApply={handleApplyDiscount}
-                            onRemove={handleRemoveDiscount}
-                            onOpenManualEntry={() => setShowManualEntry(true)}
-                            onCloseManualEntry={() => setShowManualEntry(false)}
-                        />
+                    {/* Order Summary Section - Mobile: Full width, Desktop: 1/3 width, Sticky */}
+                    <div className="lg:col-span-1 space-y-4 sm:space-y-5 lg:sticky lg:top-24 lg:self-start">
+                        {/* Discount Section Container */}
+                        <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-3 sm:p-4 lg:p-5">
+                            <h2 className="text-white text-sm sm:text-base font-medium mb-3 sm:mb-4">
+                                Discounts
+                            </h2>
+                            <DiscountSection
+                                suggestions={suggestions}
+                                appliedDiscount={appliedDiscount}
+                                isLoadingSuggestions={isLoadingSuggestions}
+                                showManualEntry={showManualEntry}
+                                cartTotal={cartSummary.subtotal}
+                                onApply={handleApplyDiscount}
+                                onRemove={handleRemoveDiscount}
+                                onOpenManualEntry={() => setShowManualEntry(true)}
+                                onCloseManualEntry={() => setShowManualEntry(false)}
+                            />
+                        </div>
 
-                        {/* Cart Summary Component */}
-                        <CartSummary
-                            subtotal={cartSummary.subtotal}
-                            totalItems={cartSummary.itemCount}
-                            onCheckout={handleCheckout}
-                            discount={appliedDiscount}
-                            total={cartSummary.total}
-                        />
+                        {/* Cart Summary Container */}
+                        <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-3 sm:p-4 lg:p-5">
+                            <h2 className="text-white text-sm sm:text-base font-medium mb-3 sm:mb-4">
+                                Order Summary
+                            </h2>
+                            <CartSummary
+                                subtotal={cartSummary.subtotal}
+                                totalItems={cartSummary.itemCount}
+                                onCheckout={handleCheckout}
+                                discount={appliedDiscount}
+                                total={cartSummary.total}
+                            />
+                        </div>
                     </div>
 
                 </div>

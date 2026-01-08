@@ -7,7 +7,7 @@ import {
     Param,
     UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../../auth/guards/jwt.guard';
+import { AdminJwtGuard } from '../../auth/guards/admin-jwt.guard';
 import { AdminRoleGuard } from '../../auth/guards/admin-role.guard';
 import { AdminVariantsService } from './admin-variants.service';
 import { CreateVariantDto } from './dto/create-variant.dto';
@@ -18,7 +18,7 @@ import { UpdateVariantDto } from './dto/update-variant.dto';
  * FIX 1: Uses guard composition, not inheritance
  */
 @Controller('admin')
-@UseGuards(JwtAuthGuard, AdminRoleGuard) // FIX 1: Composition
+@UseGuards(AdminJwtGuard, AdminRoleGuard) // FIX 1: Composition
 export class AdminVariantsController {
     constructor(
         private readonly adminVariantsService: AdminVariantsService,

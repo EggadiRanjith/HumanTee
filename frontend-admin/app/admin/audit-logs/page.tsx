@@ -15,7 +15,8 @@ import {
     LogIn,
     Tag,
     ChevronRight,
-    ArrowLeft
+    ArrowLeft,
+    Loader2
 } from 'lucide-react';
 
 type AuditCategory = 'ALL' | 'PRODUCTS' | 'ORDERS' | 'TICKETS' | 'DISCOUNTS' | 'SYSTEM' | 'LOGIN';
@@ -168,17 +169,17 @@ export default function AuditLogsPage() {
     // Dashboard view
     if (selectedCategory === 'ALL') {
         return (
-            <div className="space-y-4 sm:space-y-6">
-                {/* Header */}
+            <div className="space-y-3 md:space-y-4 lg:space-y-6">
+                {/* Header - Compact Mobile */}
                 <div>
-                    <h1 className="text-xl sm:text-2xl font-semibold text-black">Audit Logs</h1>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <h1 className="text-lg md:text-xl lg:text-2xl font-semibold text-black">Audit Logs</h1>
+                    <p className="text-xs md:text-sm text-gray-600 mt-1">
                         Complete history of all admin actions
                     </p>
                 </div>
 
-                {/* Category Cards Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+                {/* Category Cards Grid - Compact Mobile */}
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 md:gap-3 lg:gap-4">
                     {categories.map((category) => {
                         const Icon = category.icon;
                         const count = categoryCounts[category.id] || 0;
@@ -187,15 +188,15 @@ export default function AuditLogsPage() {
                             <button
                                 key={category.id}
                                 onClick={() => setSelectedCategory(category.id)}
-                                className="bg-white rounded-lg border-2 border-gray-200 p-4 hover:border-black hover:shadow-lg transition-all text-left group"
+                                className="bg-white rounded-lg border-2 border-gray-200 p-2.5 md:p-3 lg:p-4 hover:border-black hover:shadow-lg transition-all text-left group"
                             >
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className={`${category.color} p-2.5 rounded-lg`}>
-                                        <Icon className="w-5 h-5 text-white" />
+                                <div className="flex items-center justify-between mb-2 md:mb-3">
+                                    <div className={`${category.color} p-1.5 md:p-2 lg:p-2.5 rounded-lg`}>
+                                        <Icon className="w-4 h-4 md:w-5 md:h-5 text-white" />
                                     </div>
-                                    <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all" />
+                                    <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all" />
                                 </div>
-                                <h3 className="font-semibold text-gray-900 text-sm mb-1">
+                                <h3 className="font-semibold text-gray-900 text-xs md:text-sm mb-1">
                                     {category.name}
                                 </h3>
                                 <p className="text-2xl font-bold text-gray-900">
@@ -206,14 +207,14 @@ export default function AuditLogsPage() {
                     })}
                 </div>
 
-                {/* Recent Activity */}
+                {/* Recent Activity - Compact Mobile */}
                 <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                    <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
-                        <h2 className="text-base sm:text-lg font-semibold text-black">Recent Activity</h2>
+                    <div className="px-3 md:px-4 lg:px-6 py-2.5 md:py-3 lg:py-4 border-b border-gray-200">
+                        <h2 className="text-sm md:text-base lg:text-lg font-semibold text-black">Recent Activity</h2>
                     </div>
                     <div className="divide-y divide-gray-100">
                         {auditLogs.slice(0, 10).map((log: AuditLog) => (
-                            <div key={log.id} className="px-4 sm:px-6 py-3 hover:bg-gray-50 transition-colors">
+                            <div key={log.id} className="px-3 md:px-4 lg:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition-colors">
                                 <div className="flex items-center justify-between gap-3">
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
@@ -240,50 +241,50 @@ export default function AuditLogsPage() {
     const Icon = currentCategory?.icon || Package;
 
     return (
-        <div className="space-y-4 sm:space-y-6">
-            {/* Header */}
+        <div className="space-y-3 md:space-y-4 lg:space-y-6">
+            {/* Header - Compact Mobile */}
             <div>
                 <button
                     onClick={() => setSelectedCategory('ALL')}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors mb-4"
+                    className="inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs md:text-sm font-medium transition-colors mb-3 md:mb-4"
                 >
-                    <ArrowLeft className="w-4 h-4" />
+                    <ArrowLeft className="w-3.5 h-3.5 md:w-4 md:h-4" />
                     Back
                 </button>
 
-                <div className="flex items-center gap-3">
-                    <div className={`${currentCategory?.color} p-2.5 rounded-lg`}>
-                        <Icon className="w-5 h-5 text-white" />
+                <div className="flex items-center gap-2 md:gap-3">
+                    <div className={`${currentCategory?.color} p-1.5 md:p-2 lg:p-2.5 rounded-lg`}>
+                        <Icon className="w-4 h-4 md:w-5 md:h-5 text-white" />
                     </div>
                     <div>
-                        <h1 className="text-xl sm:text-2xl font-semibold text-black">{currentCategory?.name}</h1>
-                        <p className="text-sm text-gray-600">
+                        <h1 className="text-lg md:text-xl lg:text-2xl font-semibold text-black">{currentCategory?.name}</h1>
+                        <p className="text-xs md:text-sm text-gray-600">
                             {filteredLogs.length} {filteredLogs.length === 1 ? 'entry' : 'entries'}
                         </p>
                     </div>
                 </div>
             </div>
 
-            {/* Filters */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
+            {/* Filters - Compact Mobile */}
+            <div className="bg-white rounded-lg border border-gray-200 p-2.5 md:p-3 lg:p-4">
                 {/* Search Input */}
-                <div className="mb-3">
+                <div className="mb-2 md:mb-3">
                     <input
                         type="text"
                         placeholder="Search by entity ID, admin email, or ticket number..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
+                        className="w-full px-2.5 md:px-3 py-1.5 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
                     />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3">
                     {/* Event Type Filter (hidden for System category) */}
                     {selectedCategory !== 'SYSTEM' && (
                         <select
                             value={eventTypeFilter}
                             onChange={(e) => setEventTypeFilter(e.target.value)}
-                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
+                            className="px-2.5 md:px-3 py-1.5 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
                         >
                             <option value="ALL">All Events</option>
                             {currentCategory?.events.map(event => (
@@ -316,7 +317,7 @@ export default function AuditLogsPage() {
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
                         placeholder="Start Date"
-                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
+                        className="px-2.5 md:px-3 py-1.5 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
                     />
 
                     {/* End Date */}
@@ -325,7 +326,7 @@ export default function AuditLogsPage() {
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
                         placeholder="End Date"
-                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
+                        className="px-2.5 md:px-3 py-1.5 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
                     />
                 </div>
 
@@ -348,7 +349,10 @@ export default function AuditLogsPage() {
             {/* Logs Table */}
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                 {isLoading ? (
-                    <div className="p-12 text-center text-gray-500">Loading audit logs...</div>
+                    <div className="p-12 flex flex-col items-center justify-center">
+                        <Loader2 className="w-8 h-8 animate-spin text-gray-400 mb-3" />
+                        <p className="text-sm text-gray-500">Loading audit logs...</p>
+                    </div>
                 ) : filteredLogs.length === 0 ? (
                     <div className="p-12 text-center text-gray-500">No audit logs found</div>
                 ) : (

@@ -64,7 +64,7 @@ export const aggregateProductData = (): ProductFormData => {
         // SEO
         slug: basicInfo.name.toLowerCase().replace(/\s+/g, '-'),
 
-        // Organizationg
+        // Pricing
         price: pricing.price,
         compareAtPrice: pricing.compareAtPrice,
         costPerItem: pricing.costPerItem,
@@ -91,6 +91,30 @@ export const aggregateProductData = (): ProductFormData => {
         // Metadata
         version: 0,
         updatedAt: new Date(),
+    };
+};
+
+// ============================================================================
+// SANITIZE DATA FOR API
+// ============================================================================
+
+/**
+ * Sanitizes product data for API submission by removing frontend-only fields
+ * Backend will generate these fields automatically
+ */
+export const sanitizeProductDataForAPI = (data: ProductFormData): any => {
+    const { slug, version, updatedAt, ...cleanData } = data;
+
+    return {
+        ...cleanData,
+        // Sanitize images - remove frontend metadata and map to backend schema
+        images: data.images.map((img, index) => ({
+            url: img.url,
+            order: img.position ?? index,
+            isPrimary: index === 0, // First image is primary
+        })),
+        // Sanitize variants - remove frontend IDs and metadata
+        variants: data.variants.map(({ id, skuLocked, ...variant }) => variant),
     };
 };
 

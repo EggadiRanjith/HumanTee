@@ -81,6 +81,17 @@ function Header() {
     []
   );
 
+  // Protected routes that require authentication
+  const protectedRoutes = ['/orders', '/account'];
+
+  // Handle navigation to protected routes
+  const handleProtectedNavigation = useCallback((e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (protectedRoutes.includes(href) && !isAuthenticated) {
+      e.preventDefault();
+      window.location.href = '/login';
+    }
+  }, [isAuthenticated]);
+
   return (
     <div
       ref={ref}
@@ -180,6 +191,7 @@ function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
+                  onClick={(e) => handleProtectedNavigation(e, link.href)}
                   className={`
                 uppercase tracking-[0.20em] transition-all duration-300
                 ${pathname === link.href

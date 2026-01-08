@@ -75,7 +75,7 @@ function Footer() {
       {/* COPYRIGHT */}
       <div className="relative w-full bg-brand-bg border-t border-white/10">
         <div className="max-w-screen-xl mx-auto py-4 text-center">
-          <p className="text-white/50 text-[11px] tracking-[0.2em]">
+          <p className="text-white/55 text-[12px] tracking-[0.2em]">
             © {new Date().getFullYear()} {settings?.brand_name || 'HumanTee'}
           </p>
         </div>

@@ -79,22 +79,22 @@ export default function HomepageSettings() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+        <div className="min-h-screen bg-gray-50 p-3 md:p-4 lg:p-6 xl:p-8">
             <div className="max-w-4xl mx-auto">
-                {/* Back Button */}
+                {/* Back Button - Compact Mobile */}
                 <Link
                     href="/admin/settings"
-                    className="inline-flex items-center gap-2 text-gray-600 hover:text-black mb-6 transition-colors"
+                    className="inline-flex items-center gap-1.5 md:gap-2 text-gray-600 hover:text-black mb-4 md:mb-6 transition-colors"
                 >
-                    <FiArrowLeft size={20} />
-                    <span className="text-sm font-medium">Back to Settings</span>
+                    <FiArrowLeft size={18} className="md:w-5 md:h-5" />
+                    <span className="text-xs md:text-sm font-medium">Back to Settings</span>
                 </Link>
 
-                {/* Header */}
-                <div className="mb-8 flex items-center justify-between">
+                {/* Header - Compact Mobile */}
+                <div className="mb-4 md:mb-6 lg:mb-8 flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Homepage Content</h1>
-                        <p className="mt-2 text-sm text-gray-600">
+                        <h1 className="text-lg md:text-2xl lg:text-3xl font-bold text-gray-900">Homepage Content</h1>
+                        <p className="mt-1 md:mt-2 text-xs md:text-sm text-gray-600">
                             Manage all homepage sections
                         </p>
                     </div>
@@ -132,8 +132,8 @@ export default function HomepageSettings() {
                     )}
                 </div>
 
-                {/* Content Sections */}
-                <div className="space-y-6">
+                {/* Content Sections - Compact Mobile */}
+                <div className="space-y-4 md:space-y-6">
                     <HeroSlidesManager
                         slides={heroSlides}
                         onChange={setHeroSlides}

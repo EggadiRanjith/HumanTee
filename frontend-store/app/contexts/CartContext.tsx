@@ -104,7 +104,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try {
       const response = await apiClient.get('/cart');
       setItems(response.data.items.map((item: any) => ({
-        id: item.id,
+        id: item.productId, // ← CRITICAL FIX: Use productId (UUID), not cart item ID
         title: item.productTitle || '',
         price: item.price,
         currency: item.currency,
@@ -112,6 +112,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         quantity: item.quantity,
         size: item.variantLabel,
         variantId: item.variantId,
+        availableStock: item.availableStock || item.stock || item.stockQuantity,
       })));
     } catch (error) {
       logError(error, 'Failed to load cart');
@@ -133,6 +134,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
   ): Promise<boolean> => {
     const quantity = item.quantity || 1;
 
+    // Check stock before adding (both guest and authenticated)
+    const existingItem = items.find(
+      (i) => i.id === item.id && (!item.size || i.size === item.size)
+    );
+
+    const newQuantity = existingItem
+      ? existingItem.quantity + quantity
+      : quantity;
+
+    if (item.availableStock !== undefined && newQuantity > item.availableStock) {
+      onError?.(`Only ${item.availableStock} items available in stock`);
+      return false;
+    }
+
     if (isAuthenticated) {
       // Backend cart
       try {
@@ -150,20 +165,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         return false;
       }
     } else {
-      // Guest cart - check stock before adding
-      const existingItem = items.find(
-        (i) => i.id === item.id && (!item.size || i.size === item.size)
-      );
-
-      const newQuantity = existingItem
-        ? existingItem.quantity + quantity
-        : quantity;
-
-      if (item.availableStock !== undefined && newQuantity > item.availableStock) {
-        onError?.(`Only ${item.availableStock} items available in stock`);
-        return false;
-      }
-
+      // Guest cart
       if (existingItem) {
         setItems((prev) =>
           prev.map((i) =>
@@ -251,7 +253,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!cart || !cart.items) return;
 
     const hydratedItems = cart.items.map((item: any) => ({
-      id: item.id,
+      id: item.productId || item.id, // ← Use productId if available, fallback to id for backward compat
       title: item.productTitle || '',
       price: item.price || 0,
       currency: item.currency || 'INR',
@@ -259,6 +261,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       quantity: item.quantity || 1,
       size: item.variantLabel || item.size,
       variantId: item.variantId,
+      availableStock: item.availableStock || item.stock || item.stockQuantity,
     }));
 
     setItems(hydratedItems);

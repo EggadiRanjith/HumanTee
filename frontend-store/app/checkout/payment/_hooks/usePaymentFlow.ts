@@ -24,11 +24,21 @@ export function usePaymentFlow() {
     // CRITICAL: Payment idempotency lock to prevent double-charging
     const [orderLock, setOrderLock] = useState<string | null>(null);
 
-    // Generate stable idempotency key (persists across function calls)
-    const idempotencyKey = useRef(`${Date.now()}-${Math.random().toString(36).substring(2, 15)}`);
+    // Browser-compatible UUID v4 generator
+    const generateUUID = () => {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    };
+
+    // CRITICAL: Generate idempotency key ONCE per component mount (not per click)
+    // This prevents duplicate orders if user clicks multiple times
+    const idempotencyKey = useRef(generateUUID()); // UUID v4 format
 
     // OBSERVABILITY: Correlation ID for tracing payment failures
-    const correlationId = useRef(`payment-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`);
+    const correlationId = useRef(`order-${Date.now()}-${Math.random().toString(36).substring(7)}`);
 
     // Load Razorpay script dynamically
     const loadRazorpayScript = (): Promise<boolean> => {
@@ -86,11 +96,11 @@ export function usePaymentFlow() {
             }
 
             // SECURITY: Backend calculates prices (frontend sends ONLY items + quantities)
-            const response = await apiClient.post('/orders/prepare', {
+            const payload = {
                 idempotencyKey: idempotencyKey.current, // ← CRITICAL for preventing duplicates
                 items: items.map(item => ({
-                    productId: String(item.id),
-                    variantId: item.variantId || String(item.id),
+                    productId: item.id, // ← Now correctly the product UUID
+                    variantId: item.variantId || item.id, // ← Variant UUID or fallback to product UUID
                     quantity: item.quantity,
                     imageUrlSnapshot: item.image,
                 })),
@@ -98,13 +108,18 @@ export function usePaymentFlow() {
                     fullName: shippingData.fullName,
                     email: shippingData.email,
                     phone: shippingData.phone,
-                    addressLine1: shippingData.address,
+                    addressLine1: shippingData.addressLine1 || shippingData.address, // Use addressLine1 or fallback to address
+                    addressLine2: shippingData.addressLine2 || '', // Optional
                     city: shippingData.city,
                     state: shippingData.state,
                     postalCode: shippingData.postalCode,
                     country: shippingData.country || 'India',
                 },
-            });
+            };
+
+            console.log('📦 Order Preparation Payload:', JSON.stringify(payload, null, 2));
+
+            const response = await apiClient.post('/orders/prepare', payload);
 
             const { razorpayOrderId, totalAmount, orderData } = response.data;
 

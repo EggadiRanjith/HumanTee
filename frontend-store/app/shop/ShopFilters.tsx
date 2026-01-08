@@ -56,7 +56,7 @@ export default function ShopFilters({
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
                         aria-label="Filter by category"
-                        className="appearance-none px-4 py-2.5 pr-9 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full text-white text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-white/10 hover:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/20 min-w-[140px]"
+                        className="appearance-none px-3 py-2 pr-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full text-white text-[12px] font-medium cursor-pointer transition-all duration-200 hover:bg-white/10 hover:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/20 min-w-[120px]"
                     >
                         <option value="" style={{ backgroundColor: '#1f2937', color: '#ffffff' }}>All Categories</option>
                         {categories.length === 0 ? (
@@ -80,7 +80,7 @@ export default function ShopFilters({
                         value={selectedCollection}
                         onChange={(e) => setSelectedCollection(e.target.value)}
                         aria-label="Filter by collection"
-                        className="appearance-none px-4 py-2.5 pr-9 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full text-white text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-white/10 hover:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/20 min-w-[140px]"
+                        className="appearance-none px-3 py-2 pr-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full text-white text-[12px] font-medium cursor-pointer transition-all duration-200 hover:bg-white/10 hover:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/20 min-w-[120px]"
                     >
                         <option value="" style={{ backgroundColor: '#1f2937', color: '#ffffff' }}>All Collections</option>
                         {collections.length === 0 ? (
@@ -104,7 +104,7 @@ export default function ShopFilters({
                         value={selectedSort}
                         onChange={(e) => setSelectedSort(e.target.value)}
                         aria-label="Sort products"
-                        className="appearance-none text-center px-4 py-2.5 pr-9 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full text-white text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-white/10 hover:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/20 min-w-[140px]"
+                        className="appearance-none text-center px-3 py-2 pr-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full text-white text-[12px] font-medium cursor-pointer transition-all duration-200 hover:bg-white/10 hover:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/20 min-w-[120px]"
                     >
                         <option value="" style={{ backgroundColor: '#1f2937', color: '#ffffff' }}>Sort By</option>
                         {sortOptions.length === 0 ? (
@@ -124,8 +124,8 @@ export default function ShopFilters({
                     </div>
                 </div>
                 {activeFilterCount > 0 && (
-                    <div className="flex items-center gap-2 px-3 py-2 bg-violet-500/20 border border-violet-500/30 rounded-full">
-                        <span className="text-xs text-violet-300 font-medium whitespace-nowrap">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-violet-500/20 border border-violet-500/30 rounded-full">
+                        <span className="text-[10px] text-violet-300 font-medium whitespace-nowrap uppercase tracking-wide">
                             {activeFilterCount} Active
                         </span>
                     </div>

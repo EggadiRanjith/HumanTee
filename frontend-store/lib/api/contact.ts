@@ -22,7 +22,7 @@ export interface ContactResponse {
  * POST /api/contact
  */
 export async function submitContactForm(data: ContactFormData): Promise<ContactResponse> {
-    const response = await fetch(`${API_URL}/api/contact`, {
+    const response = await fetch(`${API_URL}/contact`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

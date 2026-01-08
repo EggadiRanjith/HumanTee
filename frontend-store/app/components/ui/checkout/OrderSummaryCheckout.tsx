@@ -106,7 +106,7 @@ export function OrderSummaryCheckout({ items, pincode }: OrderSummaryCheckoutPro
                                 {item.size && <p className="text-white/60 text-[10px] sm:text-xs">Size: {item.size}</p>}
                                 <p className="text-white/60 text-[10px] sm:text-xs">Qty: {item.quantity}</p>
                             </div>
-                            <p className="text-white text-xs sm:text-sm font-medium">₹{item.price.toFixed(2)}</p>
+                            <p className="text-white text-xs sm:text-sm font-medium">₹{(item.price * item.quantity).toFixed(2)}</p>
                         </div>
                     ))}
                 </div>
@@ -119,10 +119,10 @@ export function OrderSummaryCheckout({ items, pincode }: OrderSummaryCheckoutPro
                     </div>
 
                     {/* Shipping */}
-                    <div className="flex justify-between text-xs sm:text-sm">
+                    <div className="flex justify-between text-[12px] sm:text-[13px]">
                         <span className="text-white/60">Shipping</span>
                         {isLoading ? (
-                            <span className="text-white/40 text-xs">Loading...</span>
+                            <span className="text-white/40 text-[12px]">Loading...</span>
                         ) : shipping ? (
                             shipping.isFree ? (
                                 <span className="text-green-400">FREE</span>
@@ -130,7 +130,7 @@ export function OrderSummaryCheckout({ items, pincode }: OrderSummaryCheckoutPro
                                 <span className="text-white">₹{shipping.cost.toFixed(2)}</span>
                             )
                         ) : (
-                            <span className="text-white/40 text-xs">Calculated after address</span>
+                            <span className="text-white/55 text-[12px]">Select address to calculate</span>
                         )}
                     </div>
 

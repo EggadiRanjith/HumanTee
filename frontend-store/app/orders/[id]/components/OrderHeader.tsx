@@ -33,7 +33,7 @@ export function OrderHeader({ orderNumber, createdAt, status }: OrderHeaderProps
         <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl luxury-glass border border-white/10 bg-white/5 backdrop-blur-xl mb-6 sm:mb-8">
             <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-3 sm:gap-4">
                 <div className="min-w-0 flex-1">
-                    <h2 className="text-lg sm:text-xl text-white tracking-wide font-light break-all xs:break-normal">
+                    <h2 className="text-lg sm:text-xl text-white tracking-wide font-light truncate">
                         {orderNumber || 'Order'}
                     </h2>
                     <p className="text-white/50 text-xs mt-1">

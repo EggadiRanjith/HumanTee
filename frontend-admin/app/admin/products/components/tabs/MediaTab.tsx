@@ -88,19 +88,19 @@ export default function MediaTab({ errors }: MediaTabProps) {
     const primaryImage = Array.isArray(images) ? images.find((img) => img.isPrimary) : undefined;
 
     return (
-        <div className="space-y-6 sm:space-y-8">
+        <div className="space-y-4 md:space-y-6 lg:space-y-8">
             <FormSection title="Product Images">
-                <div className="space-y-4 sm:space-y-5">
-                    {/* Stats - Better Alignment */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="space-y-3 md:space-y-4 lg:space-y-5">
+                    {/* Stats - Better Alignment - Compact Mobile */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-2.5 md:p-3 lg:p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <span className="text-sm font-medium text-blue-900">Total Images</span>
-                                <p className="text-2xl font-bold text-blue-700 mt-1">{images.length} / 10</p>
+                                <span className="text-xs md:text-sm font-medium text-blue-900">Total Images</span>
+                                <p className="text-xl md:text-2xl font-bold text-blue-700 mt-1">{images.length} / 10</p>
                             </div>
                             {primaryImage && (
-                                <div className="flex items-center gap-2 text-sm text-blue-700 bg-blue-100 px-3 py-2 rounded-lg">
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <div className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm text-blue-700 bg-blue-100 px-2 md:px-3 py-1.5 md:py-2 rounded-lg">
+                                    <svg className="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                     </svg>
                                     <span>Primary set</span>
@@ -124,9 +124,9 @@ export default function MediaTab({ errors }: MediaTabProps) {
                         </p>
                     )}
 
-                    {/* Info */}
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                        <p className="text-xs sm:text-sm text-gray-600">
+                    {/* Info - Compact Mobile */}
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-2 md:p-3">
+                        <p className="text-xs md:text-sm text-gray-600">
                             Images are uploaded as TEMP and promoted to ACTIVE on publish.
                         </p>
                     </div>

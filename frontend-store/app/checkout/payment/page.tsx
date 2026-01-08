@@ -73,7 +73,7 @@ export default function PaymentPage() {
                             transition={{ duration: 0.4, delay: 0.3 }}
                             className="lg:col-span-1"
                         >
-                            <OrderSummaryCheckout items={items} />
+                            <OrderSummaryCheckout items={items} pincode={shippingData.postalCode} />
                         </motion.div>
                     </div>
                 </div>

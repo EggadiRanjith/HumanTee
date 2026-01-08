@@ -70,22 +70,22 @@ export default function MaintenanceSettingsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+        <div className="min-h-screen bg-gray-50 p-3 md:p-4 lg:p-6 xl:p-8">
             <div className="max-w-4xl mx-auto">
-                {/* Back Button */}
+                {/* Back Button - Compact Mobile */}
                 <Link
                     href="/admin/settings"
-                    className="inline-flex items-center gap-2 text-gray-600 hover:text-black mb-6 transition-colors"
+                    className="inline-flex items-center gap-1.5 md:gap-2 text-gray-600 hover:text-black mb-4 md:mb-6 transition-colors"
                 >
-                    <FiArrowLeft size={20} />
-                    <span className="text-sm font-medium">Back to Settings</span>
+                    <FiArrowLeft size={18} className="md:w-5 md:h-5" />
+                    <span className="text-xs md:text-sm font-medium">Back to Settings</span>
                 </Link>
 
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+                {/* Header - Compact Mobile */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 lg:mb-8 gap-3 md:gap-4">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">System & Maintenance</h1>
-                        <p className="mt-1 text-sm text-gray-600">
+                        <h1 className="text-lg md:text-2xl lg:text-3xl font-bold text-gray-900">System & Maintenance</h1>
+                        <p className="mt-1 text-xs md:text-sm text-gray-600">
                             Configure site-wide maintenance mode and luxury arrival page
                         </p>
                     </div>
@@ -130,9 +130,9 @@ export default function MaintenanceSettingsPage() {
                     </div>
                 )}
 
-                <div className="space-y-6">
-                    {/* Maintenance Toggle Card */}
-                    <div className={`bg-white rounded-xl shadow-sm border p-6 transition-all ${settings.enabled ? 'border-orange-200 bg-orange-50/30' : 'border-gray-200'
+                <div className="space-y-4 md:space-y-6">
+                    {/* Maintenance Toggle Card - Compact Mobile */}
+                    <div className={`bg-white rounded-xl shadow-sm border p-3 md:p-4 lg:p-6 transition-all ${settings.enabled ? 'border-orange-200 bg-orange-50/30' : 'border-gray-200'
                         }`}>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
@@ -173,9 +173,9 @@ export default function MaintenanceSettingsPage() {
                         )}
                     </div>
 
-                    {/* Content Customization Card */}
+                    {/* Content Customization Card - Compact Mobile */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                        <div className="p-6 border-b border-gray-100">
+                        <div className="p-3 md:p-4 lg:p-6 border-b border-gray-100">
                             <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                                 <FiLayout className="text-gray-400" />
                                 Page Content Customization

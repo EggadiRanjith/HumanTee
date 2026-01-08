@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 export default function ScrollingText() {
     return (
-        <div className="relative w-full overflow-hidden bg-brand-bg py-16 sm:py-20 lg:py-24">
+        <div className="relative w-full overflow-hidden bg-brand-bg py-12 sm:py-16 lg:py-20">
             <div className="absolute inset-0 flex items-center overflow-hidden">
                 <motion.div
                     className="flex whitespace-nowrap"

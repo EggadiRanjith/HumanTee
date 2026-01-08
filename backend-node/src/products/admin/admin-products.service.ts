@@ -254,6 +254,31 @@ export class AdminProductsService {
         });
     }
 
+    /**
+     * Get low stock products (stock <= threshold)
+     */
+    async getLowStockProducts() {
+        const products = await this.productRepo.find({
+            where: { track_inventory: true },
+            relations: ['variants'],
+        });
+
+        return products
+            .filter(p => {
+                const totalStock = p.variants?.reduce((sum, v) => sum + (v.stock_quantity || 0), 0) || p.stock_quantity || 0;
+                const threshold = p.low_stock_threshold || 10;
+                return totalStock > 0 && totalStock <= threshold;
+            })
+            .map(p => ({
+                id: p.id,
+                name: p.name,
+                slug: p.slug,
+                stock: p.variants?.reduce((sum, v) => sum + (v.stock_quantity || 0), 0) || p.stock_quantity || 0,
+                threshold: p.low_stock_threshold || 10,
+                status: p.status,
+            }));
+    }
+
     // ========================================================================
     // HELPER METHODS
     // ========================================================================

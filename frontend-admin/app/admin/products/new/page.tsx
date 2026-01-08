@@ -544,20 +544,20 @@ export default function NewProductPage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Draft Recovery Banner - Improved UX */}
+            {/* Draft Recovery Banner - Improved UX - Compact Mobile */}
             {showDraftRecovery && (
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200 px-4 sm:px-6 py-4">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200 px-3 md:px-4 lg:px-6 py-3 md:py-4">
                     <div className="max-w-7xl mx-auto">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                            <div className="flex items-start gap-3">
-                                <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 md:gap-3">
+                            <div className="flex items-start gap-2 md:gap-3">
+                                <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <svg className="w-4 h-4 md:w-5 md:h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 className="text-sm font-semibold text-gray-900">Draft Found</h3>
-                                    <p className="text-sm text-gray-600 mt-0.5">
+                                    <h3 className="text-xs md:text-sm font-semibold text-gray-900">Draft Found</h3>
+                                    <p className="text-xs md:text-sm text-gray-600 mt-0.5">
                                         We found an unsaved product from your previous session
                                     </p>
                                 </div>
@@ -568,13 +568,13 @@ export default function NewProductPage() {
                                         discardDraft();
                                         setShowDraftRecovery(false);
                                     }}
-                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                    className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                                 >
                                     Start Fresh
                                 </button>
                                 <button
                                     onClick={() => setShowDraftRecovery(false)}
-                                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                                    className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
                                 >
                                     Continue Editing
                                 </button>
@@ -589,22 +589,22 @@ export default function NewProductPage() {
                 <MobileProductWizard />
             ) : (
                 <>
-                    {/* Header - Sticky */}
-                    <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
+                    {/* Header - Sticky - Compact Mobile */}
+                    <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-3 md:px-4 lg:px-6 py-3 md:py-4">
                         <div className="max-w-7xl mx-auto">
                             <button
                                 onClick={() => router.back()}
-                                className="text-sm text-gray-600 hover:text-black mb-3 inline-flex items-center gap-1"
+                                className="text-xs md:text-sm text-gray-600 hover:text-black mb-2 md:mb-3 inline-flex items-center gap-1"
                             >
                                 ← Back to products
                             </button>
-                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 md:gap-3">
                                 <div className="flex-1">
-                                    <h1 className="text-xl sm:text-2xl font-semibold text-black">
+                                    <h1 className="text-lg md:text-xl lg:text-2xl font-semibold text-black">
                                         Create New Product
                                     </h1>
                                     {hasUnsavedChanges && (
-                                        <p className="text-sm text-orange-600 mt-1 flex items-center gap-1">
+                                        <p className="text-xs md:text-sm text-orange-600 mt-1 flex items-center gap-1">
                                             <span className="inline-block w-2 h-2 bg-orange-600 rounded-full"></span>
                                             Unsaved changes
                                         </p>
@@ -613,7 +613,7 @@ export default function NewProductPage() {
                                 <div className="hidden sm:flex gap-2 flex-shrink-0">
                                     <button
                                         onClick={() => router.back()}
-                                        className="bg-gray-100 hover:bg-gray-200 text-black px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+                                        className="bg-gray-100 hover:bg-gray-200 text-black px-3 md:px-4 py-2 md:py-2.5 rounded-lg font-medium transition-colors text-xs md:text-sm"
                                     >
                                         Cancel
                                     </button>
@@ -621,7 +621,7 @@ export default function NewProductPage() {
                                     {currentStep > 0 && (
                                         <button
                                             onClick={handleBack}
-                                            className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+                                            className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 md:px-4 py-2 md:py-2.5 rounded-lg font-medium transition-colors text-xs md:text-sm"
                                         >
                                             ← Back
                                         </button>
@@ -631,7 +631,7 @@ export default function NewProductPage() {
                                     {currentStep < wizardSteps.length - 1 && (
                                         <button
                                             onClick={handleContinue}
-                                            className="bg-black hover:bg-gray-900 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+                                            className="bg-black hover:bg-gray-900 text-white px-3 md:px-4 py-2 md:py-2.5 rounded-lg font-medium transition-colors text-xs md:text-sm"
                                         >
                                             Continue →
                                         </button>
@@ -643,14 +643,14 @@ export default function NewProductPage() {
                                             <button
                                                 onClick={handleSaveDraft}
                                                 disabled={isSaving}
-                                                className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="bg-gray-800 hover:bg-gray-900 text-white px-3 md:px-4 py-2 md:py-2.5 rounded-lg font-medium transition-colors text-xs md:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 {isSaving ? 'Saving...' : 'Save Draft'}
                                             </button>
                                             <button
                                                 onClick={handlePublish}
                                                 disabled={isSaving}
-                                                className="bg-black hover:bg-gray-900 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="bg-black hover:bg-gray-900 text-white px-3 md:px-4 py-2 md:py-2.5 rounded-lg font-medium transition-colors text-xs md:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 {isSaving ? 'Publishing...' : 'Publish Product'}
                                             </button>
@@ -672,24 +672,24 @@ export default function NewProductPage() {
                         </div>
                     </div>
 
-                    {/* Tab Content */}
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 pb-24 sm:pb-8">
+                    {/* Tab Content - Compact Mobile */}
+                    <div className="max-w-7xl mx-auto px-3 md:px-4 lg:px-6 py-4 md:py-6 pb-24 sm:pb-8">
                         {renderTabContent()}
                     </div>
 
-                    {/* Mobile Footer - Fixed */}
-                    <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 flex gap-3 z-20 shadow-lg">
+                    {/* Mobile Footer - Fixed - Compact */}
+                    <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-3 py-2.5 flex gap-2 z-20 shadow-lg">
                         <button
                             onClick={handleSaveDraft}
                             disabled={isSaving}
-                            className="flex-1 bg-gray-800 hover:bg-gray-900 text-white px-4 py-3 rounded-lg font-medium transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 bg-gray-800 hover:bg-gray-900 text-white px-3 py-2.5 rounded-lg font-medium transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isSaving ? 'Saving...' : 'Save Draft'}
                         </button>
                         <button
                             onClick={handlePublish}
                             disabled={isSaving}
-                            className="flex-1 bg-black hover:bg-gray-900 text-white px-4 py-3 rounded-lg font-medium transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 bg-black hover:bg-gray-900 text-white px-3 py-2.5 rounded-lg font-medium transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isSaving ? 'Publishing...' : 'Publish'}
                         </button>

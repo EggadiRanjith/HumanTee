@@ -6,6 +6,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { CommonModule } from './common/common.module';
 import { AuthModule } from './auth/auth.module';
 import { CartModule } from './cart/cart.module';
 import { ProductsModule } from './products/products.module';
@@ -33,6 +34,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    CommonModule, // Global module for security services
     ThrottlerModule.forRoot([
       { name: 'default', ttl: 60000, limit: 100 }, // 100 req/min default
       { name: 'webhook', ttl: 60000, limit: 20 },   // 20 req/min for webhooks

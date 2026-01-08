@@ -162,6 +162,9 @@ export class ProductsService {
             description: product.description,
             status: product.status,
             category: product.category,
+            // ✅ Added: Base price and compare-at price for pricing display
+            basePrice: Number(product.base_price),
+            compareAtPrice: product.compare_at_price ? Number(product.compare_at_price) : undefined,
             // Map the first collection's name/slug if available
             collection: product.collectionMaps && product.collectionMaps.length > 0
                 ? product.collectionMaps[0].collection?.name

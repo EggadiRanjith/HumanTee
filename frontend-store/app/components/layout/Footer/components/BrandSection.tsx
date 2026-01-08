@@ -56,7 +56,7 @@ export default function BrandSection({ brandName, logoUrl, tagline, socialLinks 
                 </h2>
             </div>
 
-            <p className="text-white/60 text-[12px] leading-relaxed max-w-xs">
+            <p className="text-white/60 text-[13px] leading-relaxed max-w-xs">
                 {tagline}
             </p>
 

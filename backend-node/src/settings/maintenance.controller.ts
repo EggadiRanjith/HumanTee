@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common';
 import { SettingsService } from './settings.service';
-import { JwtAuthGuard } from '../auth/guards/jwt.guard';
+import { AdminJwtGuard } from '../auth/guards/admin-jwt.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 
 @Controller('public-settings')
@@ -22,7 +22,7 @@ export class MaintenancePublicController {
 }
 
 @Controller('admin/settings')
-@UseGuards(JwtAuthGuard, AdminGuard)
+@UseGuards(AdminJwtGuard, AdminGuard)
 export class MaintenanceAdminController {
     constructor(private readonly settingsService: SettingsService) { }
 

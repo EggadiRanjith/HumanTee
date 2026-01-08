@@ -6,7 +6,9 @@ export interface ShippingData {
     fullName: string;
     email: string;
     phone: string;
-    address: string;
+    address: string; // For display purposes
+    addressLine1?: string; // For backend API
+    addressLine2?: string; // For backend API
     city: string;
     state: string;
     postalCode: string;

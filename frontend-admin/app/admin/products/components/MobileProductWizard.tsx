@@ -16,7 +16,7 @@ import InventoryTab from './tabs/InventoryTab';
 import OrganizationTab from './tabs/OrganizationTab';
 import { useBasicInfoStore } from '@/domains/product/basic-info/basic-info.store';
 import { usePricingStore } from '@/domains/product/pricing/pricing.store';
-import { aggregateProductData, markAllDomainsClean } from '@/domains/product/autosave/autosave.service';
+import { aggregateProductData, sanitizeProductDataForAPI, markAllDomainsClean } from '@/domains/product/autosave/autosave.service';
 import { toast } from 'sonner';
 import apiClient from '@/lib/api-client';
 
@@ -83,7 +83,8 @@ export default function MobileProductWizard() {
         setIsSaving(true);
         try {
             const productData = aggregateProductData();
-            const response = await apiClient.post('/admin/products', productData);
+            const sanitizedData = sanitizeProductDataForAPI(productData);
+            const response = await apiClient.post('/admin/products', sanitizedData);
             toast.success('Product created successfully!');
             markAllDomainsClean();
             router.push('/admin/products');

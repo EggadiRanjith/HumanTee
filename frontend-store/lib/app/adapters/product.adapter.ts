@@ -28,6 +28,8 @@ interface BackendProduct {
     status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
     category?: string;  // For filtering
     collection?: string;  // For filtering (if returned as string)
+    basePrice: number;  // Base price
+    compareAtPrice?: number;  // Compare at price (original price)
     variants: BackendVariant[];
     images?: BackendImage[];  // Added images array
 }
@@ -68,11 +70,10 @@ export function adaptProduct(apiProduct: BackendProduct): Product {
         // Sum of all active variant stock (display-only)
         stock: activeVariants.reduce((sum, v) => sum + v.stock, 0),
 
-        // Price from first active variant (display-only)
-        price: firstVariant?.price ?? 0,
+        // Price from first active variant or base price (display-only)
+        price: firstVariant?.price ?? apiProduct.basePrice ?? 0,
 
-        // TEMP: Backend does not yet expose currency.
-        // Phase 6 MUST move currency to variant model.
+        // CORRECTION 2: Currency from variant, not hardcoded
         currency: 'INR',
 
         // CORRECTION 4: handle = slug (unified)
@@ -83,7 +84,7 @@ export function adaptProduct(apiProduct: BackendProduct): Product {
         imageAlt: productImage?.altText || apiProduct.title,  // Fixed: camelCase
 
         // Optional fields
-        originalPrice: undefined, // No sale pricing yet
+        originalPrice: apiProduct.compareAtPrice, // Map compareAtPrice to originalPrice for strikethrough display
         badge: undefined, // No badge logic yet
 
         // Filter fields

@@ -29,12 +29,12 @@ export default function BasicInfoTab({ errors }: BasicInfoTabProps) {
     }, [name, description, productType, category]);
 
     return (
-        <div className="space-y-6 sm:space-y-8">
+        <div className="space-y-4 md:space-y-6 lg:space-y-8">
             <FormSection title="Basic Information">
-                <div className="space-y-4 sm:space-y-5">
+                <div className="space-y-3 md:space-y-4 lg:space-y-5">
                     {/* Product Name */}
                     <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-900 mb-2">
+                        <label htmlFor="name" className="block text-xs md:text-sm font-medium text-gray-900 mb-1.5 md:mb-2">
                             Product Name <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -43,7 +43,7 @@ export default function BasicInfoTab({ errors }: BasicInfoTabProps) {
                             value={name}
                             onChange={(e: any) => setName(e.target.value)}
                             placeholder="e.g., Classic White T-Shirt"
-                            className={`w-full px-3 py-3 sm:px-4 sm:py-2.5 text-base sm:text-sm border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900 ${errors?.name ? 'border-red-500' : 'border-gray-300'
+                            className={`w-full px-2.5 py-2 md:px-3 lg:px-4 md:py-2.5 text-sm md:text-base lg:text-sm border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900 ${errors?.name ? 'border-red-500' : 'border-gray-300'
                                 }`}
                         />
                         {errors?.name && (
@@ -58,7 +58,7 @@ export default function BasicInfoTab({ errors }: BasicInfoTabProps) {
 
                     {/* Description */}
                     <div>
-                        <label htmlFor="description" className="block text-sm font-medium text-gray-900 mb-2">
+                        <label htmlFor="description" className="block text-xs md:text-sm font-medium text-gray-900 mb-1.5 md:mb-2">
                             Description <span className="text-red-500">*</span>
                         </label>
                         <textarea
@@ -67,7 +67,7 @@ export default function BasicInfoTab({ errors }: BasicInfoTabProps) {
                             onChange={(e: any) => setDescription(e.target.value)}
                             rows={5}
                             placeholder="Describe your product..."
-                            className={`w-full px-3 py-3 sm:px-4 sm:py-2.5 text-base sm:text-sm border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900 resize-none ${errors?.description ? 'border-red-500' : 'border-gray-300'
+                            className={`w-full px-2.5 py-2 md:px-3 lg:px-4 md:py-2.5 text-sm md:text-base lg:text-sm border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900 resize-none ${errors?.description ? 'border-red-500' : 'border-gray-300'
                                 }`}
                         />
                         {errors?.description && (
@@ -81,16 +81,16 @@ export default function BasicInfoTab({ errors }: BasicInfoTabProps) {
                     </div>
 
                     {/* Product Type & Category - Stack on mobile, row on desktop */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 lg:gap-5">
                         <div>
-                            <label htmlFor="productType" className="block text-sm font-medium text-gray-900 mb-2">
+                            <label htmlFor="productType" className="block text-xs md:text-sm font-medium text-gray-900 mb-1.5 md:mb-2">
                                 Product Type <span className="text-red-500">*</span>
                             </label>
                             <select
                                 id="productType"
                                 value={productType}
                                 onChange={(e: any) => setProductType(e.target.value)}
-                                className={`w-full px-3 py-3 sm:px-4 sm:py-2.5 text-base sm:text-sm border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900 ${errors?.productType ? 'border-red-500' : 'border-gray-300'
+                                className={`w-full px-2.5 py-2 md:px-3 lg:px-4 md:py-2.5 text-sm md:text-base lg:text-sm border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900 ${errors?.productType ? 'border-red-500' : 'border-gray-300'
                                     }`}
                             >
                                 <option value="">Select type</option>
@@ -110,14 +110,14 @@ export default function BasicInfoTab({ errors }: BasicInfoTabProps) {
                         </div>
 
                         <div>
-                            <label htmlFor="category" className="block text-sm font-medium text-gray-900 mb-2">
+                            <label htmlFor="category" className="block text-xs md:text-sm font-medium text-gray-900 mb-1.5 md:mb-2">
                                 Category <span className="text-red-500">*</span>
                             </label>
                             <select
                                 id="category"
                                 value={category}
                                 onChange={(e: any) => setCategory(e.target.value)}
-                                className={`w-full px-3 py-3 sm:px-4 sm:py-2.5 text-base sm:text-sm border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900 ${errors?.category ? 'border-red-500' : 'border-gray-300'
+                                className={`w-full px-2.5 py-2 md:px-3 lg:px-4 md:py-2.5 text-sm md:text-base lg:text-sm border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-white text-gray-900 ${errors?.category ? 'border-red-500' : 'border-gray-300'
                                     }`}
                             >
                                 <option value="">Select category</option>

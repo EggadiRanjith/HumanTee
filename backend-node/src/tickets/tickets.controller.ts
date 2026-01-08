@@ -15,6 +15,7 @@ import { CreateTicketDto } from './dto/create-ticket.dto';
 import { AddMessageDto } from './dto/add-message.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
+import { AdminJwtGuard } from '../auth/guards/admin-jwt.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { Throttle } from '@nestjs/throttler';
 import { AuditInterceptor } from '../common/interceptors/audit.interceptor';
@@ -79,7 +80,7 @@ export class TicketsController {
  * ADMIN CONTROLLER
  */
 @Controller('admin/tickets')
-@UseGuards(JwtAuthGuard, AdminGuard)
+@UseGuards(AdminJwtGuard, AdminGuard)
 @UseInterceptors(AuditInterceptor)
 export class AdminTicketsController {
     constructor(private readonly ticketsService: TicketsService) { }

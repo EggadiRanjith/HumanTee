@@ -25,11 +25,25 @@ export default function VariantManager({
     const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null);
 
     const handleAdd = (variant: ProductVariant) => {
+        // Check for duplicate size
+        const duplicateSize = variants.find((v: any) => v.size === variant.size);
+        if (duplicateSize) {
+            alert(`A variant with size "${variant.size}" already exists. Please choose a different size or edit the existing variant.`);
+            return;
+        }
         onChange([...variants, variant]);
         setIsAdding(false);
     };
 
     const handleUpdate = (updatedVariant: ProductVariant) => {
+        // Check for duplicate size (excluding the current variant being edited)
+        const duplicateSize = variants.find(
+            (v: any) => v.size === updatedVariant.size && v.id !== updatedVariant.id
+        );
+        if (duplicateSize) {
+            alert(`A variant with size "${updatedVariant.size}" already exists. Please choose a different size.`);
+            return;
+        }
         onChange(
             variants.map((v: any) => (v.id === updatedVariant.id ? updatedVariant : v))
         );

@@ -1,11 +1,11 @@
 import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, UseInterceptors } from '@nestjs/common';
 import { DiscountsService } from './discounts.service';
-import { JwtAuthGuard } from '../auth/guards/jwt.guard';
+import { AdminJwtGuard } from '../auth/guards/admin-jwt.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { AuditInterceptor } from '../common/interceptors/audit.interceptor';
 
 @Controller('admin/discounts')
-@UseGuards(JwtAuthGuard, AdminGuard)
+@UseGuards(AdminJwtGuard, AdminGuard)
 @UseInterceptors(AuditInterceptor)
 export class DiscountsController {
     constructor(private readonly discountsService: DiscountsService) { }

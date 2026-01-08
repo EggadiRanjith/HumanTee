@@ -48,38 +48,38 @@ const settingsCards = [
 
 export default function SettingsPage() {
     return (
-        <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+        <div className="min-h-screen bg-gray-50 p-3 md:p-4 lg:p-6 xl:p-8">
             <div className="max-w-6xl mx-auto">
-                {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Site Settings</h1>
-                    <p className="mt-2 text-sm text-gray-600">
+                {/* Header - Compact Mobile */}
+                <div className="mb-4 md:mb-6 lg:mb-8">
+                    <h1 className="text-lg md:text-2xl lg:text-3xl font-bold text-gray-900">Site Settings</h1>
+                    <p className="mt-1 md:mt-2 text-xs md:text-sm text-gray-600">
                         Manage your storefront appearance and content
                     </p>
                 </div>
 
-                {/* Settings Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Settings Cards Grid - Compact Mobile */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 lg:gap-6">
                     {settingsCards.map((card) => (
                         <Link
                             key={card.href}
                             href={card.href}
                             className="group block bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md hover:border-gray-300 transition-all duration-200"
                         >
-                            <div className="p-6">
-                                {/* Header */}
-                                <div className="flex items-start justify-between mb-3">
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-3xl">{card.icon}</span>
-                                        <h2 className="text-lg font-semibold text-gray-900 group-hover:text-black">
+                            <div className="p-3 md:p-4 lg:p-6">
+                                {/* Header - Compact Mobile */}
+                                <div className="flex items-start justify-between mb-2 md:mb-3">
+                                    <div className="flex items-center gap-2 md:gap-3">
+                                        <span className="text-2xl md:text-3xl">{card.icon}</span>
+                                        <h2 className="text-base md:text-lg font-semibold text-gray-900 group-hover:text-black">
                                             {card.title}
                                         </h2>
                                     </div>
-                                    <FiChevronRight className="text-gray-400 group-hover:text-black transition-colors" size={20} />
+                                    <FiChevronRight className="text-gray-400 group-hover:text-black transition-colors" size={18} />
                                 </div>
 
-                                {/* Description */}
-                                <p className="text-sm text-gray-600 mb-4">
+                                {/* Description - Compact Mobile */}
+                                <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">
                                     {card.description}
                                 </p>
 
@@ -99,9 +99,9 @@ export default function SettingsPage() {
                     ))}
                 </div>
 
-                {/* Helper Text */}
-                <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-800">
+                {/* Helper Text - Compact Mobile */}
+                <div className="mt-4 md:mt-6 lg:mt-8 p-3 md:p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-xs md:text-sm text-blue-800">
                         <span className="font-semibold">💡 Tip:</span> Changes are saved automatically. Click any card to customize that section.
                     </p>
                 </div>

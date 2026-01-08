@@ -86,22 +86,22 @@ export default function PoliciesSettingsPage() {
             : policiesData.terms_sections;
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Back Button */}
+        <div className="min-h-screen bg-gray-50 py-4 md:py-6 lg:py-8">
+            <div className="max-w-5xl mx-auto px-3 md:px-4 lg:px-6 xl:px-8">
+                {/* Back Button - Compact Mobile */}
                 <Link
                     href="/admin/settings"
-                    className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+                    className="inline-flex items-center gap-1.5 md:gap-2 text-gray-600 hover:text-gray-900 mb-4 md:mb-6"
                 >
-                    <FiChevronLeft size={20} />
+                    <FiChevronLeft size={18} className="md:w-5 md:h-5" />
                     Back to Settings
                 </Link>
 
-                {/* Header */}
-                <div className="mb-8 flex items-center justify-between">
+                {/* Header - Compact Mobile */}
+                <div className="mb-4 md:mb-6 lg:mb-8 flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Policies</h1>
-                        <p className="mt-2 text-sm text-gray-600">
+                        <h1 className="text-lg md:text-2xl lg:text-3xl font-bold text-gray-900">Policies</h1>
+                        <p className="mt-1 md:mt-2 text-xs md:text-sm text-gray-600">
                             Shipping, Terms & Conditions, and Privacy Policy
                         </p>
                     </div>
@@ -159,10 +159,10 @@ export default function PoliciesSettingsPage() {
                     </div>
                 </div>
 
-                {/* Form */}
-                <div className="space-y-6">
+                {/* Form - Compact Mobile */}
+                <div className="space-y-4 md:space-y-6">
                     {/* Effective Date */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 md:p-4 lg:p-6">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                             Effective Date
                         </label>
@@ -183,7 +183,7 @@ export default function PoliciesSettingsPage() {
                     </div>
 
                     {/* Intro Text */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 md:p-4 lg:p-6">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                             Introduction Text
                         </label>
@@ -203,8 +203,8 @@ export default function PoliciesSettingsPage() {
                         />
                     </div>
 
-                    {/* Policy Sections */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    {/* Policy Sections - Compact Mobile */}
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 md:p-4 lg:p-6">
                         <div className="flex items-center justify-between mb-6">
                             <div>
                                 <h2 className="text-lg font-semibold text-gray-900 capitalize">{activeTab} Policy Sections</h2>

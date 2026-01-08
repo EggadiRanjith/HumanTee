@@ -62,7 +62,7 @@ function Reviews({ reviews: propReviews, enabled: propEnabled }: ReviewsProps) {
 
   return (
     <section
-      className="relative overflow-hidden py-16 sm:py-20 md:py-24 sm:px-6 lg:px-10"
+      className="relative overflow-hidden pt-12 sm:pt-16 md:pt-20 pb-4 sm:pb-6 md:pb-8 px-4 sm:px-6 lg:px-10"
       aria-label="Customer Reviews"
     >
       {/* Section Header */}
@@ -92,7 +92,7 @@ function Reviews({ reviews: propReviews, enabled: propEnabled }: ReviewsProps) {
             <ReviewCard
               key={`review-${index}`}
               review={review}
-              className="w-[80vw] sm:w-auto shrink-0 !min-w-[auto] sm:!min-w-[300px] md:!min-w-[360px]"
+              className="w-[70vw] max-w-[280px] sm:w-auto shrink-0 !min-w-[auto] sm:!min-w-[300px] md:!min-w-[360px]"
             />
           ))}
         </div>

@@ -154,16 +154,16 @@ export default function LoginPage() {
                             <LoginBranding />
 
                             {/* Right Side - Auth Form */}
-                            <div className="lg:w-1/2 p-8 lg:p-12 bg-black/20 flex flex-col justify-center relative">
+                            <div className="lg:w-1/2 p-4 sm:p-6 lg:p-12 bg-black/20 flex flex-col justify-center relative">
                                 {/* Glow for form side */}
                                 <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-blue-500/5 to-transparent pointer-events-none"></div>
 
                                 <div className="relative z-10 w-full max-w-sm mx-auto">
-                                    <div className="mb-8">
-                                        <h2 className="text-3xl font-bold text-white mb-2">
+                                    <div className="mb-5 sm:mb-6 lg:mb-8">
+                                        <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-white mb-1.5 sm:mb-2">
                                             {step === 'email' ? 'Welcome' : 'Verify OTP'}
                                         </h2>
-                                        <p className="text-white/60">
+                                        <p className="text-white/60 text-xs sm:text-sm">
                                             {step === 'email'
                                                 ? 'Sign in or create an account'
                                                 : `Enter the 6-digit code sent to ${email}`
@@ -213,7 +213,7 @@ export default function LoginPage() {
                                         />
                                     )}
 
-                                    <p className="text-white/40 text-[10px] text-center mt-8 leading-relaxed">
+                                    <p className="text-white/55 text-[11px] sm:text-xs text-center mt-5 sm:mt-6 lg:mt-8 leading-relaxed">
                                         By continuing, you agree to our Terms of Service and Privacy Policy
                                     </p>
                                 </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import { memo, useEffect } from "react";
-import { FiCheck, FiStar } from "react-icons/fi";
+import { memo, useEffect, useState } from "react";
+import { FiCheck, FiStar, FiChevronDown } from "react-icons/fi";
 
 interface ShippingAddress {
     id: string;
@@ -34,12 +34,21 @@ export default memo(function AddressSelector({
     onAddNewAddress,
     isLoading,
 }: AddressSelectorProps) {
+    // Pagination state - MUST be before any early returns
+    const [visibleCount, setVisibleCount] = useState(3);
+
     // Render measurement
     useEffect(() => {
         if (process.env.NODE_ENV === 'development') {
             console.count('AddressSelector render');
         }
     });
+
+    // Reset visible count when addresses change
+    useEffect(() => {
+        setVisibleCount(3);
+    }, [addresses.length]);
+
     if (isLoading) {
         return (
             <div className="text-center py-12">
@@ -57,9 +66,14 @@ export default memo(function AddressSelector({
         );
     }
 
+    // Calculate pagination values after early returns
+    const hasMore = addresses.length > visibleCount;
+    const remainingCount = addresses.length - visibleCount;
+    const visibleAddresses = addresses.slice(0, visibleCount);
+
     return (
         <div className="space-y-3">
-            {addresses.map((addr) => (
+            {visibleAddresses.map((addr) => (
                 <div
                     key={addr.id}
                     onClick={() => onSelectAddress(addr.id)}
@@ -69,25 +83,25 @@ export default memo(function AddressSelector({
                         }`}
                 >
                     <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                                <p className="text-base font-medium text-white">
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                <p className="text-[13px] sm:text-[14px] font-medium text-white truncate">
                                     {addr.fullName}
                                 </p>
                                 {addr.isDefault && (
-                                    <span className="px-2 py-0.5 text-[10px] bg-white/10 text-white rounded-full flex items-center gap-1">
+                                    <span className="px-2 py-0.5 text-[10px] bg-white/10 text-white rounded-full flex items-center gap-1 flex-shrink-0">
                                         <FiStar className="w-3 h-3" /> Default
                                     </span>
                                 )}
                             </div>
-                            <p className="text-sm text-white/70">
+                            <p className="text-[12px] text-white/70 truncate">
                                 {addr.phone} • {addr.email}
                             </p>
-                            <p className="text-sm text-white/60 mt-2">
+                            <p className="text-[12px] text-white/60 mt-2 line-clamp-2">
                                 {addr.houseNumber}, {addr.address}
                                 {addr.landmark && `, ${addr.landmark}`}
                             </p>
-                            <p className="text-sm text-white/60">
+                            <p className="text-[12px] text-white/60 truncate">
                                 {addr.city}, {addr.state} {addr.postalCode}, {addr.country}
                             </p>
                         </div>
@@ -99,6 +113,39 @@ export default memo(function AddressSelector({
                     </div>
                 </div>
             ))}
+
+            {/* Show More/Less Buttons */}
+            {hasMore && (
+                <button
+                    onClick={() => setVisibleCount(prev => prev + 3)}
+                    className="
+                        w-full py-3 rounded-lg border border-white/10 
+                        text-white/70 hover:text-white hover:border-white/20 hover:bg-white/5
+                        transition-all text-[12px] uppercase tracking-wide
+                        flex items-center justify-center gap-2
+                        min-h-[44px]
+                    "
+                >
+                    <FiChevronDown className="w-4 h-4" />
+                    Show More ({remainingCount} more)
+                </button>
+            )}
+
+            {visibleCount > 3 && (
+                <button
+                    onClick={() => setVisibleCount(3)}
+                    className="
+                        w-full py-3 rounded-lg border border-white/10 
+                        text-white/70 hover:text-white hover:border-white/20 hover:bg-white/5
+                        transition-all text-[12px] uppercase tracking-wide
+                        flex items-center justify-center gap-2
+                        min-h-[44px]
+                    "
+                >
+                    <FiChevronDown className="w-4 h-4 rotate-180" />
+                    Show Less
+                </button>
+            )}
         </div>
     );
 });

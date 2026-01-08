@@ -64,6 +64,14 @@ export class ProductResponseDto {
     @IsEnum(ProductStatus)
     status: ProductStatus;
 
+    @IsNumber()
+    @IsOptional()
+    basePrice?: number;
+
+    @IsNumber()
+    @IsOptional()
+    compareAtPrice?: number;
+
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => VariantResponseDto)

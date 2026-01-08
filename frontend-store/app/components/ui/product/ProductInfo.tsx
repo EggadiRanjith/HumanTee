@@ -115,32 +115,32 @@ const ProductInfoComponent = ({ product }: ProductInfoProps) => {
     return (
         <div className="flex flex-col gap-6 sm:gap-8">
 
-            {/* Title */}
+            {/* Title - India-tuned */}
             <div className="space-y-1">
-                <h1 className="text-white text-[1.1rem] sm:text-[1.3rem] lg:text-[1.5rem] font-light tracking-wide leading-tight break-words overflow-wrap-anywhere max-w-full">
+                <h1 className="text-white text-[18px] sm:text-[20px] lg:text-[22px] font-light tracking-wide leading-tight break-words overflow-wrap-anywhere max-w-full">
                     {product.title}
                 </h1>
                 {(product.vendor || product.productType) && (
-                    <p className="text-white/60 text-[0.85rem] sm:text-[0.95rem] tracking-wide">
+                    <p className="text-white/60 text-[13px] tracking-wide">
                         {product.vendor && product.productType ? `${product.vendor} • ${product.productType}` : product.vendor || product.productType}
                     </p>
                 )}
             </div>
 
-            {/* Price + Badge + Stock */}
+            {/* Price + Badge + Stock - India-tuned */}
             <div className="flex items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
                     {product.originalPrice && (
-                        <div className="text-white/40 text-[1.2rem] sm:text-[1.4rem] line-through">
+                        <div className="text-white/55 text-[16px] sm:text-[18px] line-through">
                             {product.currency} {product.originalPrice.toFixed(2)}
                         </div>
                     )}
-                    <div className="text-white text-[1.6rem] sm:text-[2rem] font-light tracking-wide">
+                    <div className="text-white text-[20px] sm:text-[26px] font-light tracking-wide">
                         {product.currency} {product.price.toFixed(2)}
                     </div>
                 </div>
                 {product.originalPrice && product.originalPrice > product.price && (
-                    <div className="inline-block px-3 py-1 text-[0.75rem] sm:text-[0.85rem] font-bold tracking-wider uppercase bg-gradient-to-r from-violet-500 to-fuchsia-400 text-white rounded-full shadow-glow-violet-medium">
+                    <div className="inline-block px-3 py-1 text-[12px] font-bold tracking-wider uppercase bg-gradient-to-r from-violet-500 to-fuchsia-400 text-white rounded-full shadow-glow-violet-medium">
                         Save {product.currency} {(product.originalPrice - product.price).toFixed(2)}
                     </div>
                 )}
@@ -150,10 +150,10 @@ const ProductInfoComponent = ({ product }: ProductInfoProps) => {
                 <StockIndicator stock={product.stock} />
             </div>
 
-            {/* Size Selector with Guide */}
+            {/* Size Selector with Guide - India-tuned */}
             <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                    <label className="text-white/70 text-sm">Select Size</label>
+                    <label className="text-white/70 text-[12px]">Select Size</label>
                     <button
                         type="button"
                         onClick={(e) => {
@@ -161,7 +161,7 @@ const ProductInfoComponent = ({ product }: ProductInfoProps) => {
                             e.stopPropagation();
                             setShowSizeGuide(true);
                         }}
-                        className="text-sm text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1"
+                        className="text-[12px] text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1"
                     >
                         <FiInfo className="w-4 h-4" />
                         <span>Size Guide</span>
@@ -172,11 +172,8 @@ const ProductInfoComponent = ({ product }: ProductInfoProps) => {
                     selected={selectedSize}
                     onChange={setSelectedSize}
                     error={sizeError}
+                    variants={product.variants}
                 />
-                {/* Stock Info */}
-                <p className="text-white/50 text-xs">
-                    {product.stock} {product.stock === 1 ? 'item' : 'items'} in stock (all sizes)
-                </p>
             </div>
 
             {/* Quantity Selector */}
@@ -204,7 +201,7 @@ const ProductInfoComponent = ({ product }: ProductInfoProps) => {
                     className={`
             w-full py-3.5 sm:py-4 
             rounded-full transition-colors duration-300
-            text-[0.8rem] uppercase tracking-[0.18em] font-medium
+            text-[12px] uppercase tracking-[0.18em] font-medium
             border border-transparent
             hover:shadow-lg
             relative overflow-hidden
@@ -245,7 +242,7 @@ const ProductInfoComponent = ({ product }: ProductInfoProps) => {
                     className="
             w-full py-3.5 sm:py-4 
             rounded-full transition-all duration-300
-            text-[0.8rem] uppercase tracking-[0.18em] font-medium
+            text-[12px] uppercase tracking-[0.18em] font-medium
             border-2 border-white/20 text-white
             hover:bg-white/5 hover:border-white/30
             flex items-center justify-center

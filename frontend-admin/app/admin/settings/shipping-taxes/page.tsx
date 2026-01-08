@@ -131,21 +131,21 @@ export default function ShippingTaxesSettings() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+        <div className="min-h-screen bg-gray-50 p-3 md:p-4 lg:p-6 xl:p-8">
             <div className="max-w-6xl mx-auto">
-                {/* Back Button */}
+                {/* Back Button - Compact Mobile */}
                 <Link
                     href="/admin/settings"
-                    className="inline-flex items-center gap-2 text-gray-600 hover:text-black mb-6 transition-colors"
+                    className="inline-flex items-center gap-1.5 md:gap-2 text-gray-600 hover:text-black mb-4 md:mb-6 transition-colors"
                 >
-                    <FiArrowLeft size={20} />
-                    <span className="text-sm font-medium">Back to Settings</span>
+                    <FiArrowLeft size={18} className="md:w-5 md:h-5" />
+                    <span className="text-xs md:text-sm font-medium">Back to Settings</span>
                 </Link>
 
-                <div className="mb-8 flex items-center justify-between">
+                <div className="mb-4 md:mb-6 lg:mb-8 flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Shipping & Taxes</h1>
-                        <p className="mt-2 text-sm text-gray-600">
+                        <h1 className="text-lg md:text-2xl lg:text-3xl font-bold text-gray-900">Shipping & Taxes</h1>
+                        <p className="mt-1 md:mt-2 text-xs md:text-sm text-gray-600">
                             Configure shipping zones and tax settings
                         </p>
                     </div>
@@ -181,9 +181,9 @@ export default function ShippingTaxesSettings() {
                     )}
                 </div>
 
-                {/* Shipping Zones Section */}
-                <div className="space-y-6">
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                {/* Shipping Zones Section - Compact Mobile */}
+                <div className="space-y-4 md:space-y-6">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 md:p-4 lg:p-6">
                         <div className="flex items-center justify-between mb-6">
                             <div>
                                 <h2 className="text-lg font-semibold text-gray-900">Shipping Zones</h2>
@@ -287,8 +287,8 @@ export default function ShippingTaxesSettings() {
                         </div>
                     </div>
 
-                    {/* Tax Settings Section */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    {/* Tax Settings Section - Compact Mobile */}
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 md:p-4 lg:p-6">
                         <div className="border-b border-gray-200 pb-4 mb-6">
                             <h2 className="text-lg font-semibold text-gray-900">Tax Settings</h2>
                             <p className="text-sm text-gray-600 mt-1">Configure tax rates and display</p>

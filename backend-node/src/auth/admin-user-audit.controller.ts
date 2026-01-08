@@ -4,7 +4,7 @@ import {
     Query,
     UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt.guard';
+import { AdminJwtGuard } from '../auth/guards/admin-jwt.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { UserAuditService } from '../auth/user-audit.service';
 import { LoginAuditService } from '../auth/login-audit.service';
@@ -13,7 +13,7 @@ import { Repository } from 'typeorm';
 import { UserAuditLog } from '../entities/user-audit-log.entity';
 
 @Controller('admin/user-audit-logs')
-@UseGuards(JwtAuthGuard, AdminGuard)
+@UseGuards(AdminJwtGuard, AdminGuard)
 export class AdminUserAuditController {
     constructor(
         private readonly userAuditService: UserAuditService,

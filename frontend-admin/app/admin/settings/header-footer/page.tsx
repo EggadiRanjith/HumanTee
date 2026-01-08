@@ -93,22 +93,22 @@ export default function HeaderFooterSettings() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+        <div className="min-h-screen bg-gray-50 p-3 md:p-4 lg:p-6 xl:p-8">
             <div className="max-w-4xl mx-auto">
-                {/* Back Button */}
+                {/* Back Button - Compact Mobile */}
                 <Link
                     href="/admin/settings"
-                    className="inline-flex items-center gap-2 text-gray-600 hover:text-black mb-6 transition-colors"
+                    className="inline-flex items-center gap-1.5 md:gap-2 text-gray-600 hover:text-black mb-4 md:mb-6 transition-colors"
                 >
-                    <FiArrowLeft size={20} />
-                    <span className="text-sm font-medium">Back to Settings</span>
+                    <FiArrowLeft size={18} className="md:w-5 md:h-5" />
+                    <span className="text-xs md:text-sm font-medium">Back to Settings</span>
                 </Link>
 
-                {/* Header */}
-                <div className="mb-8 flex items-center justify-between">
+                {/* Header - Compact Mobile */}
+                <div className="mb-4 md:mb-6 lg:mb-8 flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Header & Footer</h1>
-                        <p className="mt-2 text-sm text-gray-600">
+                        <h1 className="text-lg md:text-2xl lg:text-3xl font-bold text-gray-900">Header & Footer</h1>
+                        <p className="mt-1 md:mt-2 text-xs md:text-sm text-gray-600">
                             Customize your site branding and footer content
                         </p>
                     </div>
@@ -144,16 +144,16 @@ export default function HeaderFooterSettings() {
                     )}
                 </div>
 
-                {/* Form Sections */}
-                <div className="space-y-6">
+                {/* Form Sections - Compact Mobile */}
+                <div className="space-y-4 md:space-y-6">
                     {/* Header Section */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <div className="border-b border-gray-200 pb-4 mb-6">
-                            <h2 className="text-lg font-semibold text-gray-900">Header</h2>
-                            <p className="text-sm text-gray-600 mt-1">Your site's brand identity</p>
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 md:p-4 lg:p-6">
+                        <div className="border-b border-gray-200 pb-3 md:pb-4 mb-4 md:mb-6">
+                            <h2 className="text-base md:text-lg font-semibold text-gray-900">Header</h2>
+                            <p className="text-xs md:text-sm text-gray-600 mt-1">Your site's brand identity</p>
                         </div>
 
-                        <div className="space-y-6">
+                        <div className="space-y-4 md:space-y-6">
                             {/* Brand Name */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -229,14 +229,14 @@ export default function HeaderFooterSettings() {
                         </div>
                     </div>
 
-                    {/* Footer Section */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <div className="border-b border-gray-200 pb-4 mb-6">
-                            <h2 className="text-lg font-semibold text-gray-900">Footer</h2>
-                            <p className="text-sm text-gray-600 mt-1">Footer branding and links</p>
+                    {/* Footer Section - Compact Mobile */}
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 md:p-4 lg:p-6">
+                        <div className="border-b border-gray-200 pb-3 md:pb-4 mb-4 md:mb-6">
+                            <h2 className="text-base md:text-lg font-semibold text-gray-900">Footer</h2>
+                            <p className="text-xs md:text-sm text-gray-600 mt-1">Footer branding and links</p>
                         </div>
 
-                        <div className="space-y-6">
+                        <div className="space-y-4 md:space-y-6">
                             {/* Footer Tagline */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">

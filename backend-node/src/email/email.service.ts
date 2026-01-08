@@ -1,12 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
+import { EmailTemplateService } from './email-template.service';
 
 @Injectable()
 export class EmailService {
     private readonly logger = new Logger(EmailService.name);
     private transporter: nodemailer.Transporter;
 
-    constructor() {
+    constructor(private readonly emailTemplateService: EmailTemplateService) {
         this.transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST || 'smtp.gmail.com',
             port: parseInt(process.env.SMTP_PORT || '587'),
@@ -20,21 +21,20 @@ export class EmailService {
         });
     }
 
-    async sendOtpEmail(email: string, otp: string): Promise<void> {
-        const mailOptions = {
-            from: process.env.SMTP_FROM || `HumanTee <${process.env.SMTP_USER}>`,
-            to: email,
-            subject: 'Your HumanTee Login Code',
-            text: `Your verification code is: ${otp}\n\nThis code will expire in 10 minutes.\n\nFor security, do not share this code with anyone.\n\n- HumanTee Team`,
-            // Plain text fallback required for security
-        };
-
+    async sendOTP(email: string, otp: string, name: string = 'User'): Promise<void> {
         try {
-            await this.transporter.sendMail(mailOptions);
-            // Do NOT log OTP
-            this.logger.log(`OTP email sent to ${email.substring(0, 3)}***`);
+            // Use luxury template for OTP email
+            const html = this.emailTemplateService.generateOTPEmail(name, otp);
+
+            await this.sendEmail({
+                to: email,
+                subject: 'Your HumanTee Login Code',
+                html,
+            });
+
+            this.logger.log(`OTP email sent successfully to ${email}`);
         } catch (error) {
-            this.logger.error(`Failed to send OTP email: ${error.message}`);
+            this.logger.error(`Failed to send OTP email to ${email}:`, error);
             throw error;
         }
     }

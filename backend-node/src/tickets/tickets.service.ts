@@ -124,6 +124,11 @@ export class TicketsService {
             throw new NotFoundException('Ticket not found');
         }
 
+        // Prevent messaging on closed/resolved tickets
+        if (ticket.status === TicketStatus.CLOSED || ticket.status === TicketStatus.RESOLVED) {
+            throw new BadRequestException(`Cannot add messages to ${ticket.status} tickets. Please create a new ticket if you need further assistance.`);
+        }
+
         // Check 5-message limit safeguard
         const lastMessages = await this.messageRepository.find({
             where: { ticketId },
@@ -230,6 +235,11 @@ export class TicketsService {
 
         if (!ticket) {
             throw new NotFoundException('Ticket not found');
+        }
+
+        // Prevent admin replies on closed/resolved tickets
+        if (ticket.status === TicketStatus.CLOSED || ticket.status === TicketStatus.RESOLVED) {
+            throw new BadRequestException(`Cannot reply to ${ticket.status} tickets. Please reopen the ticket first if needed.`);
         }
 
         const reply = this.messageRepository.create({

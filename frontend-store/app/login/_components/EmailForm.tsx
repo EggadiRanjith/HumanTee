@@ -68,7 +68,7 @@ export default memo(function EmailForm({
                             aria-required="true"
                             aria-invalid={!!error}
                             aria-describedby={error ? "email-error" : success ? "email-success" : undefined}
-                            className="w-full pl-12 pr-4 py-4 rounded-3xl bg-black/40 border border-white/10 text-white placeholder:text-white/40 focus:border-white/30 focus:bg-black/60 focus:outline-none transition-all text-sm disabled:opacity-50"
+                            className="w-full pl-12 pr-4 py-4 rounded-3xl bg-black/40 border border-white/10 text-white placeholder:text-white/40 focus:border-white/30 focus:bg-black/60 focus:outline-none transition-all text-[14px] disabled:opacity-50"
                         />
                     </div>
                     {error && (
@@ -78,7 +78,7 @@ export default memo(function EmailForm({
                             aria-live="assertive"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-red-400 text-xs mt-2 ml-1"
+                            className="text-red-400 text-[12px] mt-2 ml-1"
                         >
                             {error}
                         </motion.p>
@@ -90,7 +90,7 @@ export default memo(function EmailForm({
                             aria-live="polite"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-green-400 text-xs mt-2 ml-1 flex items-center gap-2"
+                            className="text-green-400 text-[12px] mt-2 ml-1 flex items-center gap-2"
                         >
                             <FiCheck className="w-4 h-4" aria-hidden="true" />
                             {success}
@@ -105,7 +105,7 @@ export default memo(function EmailForm({
                     disabled={isLoading}
                     aria-busy={isLoading}
                     aria-label={isLoading ? "Sending OTP code" : "Continue with email"}
-                    className="w-full py-4 bg-white text-black rounded-3xl font-bold uppercase tracking-wider hover:bg-white/90 shadow-lg shadow-white/10 transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[48px]"
+                    className="w-full py-4 bg-white text-black rounded-3xl font-bold uppercase tracking-wider hover:bg-white/90 shadow-lg shadow-white/10 transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed text-[12px] min-h-[48px]"
                 >
                     {isLoading ? (
                         <>

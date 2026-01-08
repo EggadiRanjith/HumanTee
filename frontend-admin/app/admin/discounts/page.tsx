@@ -14,7 +14,7 @@ import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { discountsApi } from '@/lib/api/discounts';
 import { useAdminDiscounts } from '@/lib/queries/useDiscounts';
-import { DiscountsHeader, DiscountsSkeleton, DiscountsEmpty, DiscountsError, DiscountCard } from './components';
+import { DiscountsSkeleton, DiscountsEmpty, DiscountsError, DiscountCard } from './components';
 import { toast } from 'sonner';
 
 type DiscountType = 'PERCENT' | 'FLAT';
@@ -39,20 +39,20 @@ export default function DiscountsPage() {
     const [searchQuery, setSearchQuery] = useState('');
     // Sanitize search input for security
     const sanitizedSearch = searchQuery.trim().replace(/[<>"']/g, '');
-    const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
-    const [typeFilter, setTypeFilter] = useState<'ALL' | DiscountType>('ALL');
+    const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE' | 'SCHEDULED' | 'EXPIRED' | 'DISABLED'>('ALL');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 20;
 
     // Use React Query hook
-    const { data: discounts = [], isLoading, error, refetch } = useAdminDiscounts();
+    const discountsQuery = useAdminDiscounts();
+    const { data: discounts = [], isLoading, error } = discountsQuery;
 
     // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
     const handleDelete = async (id: string) => {
         try {
             await discountsApi.delete(id);
             toast.success('Discount deleted successfully!');
-            refetch();
+            await discountsQuery.refetch();
         } catch (err) {
             toast.error('Failed to delete discount');
         }
@@ -107,7 +107,7 @@ export default function DiscountsPage() {
 
     // NOW conditional returns are safe
     if (isLoading) return <DiscountsSkeleton />;
-    if (error) return <DiscountsError error={error} onRetry={() => refetch()} />;
+    if (error) return <DiscountsError error={error} onRetry={() => discountsQuery.refetch()} />;
     if (discounts.length === 0) return <DiscountsEmpty />;
 
     const getStatus = (discount: Discount) => {
@@ -119,37 +119,37 @@ export default function DiscountsPage() {
     };
 
     return (
-        <div className="space-y-4 sm:space-y-6">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+        <div className="space-y-3 md:space-y-4 lg:space-y-6">
+            {/* Header - Compact Mobile */}
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 md:gap-3">
                 <div>
-                    <h1 className="text-xl sm:text-2xl font-semibold text-black">Discounts</h1>
-                    <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                    <h1 className="text-lg md:text-xl lg:text-2xl font-semibold text-black">Discounts</h1>
+                    <p className="text-xs md:text-sm text-gray-600 mt-1">
                         Manage discount rules and promotions
                     </p>
                 </div>
                 <Link
                     href="/admin/discounts/new"
-                    className="bg-black hover:bg-gray-900 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm text-center"
+                    className="bg-black hover:bg-gray-900 text-white px-3 md:px-4 py-2 md:py-2.5 rounded-lg font-medium transition-colors text-xs md:text-sm text-center"
                 >
                     + Create Discount
                 </Link>
             </div>
 
-            {/* Filters */}
-            <div className="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Filters - Compact Mobile */}
+            <div className="bg-white rounded-lg border border-gray-200 p-2.5 md:p-3 lg:p-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3">
                     <input
                         type="text"
                         placeholder="Search discounts..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
+                        className="px-2.5 md:px-3 py-1.5 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
                     />
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value as any)}
-                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
+                        className="px-2.5 md:px-3 py-1.5 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
                     >
                         <option value="ALL">All Status</option>
                         <option value="ACTIVE">Active</option>
@@ -189,7 +189,7 @@ export default function DiscountsPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                        {paginatedDiscounts.map((discount) => (
+                        {paginatedDiscounts.map((discount: Discount) => (
                             <tr key={discount.id} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="text-sm font-medium text-black">{discount.name}</div>
@@ -233,9 +233,9 @@ export default function DiscountsPage() {
                 </table>
             </div>
 
-            {/* Discounts Cards (Mobile) */}
-            <div className="lg:hidden space-y-3">
-                {paginatedDiscounts.map((discount) => (
+            {/* Discounts Cards (Mobile) - Compact */}
+            <div className="lg:hidden space-y-2.5 md:space-y-3">
+                {paginatedDiscounts.map((discount: Discount) => (
                     <DiscountCard
                         key={discount.id}
                         discount={discount}
@@ -261,7 +261,7 @@ export default function DiscountsPage() {
                             onClick={() => {
                                 setSearchQuery('');
                                 setStatusFilter('ALL');
-                                if (error) refetch();
+                                if (error) void discountsQuery.refetch();
                             }}
                             className="text-sm text-black hover:underline font-medium"
                         >
@@ -271,19 +271,20 @@ export default function DiscountsPage() {
                 </div>
             )}
 
-            {/* Pagination */}
+            {/* Pagination - Compact Mobile */}
             {totalPages > 1 && (
-                <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="text-sm text-gray-600">
+                <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-lg border border-gray-200 p-2.5 md:p-4 gap-3 sm:gap-0">
+                    <div className="text-xs md:text-sm text-gray-600 hidden sm:block">
                         Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredDiscounts.length)} of {filteredDiscounts.length} discounts
                     </div>
                     <div className="flex gap-2">
                         <button
                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                             disabled={currentPage === 1}
-                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-2.5 md:px-3 py-1 border border-gray-300 rounded-lg text-xs md:text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Previous
+                            <span className="hidden sm:inline">Previous</span>
+                            <span className="sm:hidden">←</span>
                         </button>
                         <div className="flex gap-1">
                             {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
@@ -301,7 +302,7 @@ export default function DiscountsPage() {
                                     <button
                                         key={page}
                                         onClick={() => setCurrentPage(page)}
-                                        className={`px-3 py-1 border rounded-lg text-sm ${currentPage === page
+                                        className={`px-2.5 md:px-3 py-1 border rounded-lg text-xs md:text-sm ${currentPage === page
                                             ? 'bg-black text-white border-black'
                                             : 'border-gray-300 hover:bg-gray-50'
                                             }`}
@@ -314,9 +315,10 @@ export default function DiscountsPage() {
                         <button
                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                             disabled={currentPage === totalPages}
-                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-2.5 md:px-3 py-1 border border-gray-300 rounded-lg text-xs md:text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Next
+                            <span className="hidden sm:inline">Next</span>
+                            <span className="sm:hidden">→</span>
                         </button>
                     </div>
                 </div>

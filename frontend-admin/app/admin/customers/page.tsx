@@ -28,18 +28,51 @@ export default function CustomersPage() {
 
     const customers = data || [];
 
+    // Apply filters
+    const filteredCustomers = useMemo(() => {
+        let filtered = [...customers];
+
+        // Apply active filter
+        if (activeFilter === 'new') {
+            // Last 30 days
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            filtered = filtered.filter(c => new Date(c.created_at) >= thirtyDaysAgo);
+        } else if (activeFilter === 'top') {
+            // Top 10 highest spenders
+            filtered = filtered
+                .sort((a, b) => (b.totalSpend || 0) - (a.totalSpend || 0))
+                .slice(0, 10);
+        }
+
+        // Apply sorting
+        if (activeFilter !== 'top') { // Don't re-sort if already sorted by spend
+            if (sort === 'newest') {
+                filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            } else if (sort === 'oldest') {
+                filtered.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+            } else if (sort === 'most_orders') {
+                filtered.sort((a, b) => (b.orderCount || 0) - (a.orderCount || 0));
+            } else if (sort === 'highest_spend') {
+                filtered.sort((a, b) => (b.totalSpend || 0) - (a.totalSpend || 0));
+            }
+        }
+
+        return filtered;
+    }, [customers, activeFilter, sort]);
+
     // Memoized pagination calculations for performance
     const totalPages = useMemo(() =>
-        Math.ceil(customers.length / itemsPerPage),
-        [customers.length, itemsPerPage]
+        Math.ceil(filteredCustomers.length / itemsPerPage),
+        [filteredCustomers.length, itemsPerPage]
     );
 
     const paginatedCustomers = useMemo(() =>
-        customers.slice(
+        filteredCustomers.slice(
             (currentPage - 1) * itemsPerPage,
             currentPage * itemsPerPage
         ),
-        [customers, currentPage, itemsPerPage]
+        [filteredCustomers, currentPage, itemsPerPage]
     );
 
     // Reset to page 1 when search changes
@@ -57,65 +90,83 @@ export default function CustomersPage() {
     if (customers.length === 0) return <CustomersEmpty />;
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-4 md:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 md:gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-black">Customers</h1>
-                    <p className="text-gray-500 text-sm">Manage and view your customer base</p>
+                    <h1 className="text-xl md:text-2xl font-bold text-black">Customers</h1>
+                    <p className="text-gray-500 text-xs md:text-sm">Manage and view your customer base</p>
                 </div>
             </div>
 
-            {/* Quick Stats / Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Quick Stats / Filters - Compact Mobile, Original Desktop */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
                 <button
                     onClick={() => setActiveFilter('all')}
-                    className={`p-4 rounded-xl border transition-all text-left ${activeFilter === 'all' ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-black'}`}
+                    className={`p-2 md:p-4 rounded-lg md:rounded-xl border transition-all ${activeFilter === 'all' ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-black'}`}
                 >
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                            <FiUser className="w-3.5 h-3.5 md:w-5 md:h-5" />
+                            <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider md:tracking-widest opacity-60 md:hidden">All Users</span>
+                        </div>
+                        <p className="text-xs md:text-lg font-bold">Total Directory</p>
+                    </div>
+                    <div className="hidden md:flex items-center justify-between mb-2">
                         <FiUser className="w-5 h-5" />
                         <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">All Users</span>
                     </div>
-                    <p className="text-lg font-bold">Total Directory</p>
                 </button>
                 <button
                     onClick={() => setActiveFilter('new')}
-                    className={`p-4 rounded-xl border transition-all text-left ${activeFilter === 'new' ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-black'}`}
+                    className={`p-2 md:p-4 rounded-lg md:rounded-xl border transition-all ${activeFilter === 'new' ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-black'}`}
                 >
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                            <FiUserPlus className="w-3.5 h-3.5 md:w-5 md:h-5" />
+                            <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider md:tracking-widest opacity-60 md:hidden">Last 30 Days</span>
+                        </div>
+                        <p className="text-xs md:text-lg font-bold">New Registrations</p>
+                    </div>
+                    <div className="hidden md:flex items-center justify-between mb-2">
                         <FiUserPlus className="w-5 h-5" />
                         <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">Last 30 Days</span>
                     </div>
-                    <p className="text-lg font-bold">New Registrations</p>
                 </button>
                 <button
                     onClick={() => setActiveFilter('top')}
-                    className={`p-4 rounded-xl border transition-all text-left ${activeFilter === 'top' ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-black'}`}
+                    className={`p-2 md:p-4 rounded-lg md:rounded-xl border transition-all ${activeFilter === 'top' ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-black'}`}
                 >
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                            <FiTrendingUp className="w-3.5 h-3.5 md:w-5 md:h-5" />
+                            <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider md:tracking-widest opacity-60 md:hidden">Top 10</span>
+                        </div>
+                        <p className="text-xs md:text-lg font-bold">Highest Spenders</p>
+                    </div>
+                    <div className="hidden md:flex items-center justify-between mb-2">
                         <FiTrendingUp className="w-5 h-5" />
                         <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">Top 10</span>
                     </div>
-                    <p className="text-lg font-bold">Highest Spenders</p>
                 </button>
             </div>
 
-            {/* Filters Bar */}
-            <div className="flex flex-col md:flex-row gap-4 bg-white p-4 rounded-xl border border-gray-200">
+            {/* Filters Bar - Compact */}
+            <div className="flex flex-col md:flex-row gap-2 bg-white p-2.5 rounded-lg border border-gray-200">
                 <div className="flex-1 relative">
-                    <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <FiSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5" />
                     <input
                         type="text"
                         placeholder="Search by name or email..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 md:py-2 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm md:text-sm text-base focus:outline-none focus:border-black transition-all"
+                        className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-black transition-all"
                     />
                 </div>
                 <div className="flex gap-2">
                     <select
                         value={sort}
                         onChange={(e) => setSort(e.target.value)}
-                        className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-black transition-all cursor-pointer"
+                        className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-black transition-all cursor-pointer"
                     >
                         <option value="newest">Newest First</option>
                         <option value="oldest">Oldest First</option>
@@ -126,16 +177,16 @@ export default function CustomersPage() {
             </div>
 
             {/* Desktop: Table */}
-            <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+            <div className="hidden lg:block bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left">
+                    <table className="w-full text-left min-w-[800px]">
                         <thead>
                             <tr className="bg-gray-50 border-b border-gray-200">
-                                <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Customer</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Orders</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Total Spend</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Joined</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Action</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">Customer</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">Orders</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">Total Spend</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">Joined</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">Action</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
@@ -200,8 +251,8 @@ export default function CustomersPage() {
                 </div>
             </div>
 
-            {/* Mobile: Cards */}
-            <div className="md:hidden space-y-3">
+            {/* Mobile: Cards - Maximum Spacing */}
+            <div className="lg:hidden space-y-6">
                 {isLoading ? (
                     <div className="flex items-center justify-center py-12">
                         <FiLoader className="w-6 h-6 animate-spin text-gray-400" />
@@ -217,19 +268,19 @@ export default function CustomersPage() {
                 )}
             </div>
 
-            {/* Pagination */}
+            {/* Pagination - Compact */}
             {totalPages > 1 && (
-                <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="text-sm text-gray-600">
-                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, customers.length)} of {customers.length} customers
+                <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-2.5">
+                    <div className="text-xs text-gray-600 hidden sm:block">
+                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredCustomers.length)} of {filteredCustomers.length}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1.5 mx-auto sm:mx-0">
                         <button
                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                             disabled={currentPage === 1}
-                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-2.5 py-1 border border-gray-300 rounded-lg text-xs hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Previous
+                            Prev
                         </button>
                         <div className="flex gap-1">
                             {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
@@ -247,7 +298,7 @@ export default function CustomersPage() {
                                     <button
                                         key={page}
                                         onClick={() => setCurrentPage(page)}
-                                        className={`px-3 py-1 border rounded-lg text-sm ${currentPage === page
+                                        className={`px-2.5 py-1 border rounded-lg text-xs ${currentPage === page
                                             ? 'bg-black text-white border-black'
                                             : 'border-gray-300 hover:bg-gray-50'
                                             }`}
@@ -260,7 +311,7 @@ export default function CustomersPage() {
                         <button
                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                             disabled={currentPage === totalPages}
-                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-2.5 py-1 border border-gray-300 rounded-lg text-xs hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Next
                         </button>

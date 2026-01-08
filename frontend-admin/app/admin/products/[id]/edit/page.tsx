@@ -17,6 +17,7 @@ import PricingTab from '../../components/tabs/PricingTab';
 import VariantsTab from '../../components/tabs/VariantsTab';
 import InventoryTab from '../../components/tabs/InventoryTab';
 import OrganizationTab from '../../components/tabs/OrganizationTab';
+import MobileProductWizard from '../../components/MobileProductWizard';
 import { useBasicInfoStore } from '@/domains/product/basic-info/basic-info.store';
 import { useMediaStore } from '@/domains/product/media/media.store';
 import { usePricingStore } from '@/domains/product/pricing/pricing.store';
@@ -36,6 +37,17 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
     const [activeTab, setActiveTab] = useState<TabKey>('basic');
     const [isSaving, setIsSaving] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    // Detect mobile viewport
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 1024); // lg breakpoint
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     // Fetch product data
     const { data: product, isLoading } = useQuery({
@@ -189,107 +201,117 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl font-bold text-black">Edit Product</h1>
-                            <p className="text-sm text-gray-600 mt-1">{product?.name}</p>
-                        </div>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={handleCancel}
-                                disabled={isSaving}
-                                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleSave}
-                                disabled={isSaving}
-                                className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50 flex items-center gap-2"
-                            >
-                                {isSaving ? (
-                                    <>
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                        Saving...
-                                    </>
-                                ) : (
-                                    'Save Changes'
-                                )}
-                            </button>
+            {/* Mobile: Show wizard instead of tabs */}
+            {isMobile ? (
+                <MobileProductWizard />
+            ) : (
+                <>
+                    {/* Header - Compact Mobile */}
+                    <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
+                        <div className="max-w-7xl mx-auto px-3 md:px-4 lg:px-8 py-3 md:py-4">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h1 className="text-lg md:text-xl lg:text-2xl font-bold text-black">Edit Product</h1>
+                                    <p className="text-xs md:text-sm text-gray-600 mt-1">{product?.name}</p>
+                                </div>
+                                <div className="flex gap-2 md:gap-3">
+                                    <button
+                                        onClick={handleCancel}
+                                        disabled={isSaving}
+                                        className="px-3 md:px-4 py-1.5 md:py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 text-xs md:text-sm"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={isSaving}
+                                        className="px-4 md:px-6 py-1.5 md:py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50 flex items-center gap-2 text-xs md:text-sm"
+                                    >
+                                        {isSaving ? (
+                                            <>
+                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                                Saving...
+                                            </>
+                                        ) : (
+                                            'Save Changes'
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            {/* Tab Navigation */}
-            <div className="bg-white border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <TabNavigation
-                        activeTab={activeTab}
-                        onTabChange={setActiveTab}
-                        tabs={[
-                            { key: 'basic', label: 'Basic Info', icon: '📝', hasErrors: false },
-                            { key: 'media', label: 'Media', icon: '🖼️', hasErrors: false },
-                            { key: 'pricing', label: 'Pricing', icon: '💰', hasErrors: false },
-                            { key: 'variants', label: 'Variants', icon: '🎨', hasErrors: false },
-                            { key: 'inventory', label: 'Inventory', icon: '📦', hasErrors: false },
-                            { key: 'organization', label: 'Organization', icon: '🏷️', hasErrors: false },
-                        ]}
-                    />
-                </div>
-            </div>
+                    {/* Tab Navigation */}
+                    <div className="bg-white border-b border-gray-200">
+                        <div className="max-w-7xl mx-auto px-3 md:px-4 lg:px-8">
+                            <TabNavigation
+                                activeTab={activeTab}
+                                onTabChange={setActiveTab}
+                                tabs={[
+                                    { key: 'basic', label: 'Basic Info', icon: '📝', hasErrors: false },
+                                    { key: 'media', label: 'Media', icon: '🖼️', hasErrors: false },
+                                    { key: 'pricing', label: 'Pricing', icon: '💰', hasErrors: false },
+                                    { key: 'variants', label: 'Variants', icon: '🎨', hasErrors: false },
+                                    { key: 'inventory', label: 'Inventory', icon: '📦', hasErrors: false },
+                                    { key: 'organization', label: 'Organization', icon: '🏷️', hasErrors: false },
+                                ]}
+                            />
+                        </div>
+                    </div>
 
-            {/* Tab Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {activeTab === 'basic' && <BasicInfoTab />}
-                {activeTab === 'media' && <MediaTab />}
-                {activeTab === 'pricing' && <PricingTab />}
-                {activeTab === 'variants' && <VariantsTab />}
-                {activeTab === 'inventory' && <InventoryTab />}
-                {activeTab === 'organization' && <OrganizationTab />}
+                    {/* Tab Content - Compact Mobile */}
+                    <div className="max-w-7xl mx-auto px-3 md:px-4 lg:px-8 py-4 md:py-6 lg:py-8 pb-20 md:pb-8">
+                        {activeTab === 'basic' && <BasicInfoTab />}
+                        {activeTab === 'media' && <MediaTab />}
+                        {activeTab === 'pricing' && <PricingTab />}
+                        {activeTab === 'variants' && <VariantsTab />}
+                        {activeTab === 'inventory' && <InventoryTab />}
+                        {activeTab === 'organization' && <OrganizationTab />}
+                    </div>
 
-                {/* Tab Navigation Buttons */}
-                <div className="mt-8 flex items-center justify-between border-t border-gray-200 pt-6">
-                    <button
-                        onClick={() => {
-                            const tabs: TabKey[] = ['basic', 'media', 'pricing', 'variants', 'inventory', 'organization'];
-                            const currentIndex = tabs.indexOf(activeTab);
-                            if (currentIndex > 0) {
-                                setActiveTab(tabs[currentIndex - 1]);
-                            }
-                        }}
-                        disabled={activeTab === 'basic'}
-                        className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        ← Back
-                    </button>
+                    {/* Tab Navigation Buttons - Fixed Bottom on Mobile */}
+                    <div className="fixed md:relative bottom-0 left-0 right-0 md:max-w-7xl md:mx-auto md:px-3 lg:px-8 bg-white border-t border-gray-200 px-3 py-2.5 md:py-4 md:mt-6 lg:mt-8 shadow-lg md:shadow-none z-30">
+                        <div className="flex items-center justify-between">
+                            <button
+                                onClick={() => {
+                                    const tabs: TabKey[] = ['basic', 'media', 'pricing', 'variants', 'inventory', 'organization'];
+                                    const currentIndex = tabs.indexOf(activeTab);
+                                    if (currentIndex > 0) {
+                                        setActiveTab(tabs[currentIndex - 1]);
+                                    }
+                                }}
+                                disabled={activeTab === 'basic'}
+                                className="px-4 md:px-6 py-1.5 md:py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs md:text-sm"
+                            >
+                                ← Back
+                            </button>
 
-                    {activeTab !== 'organization' ? (
-                        <button
-                            onClick={() => {
-                                const tabs: TabKey[] = ['basic', 'media', 'pricing', 'variants', 'inventory', 'organization'];
-                                const currentIndex = tabs.indexOf(activeTab);
-                                if (currentIndex < tabs.length - 1) {
-                                    setActiveTab(tabs[currentIndex + 1]);
-                                }
-                            }}
-                            className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors"
-                        >
-                            Continue →
-                        </button>
-                    ) : (
-                        <button
-                            disabled
-                            className="px-6 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed"
-                        >
-                            End of Form - Use "Save Changes" Above
-                        </button>
-                    )}
-                </div>
-            </div>
+                            {activeTab !== 'organization' ? (
+                                <button
+                                    onClick={() => {
+                                        const tabs: TabKey[] = ['basic', 'media', 'pricing', 'variants', 'inventory', 'organization'];
+                                        const currentIndex = tabs.indexOf(activeTab);
+                                        if (currentIndex < tabs.length - 1) {
+                                            setActiveTab(tabs[currentIndex + 1]);
+                                        }
+                                    }}
+                                    className="px-4 md:px-6 py-1.5 md:py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors text-xs md:text-sm"
+                                >
+                                    Continue →
+                                </button>
+                            ) : (
+                                <button
+                                    disabled
+                                    className="px-4 md:px-6 py-1.5 md:py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed text-xs md:text-sm"
+                                >
+                                    <span className="hidden sm:inline">End of Form - Use "Save Changes" Above</span>
+                                    <span className="sm:hidden">Use "Save" Above</span>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

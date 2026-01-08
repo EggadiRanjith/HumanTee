@@ -39,14 +39,14 @@ export default memo(function OTPForm({
         <>
             <form
                 onSubmit={onSubmit}
-                className="space-y-4"
+                className="space-y-3 sm:space-y-4"
                 aria-label="OTP verification form"
             >
                 {/* OTP Input */}
                 <div>
                     <label
                         htmlFor="otp-input"
-                        className="block text-white/60 text-sm mb-3 uppercase tracking-wide"
+                        className="block text-white/60 text-xs sm:text-sm mb-2 sm:mb-3 uppercase tracking-wide"
                     >
                         Enter Verification Code
                     </label>
@@ -68,11 +68,11 @@ export default memo(function OTPForm({
                         aria-required="true"
                         aria-invalid={!!error}
                         aria-describedby="otp-description otp-error otp-success"
-                        className="w-full px-4 py-3 rounded-3xl bg-black/40 border border-white/10 text-white text-center text-2xl font-mono tracking-[0.5em] placeholder:text-white/20 placeholder:tracking-[0.5em] focus:border-white/30 focus:bg-black/60 focus:outline-none transition-all disabled:opacity-50"
+                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl sm:rounded-3xl bg-black/40 border border-white/10 text-white text-center text-xl sm:text-2xl font-mono tracking-[0.4em] sm:tracking-[0.5em] placeholder:text-white/20 placeholder:tracking-[0.4em] sm:placeholder:tracking-[0.5em] focus:border-white/30 focus:bg-black/60 focus:outline-none transition-all disabled:opacity-50"
                     />
                     <p
                         id="otp-description"
-                        className="text-white/40 text-xs mt-3 text-center"
+                        className="text-white/40 text-[10px] sm:text-xs mt-2 sm:mt-3 text-center"
                     >
                         Code sent to {email}
                     </p>
@@ -108,7 +108,7 @@ export default memo(function OTPForm({
                     disabled={isLoading}
                     aria-busy={isLoading}
                     aria-label={isLoading ? "Verifying OTP code" : "Verify and login"}
-                    className="w-full py-3 bg-white text-black rounded-3xl font-bold uppercase tracking-wider hover:bg-white/90 shadow-lg shadow-white/10 transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[44px]"
+                    className="w-full py-3 sm:py-4 bg-white text-black rounded-2xl sm:rounded-3xl font-bold uppercase tracking-wider hover:bg-white/90 shadow-lg shadow-white/10 transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm min-h-[44px]"
                 >
                     {isLoading ? (
                         <>
@@ -134,19 +134,19 @@ export default memo(function OTPForm({
                     type="button"
                     onClick={onBackToEmail}
                     aria-label="Go back to email input"
-                    className="w-full text-white/60 hover:text-white text-sm transition-colors min-h-[44px]"
+                    className="w-full text-white/60 hover:text-white text-xs sm:text-sm transition-colors min-h-[40px] sm:min-h-[44px]"
                 >
                     ← Back to email
                 </button>
             </form>
 
-            <div className="mt-8">
+            <div className="mt-5 sm:mt-6 lg:mt-8">
                 <div
-                    className="bg-white/5 border border-white/10 rounded-xl p-4"
+                    className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4"
                     role="complementary"
                     aria-label="Resend OTP section"
                 >
-                    <p className="text-white/60 text-xs leading-relaxed text-center">
+                    <p className="text-white/60 text-[10px] sm:text-xs leading-relaxed text-center">
                         Didn't receive the code?{' '}
                         <button
                             onClick={onResendOtp}

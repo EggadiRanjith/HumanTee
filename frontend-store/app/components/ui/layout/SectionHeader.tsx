@@ -42,7 +42,7 @@ export default function SectionHeader({
                 <Link
                     href={actionHref}
                     className="
-            text-white/70 text-[10px] sm:text-[12px]
+            text-white/70 text-[12px]
             uppercase tracking-[0.22em]
             border border-white/15 rounded-full
             px-3 py-1.5 sm:px-4 sm:py-2

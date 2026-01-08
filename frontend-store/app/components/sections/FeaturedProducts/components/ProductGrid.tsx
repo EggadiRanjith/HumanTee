@@ -12,8 +12,8 @@ interface ProductGridProps {
 export function ProductGrid({ products, showViewAll = true }: ProductGridProps) {
     return (
         <>
-            {/* Product Grid - Mobile Optimized to 2 columns */}
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 xs:gap-4 sm:gap-5 md:gap-6 lg:gap-8">
+            {/* Product Grid - Luxury: Tight gaps for refined layout */}
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
                 {products.map((product, index) => (
                     <ProductCard
                         key={product.id}

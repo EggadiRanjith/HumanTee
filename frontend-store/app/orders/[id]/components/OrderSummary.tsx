@@ -35,12 +35,12 @@ export function OrderSummary({
                     <h3 className="text-white/70 text-[10px] sm:text-xs uppercase tracking-[0.18em] mb-2">
                         Shipping Address
                     </h3>
-                    <p className="text-white/90 text-xs sm:text-sm leading-relaxed">
-                        {address.fullName}<br />
-                        {address.addressLine1}<br />
-                        {address.addressLine2 && <>{address.addressLine2}<br /></>}
-                        {address.city}, {address.state}<br />
-                        {address.postalCode}, {address.country}
+                    <p className="text-white/90 text-xs sm:text-sm leading-relaxed break-words">
+                        <span className="block truncate">{address.fullName}</span>
+                        <span className="block truncate">{address.addressLine1}</span>
+                        {address.addressLine2 && <span className="block truncate">{address.addressLine2}</span>}
+                        <span className="block truncate">{address.city}, {address.state}</span>
+                        <span className="block truncate">{address.postalCode}, {address.country}</span>
                     </p>
                 </div>
 
@@ -79,7 +79,7 @@ export function OrderSummary({
 
                     {/* Payment ID */}
                     {payments?.[0]?.id && (
-                        <p className="text-white/40 text-[9px] sm:text-[10px] mt-2 font-mono">
+                        <p className="text-white/40 text-[9px] sm:text-[10px] mt-2 font-mono truncate">
                             ID: {payments[0].id.slice(0, 20)}...
                         </p>
                     )}

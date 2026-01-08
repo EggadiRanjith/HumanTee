@@ -49,19 +49,15 @@ function OrdersPageContent() {
     };
   }, []);
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push('/login');
+  // CRITICAL: Check auth and redirect BEFORE any rendering
+  // This prevents the page from being added to history
+  if (!authLoading && !isAuthenticated) {
+    // Use window.location.href for immediate redirect (no history entry)
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
     }
-  }, [authLoading, isAuthenticated, router]);
-
-  // Handle page change
-  const handlePageChange = (page: number) => {
-    setFilters({ page });
-    // Note: Removed automatic scroll to prevent unwanted scrolling on page load
-    // User can manually scroll if needed
-  };
+    return null;
+  }
 
   // Show loading during auth check
   if (authLoading) {
@@ -71,6 +67,11 @@ function OrdersPageContent() {
       </div>
     );
   }
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setFilters({ page });
+  };
 
   return (
     <div className="min-h-screen brand-bg pb-24 pt-[var(--header-height)]">

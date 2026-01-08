@@ -739,7 +739,11 @@ export class OrderService {
 
         const allowed = validTransitions[from] || [];
         if (!allowed.includes(to)) {
-            throw new Error(`Invalid status transition from ${from} to ${to}`);
+            const allowedStatuses = allowed.map(s => s.replace(/_/g, ' ').toLowerCase()).join(', ');
+            throw new BadRequestException(
+                `Invalid status transition. Cannot change from "${from.replace(/_/g, ' ').toLowerCase()}" to "${to.replace(/_/g, ' ').toLowerCase()}". ` +
+                `Allowed next statuses: ${allowedStatuses || 'none (final state)'}`
+            );
         }
     }
 
@@ -859,5 +863,71 @@ export class OrderService {
 
         // 3. Mark as paid
         await this.markOrderPaid(order.id, data.razorpayPaymentId);
+    }
+
+    /**
+     * Process refund for an order
+     * SECURITY: Called from admin controller with step-up auth
+     * NOTE: This creates a refund record. Actual Razorpay refund must be processed via webhook or manually.
+     */
+    async refundOrder(
+        orderId: string,
+        refundData: {
+            reason: string;
+            amount?: number;
+            notes?: string;
+            adminId: string;
+            adminEmail: string;
+        }
+    ) {
+        // Find order with payments
+        const order = await this.orderRepository.findOne({
+            where: { id: orderId },
+            relations: ['payments'],
+        });
+
+        if (!order) {
+            throw new NotFoundException('Order not found');
+        }
+
+        // Find the completed payment (captured status means payment is complete)
+        const completedPayment = order.payments?.find(p => p.status === PaymentStatus.CAPTURED);
+
+        if (!completedPayment) {
+            throw new BadRequestException('No completed payment found for this order');
+        }
+
+        // Determine refund amount (full or partial)
+        const refundAmount = refundData.amount || order.totalAmount;
+
+        if (refundAmount > order.totalAmount) {
+            throw new BadRequestException('Refund amount cannot exceed order total');
+        }
+
+        // Update order status
+        order.status = OrderStatus.REFUNDED;
+        await this.orderRepository.save(order);
+
+        // Create status history entry
+        const statusHistory = this.dataSource.getRepository(OrderStatusHistory).create({
+            orderId: order.id,
+            fromStatus: order.status,
+            toStatus: OrderStatus.REFUNDED,
+            changedBy: refundData.adminId,
+            reason: `Refund processed by ${refundData.adminEmail}. Reason: ${refundData.reason}`,
+        });
+        await this.dataSource.getRepository(OrderStatusHistory).save(statusHistory);
+
+        this.logger.log(`Order ${order.orderNumber} refunded by ${refundData.adminEmail}`);
+
+        return {
+            orderId: order.id,
+            orderNumber: order.orderNumber,
+            refundAmount,
+            processedBy: refundData.adminEmail,
+            processedAt: new Date(),
+            reason: refundData.reason,
+            notes: refundData.notes,
+        };
     }
 }

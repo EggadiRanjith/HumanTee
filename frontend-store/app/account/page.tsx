@@ -99,35 +99,35 @@ export default function AccountPage() {
     }
 
     return (
-        <div className="min-h-screen brand-bg pt-[var(--header-height)] pb-20 sm:pb-24 font-sans">
+        <div className="min-h-screen brand-bg pt-[var(--header-height)] pb-16 sm:pb-20 lg:pb-24 font-sans">
             <GradientOverlay variant="violet" />
 
-            <div className="relative max-w-screen-xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
-                <div className="py-6 sm:py-8 md:py-10 lg:py-12">
+            <div className="relative max-w-screen-xl mx-auto px-3 sm:px-4 md:px-6 lg:px-10">
+                <div className="py-4 sm:py-6 md:py-8 lg:py-12">
                     {/* Header */}
-                    <div className="mb-6 sm:mb-8 md:mb-10">
-                        <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="mb-4 sm:mb-6 md:mb-8 lg:mb-10">
+                        <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4">
                             {/* Avatar */}
-                            <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 lg:w-20 lg:h-20 rounded-full bg-gradient-to-br from-white/20 to-white/5 border border-white/20 flex items-center justify-center text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white shadow-lg flex-shrink-0">
+                            <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full bg-gradient-to-br from-white/20 to-white/5 border border-white/20 flex items-center justify-center text-base sm:text-lg md:text-xl lg:text-3xl font-bold text-white shadow-lg flex-shrink-0">
                                 {getInitials()}
                             </div>
                             <div className="min-w-0 flex-1">
-                                <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-light text-white tracking-wide truncate">
+                                <h1 className="text-base sm:text-lg md:text-xl lg:text-3xl font-light text-white tracking-wide truncate">
                                     {profile.fullName || 'Welcome'}
                                 </h1>
-                                <p className="text-white/60 text-xs sm:text-sm mt-1 truncate">
+                                <p className="text-white/60 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">
                                     {profile.email}
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <h2 className="text-white text-sm sm:text-base md:text-lg lg:text-xl font-light mb-4 sm:mb-5 md:mb-6 uppercase tracking-wide">
+                    <h2 className="text-white text-xs sm:text-sm md:text-base lg:text-xl font-light mb-3 sm:mb-4 md:mb-5 lg:mb-6 uppercase tracking-wide">
                         Account Information
                     </h2>
 
                     {/* Main Content */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 mb-6 sm:mb-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-5 lg:gap-6 mb-4 sm:mb-6 lg:mb-8">
                         {/* Profile Section */}
                         <ProfileSection
                             profile={profile}

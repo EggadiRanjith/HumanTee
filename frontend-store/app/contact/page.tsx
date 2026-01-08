@@ -293,10 +293,10 @@ export default function ContactPage() {
                                         Email Us
                                     </h3>
                                     <a
-                                        href="mailto:support@humantee.com"
+                                        href="mailto:humanteeteam@gmail.com"
                                         className="brand-text-muted text-[13px] hover:text-white transition-colors"
                                     >
-                                        support@humantee.com
+                                        humanteeteam@gmail.com
                                     </a>
                                 </div>
                             </div>

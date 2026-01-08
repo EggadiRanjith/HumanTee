@@ -13,11 +13,11 @@ export function ShopHeader({
     subtitle = "Explore our premium collections"
 }: ShopHeaderProps) {
     return (
-        <div className="mb-8 sm:mb-10 text-center pt-12">
-            <h1 className="text-[20px] xs:text-[22px] sm:text-[30px] lg:text-[38px] font-light uppercase tracking-[0.14em] brand-text-primary">
+        <div className="mb-6 sm:mb-8 text-center pt-8 sm:pt-10">
+            <h1 className="text-[16px] xs:text-[18px] sm:text-[24px] lg:text-[28px] font-light uppercase tracking-[0.16em] brand-text-primary">
                 {title}
             </h1>
-            <p className="brand-text-muted text-[9px] xs:text-[10px] sm:text-[11px] uppercase tracking-[0.22em] mt-2">
+            <p className="brand-text-muted text-[10px] xs:text-[11px] sm:text-[11px] uppercase tracking-[0.24em] mt-1.5">
                 {subtitle}
             </p>
         </div>

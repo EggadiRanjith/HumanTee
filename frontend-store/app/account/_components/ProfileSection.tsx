@@ -3,6 +3,8 @@
 import { useState, memo, useEffect } from "react";
 import { FiUser, FiEdit2, FiMail } from "react-icons/fi";
 import apiClient from "@/lib/api-client";
+import { CountryCodeSelect } from "@/app/components/ui/form/CountryCodeSelect";
+import { validatePhoneNumber, parsePhoneNumber, combinePhoneNumber } from "@/lib/utils/phoneValidation";
 
 interface UserProfile {
     id: string;
@@ -33,14 +35,25 @@ export default memo(function ProfileSection({
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [editedName, setEditedName] = useState('');
+    const [editedCountryCode, setEditedCountryCode] = useState('+91');
     const [editedPhone, setEditedPhone] = useState('');
+    const [phoneError, setPhoneError] = useState('');
     const [saveError, setSaveError] = useState('');
     const [saveSuccess, setSaveSuccess] = useState(false);
 
     const handleEditClick = () => {
         setEditedName(profile.fullName || '');
-        setEditedPhone(profile.phone || '');
+        // Parse existing phone number
+        if (profile.phone) {
+            const parsed = parsePhoneNumber(profile.phone);
+            setEditedCountryCode(parsed.countryCode);
+            setEditedPhone(parsed.phoneNumber);
+        } else {
+            setEditedCountryCode('+91');
+            setEditedPhone('');
+        }
         setIsEditing(true);
+        setPhoneError('');
         setSaveError('');
         setSaveSuccess(false);
     };
@@ -49,19 +62,34 @@ export default memo(function ProfileSection({
         setIsEditing(false);
         setEditedName('');
         setEditedPhone('');
+        setPhoneError('');
         setSaveError('');
         setSaveSuccess(false);
     };
 
     const handleSaveProfile = async () => {
+        // Validate phone if provided
+        if (editedPhone.trim()) {
+            const validation = validatePhoneNumber(editedCountryCode, editedPhone);
+            if (!validation.isValid) {
+                setPhoneError(validation.error || 'Invalid phone number');
+                return;
+            }
+        }
+
         setIsSaving(true);
         setSaveError('');
         setSaveSuccess(false);
+        setPhoneError('');
 
         try {
+            const fullPhone = editedPhone.trim()
+                ? combinePhoneNumber(editedCountryCode, editedPhone)
+                : '';
+
             const response = await apiClient.patch('/auth/profile', {
                 fullName: editedName.trim(),
-                phone: editedPhone.trim(),
+                phone: fullPhone,
             });
 
             onProfileUpdate({
@@ -137,24 +165,43 @@ export default memo(function ProfileSection({
                             Phone Number
                         </label>
                         {isEditing ? (
-                            <input
-                                id="phone-input"
-                                type="tel"
-                                value={editedPhone}
-                                onChange={(e) => {
-                                    // Only allow digits and + symbol
-                                    const value = e.target.value.replace(/[^0-9+]/g, '');
-                                    setEditedPhone(value);
-                                }}
-                                placeholder="+91 1234567890"
-                                autoComplete="tel"
-                                inputMode="numeric"
-                                pattern="[+]?[0-9]{10,15}"
-                                minLength={10}
-                                maxLength={15}
-                                aria-label="Phone number"
-                                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all text-sm sm:text-base min-h-[44px]"
-                            />
+                            <div className="space-y-2">
+                                <div className="grid grid-cols-[120px_1fr] sm:grid-cols-[140px_1fr] gap-2">
+                                    {/* Country Code Selector */}
+                                    <CountryCodeSelect
+                                        value={editedCountryCode}
+                                        onChange={(code) => {
+                                            setEditedCountryCode(code);
+                                            setPhoneError('');
+                                        }}
+                                    />
+                                    {/* Phone Number Input */}
+                                    <input
+                                        id="phone-input"
+                                        type="tel"
+                                        value={editedPhone}
+                                        onChange={(e) => {
+                                            // Only allow digits
+                                            const value = e.target.value.replace(/[^0-9]/g, '');
+                                            setEditedPhone(value);
+                                            setPhoneError('');
+                                        }}
+                                        placeholder="9876543210"
+                                        autoComplete="tel"
+                                        inputMode="numeric"
+                                        aria-label="Phone number"
+                                        aria-invalid={!!phoneError}
+                                        aria-describedby={phoneError ? "phone-error" : undefined}
+                                        className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-white/5 border text-white placeholder:text-white/30 focus:outline-none transition-all text-sm sm:text-base ${phoneError ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-white/30'
+                                            }`}
+                                    />
+                                </div>
+                                {phoneError && (
+                                    <p id="phone-error" role="alert" className="text-red-400 text-xs">
+                                        {phoneError}
+                                    </p>
+                                )}
+                            </div>
                         ) : (
                             <p className="text-base sm:text-lg text-white/90">
                                 {profile.phone || (

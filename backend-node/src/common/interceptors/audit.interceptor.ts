@@ -23,46 +23,71 @@ export class AuditInterceptor implements NestInterceptor {
         const url = request.url;
         const user = request.user;
 
-        // Only log admin actions (not GET requests, not public endpoints)
-        if (!user || !user.isAdmin || method === 'GET') {
+        // SECURITY FIX: Log ALL admin actions (including GET for PII access tracking)
+        if (!user || !user.isAdmin) {
             return next.handle();
         }
+
+        // Generate correlation ID for request tracking
+        const correlationId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        request.correlationId = correlationId;
 
         // Capture before state (from request body)
         const before = this.extractBeforeState(request);
         const entityInfo = this.extractEntityInfo(url, request);
-
-
+        const startTime = Date.now();
 
         return next.handle().pipe(
-            tap(async (response) => {
-                // Only log successful operations
-                if (response && entityInfo) {
-                    // If entity name wasn't in request, try to get it from response
-                    if (!entityInfo.name && response.order?.orderNumber) {
-                        entityInfo.name = response.order.orderNumber;
-                    } else if (!entityInfo.name && response.orderNumber) {
-                        entityInfo.name = response.orderNumber;
+            tap({
+                next: async (response) => {
+                    // Log successful operations (including GET requests)
+                    if (entityInfo) {
+                        // If entity name wasn't in request, try to get it from response
+                        if (!entityInfo.name && response?.order?.orderNumber) {
+                            entityInfo.name = response.order.orderNumber;
+                        } else if (!entityInfo.name && response?.orderNumber) {
+                            entityInfo.name = response.orderNumber;
+                        }
+
+                        const after = this.extractAfterState(response);
+                        const changes = this.auditService.calculateChanges(before, after);
+
+                        await this.auditService.logAction({
+                            adminId: user.userId,
+                            adminEmail: user.email,
+                            eventType: this.determineEventType(method, url),
+                            entityType: entityInfo.type,
+                            entityId: entityInfo.id,
+                            entityName: entityInfo.name,
+                            before,
+                            after,
+                            changes,
+                            ipAddress: request.ip || request.connection.remoteAddress,
+                            userAgent: request.headers['user-agent'],
+                        });
                     }
-
-                    const after = this.extractAfterState(response);
-                    const changes = this.auditService.calculateChanges(before, after);
-
-                    await this.auditService.logAction({
-                        adminId: user.userId,  // Fixed: use userId instead of id
-                        adminEmail: user.email,
-                        eventType: this.determineEventType(method, url),
-                        entityType: entityInfo.type,
-                        entityId: entityInfo.id,
-                        entityName: entityInfo.name,
-                        before,
-                        after,
-                        changes,
-                        ipAddress: request.ip || request.connection.remoteAddress,
-                        userAgent: request.headers['user-agent'],
-                    });
-
-                }
+                },
+                error: async (error) => {
+                    // SECURITY FIX: Log failed attempts (permission bypass detection)
+                    if (entityInfo) {
+                        await this.auditService.logAction({
+                            adminId: user.userId,
+                            adminEmail: user.email,
+                            eventType: `${this.determineEventType(method, url)}_FAILED`,
+                            entityType: entityInfo.type,
+                            entityId: entityInfo.id,
+                            entityName: entityInfo.name,
+                            before,
+                            after: null,
+                            changes: {
+                                error: error.message,
+                                statusCode: error.status || 500,
+                            },
+                            ipAddress: request.ip || request.connection.remoteAddress,
+                            userAgent: request.headers['user-agent'],
+                        });
+                    }
+                },
             }),
         );
     }

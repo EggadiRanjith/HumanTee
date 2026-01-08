@@ -230,31 +230,31 @@ export default function EditDiscountPage() {
     }
 
     return (
-        <div className="space-y-6 pb-24 lg:pb-6">
-            {/* Header */}
+        <div className="space-y-4 md:space-y-6 pb-24 lg:pb-6">
+            {/* Header - Compact Mobile */}
             <div>
                 <Link
                     href="/admin/discounts"
-                    className="text-sm text-gray-600 hover:text-black mb-3 inline-block"
+                    className="text-xs md:text-sm text-gray-600 hover:text-black mb-2 md:mb-3 inline-block"
                 >
                     ← Back to discounts
                 </Link>
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 md:gap-3">
                     <div>
-                        <h1 className="text-xl sm:text-2xl font-semibold text-black">Edit Discount</h1>
-                        <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                        <h1 className="text-lg md:text-xl lg:text-2xl font-semibold text-black">Edit Discount</h1>
+                        <p className="text-xs md:text-sm text-gray-600 mt-1">
                             Update discount rules (Live Connection)
                         </p>
                     </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                 {/* Main Form */}
-                <div className="lg:col-span-2 space-y-6">
-                    {/* Discount Basics */}
-                    <div className="bg-white rounded-lg border border-gray-200 p-6">
-                        <h2 className="text-lg font-semibold text-black mb-4">Discount Basics</h2>
+                <div className="lg:col-span-2 space-y-4 md:space-y-6">
+                    {/* Discount Basics - Compact Mobile */}
+                    <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-4 lg:p-6">
+                        <h2 className="text-base md:text-lg font-semibold text-black mb-3 md:mb-4">Discount Basics</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-900 mb-2">
@@ -353,9 +353,9 @@ export default function EditDiscountPage() {
                         </div>
                     </div>
 
-                    {/* Rules & Audience */}
-                    <div className="bg-white rounded-lg border border-gray-200 p-6">
-                        <h2 className="text-lg font-semibold text-black mb-4">Rules & Audience</h2>
+                    {/* Rules & Audience - Compact Mobile */}
+                    <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-4 lg:p-6">
+                        <h2 className="text-base md:text-lg font-semibold text-black mb-3 md:mb-4">Rules & Audience</h2>
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-900 mb-2">
@@ -452,9 +452,9 @@ export default function EditDiscountPage() {
                         </div>
                     </div>
 
-                    {/* Scope / Apply To */}
-                    <div className="bg-white rounded-lg border border-gray-200 p-6">
-                        <h2 className="text-lg font-semibold text-black mb-4">Apply To</h2>
+                    {/* Scope / Apply To - Compact Mobile */}
+                    <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-4 lg:p-6">
+                        <h2 className="text-base md:text-lg font-semibold text-black mb-3 md:mb-4">Apply To</h2>
                         <div className="space-y-4">
                             <div className="flex gap-4 mb-4">
                                 <label className="flex items-center cursor-pointer">
@@ -649,9 +649,9 @@ export default function EditDiscountPage() {
                         </div>
                     </div>
 
-                    {/* Validity Period */}
-                    <div className="bg-white rounded-lg border border-gray-200 p-6">
-                        <h2 className="text-lg font-semibold text-black mb-4">Validity Period</h2>
+                    {/* Validity Period - Compact Mobile */}
+                    <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-4 lg:p-6">
+                        <h2 className="text-base md:text-lg font-semibold text-black mb-3 md:mb-4">Validity Period</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-900 mb-2">
@@ -733,12 +733,12 @@ export default function EditDiscountPage() {
                 </div>
             </div>
 
-            {/* Sticky Bottom Save Button (Mobile Only) */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-50">
+            {/* Sticky Bottom Save Button (Mobile Only) - Compact */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 md:p-4 shadow-lg z-50">
                 <button
                     onClick={handleSave}
                     disabled={isLoading}
-                    className={`w-full ${isLoading ? 'bg-gray-400' : 'bg-black hover:bg-gray-900'} text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2`}
+                    className={`w-full ${isLoading ? 'bg-gray-400' : 'bg-black hover:bg-gray-900'} text-white px-4 md:px-6 py-2.5 md:py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm md:text-base`}
                 >
                     {isLoading && (
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

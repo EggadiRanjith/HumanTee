@@ -7,11 +7,11 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './guards/jwt.guard';
+import { AdminJwtGuard } from './guards/admin-jwt.guard';
 import { AdminGuard } from './guards/admin.guard';
 
 @Controller('admin/users')
-@UseGuards(JwtAuthGuard, AdminGuard)
+@UseGuards(AdminJwtGuard, AdminGuard)
 export class AdminUsersController {
     constructor(private readonly authService: AuthService) { }
 

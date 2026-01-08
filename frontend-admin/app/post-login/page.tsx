@@ -1,16 +1,37 @@
-import { redirect } from 'next/navigation';
-import { getServerUser } from '@/lib/auth';
+"use client";
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/app/context/AuthContext';
 import Link from 'next/link';
 
 /**
- * Post-Login Choice Page
- * Clean, professional, mobile-responsive
+ * Post-Login Choice Page (Client Component)
+ * Uses AuthContext for authentication state
  */
-export default async function PostLoginPage() {
-    const user = await getServerUser();
+export default function PostLoginPage() {
+    const router = useRouter();
+    const { user, isLoading } = useAuth();
 
+    useEffect(() => {
+        // Redirect to login if not authenticated
+        if (!isLoading && (!user || user.role?.toLowerCase() !== 'admin')) {
+            router.push('/login');
+        }
+    }, [user, isLoading, router]);
+
+    // Show loading while checking auth
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <div className="text-white">Loading...</div>
+            </div>
+        );
+    }
+
+    // Don't render if not authenticated (will redirect)
     if (!user || user.role?.toLowerCase() !== 'admin') {
-        redirect('/');
+        return null;
     }
 
     return (

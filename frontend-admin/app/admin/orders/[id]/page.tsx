@@ -6,7 +6,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/lib/api-client';
@@ -54,6 +54,8 @@ interface Order {
         paymentMethod: string;
         amount: number;
         transactionId?: string;
+        providerPaymentId?: string;
+        providerOrderId?: string;
         createdAt: string;
     }>;
 }
@@ -74,8 +76,12 @@ const getStatusColor = (status: string) => {
         delivered: 'bg-green-100 text-green-800 border-green-200',
         cancelled: 'bg-red-100 text-red-800 border-red-200',
         payment_failed: 'bg-red-100 text-red-800 border-red-200',
-        paid: 'bg-green-100 text-green-800 border-green-200',
+        // Payment statuses
+        initiated: 'bg-gray-100 text-gray-800 border-gray-200',
         pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+        authorized: 'bg-blue-100 text-blue-800 border-blue-200',
+        captured: 'bg-green-100 text-green-800 border-green-200',
+        failed: 'bg-red-100 text-red-800 border-red-200',
     };
     return colors[status] || 'bg-gray-100 text-gray-800 border-gray-200';
 };
@@ -91,6 +97,7 @@ export default function OrderDetailPage() {
     const [showStatusModal, setShowStatusModal] = useState(false);
     const [newStatus, setNewStatus] = useState('');
     const [isUpdating, setIsUpdating] = useState(false);
+    const [updateError, setUpdateError] = useState<string | null>(null);
 
     // Fetch order details using React Query
     const { data: order, isLoading, error, refetch } = useQuery<Order>({
@@ -116,14 +123,15 @@ export default function OrderDetailPage() {
         }
 
         setIsUpdating(true);
+        setUpdateError(null);
         try {
             await apiClient.patch(`/admin/orders/${orderId}/status`, { status: newStatus });
             await refetch();
             setShowStatusModal(false);
-        } catch (err) {
-            console.error('Order status update error:', err);
-            console.error('Error response:', err.response?.data);
-            alert(err instanceof Error ? err.message : 'Failed to update status');
+        } catch (err: any) {
+            // Extract error message from backend response
+            const errorMessage = err.response?.data?.message || err.message || 'Failed to update status';
+            setUpdateError(errorMessage);
         } finally {
             setIsUpdating(false);
         }
@@ -154,15 +162,15 @@ export default function OrderDetailPage() {
     }
 
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+        <div className="space-y-4 md:space-y-6">
+            {/* Header - Compact Mobile */}
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 md:gap-4">
                 <div>
-                    <Link href="/admin/orders" className="text-sm text-gray-600 hover:text-black mb-2 inline-block">
+                    <Link href="/admin/orders" className="text-xs md:text-sm text-gray-600 hover:text-black mb-2 inline-block">
                         ← Back to orders
                     </Link>
-                    <h1 className="text-2xl md:text-3xl font-semibold text-black">Order {order.orderNumber}</h1>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-black">Order {order.orderNumber}</h1>
+                    <p className="text-xs md:text-sm text-gray-600 mt-1">
                         Placed on {new Date(order.createdAt).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'long',
@@ -175,26 +183,26 @@ export default function OrderDetailPage() {
                 <div className="flex gap-2">
                     <button
                         onClick={() => setShowStatusModal(true)}
-                        className="bg-black hover:bg-gray-900 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
+                        className="bg-black hover:bg-gray-900 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-medium transition-colors text-xs md:text-sm"
                     >
                         Update Status
                     </button>
                     <button
                         onClick={() => window.print()}
-                        className="bg-gray-100 hover:bg-gray-200 text-black px-4 py-2 rounded-lg font-medium transition-colors text-sm"
+                        className="bg-gray-100 hover:bg-gray-200 text-black px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-medium transition-colors text-xs md:text-sm"
                     >
                         Print
                     </button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                 {/* Main Content */}
-                <div className="lg:col-span-2 space-y-6">
-                    {/* Order Items */}
-                    <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
-                        <h2 className="text-lg font-semibold text-black mb-4">Order Items</h2>
-                        <div className="space-y-4">
+                <div className="lg:col-span-2 space-y-4 md:space-y-6">
+                    {/* Order Items - Compact Mobile */}
+                    <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-4 lg:p-6">
+                        <h2 className="text-base md:text-lg font-semibold text-black mb-3 md:mb-4">Order Items</h2>
+                        <div className="space-y-3 md:space-y-4">
                             {order.items.map((item, index) => {
                                 // Debug: Log the actual item structure (only first item)
                                 if (index === 0) {
@@ -208,31 +216,31 @@ export default function OrderDetailPage() {
                                 const subtotal = Number(item.lineTotal || price * quantity);
 
                                 return (
-                                    <div key={item.id || index} className="flex gap-4 pb-4 border-b border-gray-200 last:border-0 last:pb-0">
-                                        <div className="w-16 h-16 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center">
+                                    <div key={item.id || index} className="flex gap-3 md:gap-4 pb-3 md:pb-4 border-b border-gray-200 last:border-0 last:pb-0">
+                                        <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center">
                                             {item.imageUrlSnapshot ? (
                                                 <img src={item.imageUrlSnapshot} alt={item.productNameSnapshot} className="w-full h-full object-cover rounded-lg" />
                                             ) : (
-                                                <span className="text-2xl">📦</span>
+                                                <span className="text-xl md:text-2xl">📦</span>
                                             )}
                                         </div>
                                         <div className="flex-1">
-                                            <h3 className="font-medium text-black">{item.productNameSnapshot}</h3>
+                                            <h3 className="font-medium text-black text-sm md:text-base">{item.productNameSnapshot}</h3>
                                             {item.variantLabelSnapshot && (
-                                                <p className="text-sm text-gray-600 mt-1">{item.variantLabelSnapshot}</p>
+                                                <p className="text-xs md:text-sm text-gray-600 mt-1">{item.variantLabelSnapshot}</p>
                                             )}
-                                            <p className="text-sm text-gray-600">Quantity: {quantity}</p>
+                                            <p className="text-xs md:text-sm text-gray-600">Quantity: {quantity}</p>
                                         </div>
                                         <div className="text-right">
-                                            <div className="font-medium text-black">₹{subtotal.toLocaleString()}</div>
-                                            <div className="text-sm text-gray-500">₹{price.toLocaleString()} each</div>
+                                            <div className="font-medium text-black text-sm md:text-base">₹{subtotal.toLocaleString()}</div>
+                                            <div className="text-xs md:text-sm text-gray-500">₹{price.toLocaleString()} each</div>
                                         </div>
                                     </div>
                                 );
                             })}
                         </div>
-                        <div className="mt-6 pt-4 border-t border-gray-200">
-                            <div className="flex justify-between text-lg font-semibold text-black">
+                        <div className="mt-4 md:mt-6 pt-3 md:pt-4 border-t border-gray-200">
+                            <div className="flex justify-between text-base md:text-lg font-semibold text-black">
                                 <span>Total</span>
                                 <span>₹{order.totalAmount.toLocaleString()}</span>
                             </div>
@@ -244,11 +252,11 @@ export default function OrderDetailPage() {
                         <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
                             <h2 className="text-lg font-semibold text-black mb-4">Payment Information</h2>
                             {order.payments.map((payment) => (
-                                <div key={payment.id} className="space-y-2">
-                                    <div className="flex justify-between">
+                                <div key={payment.id} className="space-y-3">
+                                    <div className="flex justify-between items-center">
                                         <span className="text-sm text-gray-600">Status</span>
-                                        <span className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(payment.status)}`}>
-                                            {formatStatus(payment.status)}
+                                        <span className={`px-3 py-1.5 text-sm font-medium rounded border ${getStatusColor(payment.status)}`}>
+                                            {payment.status === 'captured' ? '✅ ' : ''}{formatStatus(payment.status)}
                                         </span>
                                     </div>
                                     <div className="flex justify-between">
@@ -259,12 +267,37 @@ export default function OrderDetailPage() {
                                         <span className="text-sm text-gray-600">Amount</span>
                                         <span className="text-sm font-medium text-black">₹{payment.amount.toLocaleString()}</span>
                                     </div>
+                                    {payment.providerPaymentId && (
+                                        <div className="flex flex-col gap-1 pt-2 border-t border-gray-100">
+                                            <span className="text-xs text-gray-500">Razorpay Payment ID</span>
+                                            <div className="flex items-center gap-2">
+                                                <code className="text-sm font-mono text-black bg-gray-50 px-2 py-1 rounded flex-1">{payment.providerPaymentId}</code>
+                                                <button
+                                                    onClick={() => navigator.clipboard.writeText(payment.providerPaymentId!)}
+                                                    className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
+                                                    title="Copy Payment ID"
+                                                >
+                                                    📋
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {payment.providerOrderId && (
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-xs text-gray-500">Razorpay Order ID</span>
+                                            <code className="text-sm font-mono text-gray-600 bg-gray-50 px-2 py-1 rounded">{payment.providerOrderId}</code>
+                                        </div>
+                                    )}
                                     {payment.transactionId && (
                                         <div className="flex justify-between">
                                             <span className="text-sm text-gray-600">Transaction ID</span>
                                             <span className="text-sm font-mono text-black">{payment.transactionId}</span>
                                         </div>
                                     )}
+                                    <div className="flex justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
+                                        <span>Payment Date</span>
+                                        <span>{new Date(payment.createdAt).toLocaleString()}</span>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -307,15 +340,15 @@ export default function OrderDetailPage() {
                 </div>
             </div>
 
-            {/* Status Update Modal */}
+            {/* Status Update Modal - Compact Mobile */}
             {showStatusModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-lg max-w-md w-full p-6">
-                        <h2 className="text-lg font-semibold text-black mb-4">Update Order Status</h2>
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 md:p-4 z-50">
+                    <div className="bg-white rounded-lg max-w-md w-full p-4 md:p-6">
+                        <h2 className="text-base md:text-lg font-semibold text-black mb-3 md:mb-4">Update Order Status</h2>
                         <select
                             value={newStatus}
                             onChange={(e) => setNewStatus(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none mb-4"
+                            className="w-full px-3 py-1.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none mb-3 md:mb-4 text-sm"
                         >
                             {STATUS_OPTIONS.map((option) => (
                                 <option key={option.value} value={option.value}>
@@ -323,17 +356,24 @@ export default function OrderDetailPage() {
                                 </option>
                             ))}
                         </select>
+
+                        {/* Error Message */}
+                        {updateError && (
+                            <div className="mb-3 md:mb-4 p-2.5 md:p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs md:text-sm">
+                                <strong>Error:</strong> {updateError}
+                            </div>
+                        )}
                         <div className="flex gap-2">
                             <button
                                 onClick={() => setShowStatusModal(false)}
-                                className="flex-1 bg-gray-100 hover:bg-gray-200 text-black px-4 py-2 rounded-lg font-medium"
+                                className="flex-1 bg-gray-100 hover:bg-gray-200 text-black px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-medium text-xs md:text-sm"
                                 disabled={isUpdating}
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleStatusUpdate}
-                                className="flex-1 bg-black hover:bg-gray-900 text-white px-4 py-2 rounded-lg font-medium disabled:opacity-50"
+                                className="flex-1 bg-black hover:bg-gray-900 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-medium disabled:opacity-50 text-xs md:text-sm"
                                 disabled={isUpdating}
                             >
                                 {isUpdating ? 'Updating...' : 'Update'}

@@ -26,6 +26,8 @@ interface Order {
     createdAt: string;
     payments?: Array<{
         status: string;
+        providerPaymentId?: string;
+        providerOrderId?: string;
     }>;
 }
 
@@ -44,8 +46,10 @@ const getStatusColor = (status: OrderStatus) => {
 
 const getPaymentStatusColor = (status: string) => {
     const colors = {
+        initiated: 'bg-gray-100 text-gray-800',
         pending: 'bg-yellow-100 text-yellow-800',
-        completed: 'bg-green-100 text-green-800',
+        authorized: 'bg-blue-100 text-blue-800',
+        captured: 'bg-green-100 text-green-800',
         failed: 'bg-red-100 text-red-800',
     };
     return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
@@ -115,27 +119,27 @@ export default function OrdersPage() {
 
 
     return (
-        <div className="space-y-4 sm:space-y-6">
+        <div className="space-y-3 md:space-y-4 lg:space-y-6">
             {/* Header */}
             <OrdersHeader />
 
-            {/* Filters & Search */}
-            <div className="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Filters & Search - Compact Mobile */}
+            <div className="bg-white rounded-lg border border-gray-200 p-2.5 md:p-3 lg:p-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3">
                     {/* Search */}
                     <input
                         type="text"
                         placeholder="Search orders..."
                         value={searchQuery}
                         onChange={(e: any) => setSearchQuery(e.target.value)}
-                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
+                        className="px-3 py-1.5 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
                     />
 
                     {/* Status Filter */}
                     <select
                         value={statusFilter}
                         onChange={(e: any) => setStatusFilter(e.target.value as OrderStatus | 'ALL')}
-                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
+                        className="px-3 py-1.5 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
                     >
                         <option value="ALL">All Status</option>
                         <option value="pending_payment">Pending Payment</option>
@@ -153,7 +157,7 @@ export default function OrdersPage() {
                             setSortBy(sort as typeof sortBy);
                             setSortOrder(order as typeof sortOrder);
                         }}
-                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
+                        className="px-3 py-1.5 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
                     >
                         <option value="date-desc">Newest First</option>
                         <option value="date-asc">Oldest First</option>
@@ -163,37 +167,37 @@ export default function OrdersPage() {
                 </div>
             </div>
 
-            {/* Orders Cards (Mobile) */}
-            <div className="lg:hidden space-y-3">
+            {/* Orders Cards (Mobile) - Compact */}
+            <div className="lg:hidden space-y-2.5 md:space-y-3">
                 {paginatedOrders.map((order) => (
                     <Link
                         key={order.id}
                         href={`/admin/orders/${order.id}`}
-                        className="block bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                        className="block bg-white rounded-lg border border-gray-200 p-3 md:p-4 hover:shadow-md transition-shadow"
                     >
-                        <div className="flex justify-between items-start mb-3">
+                        <div className="flex justify-between items-start mb-2 md:mb-3">
                             <div>
-                                <div className="font-mono text-sm font-medium text-black">
+                                <div className="font-mono text-xs md:text-sm font-medium text-black">
                                     {order.orderNumber}
                                 </div>
-                                <div className="text-sm text-gray-600 mt-1">{order.address.fullName}</div>
-                                <div className="text-xs text-gray-500">{order.address.email}</div>
+                                <div className="text-xs md:text-sm text-gray-600 mt-1">{order.address.fullName}</div>
+                                <div className="text-[10px] md:text-xs text-gray-500">{order.address.email}</div>
                             </div>
                             <div className="flex flex-col gap-1 items-end">
-                                <span className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(order.status)}`}>
+                                <span className={`px-2 py-1 text-[10px] md:text-xs font-medium rounded ${getStatusColor(order.status)}`}>
                                     {formatStatus(order.status)}
                                 </span>
-                                <span className={`px-2 py-1 text-xs font-medium rounded ${getPaymentStatusColor(order.payments?.[0]?.status || 'pending')}`}>
-                                    {formatStatus(order.payments?.[0]?.status || 'pending')}
+                                <span className={`px-2 py-1 text-[10px] md:text-xs font-medium rounded ${getPaymentStatusColor(order.payments?.[0]?.status || 'initiated')}`}>
+                                    {order.payments?.[0]?.status === 'captured' ? '✅ ' : ''}{formatStatus(order.payments?.[0]?.status || 'initiated')}
                                 </span>
                             </div>
                         </div>
-                        <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+                        <div className="flex justify-between items-center pt-2 md:pt-3 border-t border-gray-200">
                             <div>
-                                <div className="text-sm font-semibold text-black">₹{Number(order.totalAmount).toLocaleString()}</div>
-                                <div className="text-xs text-gray-500">{order.items?.length || 0} items</div>
+                                <div className="text-xs md:text-sm font-semibold text-black">₹{Number(order.totalAmount).toLocaleString()}</div>
+                                <div className="text-[10px] md:text-xs text-gray-500">{order.items?.length || 0} items</div>
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-[10px] md:text-xs text-gray-500">
                                 {new Date(order.createdAt).toLocaleDateString()}
                             </div>
                         </div>
@@ -243,9 +247,16 @@ export default function OrdersPage() {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 text-xs font-medium rounded ${getPaymentStatusColor(order.payments?.[0]?.status || 'pending')}`}>
-                                        {formatStatus(order.payments?.[0]?.status || 'pending')}
-                                    </span>
+                                    <div className="flex flex-col gap-1">
+                                        <span className={`px-2 py-1 text-xs font-medium rounded ${getPaymentStatusColor(order.payments?.[0]?.status || 'initiated')}`}>
+                                            {order.payments?.[0]?.status === 'captured' ? '✅ ' : ''}{formatStatus(order.payments?.[0]?.status || 'initiated')}
+                                        </span>
+                                        {order.payments?.[0]?.providerPaymentId && (
+                                            <code className="text-[10px] text-gray-500 font-mono">
+                                                {order.payments[0].providerPaymentId.substring(0, 20)}...
+                                            </code>
+                                        )}
+                                    </div>
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="text-sm font-medium text-black">₹{Number(order.totalAmount).toLocaleString()}</div>
@@ -268,19 +279,20 @@ export default function OrdersPage() {
                 </table>
             </div>
 
-            {/* Pagination */}
+            {/* Pagination - Compact Mobile */}
             {totalPages > 1 && (
-                <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="text-sm text-gray-600">
+                <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-lg border border-gray-200 p-2.5 md:p-4 gap-3 sm:gap-0">
+                    <div className="text-xs md:text-sm text-gray-600 hidden sm:block">
                         Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredOrders.length)} of {filteredOrders.length} orders
                     </div>
                     <div className="flex gap-2">
                         <button
                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                             disabled={currentPage === 1}
-                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-2.5 md:px-3 py-1 border border-gray-300 rounded-lg text-xs md:text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Previous
+                            <span className="hidden sm:inline">Previous</span>
+                            <span className="sm:hidden">←</span>
                         </button>
                         <div className="flex gap-1">
                             {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
@@ -298,7 +310,7 @@ export default function OrdersPage() {
                                     <button
                                         key={page}
                                         onClick={() => setCurrentPage(page)}
-                                        className={`px-3 py-1 border rounded-lg text-sm ${currentPage === page
+                                        className={`px-2.5 md:px-3 py-1 border rounded-lg text-xs md:text-sm ${currentPage === page
                                             ? 'bg-black text-white border-black'
                                             : 'border-gray-300 hover:bg-gray-50'
                                             }`}
@@ -311,9 +323,10 @@ export default function OrdersPage() {
                         <button
                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                             disabled={currentPage === totalPages}
-                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-2.5 md:px-3 py-1 border border-gray-300 rounded-lg text-xs md:text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Next
+                            <span className="hidden sm:inline">Next</span>
+                            <span className="sm:hidden">→</span>
                         </button>
                     </div>
                 </div>

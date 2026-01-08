@@ -23,7 +23,7 @@ const ReviewCard = ({ review, className = '' }: ReviewCardProps) => {
         <motion.div
             className={`
         bg-white/5 border border-white/10 backdrop-blur-xl
-        rounded-2xl p-6 sm:p-7 md:p-8
+        rounded-2xl p-4 sm:p-6 md:p-7
         min-w-[260px] sm:min-w-[300px] md:min-w-[360px]
         transition-all duration-300
         ${className}
@@ -40,10 +40,10 @@ const ReviewCard = ({ review, className = '' }: ReviewCardProps) => {
                     />
                 </div>
                 <div className="ml-3">
-                    <h3 className="font-geist text-white font-medium text-sm sm:text-base">
+                    <h3 className="font-geist text-white font-medium text-[13px]">
                         {review.name}
                     </h3>
-                    <p className="font-geist text-white/60 text-xs sm:text-sm">
+                    <p className="font-geist text-white/60 text-[12px]">
                         {review.role}
                     </p>
                 </div>
@@ -62,8 +62,8 @@ const ReviewCard = ({ review, className = '' }: ReviewCardProps) => {
                 ))}
             </div>
 
-            {/* Review Text */}
-            <p className="font-geist text-white/70 text-sm sm:text-[15px] leading-relaxed">
+            {/* Review Text - India-tuned: Readable */}
+            <p className="font-geist text-white/60 text-[13px] leading-relaxed">
                 {review.text}
             </p>
         </motion.div>

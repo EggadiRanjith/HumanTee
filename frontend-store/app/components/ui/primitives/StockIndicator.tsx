@@ -25,6 +25,11 @@ export default function StockIndicator({
     size = 'sm',
     className = ''
 }: StockIndicatorProps) {
+    // Only show stock indicator when stock is below 20
+    if (stock >= 20) {
+        return null;
+    }
+
     const stockInfo: StockInfo = useMemo(() => {
         if (stock <= STOCK_THRESHOLDS.LOW) {
             return {
@@ -44,11 +49,11 @@ export default function StockIndicator({
             };
         } else {
             return {
-                level: 'in-stock',
+                level: 'limited',
                 count: stock,
-                label: 'In Stock',
-                dotColor: 'bg-emerald-400/70',
-                textColor: 'text-emerald-400/80',
+                label: 'Limited Stock',
+                dotColor: 'bg-amber-400/70',
+                textColor: 'text-amber-400/80',
             };
         }
     }, [stock]);
@@ -60,14 +65,14 @@ export default function StockIndicator({
     }[size];
 
     return (
-        <div className={`flex items-center gap-2 ${className}`} role="status" aria-live="polite">
+        <div className={`flex items-center gap-2 ${className} animate-pulse`} role="status" aria-live="polite">
             <div className="relative">
                 <div className={`${dotSize} rounded-full ${stockInfo.dotColor} animate-pulse`} />
                 <div className={`absolute inset-0 ${dotSize} rounded-full ${stockInfo.dotColor} animate-ping opacity-75`} />
             </div>
             {showCount && (
-                <span className={`text-xs ${stockInfo.textColor} tracking-wide font-medium`}>
-                    {stockInfo.count} in stock
+                <span className={`text-xs ${stockInfo.textColor} tracking-wide font-medium animate-pulse`}>
+                    Only {stockInfo.count} left!
                 </span>
             )}
         </div>

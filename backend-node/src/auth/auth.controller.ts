@@ -8,8 +8,10 @@ import { LoginAuditService } from './login-audit.service';
 import { UserAuditService } from './user-audit.service';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { StepUpAuthDto } from './dto/step-up-auth.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { JwtAuthGuard } from './guards/jwt.guard';
+import { FlexibleJwtGuard } from './guards/flexible-jwt.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -97,7 +99,7 @@ export class AuthController {
         res.cookie('admin_access_token', result.accessToken, {
             httpOnly: true,  // Prevents XSS attacks
             secure: isProduction,  // HTTPS only in production
-            sameSite: 'strict',  // CSRF protection
+            sameSite: isProduction ? 'strict' : 'lax',  // Lax for dev (different ports)
             maxAge: 15 * 60 * 1000,  // 15 minutes
             path: '/',
         });
@@ -105,7 +107,7 @@ export class AuthController {
         res.cookie('admin_refresh_token', result.refreshToken, {
             httpOnly: true,
             secure: isProduction,
-            sameSite: 'strict',
+            sameSite: isProduction ? 'strict' : 'lax',  // Lax for dev (different ports)
             maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
             path: '/',
         });
@@ -130,7 +132,8 @@ export class AuthController {
     }
 
     /**
-     * Admin Logout - Clears httpOnly cookies
+     * Admin Logout - Clears httpOnly cookies and blacklists token
+     * SECURITY FIX: Instant token revocation via blacklist
      */
     @Post('admin/logout')
     @UseGuards(JwtAuthGuard)
@@ -138,6 +141,12 @@ export class AuthController {
         @Req() req: Request,
         @Res({ passthrough: true }) res: Response,
     ) {
+        // SECURITY FIX: Blacklist the access token immediately
+        const accessToken = req.cookies['admin_access_token'];
+        if (accessToken) {
+            await this.authService.blacklistToken(accessToken);
+        }
+
         // Clear admin cookies
         res.clearCookie('admin_access_token', { path: '/' });
         res.clearCookie('admin_refresh_token', { path: '/' });
@@ -371,7 +380,7 @@ export class AuthController {
         return this.authService.logout(req.user.userId);
     }
 
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(FlexibleJwtGuard)  // Supports both cookie (admin) and header (regular users)
     @Get('me')
     async getProfile(@Req() req: any) {
         return this.authService.getProfile(req.user.userId);
@@ -413,5 +422,43 @@ export class AuthController {
 
 
         return result;
+    }
+
+    /**
+     * Step-Up Authentication - Generate short-lived token for dangerous actions
+     * SECURITY FIX: Implements step-up auth for refunds, deletions, etc.
+     */
+    @Post('admin/step-up')
+    @UseGuards(JwtAuthGuard)
+    @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 attempts per minute
+    async stepUpAuth(
+        @Body() stepUpDto: StepUpAuthDto,
+        @Req() req: any,
+    ) {
+        // Verify OTP
+        const user = await this.authService.findUserByEmail(stepUpDto.email);
+
+        if (!user || user.id !== req.user.userId) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+
+        // Verify OTP (reuse existing OTP verification logic)
+        const isValid = await this.authService.verifyStepUpOtp(
+            stepUpDto.email,
+            stepUpDto.otp,
+        );
+
+        if (!isValid) {
+            throw new UnauthorizedException('Invalid OTP');
+        }
+
+        // Generate short-lived step-up token (5 minutes)
+        const stepUpToken = this.authService.generateStepUpToken(user.id, user.email);
+
+        return {
+            stepUpToken,
+            expiresIn: 300, // 5 minutes
+            message: 'Step-up authentication successful',
+        };
     }
 }

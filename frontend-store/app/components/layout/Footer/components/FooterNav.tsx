@@ -74,7 +74,7 @@ export default function FooterNav({ section, isDesktop }: FooterNavProps) {
                     sm:hidden flex justify-between items-center w-full 
                     text-white text-[12px] tracking-[0.12em] uppercase
                     hover:text-white/80 transition-colors duration-200
-                    py-2 border-b border-white/10
+                    py-3 border-b border-white/10
                     ${FOCUS_RING.subtle}
                 "
                 aria-expanded={isOpen}
@@ -121,17 +121,18 @@ export default function FooterNav({ section, isDesktop }: FooterNavProps) {
                                 <Link
                                     href={link.url}
                                     className="
-                                        block py-2 border-b border-white/10 
-                                        hover:text-white hover:pl-2
-                                        transition-all duration-300
-                                        relative group
-                                    "
+                                    block py-3 border-b border-white/10 
+                                    hover:text-white hover:pl-2
+                                    transition-all duration-300
+                                    relative group
+                                    text-[12px] text-white/60
+                                "
                                 >
                                     {link.name}
                                     <span className="
-                                        absolute bottom-0 left-0 h-[1px] bg-white/30
-                                        w-0 group-hover:w-full transition-all duration-300
-                                    " />
+                                    absolute bottom-0 left-0 h-[1px] bg-white/30
+                                    w-0 group-hover:w-full transition-all duration-300
+                                " />
                                 </Link>
                             </motion.div>
                         ))}

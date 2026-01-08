@@ -50,13 +50,14 @@ export default function ShippingPage() {
             return;
         }
 
-        // Populate shipping data
+        // Populate shipping data - MATCH BACKEND DTO STRUCTURE
         setShippingData({
             fullName: selectedAddress.fullName,
             email: selectedAddress.email,
             phone: selectedAddress.phone,
-            address: `${selectedAddress.houseNumber}, ${selectedAddress.address}${selectedAddress.landmark ? `, ${selectedAddress.landmark}` : ''
-                }`,
+            address: `${selectedAddress.houseNumber}, ${selectedAddress.address}`, // For display
+            addressLine1: `${selectedAddress.houseNumber}, ${selectedAddress.address}`, // For backend
+            addressLine2: selectedAddress.landmark || '', // Optional
             city: selectedAddress.city,
             state: selectedAddress.state,
             postalCode: selectedAddress.postalCode,

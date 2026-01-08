@@ -9,7 +9,7 @@ type Step = "email" | "otp";
 
 export default function AdminLoginPage() {
     const router = useRouter();
-    const { login: authLogin } = useAuth();
+    const { verifyOtp } = useAuth();  // Use verifyOtp from context
 
     const [step, setStep] = useState<Step>("email");
     const [email, setEmail] = useState("");
@@ -47,31 +47,47 @@ export default function AdminLoginPage() {
 
         setLoading(true);
 
-        // Immediately show OTP screen for better UX
-        setStep("otp");
-        setMessage({ type: "success", text: "Sending verification code..." });
-
-        // Send OTP in background
+        // Send OTP and wait for response before navigating
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/send-admin-otp`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/admin/send-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email }),
             });
 
             if (res.ok) {
+                const data = await res.json();
+                // Only navigate to OTP page if request was successful
+                setStep("otp");
                 setMessage({ type: "success", text: "Verification code sent to your email" });
             } else {
-                setMessage({ type: "error", text: "Failed to send code. Please try again." });
+                // Parse error message from backend
+                let errorMessage = "Failed to send code. Please try again.";
+                try {
+                    const errorData = await res.json();
+                    errorMessage = errorData.message || errorMessage;
+                } catch {
+                    // If JSON parsing fails, use default message
+                }
+
+                // Show user-friendly error on current (email) page
+                setMessage({
+                    type: "error",
+                    text: errorMessage
+                });
             }
-        } catch {
-            setMessage({ type: "error", text: "Unable to send code. Please try again." });
+        } catch (error) {
+            // Show user-friendly error on current (email) page
+            setMessage({
+                type: "error",
+                text: "Unable to connect to server. Please check your internet connection and try again."
+            });
         } finally {
             setLoading(false);
         }
     };
 
-    const verifyOtp = async (e: React.FormEvent) => {
+    const handleVerifyOtp = async (e: React.FormEvent) => {
         e.preventDefault();
         setMessage(null);
 
@@ -82,24 +98,19 @@ export default function AdminLoginPage() {
 
         setLoading(true);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify-otp`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, otp }),
-            });
+            // Use AuthContext's verifyOtp function (handles httpOnly cookies)
+            await verifyOtp(email, otp);
 
-            if (!res.ok) throw new Error();
-
-            const data = await res.json();
-            await authLogin(data.accessToken, data.user);
-
-            if (data.user?.role?.toLowerCase() === "admin") {
+            // If successful, redirect to post-login
+            // Small delay to ensure cookies are set
+            setTimeout(() => {
                 router.push("/post-login");
-            } else {
-                throw new Error();
-            }
-        } catch {
-            setMessage({ type: "error", text: "Invalid or expired code" });
+            }, 100);
+        } catch (error) {
+            setMessage({
+                type: "error",
+                text: error instanceof Error ? error.message : "Invalid or expired code"
+            });
         } finally {
             setLoading(false);
         }
@@ -113,12 +124,10 @@ export default function AdminLoginPage() {
                     {/* Header */}
                     <div className="text-center mb-6">
                         <div className="mx-auto mb-4 h-16 w-16 rounded-lg bg-black flex items-center justify-center">
-                            <Image
+                            <img
                                 src={logo}
                                 alt={brandName}
-                                width={48}
-                                height={48}
-                                className="object-contain"
+                                className="w-12 h-12 object-contain"
                             />
                         </div>
 
@@ -161,7 +170,7 @@ export default function AdminLoginPage() {
                             </button>
                         </form>
                     ) : (
-                        <form onSubmit={verifyOtp} className="space-y-4">
+                        <form onSubmit={handleVerifyOtp} className="space-y-4">
                             <input
                                 type="text"
                                 inputMode="numeric"

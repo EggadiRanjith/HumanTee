@@ -59,7 +59,7 @@ export function useDashboardData() {
 
             const totalRevenue = orders.reduce((sum, o) => sum + Number(o.totalAmount), 0);
             const paidAmount = orders
-                .filter((o) => o.payments?.[0]?.status?.toLowerCase() === 'paid')
+                .filter((o) => o.payments?.[0]?.status?.toLowerCase() === 'captured')
                 .reduce((sum, o) => sum + Number(o.totalAmount), 0);
             const pendingPayments = totalRevenue - paidAmount;
 

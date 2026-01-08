@@ -159,31 +159,31 @@ export default function CreateDiscountPage() {
     };
 
     return (
-        <div className="space-y-6 pb-24 lg:pb-6">
-            {/* Header */}
+        <div className="space-y-4 md:space-y-6 pb-24 lg:pb-6">
+            {/* Header - Compact Mobile */}
             <div>
                 <Link
                     href="/admin/discounts"
-                    className="text-sm text-gray-600 hover:text-black mb-3 inline-block"
+                    className="text-xs md:text-sm text-gray-600 hover:text-black mb-2 md:mb-3 inline-block"
                 >
                     ← Back to discounts
                 </Link>
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 md:gap-3">
                     <div>
-                        <h1 className="text-xl sm:text-2xl font-semibold text-black">Create Discount</h1>
-                        <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                        <h1 className="text-lg md:text-xl lg:text-2xl font-semibold text-black">Create Discount</h1>
+                        <p className="text-xs md:text-sm text-gray-600 mt-1">
                             Configure discount rules (Live Connection)
                         </p>
                     </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                 {/* Main Form */}
-                <div className="lg:col-span-2 space-y-6">
-                    {/* Discount Basics */}
-                    <div className="bg-white rounded-lg border border-gray-200 p-6">
-                        <h2 className="text-lg font-semibold text-black mb-4">Discount Basics</h2>
+                <div className="lg:col-span-2 space-y-4 md:space-y-6">
+                    {/* Discount Basics - Compact Mobile */}
+                    <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-4 lg:p-6">
+                        <h2 className="text-base md:text-lg font-semibold text-black mb-3 md:mb-4">Discount Basics</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-900 mb-2">

@@ -31,7 +31,7 @@ interface User {
 export async function getServerUser(): Promise<User | null> {
     try {
         const cookieStore = await cookies();
-        const token = cookieStore.get('auth_token')?.value;
+        const token = cookieStore.get('admin_access_token')?.value;  // Changed from auth_token
 
         if (!token) {
             return null;

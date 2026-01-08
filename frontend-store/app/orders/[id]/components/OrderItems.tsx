@@ -25,11 +25,11 @@ export function OrderItems({ items }: OrderItemsProps) {
                             alt={item.productNameSnapshot}
                         />
                     </Link>
-                    <div className="flex-1">
-                        <Link href={`/product/${item.productId}`} className="hover:underline">
-                            <h4 className="text-white text-xs sm:text-sm tracking-wide">{item.productNameSnapshot}</h4>
+                    <div className="flex-1 min-w-0">
+                        <Link href={`/product/${item.productId}`} className="hover:underline block">
+                            <h4 className="text-white text-xs sm:text-sm tracking-wide truncate">{item.productNameSnapshot}</h4>
                         </Link>
-                        <p className="text-white/60 text-[10px] sm:text-xs mt-1">Size: {item.variantLabelSnapshot}</p>
+                        <p className="text-white/60 text-[10px] sm:text-xs mt-1 truncate">Size: {item.variantLabelSnapshot}</p>
 
                         <p className="text-white/70 text-[10px] sm:text-xs mt-1">
                             ₹{Number(item.unitPrice).toFixed(2)} × {item.quantity}

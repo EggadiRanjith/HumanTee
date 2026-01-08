@@ -84,72 +84,72 @@ export default function TicketsPage() {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-4 md:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 md:gap-4">
                 <div>
-                    <h1 className="text-2xl font-semibold text-black">Support Tickets</h1>
-                    <p className="text-sm text-gray-500 mt-1">Manage and respond to customer requests</p>
+                    <h1 className="text-lg md:text-xl lg:text-2xl font-semibold text-black">Support Tickets</h1>
+                    <p className="text-xs md:text-sm text-gray-500 mt-1">Manage and respond to customer requests</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => refetch()}
-                        className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                        className="p-1.5 md:p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                         title="Refresh"
                     >
-                        <FiClock className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
+                        <FiClock className={`w-4 h-4 md:w-5 md:h-5 ${isLoading ? 'animate-spin' : ''}`} />
                     </button>
                 </div>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <div className="flex items-center gap-3 text-orange-600 mb-1">
-                        <FiMessageSquare className="w-4 h-4" />
-                        <span className="text-xs font-medium uppercase tracking-wider">Open</span>
+            {/* Stats Cards - Compact Mobile */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 md:gap-4">
+                <div className="bg-white p-2.5 md:p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <div className="flex items-center gap-2 md:gap-3 text-orange-600 mb-1">
+                        <FiMessageSquare className="w-3 h-3 md:w-4 md:h-4" />
+                        <span className="text-[10px] md:text-xs font-medium uppercase tracking-wider">Open</span>
                     </div>
-                    <div className="text-2xl font-bold text-black">{stats.open}</div>
+                    <div className="text-xl md:text-2xl font-bold text-black">{stats.open}</div>
                 </div>
-                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <div className="flex items-center gap-3 text-blue-600 mb-1">
-                        <FiClock className="w-4 h-4" />
-                        <span className="text-xs font-medium uppercase tracking-wider">In Progress</span>
+                <div className="bg-white p-2.5 md:p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <div className="flex items-center gap-2 md:gap-3 text-blue-600 mb-1">
+                        <FiClock className="w-3 h-3 md:w-4 md:h-4" />
+                        <span className="text-[10px] md:text-xs font-medium uppercase tracking-wider">In Progress</span>
                     </div>
-                    <div className="text-2xl font-bold text-black">{stats.inProgress}</div>
+                    <div className="text-xl md:text-2xl font-bold text-black">{stats.inProgress}</div>
                 </div>
-                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <div className="flex items-center gap-3 text-purple-600 mb-1">
-                        <FiAlertCircle className="w-4 h-4" />
-                        <span className="text-xs font-medium uppercase tracking-wider">Waiting</span>
+                <div className="bg-white p-2.5 md:p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <div className="flex items-center gap-2 md:gap-3 text-purple-600 mb-1">
+                        <FiAlertCircle className="w-3 h-3 md:w-4 md:h-4" />
+                        <span className="text-[10px] md:text-xs font-medium uppercase tracking-wider">Waiting</span>
                     </div>
-                    <div className="text-2xl font-bold text-black">{stats.waiting}</div>
+                    <div className="text-xl md:text-2xl font-bold text-black">{stats.waiting}</div>
                 </div>
-                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <div className="flex items-center gap-3 text-green-600 mb-1">
-                        <FiCheckCircle className="w-4 h-4" />
-                        <span className="text-xs font-medium uppercase tracking-wider">Resolved</span>
+                <div className="bg-white p-2.5 md:p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <div className="flex items-center gap-2 md:gap-3 text-green-600 mb-1">
+                        <FiCheckCircle className="w-3 h-3 md:w-4 md:h-4" />
+                        <span className="text-[10px] md:text-xs font-medium uppercase tracking-wider">Resolved</span>
                     </div>
-                    <div className="text-2xl font-bold text-black">{stats.resolved}</div>
+                    <div className="text-xl md:text-2xl font-bold text-black">{stats.resolved}</div>
                 </div>
             </div>
 
-            {/* Filters Bar */}
-            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row gap-4">
+            {/* Filters Bar - Compact Mobile */}
+            <div className="bg-white p-2.5 md:p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row gap-2 md:gap-4">
                 <div className="relative flex-1">
-                    <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <FiSearch className="absolute left-2.5 md:left-3 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5 md:w-4 md:h-4" />
                     <input
                         type="text"
                         placeholder="Search by ID, Subject, or Order Number..."
                         value={searchQuery}
                         onChange={(e: any) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
+                        className="w-full pl-8 md:pl-10 pr-3 md:pr-4 py-1.5 md:py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
                     />
                 </div>
                 <div className="flex gap-2">
                     <select
                         value={statusFilter}
                         onChange={(e: any) => setStatusFilter(e.target.value)}
-                        className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-black/5 focus:border-black outline-none cursor-pointer"
+                        className="px-2.5 md:px-3 py-1.5 md:py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-black/5 focus:border-black outline-none cursor-pointer"
                     >
                         <option value="ALL">All Status</option>
                         <option value="OPEN">Open</option>
@@ -161,7 +161,7 @@ export default function TicketsPage() {
                     <select
                         value={priorityFilter}
                         onChange={(e: any) => setPriorityFilter(e.target.value)}
-                        className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-black/5 focus:border-black outline-none cursor-pointer"
+                        className="px-2.5 md:px-3 py-1.5 md:py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-black/5 focus:border-black outline-none cursor-pointer"
                     >
                         <option value="ALL">All Priority</option>
                         <option value="URGENT">Urgent</option>
@@ -252,8 +252,8 @@ export default function TicketsPage() {
                 </div>
             </div>
 
-            {/* Mobile: Cards */}
-            <div className="md:hidden space-y-3">
+            {/* Mobile: Cards - Compact */}
+            <div className="md:hidden space-y-2.5 md:space-y-3">
                 {tickets.map((ticket: any) => (
                     <TicketCard
                         key={ticket.id}
