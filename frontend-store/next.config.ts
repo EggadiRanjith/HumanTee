@@ -1,3 +1,4 @@
+// Force rebuild with NEXT_PUBLIC_API_URL
 import type { NextConfig } from "next";
 
 // Bundle analyzer for performance monitoring
