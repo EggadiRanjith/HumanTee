@@ -342,8 +342,8 @@ export class AnalyticsService {
             // All orders represent a cart created
             uniqueCustomersWithCarts.add(customerId);
 
-            // Checkout started = not in PENDING status
-            if (order.status !== OrderStatus.PENDING) {
+            // Checkout started = not in PENDING_PAYMENT status
+            if (order.status !== OrderStatus.PENDING_PAYMENT) {
                 uniqueCustomersCheckoutStarted.add(customerId);
             }
 
@@ -420,9 +420,9 @@ export class AnalyticsService {
             },
         } as any);
 
-        const pending = allOrders.filter(o => o.status === OrderStatus.PENDING).length;
+        const pending = allOrders.filter(o => o.status === OrderStatus.PENDING_PAYMENT).length;
         const processing = allOrders.filter(o => o.status === OrderStatus.PROCESSING).length;
-        const fulfilled = allOrders.filter(o => o.status === OrderStatus.FULFILLED).length;
+        const fulfilled = allOrders.filter(o => o.status === OrderStatus.DELIVERED).length;
         const cancelled = allOrders.filter(o => o.status === OrderStatus.CANCELLED).length;
         const refunded = allOrders.filter(o => o.status === OrderStatus.REFUNDED).length;
         const total = allOrders.length - cancelled;
@@ -757,7 +757,7 @@ export class AnalyticsService {
             },
         } as any);
 
-        const completedOrders = allOrders.filter(o => o.status !== OrderStatus.CANCELLED && o.status !== OrderStatus.PENDING);
+        const completedOrders = allOrders.filter(o => o.status !== OrderStatus.CANCELLED && o.status !== OrderStatus.PENDING_PAYMENT);
         const returnedOrders = allOrders.filter(o => o.status === OrderStatus.REFUNDED);
         const totalReturns = returnedOrders.length;
         const totalRefunds = returnedOrders.length; // Simplified - same as returns
