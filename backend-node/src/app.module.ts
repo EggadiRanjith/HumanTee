@@ -43,24 +43,48 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
       { name: 'strict', ttl: 60000, limit: 10 },    // 10 req/min for strict endpoints
     ]),
     ScheduleModule.forRoot(),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432'),
-      username: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || 'postgres',
-      database: process.env.DB_DATABASE || 'humantee',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: false, // Phase 1: Migrations only, no auto-sync
-      // Connection pooling for production
-      extra: {
-        max: 20,                      // Maximum pool size
-        min: 5,                       // Minimum pool size
-        idleTimeoutMillis: 30000,     // Close idle connections after 30s
-        connectionTimeoutMillis: 2000, // Fail fast if can't connect in 2s
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const databaseUrl = configService.get('DATABASE_URL');
+
+        if (databaseUrl) {
+          // Production: Use DATABASE_URL (Neon)
+          return {
+            type: 'postgres',
+            url: databaseUrl,
+            ssl: { rejectUnauthorized: false },
+            entities: [__dirname + '/**/*.entity{.ts,.js}'],
+            synchronize: true, // Auto-create tables on first deploy
+            logging: false,
+            extra: {
+              max: 20,
+              min: 5,
+              idleTimeoutMillis: 30000,
+              connectionTimeoutMillis: 2000,
+            },
+          };
+        }
+
+        // Development: Use individual variables
+        return {
+          type: 'postgres',
+          host: configService.get('DB_HOST', 'localhost'),
+          port: parseInt(configService.get('DB_PORT', '5432')),
+          username: configService.get('DB_USERNAME', 'postgres'),
+          password: configService.get('DB_PASSWORD', 'postgres'),
+          database: configService.get('DB_DATABASE', 'humantee'),
+          entities: [__dirname + '/**/*.entity{.ts,.js}'],
+          synchronize: true,
+          logging: false,
+          extra: {
+            max: 20,
+            min: 5,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 2000,
+          },
+        };
       },
-      // Logging
-      logging: false, // Disabled SQL logging - enable for debugging if needed
     }),
     AuthModule,
     CartModule,
