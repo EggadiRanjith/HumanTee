@@ -24,8 +24,6 @@ const getDatabaseConfig = () => {
 export const AppDataSource = new DataSource({
     ...getDatabaseConfig(),
     entities: [__dirname + '/**/*.entity{.ts,.js}'],
-    migrations: [__dirname + '/migrations/*{.ts,.js}'],
-    migrationsTableName: 'migrations',
-    synchronize: false,
+    synchronize: true, // Auto-create tables on first deploy
     logging: true,
 });
