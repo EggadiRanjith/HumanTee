@@ -11,6 +11,10 @@ export const metadata: Metadata = {
     description: "We're making things even better. Check back soon.",
 };
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function MaintenancePage() {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
