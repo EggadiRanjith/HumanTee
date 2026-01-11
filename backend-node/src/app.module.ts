@@ -55,7 +55,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
             url: databaseUrl,
             ssl: { rejectUnauthorized: false },
             entities: [__dirname + '/**/*.entity{.ts,.js}'],
-            synchronize: true, // Auto-create tables on first deploy
+            synchronize: false, // Disabled - will use SQL script instead
             logging: false,
             extra: {
               max: 20,
