@@ -6,10 +6,7 @@
 
 // Dynamic API URL helper
 const getApiUrl = () => {
-    if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    const hostname = window.location.hostname;
-    if (hostname !== 'localhost' && hostname !== '127.0.0.1') return `http://${hostname}:3001`;
-    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    return process.env.NEXT_PUBLIC_API_URL || 'https://humantee.onrender.com';
 };
 
 export async function logout(): Promise<void> {

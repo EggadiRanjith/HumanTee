@@ -8,21 +8,7 @@ import { configureRetry } from './api/retry-config';
 
 // Dynamic API URL - works on both laptop and phone
 const getApiBaseUrl = () => {
-    // Server-side: use env variable
-    if (typeof window === 'undefined') {
-        return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    }
-
-    // Client-side: detect if accessing via network IP
-    const hostname = window.location.hostname;
-
-    // If accessing via network IP (phone), use same IP for backend
-    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
-        return `http://${hostname}:3001`;
-    }
-
-    // Otherwise use localhost (laptop)
-    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    return process.env.NEXT_PUBLIC_API_URL || 'https://humantee.onrender.com';
 };
 
 const API_BASE_URL = getApiBaseUrl();

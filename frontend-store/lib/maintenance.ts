@@ -25,7 +25,7 @@ export async function isMaintenanceModeEnabled(): Promise<boolean> {
 
     // Fetch fresh status from API
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://humantee.onrender.com';
         const response = await fetch(`${apiUrl}/public-settings/maintenance`, {
             cache: 'no-store',
             next: { revalidate: 0 },
