@@ -21,7 +21,7 @@ export class UploadController {
     @Post('image')
     @UseInterceptors(FileInterceptor('file'))
     async uploadImage(
-        @UploadedFile() file: Express.Multer.File,
+        @UploadedFile() file: any,
     ): Promise<{ url: string; publicId: string }> {
         this.logger.log('Upload request received', {
             hasFile: !!file,
@@ -67,7 +67,7 @@ export class UploadController {
     @Post('video')
     @UseInterceptors(FileInterceptor('file'))
     async uploadVideo(
-        @UploadedFile() file: Express.Multer.File,
+        @UploadedFile() file: any,
     ): Promise<{ url: string; publicId: string }> {
         this.logger.log('Video upload request received', {
             hasFile: !!file,
