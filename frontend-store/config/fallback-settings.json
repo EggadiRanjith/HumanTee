@@ -102,5 +102,35 @@
             "limit": 8,
             "showViewAll": true
         }
+    },
+    "shop": {
+        "categories": [
+            "All",
+            "Men",
+            "Women",
+            "Unisex"
+        ],
+        "collections": [
+            "New Arrivals",
+            "Best Sellers",
+            "Limited Edition"
+        ],
+        "items_per_page": 12,
+        "default_sort": "newest",
+        "show_filters": true,
+        "sort_options": [
+            {
+                "value": "newest",
+                "label": "Newest First"
+            },
+            {
+                "value": "price_asc",
+                "label": "Price: Low to High"
+            },
+            {
+                "value": "price_desc",
+                "label": "Price: High to Low"
+            }
+        ]
     }
 }

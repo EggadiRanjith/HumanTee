@@ -66,7 +66,11 @@ export default function AccountPage() {
                     {/* Profile Warning */}
                     {!profile.profileComplete && (
                         <div className="mb-6">
-                            <ProfileWarning />
+                            <ProfileWarning
+                                profileComplete={profile.profileComplete ?? false}
+                                missingName={!profile.fullName}
+                                missingPhone={!profile.phone}
+                            />
                         </div>
                     )}
 

@@ -26,7 +26,13 @@ function Big500() {
 /* ------------------------------------------------------------
    Main Page — Cinematic Black & White System Error
 ------------------------------------------------------------ */
-export default function ServerError() {
+export default function ServerError({
+  error,
+  reset
+}: {
+  error?: Error & { digest?: string };
+  reset?: () => void;
+} = {}) {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);

@@ -77,7 +77,7 @@ export default function SuccessPage() {
                                 onComplete={() => {
                                     splashTimeoutRef.current = setTimeout(() => {
                                         setShowSplash(false);
-                                    }, 500);
+                                    }, 500) as unknown as NodeJS.Timeout;
                                 }}
                                 className="w-[200px] h-[200px] sm:w-[250px] sm:h-[250px] md:w-[300px] md:h-[300px]"
                             />

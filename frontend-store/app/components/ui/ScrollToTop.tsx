@@ -19,9 +19,9 @@ export default function ScrollToTop() {
 
         // Store timeout IDs for cleanup
         const timeoutIds: NodeJS.Timeout[] = [];
-        timeoutIds.push(setTimeout(scrollToTop, 10));
-        timeoutIds.push(setTimeout(scrollToTop, 50));
-        timeoutIds.push(setTimeout(scrollToTop, 100));
+        timeoutIds.push(setTimeout(scrollToTop, 10) as unknown as NodeJS.Timeout);
+        timeoutIds.push(setTimeout(scrollToTop, 50) as unknown as NodeJS.Timeout);
+        timeoutIds.push(setTimeout(scrollToTop, 100) as unknown as NodeJS.Timeout);
 
         // Clean up: clear all timeouts on unmount
         return () => {
