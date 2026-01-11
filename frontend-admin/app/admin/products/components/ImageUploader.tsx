@@ -1,13 +1,7 @@
-/**
- * Image Uploader Component
- * Multi-image upload with drag-drop, reordering, and preview
- */
-
-'use client';
-
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ProductImage } from '@/types/product-form.types';
 import ImagePreviewCard from './ImagePreviewCard';
+import { uploadImageToCloudinary } from '@/lib/api/uploadToCloudinary';
 
 interface ImageUploaderProps {
     images: ProductImage[];
@@ -21,37 +15,91 @@ export default function ImageUploader({
     maxImages = 10,
 }: ImageUploaderProps) {
     const [isDragging, setIsDragging] = useState(false);
+    const [localImages, setLocalImages] = useState<ProductImage[]>(images);
+
+    // Sync local state with prop changes
+    useEffect(() => {
+        setLocalImages(images);
+    }, [images]);
 
     const handleFileSelect = useCallback(
-        (files: FileList | null) => {
+        async (files: FileList | null) => {
             if (!files) return;
 
-            const newImages: ProductImage[] = [];
             const remainingSlots = maxImages - images.length;
+            const filesToProcess = Array.from(files).slice(0, remainingSlots);
 
-            Array.from(files)
-                .slice(0, remainingSlots)
-                .forEach((file, index) => {
+            // Create preview images immediately (base64)
+            const previewPromises = filesToProcess.map((file, index) => {
+                return new Promise<ProductImage>((resolve) => {
                     if (file.type.startsWith('image/')) {
                         const reader = new FileReader();
                         reader.onload = (e: any) => {
-                            const newImage: ProductImage = {
+                            resolve({
                                 id: `temp-${Date.now()}-${index}`,
-                                url: e.target?.result as string,
+                                url: e.target?.result as string, // Base64 for preview
                                 file,
                                 altText: file.name.replace(/\.[^/.]+$/, ''),
                                 isPrimary: images.length === 0 && index === 0,
                                 order: images.length + index,
-                            };
-                            newImages.push(newImage);
-
-                            if (newImages.length === Math.min(files.length, remainingSlots)) {
-                                onChange([...images, ...newImages]);
-                            }
+                                uploadProgress: 0, // Start upload
+                            });
                         };
                         reader.readAsDataURL(file);
                     }
                 });
+            });
+
+            const newImages = await Promise.all(previewPromises);
+
+            // Add images with preview immediately (for UX)
+            onChange([...images, ...newImages]);
+
+            // Upload to Cloudinary in background
+            newImages.forEach(async (image, index) => {
+                try {
+                    const result = await uploadImageToCloudinary(image.file!, (progress) => {
+                        // Update progress in local state
+                        setLocalImages(prev => {
+                            const updated = prev.map((img) =>
+                                img.id === image.id
+                                    ? { ...img, uploadProgress: progress.percentage }
+                                    : img
+                            );
+                            onChange(updated);
+                            return updated;
+                        });
+                    });
+
+                    // Update with Cloudinary URL
+                    onChange((prevImages) =>
+                        prevImages.map((img) =>
+                            img.id === image.id
+                                ? {
+                                    ...img,
+                                    cloudinaryUrl: result.url,
+                                    cloudinaryPublicId: result.publicId,
+                                    uploadProgress: 100,
+                                    uploadError: undefined,
+                                }
+                                : img
+                        )
+                    );
+                } catch (error: any) {
+                    // Mark upload as failed
+                    onChange((prevImages) =>
+                        prevImages.map((img) =>
+                            img.id === image.id
+                                ? {
+                                    ...img,
+                                    uploadProgress: undefined,
+                                    uploadError: error.message || 'Upload failed',
+                                }
+                                : img
+                        )
+                    );
+                }
+            });
         },
         [images, maxImages, onChange]
     );
@@ -166,9 +214,9 @@ export default function ImageUploader({
             )}
 
             {/* Image Grid */}
-            {images.length > 0 && (
+            {localImages.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {images.map((image, index) => (
+                    {localImages.map((image, index) => (
                         <ImagePreviewCard
                             key={image.id}
                             image={image}
@@ -177,13 +225,13 @@ export default function ImageUploader({
                             onSetPrimary={handleSetPrimary}
                             onUpdateAltText={handleUpdateAltText}
                             onReorder={handleReorder}
-                            totalImages={images.length}
+                            totalImages={localImages.length}
                         />
                     ))}
                 </div>
             )}
 
-            {images.length === 0 && (
+            {localImages.length === 0 && (
                 <p className="text-sm text-gray-500 text-center py-4">
                     No images uploaded yet
                 </p>

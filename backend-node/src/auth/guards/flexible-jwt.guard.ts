@@ -18,17 +18,21 @@ export class FlexibleJwtGuard implements CanActivate {
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest<Request>();
 
-        // Try to get token from cookie first (admin users)
-        let token = request.cookies['admin_access_token'];
-        let source = 'cookie';
+        let token: string | undefined;
+        let source = 'none';
 
-        // If no cookie, try Authorization header (regular users)
+        // PRIORITY 1: Try Authorization header FIRST (regular users)
+        // This prevents shared cookie issues on same network
+        const authHeader = request.headers.authorization;
+        if (authHeader?.startsWith('Bearer ')) {
+            token = authHeader.substring(7);
+            source = 'header';
+        }
+
+        // PRIORITY 2: Fall back to cookie (admin users only)
         if (!token) {
-            const authHeader = request.headers.authorization;
-            if (authHeader?.startsWith('Bearer ')) {
-                token = authHeader.substring(7);
-                source = 'header';
-            }
+            token = request.cookies['admin_access_token'];
+            source = 'cookie';
         }
 
         if (!token) {
@@ -53,8 +57,13 @@ export class FlexibleJwtGuard implements CanActivate {
                 throw new UnauthorizedException('User access has been revoked');
             }
 
-            // Attach user to request
-            request['user'] = payload;
+            // Attach user to request with proper field mapping
+            // Map 'sub' to 'userId' for controller compatibility
+            request['user'] = {
+                userId: payload.sub,
+                email: payload.email,
+                role: payload.role,
+            };
 
             return true;
         } catch (error) {

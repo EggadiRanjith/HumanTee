@@ -8,30 +8,35 @@ import * as Sentry from '@sentry/nextjs';
 
 export async function POST(request: NextRequest) {
     try {
-        const report = await request.json();
+        const body = await request.json();
 
-        // Log CSP violations
-        console.error('[CSP Violation]', {
-            documentUri: report['document-uri'],
-            violatedDirective: report['violated-directive'],
-            blockedUri: report['blocked-uri'],
-            sourceFile: report['source-file'],
-            lineNumber: report['line-number'],
-        });
+        // Browser sends CSP reports in a nested 'csp-report' object
+        const report = body['csp-report'] || body;
 
-        // Send to Sentry in production
-        if (process.env.NODE_ENV === 'production') {
-            Sentry.captureMessage('CSP Violation', {
-                level: 'warning',
-                extra: {
-                    documentUri: report['document-uri'],
-                    violatedDirective: report['violated-directive'],
-                    blockedUri: report['blocked-uri'],
-                    sourceFile: report['source-file'],
-                    lineNumber: report['line-number'],
-                    columnNumber: report['column-number']
-                }
-            });
+        // Extract violation details
+        const violation = {
+            documentUri: report['document-uri'] || report.documentUri,
+            violatedDirective: report['violated-directive'] || report.violatedDirective,
+            blockedUri: report['blocked-uri'] || report.blockedUri,
+            sourceFile: report['source-file'] || report.sourceFile,
+            lineNumber: report['line-number'] || report.lineNumber,
+            columnNumber: report['column-number'] || report.columnNumber,
+        };
+
+        // Only log if we have actual violation data
+        if (violation.violatedDirective || violation.blockedUri) {
+            console.error('[CSP Violation]', violation);
+
+            // Send to Sentry in production
+            if (process.env.NODE_ENV === 'production') {
+                Sentry.captureMessage('CSP Violation', {
+                    level: 'warning',
+                    extra: violation
+                });
+            }
+        } else {
+            // Log the raw report for debugging
+            console.log('[CSP Report - Empty or Malformed]', JSON.stringify(body, null, 2));
         }
 
         return NextResponse.json({ received: true }, { status: 200 });

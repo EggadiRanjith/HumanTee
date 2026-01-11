@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useEffect, useState } from "react";
-import { FiCheck, FiStar, FiChevronDown } from "react-icons/fi";
+import { FiCheck, FiStar, FiChevronDown, FiEdit2 } from "react-icons/fi";
 
 interface ShippingAddress {
     id: string;
@@ -23,6 +23,7 @@ interface AddressSelectorProps {
     selectedAddressId: string | null;
     onSelectAddress: (id: string) => void;
     onAddNewAddress: () => void;
+    onEditAddress: (address: ShippingAddress) => void;
     isLoading: boolean;
 }
 
@@ -32,6 +33,7 @@ export default memo(function AddressSelector({
     selectedAddressId,
     onSelectAddress,
     onAddNewAddress,
+    onEditAddress,
     isLoading,
 }: AddressSelectorProps) {
     // Pagination state - MUST be before any early returns
@@ -105,11 +107,25 @@ export default memo(function AddressSelector({
                                 {addr.city}, {addr.state} {addr.postalCode}, {addr.country}
                             </p>
                         </div>
-                        {selectedAddressId === addr.id && (
-                            <div className="ml-4 w-6 h-6 rounded-full bg-white flex items-center justify-center flex-shrink-0">
-                                <FiCheck className="w-4 h-4 text-black" />
-                            </div>
-                        )}
+                        <div className="ml-4 flex items-center gap-2 flex-shrink-0">
+                            {/* Edit Button */}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onEditAddress(addr);
+                                }}
+                                className="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all group"
+                                aria-label="Edit address"
+                            >
+                                <FiEdit2 className="w-4 h-4 text-white/60 group-hover:text-white transition-colors" />
+                            </button>
+                            {/* Selection Checkmark */}
+                            {selectedAddressId === addr.id && (
+                                <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
+                                    <FiCheck className="w-4 h-4 text-black" />
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             ))}

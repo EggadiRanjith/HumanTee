@@ -5,11 +5,15 @@
 
 export interface ProductImage {
     id: string;
-    url: string;
+    url: string; // Base64 for preview OR Cloudinary URL for saved images
     file?: File;
     altText: string;
     isPrimary: boolean;
     order: number;
+    cloudinaryUrl?: string; // Cloudinary URL (used for backend submission)
+    cloudinaryPublicId?: string; // For future deletion support
+    uploadProgress?: number; // Upload progress percentage
+    uploadError?: string; // Upload error message
 }
 
 export interface ProductVariant {

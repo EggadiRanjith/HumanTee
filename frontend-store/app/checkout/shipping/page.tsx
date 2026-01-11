@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
@@ -39,6 +39,9 @@ export default function ShippingPage() {
         saveAddress,
     } = useShippingData(user?.id);
 
+    // Track which address is being edited
+    const [editingAddress, setEditingAddress] = useState<any | null>(null);
+
     // Optional redirect to login has been removed for guest checkout support
 
     const handleContinueToPayment = () => {
@@ -71,6 +74,16 @@ export default function ShippingPage() {
     const handleBackToCart = () => {
         setLoading(true);
         router.push("/cart");
+    };
+
+    const handleEditAddress = (address: any) => {
+        setEditingAddress(address);
+        openAddressModal();
+    };
+
+    const handleCloseModal = () => {
+        setEditingAddress(null);
+        closeAddressModal();
     };
 
     // Empty cart state
@@ -116,7 +129,11 @@ export default function ShippingPage() {
                                     addresses={addresses}
                                     selectedAddressId={selectedAddressId}
                                     onSelectAddress={setSelectedAddressId}
-                                    onAddNewAddress={openAddressModal}
+                                    onAddNewAddress={() => {
+                                        setEditingAddress(null);
+                                        openAddressModal();
+                                    }}
+                                    onEditAddress={handleEditAddress}
                                     isLoading={isLoadingAddresses}
                                 />
 
@@ -145,17 +162,20 @@ export default function ShippingPage() {
             {showAddressModal && (
                 <AddressModal
                     isOpen={showAddressModal}
-                    onClose={closeAddressModal}
+                    onClose={handleCloseModal}
                     onSave={async (data) => {
                         // Pass data directly to saveAddress to avoid async state issues
                         await saveAddress(data);
+                        setEditingAddress(null);
                     }}
-                    editingAddress={null}
-                    defaultFormData={{
-                        fullName: (user as any)?.fullName || '',
-                        phone: (user as any)?.phone || '',
-                        email: user?.email || '',
-                    }}
+                    editingAddress={editingAddress}
+                    defaultFormData={
+                        editingAddress || {
+                            fullName: (user as any)?.fullName || '',
+                            phone: (user as any)?.phone || '',
+                            email: user?.email || '',
+                        }
+                    }
                 />
             )}
         </div>

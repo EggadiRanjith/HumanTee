@@ -135,6 +135,7 @@ export function usePaymentFlow() {
                     try {
                         // Confirm order with payment details
                         const confirmResponse = await apiClient.post('/orders/confirm', {
+                            idempotencyKey: idempotencyKey.current, // CRITICAL: Prevent duplicate orders
                             razorpayOrderId: response.razorpay_order_id,
                             razorpayPaymentId: response.razorpay_payment_id,
                             razorpaySignature: response.razorpay_signature,
@@ -206,6 +207,13 @@ export function usePaymentFlow() {
             let errorMessage = '';
             if (err.isTimeout) {
                 errorMessage = 'The request took too long. This might be due to a slow internet connection. Please check your connection and try again.';
+            } else if (err.response?.status === 409) {
+                // CRITICAL: Stock conflict - item sold out during checkout
+                errorMessage = err.response?.data?.message || 'Some items are no longer available.';
+
+                // Refresh cart to show updated stock
+                // Note: Cart will auto-refresh on next page load, but we could also call a refresh method here
+                errorMessage += '\n\nYour cart will be updated. Please review and try again.';
             } else if (err.response?.status === 400) {
                 errorMessage = err.response?.data?.message || 'Please check your order details and try again.';
             } else if (err.response?.status === 402) {
@@ -216,12 +224,17 @@ export function usePaymentFlow() {
                 errorMessage = 'Unable to create order. Please try again.';
             }
 
-            // Add error ID to message for support debugging
-            setError(
-                `${errorMessage}\n\n` +
-                `Error ID: ${errorId}\n\n` +
-                `If this persists, contact support with this error ID.`
-            );
+            // Add error ID to message for support debugging (except for stock conflicts)
+            if (err.response?.status !== 409) {
+                setError(
+                    `${errorMessage}\n\n` +
+                    `Error ID: ${errorId}\n\n` +
+                    `If this persists, contact support with this error ID.`
+                );
+            } else {
+                // Stock conflict - no error ID needed, just show the message
+                setError(errorMessage);
+            }
 
             // Clear locks on error so user can retry
             setIsProcessing(false);

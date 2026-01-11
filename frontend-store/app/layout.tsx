@@ -78,7 +78,7 @@ export const metadata: Metadata = {
     siteName: "HumanTee",
     images: [
       {
-        url: "/images/banner1.png",
+        url: "/images/banner1.webp",
         width: 1200,
         height: 630,
         alt: "HumanTee Premium Collection"
@@ -89,7 +89,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "HumanTee - Premium Handcrafted T-Shirts",
     description: "Luxury fashion since 1931. Handcrafted with precision.",
-    images: ["/images/banner1.png"],
+    images: ["/images/banner1.webp"],
   },
   robots: {
     index: true,
@@ -107,7 +107,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 5,
+  maximumScale: 1, // Prevent accidental zoom for better mobile UX
   viewportFit: "cover",
 };
 

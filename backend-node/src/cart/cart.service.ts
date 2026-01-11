@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Cart, CartItem, ProductVariant, Product } from '../entities';
 import { CartStatus } from '../entities/cart.entity';
 import { ProductStatus } from '../products/enums/product-status.enum';
@@ -90,6 +90,7 @@ export class CartService {
 
     /**
      * Merge guest cart into user's backend cart (Phase 5: Re-validate everything)
+     * OPTIMIZED: Batch variant lookups to reduce queries from 7→2
      */
     async mergeGuestCart(
         userId: string,
@@ -97,6 +98,23 @@ export class CartService {
     ): Promise<{ cart: Cart; droppedItems: any[] }> {
         const cart = await this.getOrCreateActiveCart(userId);
         const droppedItems: Array<{ variantId: string; reason: string }> = [];
+
+        // OPTIMIZATION: Batch fetch all variants in single query
+        const variantIds = mergeCartDto.items
+            .map(item => item.variantId)
+            .filter(Boolean);
+
+        if (variantIds.length === 0) {
+            return { cart: await this.getActiveCart(userId), droppedItems };
+        }
+
+        const variants = await this.variantRepo.find({
+            where: { id: In(variantIds) },
+            relations: ['product'],
+        });
+
+        // Create variant lookup map
+        const variantMap = new Map(variants.map(v => [v.id, v]));
 
         for (const guestItem of mergeCartDto.items) {
             try {
@@ -109,13 +127,10 @@ export class CartService {
                     continue;
                 }
 
-                // 1. Fetch variant with product (CORRECTED: fetch once)
-                const variant = await this.variantRepo.findOne({
-                    where: { id: guestItem.variantId },
-                    relations: ['product'],
-                });
+                // Fetch variant from map (no DB query)
+                const variant = variantMap.get(guestItem.variantId);
 
-                // 2. Validate variant exists and is active
+                // Validate variant exists and is active
                 if (!variant || !variant.is_active) {
                     droppedItems.push({
                         variantId: guestItem.variantId,
@@ -124,7 +139,7 @@ export class CartService {
                     continue;
                 }
 
-                // 3. Validate product is ACTIVE
+                // Validate product is ACTIVE
                 if (variant.product.status !== ProductStatus.ACTIVE) {
                     droppedItems.push({
                         variantId: guestItem.variantId,
@@ -133,12 +148,12 @@ export class CartService {
                     continue;
                 }
 
-                // 4. Find existing item
+                // Find existing item
                 const existingItem = cart.items.find(
                     (item) => item.variant_id === guestItem.variantId
                 );
 
-                // 5. Validate stock (CORRECTED: pass variant object)
+                // Validate stock
                 try {
                     this.assertStockAvailable(
                         variant,
@@ -153,7 +168,7 @@ export class CartService {
                     continue;
                 }
 
-                // 6. Merge or create
+                // Merge or create
                 if (existingItem) {
                     existingItem.quantity += guestItem.quantity;
                     await this.cartItemRepository.save(existingItem);

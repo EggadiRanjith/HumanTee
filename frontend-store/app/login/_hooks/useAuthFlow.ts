@@ -1,5 +1,5 @@
 import { useState, FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { logError } from "@/lib/logger";
 
@@ -7,6 +7,7 @@ type AuthStep = 'email' | 'otp';
 
 export function useAuthFlow() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { login: authLogin } = useAuth();
 
     const [step, setStep] = useState<AuthStep>('email');
@@ -84,13 +85,15 @@ export function useAuthFlow() {
                 throw new Error('Invalid OTP');
             }
 
-            // Phase 1: Extract batched data (user + cart + addresses)
+            // OPTIMIZED: Backend returns profile + addresses in login response
             const data = await response.json();
-            await authLogin(data.accessToken, data.user, data.cart, data.addresses);
+            await authLogin(data.accessToken, data.user, null, data.addresses);
 
             setSuccess("Login successful! Redirecting...");
             setTimeout(() => {
-                router.push('/');
+                // Redirect to the URL specified in query params, or homepage
+                const redirectUrl = searchParams.get('redirect') || '/';
+                router.push(redirectUrl);
             }, 1000);
         } catch (err) {
             setError("Invalid OTP. Please try again.");
@@ -119,11 +122,13 @@ export function useAuthFlow() {
                 throw new Error(errorData.message || 'Google login failed');
             }
 
-            // Phase 1: Extract batched data (user + cart + addresses)
+            // OPTIMIZED: Backend returns profile + addresses in login response
             const data = await response.json();
-            await authLogin(data.accessToken, data.user, data.cart, data.addresses);
+            await authLogin(data.accessToken, data.user, null, data.addresses);
 
-            router.push('/');
+            // Redirect to the URL specified in query params, or homepage
+            const redirectUrl = searchParams.get('redirect') || '/';
+            router.push(redirectUrl);
         } catch (err: any) {
             logError(err, 'Google login error');
             setGoogleError(err.message || "Google login failed. Please try again.");

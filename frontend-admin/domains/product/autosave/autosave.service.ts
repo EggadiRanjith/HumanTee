@@ -110,7 +110,7 @@ export const sanitizeProductDataForAPI = (data: ProductFormData): any => {
         // Sanitize images - remove frontend metadata and map to backend schema
         images: data.images.map((img, index) => ({
             url: img.url,
-            order: img.position ?? index,
+            order: img.order ?? index,
             isPrimary: index === 0, // First image is primary
         })),
         // Sanitize variants - remove frontend IDs and metadata
@@ -138,8 +138,13 @@ export const markAllDomainsClean = (): void => {
 export const saveDraftToLocalStorage = (userId: string): void => {
     const data = aggregateProductData();
 
+    // Generate UUID compatible with older browsers
+    const generateId = () => {
+        return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    };
+
     const draft: ProductDraft = {
-        id: crypto.randomUUID(),
+        id: generateId(),
         productId: undefined,
         userId,
         schemaVersion: SCHEMA_VERSION,

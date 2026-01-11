@@ -61,7 +61,7 @@ export function CartItem({ item, index, onUpdateQuantity, onRemove }: CartItemPr
                 {/* Image */}
                 <div className="relative w-16 h-20 sm:w-20 sm:h-24 md:w-24 md:h-28 lg:w-28 lg:h-32 rounded-lg overflow-hidden border border-white/10 flex-shrink-0">
                     <Image
-                        src={item.image || '/images/placeholder.jpg'}
+                        src={item.image || '/images/placeholder.webp'}
                         alt={item.title}
                         fill
                         sizes="(max-width: 640px) 64px, (max-width: 768px) 80px, (max-width: 1024px) 96px, 112px"

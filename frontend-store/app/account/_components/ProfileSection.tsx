@@ -41,17 +41,27 @@ export default memo(function ProfileSection({
     const [saveError, setSaveError] = useState('');
     const [saveSuccess, setSaveSuccess] = useState(false);
 
-    const handleEditClick = () => {
+    // Initialize form values when component mounts or profile data changes
+    // Use stringified values to ensure stable dependency array size
+    const profileKey = `${profile.fullName || ''}-${profile.phone || ''}`;
+
+    useEffect(() => {
+        console.log('🔍 Profile data:', { fullName: profile.fullName, phone: profile.phone });
         setEditedName(profile.fullName || '');
-        // Parse existing phone number
         if (profile.phone) {
             const parsed = parsePhoneNumber(profile.phone);
+            console.log('📞 Parsed phone:', parsed);
             setEditedCountryCode(parsed.countryCode);
             setEditedPhone(parsed.phoneNumber);
+            console.log('✅ Set phone state:', { countryCode: parsed.countryCode, phoneNumber: parsed.phoneNumber });
         } else {
             setEditedCountryCode('+91');
             setEditedPhone('');
         }
+    }, [profileKey, profile.fullName, profile.phone]);
+
+    const handleEditClick = () => {
+        // Values are already set by useEffect, just enable editing
         setIsEditing(true);
         setPhoneError('');
         setSaveError('');
@@ -60,8 +70,16 @@ export default memo(function ProfileSection({
 
     const handleCancelEdit = () => {
         setIsEditing(false);
-        setEditedName('');
-        setEditedPhone('');
+        // Reset to original values
+        setEditedName(profile.fullName || '');
+        if (profile.phone) {
+            const parsed = parsePhoneNumber(profile.phone);
+            setEditedCountryCode(parsed.countryCode);
+            setEditedPhone(parsed.phoneNumber);
+        } else {
+            setEditedCountryCode('+91');
+            setEditedPhone('');
+        }
         setPhoneError('');
         setSaveError('');
         setSaveSuccess(false);

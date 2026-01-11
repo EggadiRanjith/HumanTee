@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLoading } from "@/app/contexts/LoadingContext";
+import { useAuth } from "@/app/contexts/AuthContext";
 import { CartItem, CartSummary } from "@/app/components/ui/cart";
 import { GradientOverlay } from "@/app/components/ui/layout";
 import { EmptyCart } from "@/app/components/ui/EmptyState";
@@ -25,6 +26,7 @@ const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 export default function CartPage() {
     const router = useRouter();
     const { setLoading } = useLoading();
+    const { isAuthenticated } = useAuth();
 
     // Cart operations hook (memoized)
     const {
@@ -58,7 +60,13 @@ export default function CartPage() {
 
     const handleCheckout = () => {
         setLoading(true);
-        router.push("/checkout");
+
+        if (!isAuthenticated) {
+            // Redirect to login with return URL
+            router.push('/login?redirect=/checkout');
+        } else {
+            router.push("/checkout");
+        }
     };
 
     // Intro Animation View - Overlay on top of content

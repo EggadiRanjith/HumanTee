@@ -1,64 +1,38 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { logError } from '@/lib/logger'; // Phase 3: useCallback
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FiLogOut, FiLoader } from "react-icons/fi";
+import { FiUser, FiMapPin, FiPackage, FiCreditCard, FiLogOut, FiLoader } from "react-icons/fi";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { GradientOverlay } from "@/app/components/ui/layout";
-import { InlineError } from "@/app/components/ui/errors";
 import { useProfileData } from "./_hooks/useProfileData";
-import ProfileSection from "./_components/ProfileSection";
-import AddressesSection from "./_components/AddressesSection";
+import AccountCard from "./_components/AccountCard";
+import AccountHeader from "./_components/AccountHeader";
 import ProfileWarning from "./_components/ProfileWarning";
 
 export default function AccountPage() {
     const { user, isLoading: authLoading, logout, isAuthenticated } = useAuth();
     const router = useRouter();
-    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const {
         profile,
         isLoadingProfile,
         profileError,
-        shippingAddresses,
-        isLoadingAddresses,
-        addressesError,
-        updateProfile,
-        updateAddresses,
-        retryProfile,
-        retryAddresses,
     } = useProfileData(user?.id, user?.email, user?.role);
 
     // Redirect if not authenticated
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
-            router.push('/login');
+            router.push('/login?redirect=/account');
         }
     }, [authLoading, isAuthenticated, router]);
 
     const handleLogout = async () => {
-        setIsLoggingOut(true);
         try {
             await logout();
         } catch (error) {
-            logError(error, 'Logout failed');
-            setIsLoggingOut(false);
+            console.error('Logout failed:', error);
         }
-    };
-
-    const getInitials = () => {
-        if (!profile) return 'U';
-        if (profile.fullName) {
-            const names = profile.fullName.split(' ');
-            if (names.length >= 2) {
-                return (
-                    names[0].charAt(0) + names[names.length - 1].charAt(0)
-                ).toUpperCase();
-            }
-            return names[0].charAt(0).toUpperCase();
-        }
-        return profile.email.charAt(0).toUpperCase();
     };
 
     // Loading state
@@ -73,27 +47,6 @@ export default function AccountPage() {
         );
     }
 
-    // Error state - profile fetch failed
-    if (profileError) {
-        const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
-
-        return (
-            <div className="min-h-screen brand-bg pt-[var(--header-height)] flex items-center justify-center px-4">
-                <InlineError
-                    title="Unable to load account"
-                    message={
-                        isOffline
-                            ? "You're offline. Check your connection."
-                            : "Please try again."
-                    }
-                    actionLabel="Retry"
-                    onAction={retryProfile}
-                    className="max-w-md"
-                />
-            </div>
-        );
-    }
-
     if (!profile) {
         return null;
     }
@@ -103,71 +56,62 @@ export default function AccountPage() {
             <GradientOverlay variant="violet" />
 
             <div className="relative max-w-screen-xl mx-auto px-3 sm:px-4 md:px-6 lg:px-10">
-                <div className="py-4 sm:py-6 md:py-8 lg:py-12">
+                <div className="py-11 sm:py-8 md:py-10 lg:py-14">
                     {/* Header */}
-                    <div className="mb-4 sm:mb-6 md:mb-8 lg:mb-10">
-                        <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4">
-                            {/* Avatar */}
-                            <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full bg-gradient-to-br from-white/20 to-white/5 border border-white/20 flex items-center justify-center text-base sm:text-lg md:text-xl lg:text-3xl font-bold text-white shadow-lg flex-shrink-0">
-                                {getInitials()}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <h1 className="text-base sm:text-lg md:text-xl lg:text-3xl font-light text-white tracking-wide truncate">
-                                    {profile.fullName || 'Welcome'}
-                                </h1>
-                                <p className="text-white/60 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">
-                                    {profile.email}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <h2 className="text-white text-xs sm:text-sm md:text-base lg:text-xl font-light mb-3 sm:mb-4 md:mb-5 lg:mb-6 uppercase tracking-wide">
-                        Account Information
-                    </h2>
-
-                    {/* Main Content */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-5 lg:gap-6 mb-4 sm:mb-6 lg:mb-8">
-                        {/* Profile Section */}
-                        <ProfileSection
-                            profile={profile}
-                            onProfileUpdate={updateProfile}
-                        />
-
-                        {/* Addresses Section */}
-                        <AddressesSection
-                            addresses={shippingAddresses}
-                            isLoading={isLoadingAddresses}
-                            onAddressesChange={updateAddresses}
-                            profileEmail={profile.email}
-                            profileName={profile.fullName}
-                            profilePhone={profile.phone}
-                        />
-                    </div>
+                    <AccountHeader
+                        fullName={profile.fullName}
+                        email={profile.email}
+                    />
 
                     {/* Profile Warning */}
-                    {profile && !profile.profileComplete && (
+                    {!profile.profileComplete && (
                         <div className="mb-6">
-                            <ProfileWarning
-                                profileComplete={profile.profileComplete ?? false}
-                                missingName={!profile.fullName}
-                                missingPhone={!profile.phone}
-                            />
+                            <ProfileWarning />
                         </div>
                     )}
 
-                    {/* Logout Button */}
-                    <div className="mt-6 sm:mt-8">
-                        <button
+                    {/* Navigation Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+                        {/* Profile Card */}
+                        <AccountCard
+                            icon={<FiUser />}
+                            title="Profile"
+                            description="Manage your personal information"
+                            href="/account/profile"
+                        />
+
+                        {/* Addresses Card */}
+                        <AccountCard
+                            icon={<FiMapPin />}
+                            title="Addresses"
+                            description="Manage shipping addresses"
+                            href="/account/addresses"
+                        />
+
+                        {/* Orders Card */}
+                        <AccountCard
+                            icon={<FiPackage />}
+                            title="Orders"
+                            description="View order history and track shipments"
+                            href="/orders"
+                        />
+
+                        {/* Payments Card - Coming Soon */}
+                        <AccountCard
+                            icon={<FiCreditCard />}
+                            title="Payments"
+                            description="Manage saved payment methods"
+                            comingSoon
+                        />
+
+                        {/* Logout Card - Different Style */}
+                        <AccountCard
+                            icon={<FiLogOut />}
+                            title="Logout"
+                            description="Sign out of your account"
                             onClick={handleLogout}
-                            disabled={isLoggingOut}
-                            className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all disabled:opacity-50 text-white min-h-[52px] sm:min-h-[56px]"
-                        >
-                            <FiLogOut className="w-5 h-5" />
-                            <span className="font-medium uppercase tracking-wider text-sm sm:text-base">
-                                {isLoggingOut ? 'Logging out...' : 'Logout'}
-                            </span>
-                        </button>
+                            isLogout
+                        />
                     </div>
                 </div>
             </div>

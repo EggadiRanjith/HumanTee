@@ -54,7 +54,7 @@ function OrdersPageContent() {
   if (!authLoading && !isAuthenticated) {
     // Use window.location.href for immediate redirect (no history entry)
     if (typeof window !== 'undefined') {
-      window.location.href = '/login';
+      window.location.href = '/login?redirect=/orders';
     }
     return null;
   }

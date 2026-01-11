@@ -14,7 +14,7 @@ export const SCHEMA_VERSION = 1;
 
 export interface ProductImage {
     id: string;
-    url: string;
+    url: string; // Base64 for preview OR Cloudinary URL for saved images
     file?: File; // Optional File object for uploads
     altText: string; // Changed from 'alt' to 'altText' for consistency
     status: 'TEMP' | 'ACTIVE';
@@ -22,6 +22,10 @@ export interface ProductImage {
     order: number; // Display order
     expiresAt?: Date;
     uploadedAt: Date;
+    cloudinaryUrl?: string; // Cloudinary URL (used for backend submission)
+    cloudinaryPublicId?: string; // For future deletion support
+    uploadProgress?: number; // Upload progress percentage
+    uploadError?: string; // Upload error message
 }
 
 export interface Variant {

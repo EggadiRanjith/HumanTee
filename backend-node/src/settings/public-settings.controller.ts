@@ -15,6 +15,7 @@ export class PublicSettingsController {
     async getPublicSettings() {
         try {
             // Get all public settings sections
+            const homepage = await this.settingsService.getSection('homepage', 'production');
             const headerFooter = await this.settingsService.getSection('header-footer', 'production');
             const shipping = await this.settingsService.getSection('shipping', 'production');
             const policies = await this.settingsService.getSection('policies', 'production');
@@ -23,6 +24,7 @@ export class PublicSettingsController {
             return {
                 success: true,
                 data: {
+                    'homepage': homepage,
                     'header-footer': headerFooter,
                     'shipping': shipping,
                     'policies': policies,
@@ -34,28 +36,6 @@ export class PublicSettingsController {
             return {
                 success: false,
                 error: 'Failed to load settings'
-            };
-        }
-    }
-
-    /**
-     * Get specific section settings (no auth required)
-     * GET /public/settings/:section
-     * Example: GET /public/settings/homepage
-     */
-    @Get(':section')
-    async getSection(@Param('section') section: string) {
-        try {
-            const data = await this.settingsService.getSection(section, 'production');
-            return {
-                success: true,
-                data
-            };
-        } catch (error) {
-            this.logger.error(`Failed to load ${section} settings:`, error);
-            return {
-                success: false,
-                error: `Failed to load ${section} settings`
             };
         }
     }

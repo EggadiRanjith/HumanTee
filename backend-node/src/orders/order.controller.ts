@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Param, Request, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Request, UseGuards, Query, BadRequestException, ConflictException } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { UserAuditService } from '../auth/user-audit.service';
+import { RedisService } from '../redis/redis.service';
 
 @Controller('orders')
 @Throttle({ default: { limit: 20, ttl: 60000 } }) // 20 requests per minute
@@ -11,6 +12,7 @@ export class OrderController {
     constructor(
         private readonly orderService: OrderService,
         private readonly userAuditService: UserAuditService,
+        private readonly redisService: RedisService,
     ) { }
 
     /**
@@ -39,76 +41,108 @@ export class OrderController {
     @Post('confirm')
     @UseGuards(JwtAuthGuard)
     async confirmOrder(@Request() req, @Body() data: {
+        idempotencyKey: string;  // CRITICAL: Frontend-generated unique key
         razorpayOrderId: string;
         razorpayPaymentId: string;
         razorpaySignature: string;
         orderData: any;
     }) {
-        // Get userId from authenticated request (not from orderData which might be null)
-        const userId = req.user?.userId || null;
-
-        // Override userId in orderData with the authenticated user's ID
-        const orderDataWithUserId = {
-            ...data.orderData,
-            userId: userId,
-        };
-
-        const order = await this.orderService.confirmOrder(
-            data.razorpayOrderId,
-            data.razorpayPaymentId,
-            data.razorpaySignature,
-            orderDataWithUserId,
-        );
-
-        // Log order creation for logged-in users
-        if (userId && req.user?.email) {
-            const ipAddress = req.ip || req.connection?.remoteAddress || 'unknown';
-            const userAgent = req.headers?.['user-agent'] || 'unknown';
-
-            await this.userAuditService.logAction({
-                userId,
-                userEmail: req.user.email,
-                eventType: 'ORDER_CREATED',
-                entityType: 'order',
-                entityId: order.id,
-                entityName: order.orderNumber,
-                before: null,
-                after: {
-                    orderNumber: order.orderNumber,
-                    totalAmount: order.totalAmount,
-                    currency: order.currency,
-                    itemCount: data.orderData.items?.length || 0,
-                },
-                changes: null,
-                ipAddress,
-                userAgent,
-            });
-
-            // Log payment success
-            await this.userAuditService.logAction({
-                userId,
-                userEmail: req.user.email,
-                eventType: 'PAYMENT_SUCCESS',
-                entityType: 'payment',
-                entityId: data.razorpayPaymentId,
-                entityName: order.orderNumber,
-                before: null,
-                after: {
-                    orderNumber: order.orderNumber,
-                    amount: order.totalAmount,
-                    paymentId: data.razorpayPaymentId,
-                },
-                changes: null,
-                ipAddress,
-                userAgent,
-            });
+        // IDEMPOTENCY CHECK: Prevent duplicate order submissions
+        if (!data.idempotencyKey) {
+            throw new BadRequestException('Idempotency key is required');
         }
 
-        return {
-            success: true,
-            orderNumber: order.orderNumber,
-            orderId: order.id,
-        };
+        const lockKey = `order:lock:${data.idempotencyKey}`;
+        const cacheKey = `order:result:${data.idempotencyKey}`;
+
+        // Check if already processed
+        const cached = await this.redisService.get<any>(cacheKey);
+        if (cached) {
+            return cached;
+        }
+
+        // Acquire lock (5-minute timeout) using Redis SET NX
+        const redis = this.redisService.getClient();
+        const acquired = await redis.set(lockKey, 'processing', 'EX', 300, 'NX');
+        if (!acquired) {
+            throw new ConflictException('Order is already being processed');
+        }
+
+        try {
+            // Get userId from authenticated request (not from orderData which might be null)
+            const userId = req.user?.userId || null;
+
+            // Override userId in orderData with the authenticated user's ID
+            const orderDataWithUserId = {
+                ...data.orderData,
+                userId: userId,
+            };
+
+            const order = await this.orderService.confirmOrder(
+                data.razorpayOrderId,
+                data.razorpayPaymentId,
+                data.razorpaySignature,
+                orderDataWithUserId,
+            );
+
+            // Cache result for 24 hours
+            const result = {
+                success: true,
+                orderNumber: order.orderNumber,
+                orderId: order.id,
+            };
+            await this.redisService.set(cacheKey, result, 86400);
+
+            // Log order creation for logged-in users
+            if (userId && req.user?.email) {
+                const ipAddress = req.ip || req.connection?.remoteAddress || 'unknown';
+                const userAgent = req.headers?.['user-agent'] || 'unknown';
+
+                await this.userAuditService.logAction({
+                    userId,
+                    userEmail: req.user.email,
+                    eventType: 'ORDER_CREATED',
+                    entityType: 'order',
+                    entityId: order.id,
+                    entityName: order.orderNumber,
+                    before: null,
+                    after: {
+                        orderNumber: order.orderNumber,
+                        totalAmount: order.totalAmount,
+                        currency: order.currency,
+                        itemCount: data.orderData.items?.length || 0,
+                    },
+                    changes: null,
+                    ipAddress,
+                    userAgent,
+                });
+
+                // Log payment success
+                await this.userAuditService.logAction({
+                    userId,
+                    userEmail: req.user.email,
+                    eventType: 'PAYMENT_SUCCESS',
+                    entityType: 'payment',
+                    entityId: data.razorpayPaymentId,
+                    entityName: order.orderNumber,
+                    before: null,
+                    after: {
+                        orderNumber: order.orderNumber,
+                        amount: order.totalAmount,
+                        paymentId: data.razorpayPaymentId,
+                    },
+                    changes: null,
+                    ipAddress,
+                    userAgent,
+                });
+            }
+
+            return result;
+        } catch (error) {
+            // Delete lock on error
+            await this.redisService.del(lockKey);
+            throw error;
+        }
     }
 
     /**

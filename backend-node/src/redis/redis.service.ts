@@ -73,8 +73,8 @@ export class RedisService implements OnModuleDestroy {
                 await this.redis.set(key, serialized);
             }
         } catch (error) {
-            this.logger.error(`Failed to set key ${key}:`);
-            // Don't throw - allow app to continue without Redis
+            this.logger.warn(`Redis unavailable, skipping cache set: ${key}`);
+            // Graceful degradation - don't throw, app continues without cache
         }
     }
 
@@ -85,7 +85,8 @@ export class RedisService implements OnModuleDestroy {
         try {
             return await this.redis.del(...keys);
         } catch (error) {
-            this.logger.error(`Failed to delete keys:`, error);
+            this.logger.warn(`Redis unavailable, skipping cache delete: ${keys.join(', ')}`);
+            // Graceful degradation - return 0 (no keys deleted)
             return 0;
         }
     }

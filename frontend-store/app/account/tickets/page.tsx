@@ -52,7 +52,7 @@ function TicketListPageContent() {
     // Redirect to login if not authenticated
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
-            router.push('/login');
+            router.push('/login?redirect=/account/tickets');
         }
     }, [authLoading, isAuthenticated, router]);
 

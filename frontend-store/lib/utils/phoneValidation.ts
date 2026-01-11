@@ -156,20 +156,63 @@ export function parsePhoneNumber(fullNumber: string): {
     countryCode: string;
     phoneNumber: string;
 } {
-    // Try to extract country code from beginning
-    const match = fullNumber.match(/^(\+\d{1,4})([\d\s\-()]+)$/);
+    // Remove all spaces, dashes, and parentheses first
+    const cleaned = fullNumber.replace(/[\s\-()]/g, '');
 
-    if (match) {
+    // If no + sign, assume it's just the phone number with default country code
+    if (!cleaned.startsWith('+')) {
         return {
-            countryCode: match[1],
-            phoneNumber: match[2].replace(/[\s\-()]/g, ''),
+            countryCode: '+91',
+            phoneNumber: cleaned,
         };
     }
 
-    // Default to India if no country code
+    // Check for specific common country codes first (non-greedy)
+    // India: +91 (2 digits)
+    if (cleaned.startsWith('+91')) {
+        return {
+            countryCode: '+91',
+            phoneNumber: cleaned.substring(3), // Remove +91
+        };
+    }
+
+    // USA/Canada: +1 (1 digit)
+    if (cleaned.startsWith('+1')) {
+        return {
+            countryCode: '+1',
+            phoneNumber: cleaned.substring(2), // Remove +1
+        };
+    }
+
+    // UK: +44 (2 digits)
+    if (cleaned.startsWith('+44')) {
+        return {
+            countryCode: '+44',
+            phoneNumber: cleaned.substring(3), // Remove +44
+        };
+    }
+
+    // China: +86 (2 digits)
+    if (cleaned.startsWith('+86')) {
+        return {
+            countryCode: '+86',
+            phoneNumber: cleaned.substring(3), // Remove +86
+        };
+    }
+
+    // Generic fallback: try to extract country code (1-3 digits)
+    const match = cleaned.match(/^(\+\d{1,3})(\d{7,})$/);
+    if (match) {
+        return {
+            countryCode: match[1],
+            phoneNumber: match[2],
+        };
+    }
+
+    // Final fallback
     return {
         countryCode: '+91',
-        phoneNumber: fullNumber.replace(/[\s\-()]/g, ''),
+        phoneNumber: cleaned.replace(/^\+\d+/, ''),
     };
 }
 

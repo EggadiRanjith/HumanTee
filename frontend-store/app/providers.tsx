@@ -10,6 +10,7 @@ import { ToastProvider } from "./contexts/ToastContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { NavigationLoader } from "./components/ui/loaders";
 import ScrollToTop from "./components/ui/ScrollToTop";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 // Create QueryClient outside component to prevent recreation on remount
 const queryClient = new QueryClient({
@@ -24,22 +25,24 @@ const queryClient = new QueryClient({
 export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <LoadingProvider>
-        <HeaderProvider>
-          <AuthProvider>
-            <CartProvider>
-              <CheckoutProvider>
-                <ToastProvider>
-                  <ScrollToTop />
-                  <NavigationLoader />
-                  {children}
-                </ToastProvider>
-              </CheckoutProvider>
-            </CartProvider>
-          </AuthProvider>
-        </HeaderProvider>
-      </LoadingProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <LoadingProvider>
+          <HeaderProvider>
+            <AuthProvider>
+              <CartProvider>
+                <CheckoutProvider>
+                  <ToastProvider>
+                    <ScrollToTop />
+                    <NavigationLoader />
+                    {children}
+                  </ToastProvider>
+                </CheckoutProvider>
+              </CartProvider>
+            </AuthProvider>
+          </HeaderProvider>
+        </LoadingProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

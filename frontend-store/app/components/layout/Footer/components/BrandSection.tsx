@@ -11,7 +11,7 @@ interface BrandSectionProps {
     brandName: string;
     logoUrl: string | null;
     tagline: string;
-    socialLinks: {
+    socialLinks?: {
         instagram: string;
         maps: string;
     };
@@ -60,7 +60,7 @@ export default function BrandSection({ brandName, logoUrl, tagline, socialLinks 
                 {tagline}
             </p>
 
-            <SocialLinks instagram={socialLinks.instagram} maps={socialLinks.maps} />
+            <SocialLinks instagram={socialLinks?.instagram || ''} maps={socialLinks?.maps || ''} />
         </div>
     );
 }

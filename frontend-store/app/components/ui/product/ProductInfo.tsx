@@ -180,6 +180,7 @@ const ProductInfoComponent = ({ product }: ProductInfoProps) => {
             <QuantitySelector
                 value={quantity}
                 onChange={setQuantity}
+                disabled={!selectedSize}
             />
 
             {/* Action Buttons */}

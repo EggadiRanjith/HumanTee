@@ -104,7 +104,9 @@ export class OrderService {
 
             // Check stock
             if (variant.stock_quantity < item.quantity) {
-                throw new BadRequestException(`Insufficient stock for ${variant.product.name}`);
+                throw new ConflictException(
+                    `Only ${variant.stock_quantity} items available for ${variant.product.name} (${variant.size})`
+                );
             }
 
             const lineTotal = Number(variant.price) * item.quantity;
@@ -401,14 +403,30 @@ export class OrderService {
             );
             await manager.save(OrderItem, items);
 
-            // 8. Reduce stock
+            // 8. CRITICAL: Atomic stock decrement with validation
+            // Prevents race condition where two concurrent orders can oversell
             for (const item of validatedItems) {
-                await manager.decrement(
-                    ProductVariant,
-                    { id: item.variantId },
-                    'stock_quantity',
-                    item.quantity
-                );
+                const result = await manager
+                    .createQueryBuilder()
+                    .update(ProductVariant)
+                    .set({ stock_quantity: () => `stock_quantity - ${item.quantity}` })
+                    .where('id = :id AND stock_quantity >= :required', {
+                        id: item.variantId,
+                        required: item.quantity
+                    })
+                    .execute();
+
+                if (result.affected === 0) {
+                    // Either variant doesn't exist OR insufficient stock
+                    // This is an edge case - stock was available during validation but sold out during order creation
+                    const variant = await manager.findOne(ProductVariant, { where: { id: item.variantId } });
+                    if (!variant) {
+                        throw new BadRequestException(`Variant ${item.variantId} not found`);
+                    }
+                    throw new ConflictException(
+                        `Only ${variant.stock_quantity} items available for ${item.productNameSnapshot} (${item.variantLabelSnapshot})`
+                    );
+                }
             }
 
             // 9. Create shipping address snapshot

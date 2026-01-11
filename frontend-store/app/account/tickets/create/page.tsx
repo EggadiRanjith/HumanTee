@@ -54,7 +54,7 @@ function CreateTicketPageContent() {
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
-            router.push('/login');
+            router.push('/login?redirect=/account/tickets/create');
         }
     }, [authLoading, isAuthenticated, router]);
 

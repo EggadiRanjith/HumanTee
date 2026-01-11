@@ -10,6 +10,7 @@ import {
     BeforeInsert,
     BeforeUpdate,
     JoinColumn,
+    Index,
 } from 'typeorm';
 import { AuthUser } from './auth-user.entity';
 import { OrderItem } from './order-item.entity';
@@ -31,6 +32,8 @@ export enum OrderStatus {
 }
 
 @Entity('orders')
+@Index('IDX_ORDERS_USER_ID', ['userId'])
+@Index('IDX_ORDERS_STATUS_CREATED', ['status', 'createdAt'])
 export class Order {
     @PrimaryGeneratedColumn('uuid')
     id: string;

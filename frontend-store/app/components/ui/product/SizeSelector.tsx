@@ -54,7 +54,7 @@ export function SizeSelector({ sizes, selected, onChange, error, variants = [] }
                             </button>
                             {/* Stock indicator below size - only show if stock < 10 */}
                             {isLowStock && (
-                                <div className="flex items-center justify-center gap-1 animate-pulse">
+                                <div className="flex items-center justify-center gap-1">
                                     <div className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></div>
                                     <span className="text-[9px] text-orange-400 font-medium">
                                         {stock} left

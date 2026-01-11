@@ -105,7 +105,8 @@ export default function AddressModal({
         setError('');
 
         try {
-            const { id, isDefault, ...addressData } = formData;
+            // Strip ALL metadata fields that backend doesn't accept
+            const { id, isDefault, userId, createdAt, updatedAt, deletedAt, ...addressData } = formData;
             await onSave(addressData);
             onClose();
         } catch (err: any) {

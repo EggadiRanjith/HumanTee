@@ -67,7 +67,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
-            router.push('/login');
+            router.push(`/login?redirect=/account/tickets/${id}`);
         }
     }, [authLoading, isAuthenticated, router]);
 

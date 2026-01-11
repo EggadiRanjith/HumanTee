@@ -141,6 +141,15 @@ export class AuthService {
             const accessToken = this.generateAccessToken(authUser.id, authUser.email, authUser.role);
             const refreshToken = await this.generateRefreshToken(authUser.id);
 
+            // 5️⃣ Fetch complete user data (profile + addresses)
+            const [profile, addresses] = await Promise.all([
+                this.getProfile(authUser.id),
+                this.dataSource.getRepository('ShippingAddress').find({
+                    where: { userId: authUser.id },
+                    order: { isDefault: 'DESC', createdAt: 'DESC' },
+                }),
+            ]);
+
             return {
                 accessToken,
                 refreshToken,
@@ -149,6 +158,8 @@ export class AuthService {
                     email: authUser.email,
                     role: authUser.role,
                 },
+                profile, // Complete profile data
+                addresses, // User's shipping addresses
             };
         } catch (error) {
             if (error instanceof UnauthorizedException) {
@@ -344,6 +355,39 @@ export class AuthService {
     }
 
     /**
+     * OPTIMIZATION: Aggregated account dashboard data
+     * Fetches profile + addresses + recent orders in parallel
+     * Reduces 3 API calls → 1, and 4 DB queries → 3 (parallel)
+     */
+    async getAccountDashboard(userId: string) {
+        // Execute all queries in parallel
+        const [profile, addresses, orders] = await Promise.all([
+            // Profile query
+            this.getProfile(userId),
+
+            // Addresses query - direct repository access
+            this.dataSource.getRepository('ShippingAddress').find({
+                where: { userId },
+                order: { isDefault: 'DESC', createdAt: 'DESC' },
+            }),
+
+            // Recent orders query - limit to 5
+            this.dataSource.getRepository('Order').find({
+                where: { user_id: userId },
+                order: { created_at: 'DESC' },
+                take: 5,
+                relations: ['items'],
+            }),
+        ]);
+
+        return {
+            profile,
+            addresses,
+            recentOrders: orders,
+        };
+    }
+
+    /**
      * Logout: Revoke all active refresh tokens for the user
      * This invalidates all sessions across all devices
      */
@@ -528,8 +572,14 @@ export class AuthService {
             const accessToken = this.generateAccessToken(authUser.id, authUser.email, authUser.role);
             const refreshToken = await this.generateRefreshToken(authUser.id);
 
-            // 10. Audit log success
-
+            // 10. Fetch complete user data (profile + addresses)
+            const [profile, addresses] = await Promise.all([
+                this.getProfile(authUser.id),
+                this.dataSource.getRepository('ShippingAddress').find({
+                    where: { userId: authUser.id },
+                    order: { isDefault: 'DESC', createdAt: 'DESC' },
+                }),
+            ]);
 
             // 11. Return response
             return {
@@ -540,6 +590,8 @@ export class AuthService {
                     email: authUser.email,
                     role: authUser.role,
                 },
+                profile, // Complete profile data
+                addresses, // User's shipping addresses
             };
 
         } catch (error) {

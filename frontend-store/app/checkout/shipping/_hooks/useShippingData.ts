@@ -144,9 +144,12 @@ export function useShippingData(userId?: string) {
         return validateAddressData(addressForm);
     };
 
-    const saveAddress = async (dataToSave?: AddressFormData): Promise<boolean> => {
+    const saveAddress = async (dataToSave?: any): Promise<boolean> => {
         // Use provided data or fall back to state
         const addressData = dataToSave || addressForm;
+
+        // Check if this is an edit operation (has id field)
+        const isEditing = !!addressData.id;
 
         // Validate using shared function
         const validationError = validateAddressData(addressData);
@@ -163,7 +166,7 @@ export function useShippingData(userId?: string) {
                 // GUEST FLOW: Save locally
                 const guestAddress: ShippingAddress = {
                     ...addressData,
-                    id: `guest_${Date.now()}`,
+                    id: addressData.id || `guest_${Date.now()}`,
                     isDefault: true
                 };
                 setAddresses([guestAddress]);
@@ -175,17 +178,44 @@ export function useShippingData(userId?: string) {
                 return true;
             }
 
-            const response = await apiClient.post('/shipping-addresses', {
-                ...addressData,
-                isDefault: addresses.length === 0,
-            });
-            setAddresses((prev) => [...prev, response.data]);
-            setSelectedAddressId(response.data.id);
+
+            if (isEditing) {
+                // UPDATE existing address - exclude ALL metadata fields
+                const { id, isDefault, userId, createdAt, updatedAt, deletedAt, ...updateData } = addressData;
+                console.log('🔍 PATCH Request Debug:', {
+                    url: `/shipping-addresses/${id}`,
+                    id,
+                    updateData,
+                    strippedFields: { id, isDefault, userId, createdAt, updatedAt, deletedAt }
+                });
+                const response = await apiClient.patch(`/shipping-addresses/${id}`, updateData);
+                console.log('✅ PATCH Response:', response.data);
+                setAddresses((prev) =>
+                    prev.map((addr) => (addr.id === id ? response.data : addr))
+                );
+            } else {
+                // CREATE new address
+                const response = await apiClient.post('/shipping-addresses', {
+                    ...addressData,
+                    isDefault: addresses.length === 0,
+                });
+                setAddresses((prev) => [...prev, response.data]);
+                setSelectedAddressId(response.data.id);
+            }
+
+
+
             setShowAddressModal(false);
             return true;
         } catch (error: any) {
+            console.error('❌ Save Address Error:', {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status,
+                fullError: error
+            });
             setAddressError(
-                error.response?.data?.message || 'Failed to save address'
+                error.response?.data?.message || `Failed to ${isEditing ? 'update' : 'save'} address`
             );
             return false;
         } finally {

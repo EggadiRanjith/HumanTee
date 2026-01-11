@@ -34,7 +34,7 @@ export function OrderSummaryCheckout({ items, pincode }: OrderSummaryCheckoutPro
         enabled: true,
         rate: 18,
         label: 'GST',
-        inclusive: false
+        inclusive: true  // Changed to true - GST is included in price
     });
     const [isLoading, setIsLoading] = useState(true);
 

@@ -48,7 +48,7 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
 
   return (
     <section
-      className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden -mt-[var(--header-height)] pt-[var(--header-height)] px-4 xs:px-5 sm:px-6 md:px-8 lg:px-10"
+      className="relative h-screen flex items-center justify-center overflow-hidden px-4 xs:px-5 sm:px-6 md:px-8 lg:px-10"
       aria-label="Hero Carousel"
       aria-live="polite"
       aria-atomic="true"
@@ -96,7 +96,7 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
                 <video
                   ref={index === 0 ? videoRef : undefined}
                   src={slide.video}
-                  poster="/images/banner1.png"
+                  poster="/images/banner1.webp"
                   autoPlay
                   muted
                   playsInline
@@ -111,7 +111,7 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
                 />
                 {videoError && (
                   <Image
-                    src="/images/hero-fallback.jpg"
+                    src="/images/hero-fallback.webp"
                     alt="HumanTee Collection"
                     fill
                     className="object-cover object-center"
@@ -122,7 +122,7 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
             ) : (
               <>
                 <Image
-                  src={slide.mobileImage || slide.image || "/images/hero-fallback.jpg"}
+                  src={slide.mobileImage || slide.image || "/images/hero-fallback.webp"}
                   alt={`${slide.heading || "HumanTee Slide"}`}
                   fill
                   className={`object-cover object-center w-full h-full ${slide.mobileImage ? "md:hidden" : ""
@@ -131,7 +131,7 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
                 />
                 {slide.mobileImage && (
                   <Image
-                    src={slide.image || "/images/hero-fallback.jpg"}
+                    src={slide.image || "/images/hero-fallback.webp"}
                     alt={slide.heading || "HumanTee Collection"}
                     fill
                     className="hidden md:block object-cover object-center w-full h-full"

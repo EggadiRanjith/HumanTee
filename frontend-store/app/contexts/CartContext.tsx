@@ -103,27 +103,43 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const loadBackendCart = async () => {
     try {
       const response = await apiClient.get('/cart');
-      setItems(response.data.items.map((item: any) => ({
-        id: item.productId, // ← CRITICAL FIX: Use productId (UUID), not cart item ID
+      const newItems = response.data.items.map((item: any) => ({
+        cartItemId: item.id, // ← Backend cart item ID (for deletion)
+        id: item.productId, // ← Product UUID (for display)
         title: item.productTitle || '',
         price: item.price,
         currency: item.currency,
-        image: item.productImage || '/images/placeholder.jpg',
+        image: item.productImage || '/images/placeholder.webp',
         quantity: item.quantity,
         size: item.variantLabel,
         variantId: item.variantId,
         availableStock: item.availableStock || item.stock || item.stockQuantity,
-      })));
+      }));
+
+      // Sort by cartItemId to maintain consistent order (prevents flickering)
+      newItems.sort((a: any, b: any) => a.cartItemId - b.cartItemId);
+
+      setItems(newItems);
     } catch (error) {
       logError(error, 'Failed to load cart');
       setItems([]);
     }
   };
 
-  // Save guest cart to localStorage
+  // Save guest cart to localStorage (without images to prevent quota errors)
   useEffect(() => {
     if (!isAuthenticated && !authLoading && items.length >= 0) {
-      localStorage.setItem("humantee-cart", JSON.stringify(items));
+      try {
+        // Remove image data to prevent localStorage quota errors
+        const itemsToStore = items.map(({ image, ...item }) => item);
+        localStorage.setItem("humantee-cart", JSON.stringify(itemsToStore));
+      } catch (error) {
+        // If quota exceeded, clear old cart and try again
+        if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+          console.warn('localStorage quota exceeded, clearing cart');
+          localStorage.removeItem("humantee-cart");
+        }
+      }
     }
   }, [items, isAuthenticated, authLoading]);
 
@@ -189,7 +205,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const item = items.find((i) => i.id === id && (!size || i.size === size));
       if (item) {
         try {
-          await apiClient.delete(`/cart/items/${item.id}`);
+          // Use cartItemId (backend cart item ID) for deletion
+          await apiClient.delete(`/cart/items/${(item as any).cartItemId}`);
           await loadBackendCart();
         } catch (error) {
           logError(error, 'Failed to remove item');
@@ -212,7 +229,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const item = items.find((i) => i.id === id && i.size === size);
       if (item) {
         try {
-          await apiClient.patch(`/cart/items/${item.id}`, { quantity });
+          // Use cartItemId (backend cart item ID) for update
+          await apiClient.patch(`/cart/items/${(item as any).cartItemId}`, { quantity });
           await loadBackendCart();
         } catch (error) {
           logError(error, 'Failed to update quantity');
@@ -253,11 +271,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!cart || !cart.items) return;
 
     const hydratedItems = cart.items.map((item: any) => ({
+      cartItemId: item.id, // ← Backend cart item ID (for deletion)
       id: item.productId || item.id, // ← Use productId if available, fallback to id for backward compat
       title: item.productTitle || '',
       price: item.price || 0,
       currency: item.currency || 'INR',
-      image: item.productImage || '/images/placeholder.jpg',
+      image: item.productImage || '/images/placeholder.webp',
       quantity: item.quantity || 1,
       size: item.variantLabel || item.size,
       variantId: item.variantId,

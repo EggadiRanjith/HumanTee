@@ -36,33 +36,18 @@ export const publicSettingsApi = {
     },
 
     /**
-     * Get settings for a specific section
-     * @param section - Section name (e.g., 'homepage', 'header-footer')
-     */
-    async getSection(section: string) {
-        const response = await fetch(`${getApiBaseUrl()}/public/settings/${section}`, {
-            next: { revalidate: 300 } // Cache for 5 minutes
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to fetch ${section} settings`);
-        }
-
-        const result = await response.json();
-        return result.data;
-    },
-
-    /**
-     * Get homepage settings
+     * Get homepage settings (from all settings)
      */
     async getHomepage() {
-        return this.getSection('homepage');
+        const allSettings = await this.getAll();
+        return allSettings?.homepage || null;
     },
 
     /**
-     * Get header-footer settings
+     * Get header-footer settings (from all settings)
      */
     async getHeaderFooter() {
-        return this.getSection('header-footer');
+        const allSettings = await this.getAll();
+        return allSettings?.['header-footer'] || null;
     }
 };

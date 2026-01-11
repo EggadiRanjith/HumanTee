@@ -52,6 +52,31 @@ export default function ImagePreviewCard({
                     className="w-full h-full object-cover"
                 />
 
+                {/* Upload Progress Overlay */}
+                {image.uploadProgress !== undefined && image.uploadProgress < 100 && (
+                    <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
+                        <div className="w-3/4 bg-gray-700 rounded-full h-2 overflow-hidden">
+                            <div
+                                className="bg-white h-full transition-all duration-300"
+                                style={{ width: `${image.uploadProgress}%` }}
+                            />
+                        </div>
+                        <p className="text-white text-xs mt-2">{image.uploadProgress}%</p>
+                    </div>
+                )}
+
+                {/* Upload Error Overlay */}
+                {image.uploadError && (
+                    <div className="absolute inset-0 bg-red-500/90 flex flex-col items-center justify-center p-2">
+                        <p className="text-white text-xs font-medium text-center">
+                            {image.uploadError}
+                        </p>
+                        <p className="text-white/80 text-[10px] mt-1 text-center">
+                            Image will use preview. Upload failed.
+                        </p>
+                    </div>
+                )}
+
                 {/* Hover Overlay */}
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                     {!image.isPrimary && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiX } from "react-icons/fi";
 import { InlineError } from "@/app/components/ui/errors";
 
@@ -22,7 +22,7 @@ interface ShippingAddress {
 interface AddressModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (addressData: Omit<ShippingAddress, 'id' | 'isDefault'>) => Promise<void>;
+    onSave: (addressData: any) => Promise<void>;
     editingAddress?: ShippingAddress | null;
     defaultFormData?: Partial<ShippingAddress>;
 }
@@ -52,6 +52,29 @@ export default function AddressModal({
             country: 'India',
         };
     });
+
+    // Update form data when editingAddress changes
+    useEffect(() => {
+        if (editingAddress) {
+            setFormData(editingAddress);
+        } else if (defaultFormData) {
+            setFormData({
+                fullName: defaultFormData?.fullName || '',
+                phone: defaultFormData?.phone || '',
+                email: defaultFormData?.email || '',
+                houseNumber: '',
+                address: '',
+                landmark: '',
+                city: '',
+                state: '',
+                postalCode: '',
+                country: 'India',
+            });
+        }
+        // Reset errors and touched state when modal opens/changes
+        setErrors({});
+        setTouched({});
+    }, [editingAddress, defaultFormData]);
 
     // P1-A: Field-level validation (pure, boring, no side effects)
     const validate = () => {
@@ -96,8 +119,13 @@ export default function AddressModal({
         setIsSaving(true);
 
         try {
-            const { id, isDefault, ...addressData } = formData;
-            await onSave(addressData);
+            // For editing, include the id; for creating, exclude it
+            if (editingAddress?.id) {
+                await onSave(formData); // Include id for update
+            } else {
+                const { id, isDefault, ...addressData } = formData;
+                await onSave(addressData); // Exclude id for create
+            }
             onClose();
         } catch (err: any) {
             // P1-C: Refined error copy (form-level error for API failures)

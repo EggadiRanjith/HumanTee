@@ -386,6 +386,17 @@ export class AuthController {
         return this.authService.getProfile(req.user.userId);
     }
 
+    /**
+     * OPTIMIZATION: Aggregated account dashboard endpoint
+     * Reduces 3 API calls → 1 (profile + addresses + recent orders)
+     * Reduces 4 DB queries → 3 (parallel execution)
+     */
+    @UseGuards(JwtAuthGuard)
+    @Get('account/dashboard')
+    async getAccountDashboard(@Req() req: any) {
+        return this.authService.getAccountDashboard(req.user.userId);
+    }
+
     @UseGuards(JwtAuthGuard)
     @Patch('profile')
     async updateProfile(@Req() req: any, @Body() updateProfileDto: any) {

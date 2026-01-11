@@ -16,14 +16,12 @@ import apiClient from "@/lib/api-client";
 import axios from "axios";
 import { HelpActionModal } from "@/app/components/orders/HelpActionModal";
 import { LazyMotion, domAnimation } from "framer-motion";
-import { FiArrowLeft, FiLoader } from "react-icons/fi";
+import { FiArrowLeft, FiLoader, FiHelpCircle } from "react-icons/fi";
 import { Order } from '../../types/order.types';
 import {
   OrderHeader,
-  OrderTimeline,
   OrderItems,
-  OrderSummary,
-  OrderActions
+  OrderSummary
 } from './components';
 
 export default function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -47,7 +45,7 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
         if (axios.isAxiosError(error)) {
           if (error.response?.status === 401 && !isAuthenticated) {
             // Only redirect to login if it's a 401 AND it's not a public order
-            router.push('/login');
+            router.push(`/login?redirect=/orders/${id}`);
           }
         }
       } finally {
@@ -115,14 +113,6 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
           status={order.status}
         />
 
-        {/* Order Timeline */}
-        <OrderTimeline
-          status={order.status}
-          createdAt={order.createdAt}
-          updatedAt={order.updatedAt}
-          trackingNumber={order.trackingNumber}
-        />
-
         {/* Order Summary (Shipping & Payment) */}
         <OrderSummary
           address={order.address}
@@ -137,8 +127,19 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
         {/* Order Items */}
         <OrderItems items={order.items} />
 
-        {/* Action Buttons */}
-        <OrderActions onHelpClick={() => setIsHelpModalOpen(true)} />
+        {/* Need Help Button */}
+        <button
+          onClick={() => setIsHelpModalOpen(true)}
+          className="
+            w-full flex items-center justify-center gap-2
+            px-6 py-3 rounded-xl mt-6
+            luxury-glass border border-white/10 
+            text-white/70 hover:text-white hover:bg-white/10
+            transition-all text-sm uppercase tracking-[0.18em]
+          "
+        >
+          <FiHelpCircle className="w-4 h-4" /> Need Help?
+        </button>
 
         {/* Help Modal */}
         <LazyMotion features={domAnimation}>

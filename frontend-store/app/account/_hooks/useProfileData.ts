@@ -89,7 +89,8 @@ export function useProfileData(
         if (userId) {
             fetchProfile();
         }
-    }, [userId, userEmail, userRole]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userId]); // Only depend on userId - fetch fresh data from /auth/me
 
     // Fetch addresses
     const fetchAddresses = async () => {

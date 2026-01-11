@@ -190,9 +190,9 @@ export default function NewProductPage() {
                 currency: productData.currency || 'INR',
                 taxable: productData.taxable ?? true,
 
-                // Media
+                // Media - Use Cloudinary URL if available, otherwise base64
                 images: productData.images.map(img => ({
-                    url: img.url,
+                    url: img.cloudinaryUrl || img.url, // Prefer Cloudinary URL
                     altText: img.altText || '',
                     isPrimary: img.isPrimary,
                     order: img.order,
@@ -401,30 +401,38 @@ export default function NewProductPage() {
         try {
             const productData = aggregateProductData();
 
-            // STEP 1: Upload images to Cloudinary
-            // File objects are lost in Zustand, so convert base64 data URLs back to Files
-            const dataURLtoFile = (dataurl: string, filename: string): File => {
-                const arr = dataurl.split(',');
-                const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
-                const bstr = atob(arr[1]);
-                let n = bstr.length;
-                const u8arr = new Uint8Array(n);
-                while (n--) {
-                    u8arr[n] = bstr.charCodeAt(n);
-                }
-                return new File([u8arr], filename, { type: mime });
-            };
-
-            const { uploadImageToCloudinary } = await import('@/lib/api/uploadToCloudinary');
-
+            // STEP 1: Prepare images - use Cloudinary URLs if already uploaded
             const uploadedImages = await Promise.all(
                 productData.images.map(async (img, index) => {
-                    // Convert base64 to File and upload to Cloudinary
+                    // If image was already uploaded to Cloudinary (via ImageUploader), use that URL
+                    if (img.cloudinaryUrl) {
+                        return {
+                            url: img.cloudinaryUrl,
+                            altText: img.altText || '',
+                            isPrimary: img.isPrimary,
+                            order: img.order,
+                        };
+                    }
+
+                    // Fallback: Upload base64 to Cloudinary (for images that failed to upload earlier)
+                    const dataURLtoFile = (dataurl: string, filename: string): File => {
+                        const arr = dataurl.split(',');
+                        const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+                        const bstr = atob(arr[1]);
+                        let n = bstr.length;
+                        const u8arr = new Uint8Array(n);
+                        while (n--) {
+                            u8arr[n] = bstr.charCodeAt(n);
+                        }
+                        return new File([u8arr], filename, { type: mime });
+                    };
+
+                    const { uploadImageToCloudinary } = await import('@/lib/api/uploadToCloudinary');
                     const file = dataURLtoFile(img.url, `product-image-${index}.png`);
-                    const url = await uploadImageToCloudinary(file);
+                    const result = await uploadImageToCloudinary(file);
 
                     return {
-                        url,
+                        url: result.url,
                         altText: img.altText || '',
                         isPrimary: img.isPrimary,
                         order: img.order,

@@ -1,9 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { Cart } from './cart.entity';
 import { Product } from '../products/entities/product.entity';
 import { ProductVariant } from '../products/entities/product-variant.entity';
 
 @Entity('cart_items')
+@Index('IDX_CART_ITEMS_CART_ID', ['cart_id'])
 export class CartItem {
     @PrimaryGeneratedColumn('uuid')
     id: string;
