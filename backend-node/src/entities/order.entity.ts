@@ -20,13 +20,11 @@ import { Shipment } from './shipment.entity';
 import { OrderStatusHistory } from './order-status-history.entity';
 
 export enum OrderStatus {
-    PENDING = 'pending_payment',
     PENDING_PAYMENT = 'pending_payment',
     PAYMENT_FAILED = 'payment_failed',
     PROCESSING = 'processing',
     SHIPPED = 'shipped',
     DELIVERED = 'delivered',
-    FULFILLED = 'delivered', // Alias for delivered
     REFUNDED = 'refunded',
     CANCELLED = 'cancelled',
 }
