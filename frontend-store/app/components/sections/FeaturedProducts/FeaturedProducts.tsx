@@ -66,8 +66,10 @@ function FeaturedProducts() {
             actionText={settings?.actionText}
             actionHref={settings?.actionHref}
           />
-          {/* Product grid skeleton */}
-          <FeaturedProductsSkeleton />
+          {/* Product grid skeleton - match ProductGrid structure */}
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 xs:gap-4 sm:gap-5 md:gap-6 lg:gap-8">
+            <FeaturedProductsSkeleton />
+          </div>
         </div>
       </section>
     );
