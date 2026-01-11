@@ -79,8 +79,25 @@ export function useSectionSettings<T = any>(section: keyof AppSettings): {
 } {
     const { settings, isLoading, error } = useSettings();
 
+    // Import fallback settings
+    const fallbackSettings = require('@/config/fallback-settings.json');
+
+    // Map section names to fallback paths
+    const fallbackMap: Record<string, any> = {
+        'hero': fallbackSettings.homepage?.hero,
+        'featured': fallbackSettings.homepage?.featured_section,
+        'reviews': fallbackSettings.homepage?.reviews,
+        'banner': fallbackSettings.homepage?.banner,
+        'header-footer': fallbackSettings['header-footer'],
+        'shop': fallbackSettings.shop,
+        'product-info': fallbackSettings['product-info'],
+    };
+
+    // Use API settings if available, otherwise use fallback
+    const sectionSettings = settings[section] || fallbackMap[section] || null;
+
     return {
-        settings: (settings[section] as T) || null,
+        settings: sectionSettings as T,
         isLoading,
         error,
     };

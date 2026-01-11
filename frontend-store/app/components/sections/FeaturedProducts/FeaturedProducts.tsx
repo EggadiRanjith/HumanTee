@@ -73,24 +73,36 @@ function FeaturedProducts() {
     );
   }
 
-  // Error state - show empty instead of error
+  // Error state - show heading + empty
   if (error) {
     return (
       <section className="relative w-full pt-12 pb-20 px-4 sm:px-6 md:px-10 lg:px-14 cinematic-bg-dusk">
         <GradientOverlay variant="aurora" />
         <div className="relative max-w-screen-xl mx-auto">
+          {/* Always show header */}
+          <SectionHeader
+            title={title}
+            actionText={settings?.actionText}
+            actionHref={settings?.actionHref}
+          />
           <FeaturedProductsEmpty />
         </div>
       </section>
     );
   }
 
-  // Empty state
+  // Empty state - show heading + empty
   if (!products || products.length === 0) {
     return (
       <section className="relative w-full pt-12 pb-20 px-4 sm:px-6 md:px-10 lg:px-14 cinematic-bg-dusk">
         <GradientOverlay variant="aurora" />
         <div className="relative max-w-screen-xl mx-auto">
+          {/* Always show header */}
+          <SectionHeader
+            title={title}
+            actionText={settings?.actionText}
+            actionHref={settings?.actionHref}
+          />
           <FeaturedProductsEmpty />
         </div>
       </section>
