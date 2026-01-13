@@ -4,7 +4,7 @@
  */
 
 // Dynamic API URL helper
-const getApiBaseUrl = () =\u003e {
+const getApiBaseUrl = () => {
     return process.env.NEXT_PUBLIC_API_URL || 'https://humantee.onrender.com';
 };
 
