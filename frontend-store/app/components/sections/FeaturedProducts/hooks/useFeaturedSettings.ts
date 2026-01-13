@@ -1,12 +1,11 @@
 /**
  * FeaturedProducts Settings Hook
- * Fetches featured section settings from API with config fallback
+ * Fetches featured section settings from API with hardcoded defaults
  */
 
 "use client";
 
 import { useState, useEffect } from "react";
-import fallbackSettings from "@/config/fallback-settings.json";
 
 interface FeaturedSettings {
     enabled: boolean;
@@ -20,9 +19,9 @@ interface FeaturedSettings {
 
 export function useFeaturedSettings() {
     const [settings, setSettings] = useState<FeaturedSettings>({
-        enabled: fallbackSettings.homepage.featured_section.enabled,
-        title: fallbackSettings.homepage.featured_section.title,
-        subtitle: fallbackSettings.homepage.featured_section.subtitle,
+        enabled: true,
+        title: "Featured Products",
+        subtitle: "Discover our handpicked selection",
         actionText: "View All",
         actionHref: "/shop",
         limit: 8,

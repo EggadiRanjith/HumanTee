@@ -1,12 +1,11 @@
 /**
  * Shop Settings Hook
- * Fetches shop configuration from API with config fallback
+ * Fetches shop configuration from API with hardcoded defaults
  */
 
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import fallbackSettings from "@/config/fallback-settings.json";
 
 interface SortOption {
     value: string;
@@ -24,12 +23,12 @@ interface ShopSettings {
 
 export function useShopSettings() {
     const initialSettings = useMemo(() => ({
-        categories: fallbackSettings.shop.categories || [],
-        collections: fallbackSettings.shop.collections || [],
-        itemsPerPage: fallbackSettings.shop.items_per_page || 12,
-        defaultSort: fallbackSettings.shop.default_sort || 'newest',
-        showFilters: fallbackSettings.shop.show_filters ?? true,
-        sortOptions: fallbackSettings.shop.sort_options || [
+        categories: [],
+        collections: [],
+        itemsPerPage: 12,
+        defaultSort: 'newest',
+        showFilters: true,
+        sortOptions: [
             { value: 'newest', label: 'Newest First' },
             { value: 'price_asc', label: 'Price: Low to High' },
             { value: 'price_desc', label: 'Price: High to Low' },
