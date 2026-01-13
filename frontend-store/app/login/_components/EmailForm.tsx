@@ -99,10 +99,10 @@ export default memo(function EmailForm({
                 </div>
 
                 <motion.button
-                    whileHover={{ scale: isLoading ? 1 : 1.02 }}
-                    whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                    whileHover={{ scale: (isLoading || success) ? 1 : 1.02 }}
+                    whileTap={{ scale: (isLoading || success) ? 1 : 0.98 }}
                     type="submit"
-                    disabled={isLoading}
+                    disabled={isLoading || !!success}
                     aria-busy={isLoading}
                     aria-label={isLoading ? "Sending OTP code" : "Continue with email"}
                     className="w-full py-4 bg-white text-black rounded-3xl font-bold uppercase tracking-wider hover:bg-white/90 shadow-lg shadow-white/10 transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed text-[12px] min-h-[48px]"
@@ -115,6 +115,11 @@ export default memo(function EmailForm({
                                 aria-label="Loading"
                             ></div>
                             <span>Sending OTP...</span>
+                        </>
+                    ) : success ? (
+                        <>
+                            <FiCheck className="w-5 h-5" aria-hidden="true" />
+                            <span>OTP Sent!</span>
                         </>
                     ) : (
                         <>

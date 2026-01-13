@@ -53,6 +53,8 @@ export function useAuthFlow() {
             }
 
             setSuccess("OTP sent! Check your email.");
+            // Clear success after a short delay to prevent OTP button from being disabled
+            setTimeout(() => setSuccess(""), 1500);
             setStep('otp');
         } catch (err) {
             setError("Failed to send OTP. Please try again.");

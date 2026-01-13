@@ -119,11 +119,6 @@ export default memo(function OTPForm({
                             ></div>
                             <span>Verifying...</span>
                         </>
-                    ) : success ? (
-                        <>
-                            <FiCheck className="w-5 h-5" aria-hidden="true" />
-                            <span>Success!</span>
-                        </>
                     ) : (
                         <>
                             Verify & Login
