@@ -95,7 +95,7 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
               <video
                 ref={index === 0 ? videoRef : undefined}
                 src={slide.video}
-                poster="/images/banner1.webp"
+                poster={slide.image || slide.mobileImage || "/images/banner1.webp"}
                 autoPlay
                 muted
                 playsInline
