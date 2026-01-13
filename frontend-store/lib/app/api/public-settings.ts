@@ -4,15 +4,8 @@
  */
 
 // Dynamic API URL helper
-const getApiBaseUrl = () => {
-    if (typeof window === 'undefined') {
-        return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    }
-    const hostname = window.location.hostname;
-    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
-        return `http://${hostname}:3001`;
-    }
-    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const getApiBaseUrl = () =\u003e {
+    return process.env.NEXT_PUBLIC_API_URL || 'https://humantee.onrender.com';
 };
 
 // Call getApiBaseUrl() inside functions, not at module level to avoid SSR errors
