@@ -31,9 +31,12 @@ export function useHeroSettings() {
                 const data = await response.json();
 
                 // Map API response to HeroSettings
-                if (data?.slides && Array.isArray(data.slides)) {
+                // API returns: { data: { homepage: { hero_slides: { slides: [...] } } } }
+                const slides = data?.data?.homepage?.hero_slides?.slides || data?.slides;
+
+                if (slides && Array.isArray(slides)) {
                     setSettings({
-                        slides: data.slides,
+                        slides: slides,
                     });
                 }
             } catch (err) {
