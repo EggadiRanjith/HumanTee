@@ -14,8 +14,8 @@ export class Setting {
     @Column({ type: 'varchar', length: 20, default: 'production' })
     environment: string;
 
-    @Column({ type: 'varchar', length: 50, insert: false, update: false })
-    section: string; // Generated column in DB
+    @Column({ type: 'varchar', length: 50, nullable: true })
+    section: string;
 
     @Column({ name: 'is_active', type: 'boolean', default: true })
     isActive: boolean;

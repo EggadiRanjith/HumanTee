@@ -102,10 +102,10 @@ export default memo(function OTPForm({
                 )}
 
                 <motion.button
-                    whileHover={{ scale: isLoading ? 1 : 1.02 }}
-                    whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                    whileHover={{ scale: (isLoading || success) ? 1 : 1.02 }}
+                    whileTap={{ scale: (isLoading || success) ? 1 : 0.98 }}
                     type="submit"
-                    disabled={isLoading}
+                    disabled={isLoading || !!success}
                     aria-busy={isLoading}
                     aria-label={isLoading ? "Verifying OTP code" : "Verify and login"}
                     className="w-full py-3 sm:py-4 bg-white text-black rounded-2xl sm:rounded-3xl font-bold uppercase tracking-wider hover:bg-white/90 shadow-lg shadow-white/10 transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm min-h-[44px]"
@@ -118,6 +118,11 @@ export default memo(function OTPForm({
                                 aria-label="Loading"
                             ></div>
                             <span>Verifying...</span>
+                        </>
+                    ) : success ? (
+                        <>
+                            <FiCheck className="w-5 h-5" aria-hidden="true" />
+                            <span>Success!</span>
                         </>
                     ) : (
                         <>

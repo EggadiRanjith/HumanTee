@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
             }
         } else {
             // Log the raw report for debugging
-            console.log('[CSP Report - Empty or Malformed]', JSON.stringify(body, null, 2));
+
         }
 
         return NextResponse.json({ received: true }, { status: 200 });

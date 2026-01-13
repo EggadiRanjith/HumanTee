@@ -117,7 +117,7 @@ export function usePaymentFlow() {
                 },
             };
 
-            console.log('📦 Order Preparation Payload:', JSON.stringify(payload, null, 2));
+
 
             const response = await apiClient.post('/orders/prepare', payload);
 

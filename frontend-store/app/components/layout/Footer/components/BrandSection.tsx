@@ -25,7 +25,7 @@ export default function BrandSection({ brandName, logoUrl, tagline, socialLinks 
                 {logoUrl && logoUrl.trim() !== '' && (
                     <Image
                         src={logoUrl}
-                        alt={brandName || 'Brand Logo'}
+                        alt={brandName}
                         width={144}
                         height={36}
                         className="h-[36px] sm:h-[40px] w-auto flex-shrink-0"
@@ -41,7 +41,7 @@ export default function BrandSection({ brandName, logoUrl, tagline, socialLinks 
                 {(!logoUrl || logoUrl.trim() === '') && (
                     <Image
                         src="/images/humantee-logo.png"
-                        alt={brandName || 'HumanTee Logo'}
+                        alt={brandName}
                         width={144}
                         height={36}
                         className="h-[36px] sm:h-[40px] w-auto flex-shrink-0"

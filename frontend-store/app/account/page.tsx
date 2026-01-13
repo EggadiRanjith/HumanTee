@@ -35,16 +35,9 @@ export default function AccountPage() {
         }
     };
 
-    // Loading state
+    // Loading state - navigation loader handles visual feedback
     if (authLoading || isLoadingProfile) {
-        return (
-            <div className="min-h-screen brand-bg pt-[var(--header-height)] flex items-center justify-center">
-                <div className="text-center">
-                    <FiLoader className="w-12 h-12 animate-spin mx-auto mb-4 text-white/40" />
-                    <p className="text-white/60 text-sm">Loading your account...</p>
-                </div>
-            </div>
-        );
+        return null;
     }
 
     if (!profile) {

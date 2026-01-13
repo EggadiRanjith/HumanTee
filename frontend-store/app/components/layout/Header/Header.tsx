@@ -146,7 +146,7 @@ function Header() {
               {settings?.logo_url && settings.logo_url.trim() !== '' && (
                 <Image
                   src={settings?.logo_url}
-                  alt={settings?.brand_name || 'Brand Logo'}
+                  alt={settings?.brand_name}
                   width={160}
                   height={40}
                   className="h-[32px] xs:h-[36px] sm:h-[40px] md:h-[44px] lg:h-[48px] w-auto flex-shrink-0"
@@ -163,7 +163,7 @@ function Header() {
               {(!settings?.logo_url || settings.logo_url.trim() === '') && (
                 <Image
                   src="/images/humantee-logo.png"
-                  alt={settings?.brand_name || 'HumanTee Logo'}
+                  alt={settings?.brand_name}
                   width={160}
                   height={40}
                   className="h-[32px] xs:h-[36px] sm:h-[40px] md:h-[44px] lg:h-[48px] w-auto flex-shrink-0"
@@ -181,7 +181,7 @@ function Header() {
               "
                 title={settings?.brand_name}
               >
-                {settings?.brand_name || 'HumanTee'}
+                {settings?.brand_name}
               </span>
             </Link>
 

@@ -75,7 +75,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
           password: configService.get('DB_PASSWORD', 'postgres'),
           database: configService.get('DB_DATABASE', 'humantee'),
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: true,
+          synchronize: false,
           logging: false,
           extra: {
             max: 20,

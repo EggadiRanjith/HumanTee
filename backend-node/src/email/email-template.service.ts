@@ -270,27 +270,90 @@ ${preheader ? `
     }
 
     generateWelcomeEmail(name: string, email: string): string {
+        const safeName = this.escapeHtml(name);
+
         return this.generateEmail({
             title: 'Welcome to HumanTee',
-            preheader: 'Thank you for joining us',
+            preheader: 'Your journey to premium streetwear begins here',
             content: `
-<p style="margin:0 0 14px;">Hi <strong>${this.escapeHtml(name)}</strong>,</p>
+<p style="margin:0 0 14px;">Hi <strong>${safeName}</strong>,</p>
+
+<!-- Hero Welcome Box -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 28px;">
+<tr>
+<td align="center" style="background-color:#fafafa;border:1px solid #e0e0e0;padding:32px 24px;">
+    <div style="
+        font-size:28px;
+        font-weight:700;
+        letter-spacing:4px;
+        color:#111111;
+        margin-bottom:12px;">
+        WELCOME
+    </div>
+    <p style="margin:0;font-size:15px;color:#666666;">
+        You're now part of the HumanTee family
+    </p>
+</td>
+</tr>
+</table>
+
 <p style="margin:0 0 20px;">
-    Welcome to HumanTee! We're excited to have you as part of our community.
+    We're thrilled to have you join our community of style enthusiasts who appreciate quality, craftsmanship, and timeless design.
 </p>
 
-<p style="margin:0 0 14px;">
-    Explore our collection of premium streetwear designed for those who value quality and style.
+<p style="margin:0 0 24px;">
+    Since 1931, HumanTee has been crafting premium streetwear that combines heritage with modern aesthetics. Every piece tells a story.
 </p>
 
-<p style="margin:20px 0 0;">
-    Best regards,<br/>
-    <strong>The HumanTee Team</strong>
+<!-- Feature Highlights -->
+<h3 style="margin:28px 0 16px;font-size:16px;font-weight:600;color:#111111;">What Makes Us Different</h3>
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+<tr>
+<td style="padding:16px;background-color:#fafafa;border-left:3px solid #111111;">
+    <p style="margin:0 0 6px;font-size:14px;font-weight:600;color:#111111;">
+        ✨ Premium Quality
+    </p>
+    <p style="margin:0;font-size:13px;color:#666666;line-height:1.5;">
+        Handcrafted with attention to every detail
+    </p>
+</td>
+</tr>
+</table>
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+<tr>
+<td style="padding:16px;background-color:#fafafa;border-left:3px solid #111111;">
+    <p style="margin:0 0 6px;font-size:14px;font-weight:600;color:#111111;">
+        🚀 Fast Shipping
+    </p>
+    <p style="margin:0;font-size:13px;color:#666666;line-height:1.5;">
+        Free delivery on orders over ₹2000
+    </p>
+</td>
+</tr>
+</table>
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+<tr>
+<td style="padding:16px;background-color:#fafafa;border-left:3px solid #111111;">
+    <p style="margin:0 0 6px;font-size:14px;font-weight:600;color:#111111;">
+        🔄 Easy Returns
+    </p>
+    <p style="margin:0;font-size:13px;color:#666666;line-height:1.5;">
+        30-day hassle-free return policy
+    </p>
+</td>
+</tr>
+</table>
+
+<p style="margin:28px 0 0;">
+    Ready to explore? Browse our latest collection and find your perfect piece.
 </p>
             `,
-            ctaText: 'Start Shopping',
+            ctaText: 'Explore Collection',
             ctaUrl: process.env.FRONTEND_URL || 'http://localhost:3000/shop',
-            footerText: 'Follow us on Instagram @humanteeofficial for the latest updates',
+            footerText: 'Join 10,000+ style enthusiasts on Instagram @humanteeofficial',
         });
     }
 

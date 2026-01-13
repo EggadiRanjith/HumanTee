@@ -93,7 +93,12 @@ export function useSectionSettings<T = any>(section: keyof AppSettings): {
         'product-info': fallbackSettings['product-info'],
     };
 
-    // Use API settings if available, otherwise use fallback
+
+    // Merge API settings with fallback (fallback provides defaults for missing fields)
+    const apiSettings = settings[section];
+    const fallback = fallbackMap[section];
+
+    // If API has data, merge with fallback; otherwise use fallback only
     const sectionSettings = settings[section] || fallbackMap[section] || null;
 
     return {

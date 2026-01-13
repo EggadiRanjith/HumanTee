@@ -70,14 +70,32 @@ function Footer() {
       </footer>
 
       {/* Scrolling Text Section */}
-      <ScrollingText />
+      {isLoading ? (
+        <div className="relative w-full bg-brand-bg border-t border-white/10 py-6">
+          <div className="flex gap-8 overflow-hidden">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div
+                key={i}
+                className="h-6 w-48 bg-white/10 rounded animate-pulse flex-shrink-0"
+                style={{ animationDelay: `${i * 100}ms` }}
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
+        <ScrollingText />
+      )}
 
       {/* COPYRIGHT */}
       <div className="relative w-full bg-brand-bg border-t border-white/10">
         <div className="max-w-screen-xl mx-auto py-4 text-center">
-          <p className="text-white/55 text-[12px] tracking-[0.2em]">
-            © {new Date().getFullYear()} {settings?.brand_name || 'HumanTee'}
-          </p>
+          {isLoading ? (
+            <div className="h-3 w-48 bg-white/10 rounded animate-pulse mx-auto" />
+          ) : (
+            <p className="text-white/55 text-[12px] tracking-[0.2em]">
+              © {new Date().getFullYear()} {settings?.brand_name}
+            </p>
+          )}
         </div>
       </div>
     </>

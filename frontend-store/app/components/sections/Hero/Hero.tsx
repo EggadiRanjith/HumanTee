@@ -9,7 +9,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import { memo } from "react";
-import { HolographicButton, ScrollHint } from "./components";
+import { HolographicButton, ScrollHint, HeroSkeleton } from "./components";
 import { useHeroCarousel, useVideoPlayer, useIsMobile } from "./hooks";
 import { isSlideVisible, getSlideContentClasses } from "./utils";
 import { HERO_CONSTANTS, SLIDE_STYLES } from "./constants";
@@ -92,33 +92,22 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
             }}
           >
             {slide.type === "video" ? (
-              <>
-                <video
-                  ref={index === 0 ? videoRef : undefined}
-                  src={slide.video}
-                  poster="/images/banner1.webp"
-                  autoPlay
-                  muted
-                  playsInline
-                  className={`w-full h-full object-cover object-center ${videoError ? "hidden" : ""}`}
-                  style={{
-                    filter: "contrast(1.15) saturate(1.3) brightness(1.05) sharpness(1.1)",
-                    transform: "scale(1.05)",
-                  }}
-                  preload="none"
-                  onError={handleVideoError}
-                  onEnded={() => setVideoHasPlayed(true)}
-                />
-                {videoError && (
-                  <Image
-                    src="/images/hero-fallback.webp"
-                    alt="HumanTee Collection"
-                    fill
-                    className="object-cover object-center"
-                    priority
-                  />
-                )}
-              </>
+              <video
+                ref={index === 0 ? videoRef : undefined}
+                src={slide.video}
+                poster="/images/banner1.webp"
+                autoPlay
+                muted
+                playsInline
+                className="w-full h-full object-cover object-center"
+                style={{
+                  filter: "contrast(1.15) saturate(1.3) brightness(1.05) sharpness(1.1)",
+                  transform: "scale(1.05)",
+                }}
+                preload="none"
+                onError={handleVideoError}
+                onEnded={() => setVideoHasPlayed(true)}
+              />
             ) : (
               <>
                 <Image

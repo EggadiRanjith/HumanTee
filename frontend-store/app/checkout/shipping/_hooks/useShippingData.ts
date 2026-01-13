@@ -182,14 +182,7 @@ export function useShippingData(userId?: string) {
             if (isEditing) {
                 // UPDATE existing address - exclude ALL metadata fields
                 const { id, isDefault, userId, createdAt, updatedAt, deletedAt, ...updateData } = addressData;
-                console.log('🔍 PATCH Request Debug:', {
-                    url: `/shipping-addresses/${id}`,
-                    id,
-                    updateData,
-                    strippedFields: { id, isDefault, userId, createdAt, updatedAt, deletedAt }
-                });
                 const response = await apiClient.patch(`/shipping-addresses/${id}`, updateData);
-                console.log('✅ PATCH Response:', response.data);
                 setAddresses((prev) =>
                     prev.map((addr) => (addr.id === id ? response.data : addr))
                 );

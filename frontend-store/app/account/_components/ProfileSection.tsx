@@ -46,14 +46,14 @@ export default memo(function ProfileSection({
     const profileKey = `${profile.fullName || ''}-${profile.phone || ''}`;
 
     useEffect(() => {
-        console.log('🔍 Profile data:', { fullName: profile.fullName, phone: profile.phone });
+
         setEditedName(profile.fullName || '');
         if (profile.phone) {
             const parsed = parsePhoneNumber(profile.phone);
-            console.log('📞 Parsed phone:', parsed);
+
             setEditedCountryCode(parsed.countryCode);
             setEditedPhone(parsed.phoneNumber);
-            console.log('✅ Set phone state:', { countryCode: parsed.countryCode, phoneNumber: parsed.phoneNumber });
+
         } else {
             setEditedCountryCode('+91');
             setEditedPhone('');

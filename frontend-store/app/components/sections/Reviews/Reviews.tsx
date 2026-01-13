@@ -32,7 +32,7 @@ function Reviews({ reviews: propReviews, enabled: propEnabled }: ReviewsProps) {
   // Extract values from settings with prop fallbacks
   const enabled = propEnabled ?? reviewsSettings?.enabled ?? true;
   const reviews = propReviews ?? reviewsSettings?.items ?? [];
-  const title = reviewsSettings?.title || "What Our Customers Say";
+  const title = reviewsSettings?.title;
 
   // User interaction handling
   const { isUserInteracting, handleUserInteraction } = useReviewsInteraction();

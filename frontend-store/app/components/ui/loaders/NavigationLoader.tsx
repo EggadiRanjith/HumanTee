@@ -42,10 +42,15 @@ function NavigationLoaderContent() {
         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 
         const timer = setTimeout(() => {
-            setLoading(false);
-            // Scroll to top again after loader hides
-            setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }), 0);
-        }, 1000);
+            // Wait for next paint to ensure new content is rendered
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    setLoading(false);
+                    // Scroll to top again after loader hides
+                    setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }), 0);
+                });
+            });
+        }, 800);
 
         return () => clearTimeout(timer);
     }, [pathname, searchParams, setLoading]);

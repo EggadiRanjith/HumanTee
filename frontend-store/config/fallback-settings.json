@@ -10,19 +10,20 @@
         "contact": {
             "email": "humanteeofficial@gmail.com",
             "phone": "+91 7780-661493"
+        },
+        "banner_messages": {
+            "messages": [
+                "WEAR HUMANTEE · WEAR CONFIDENCE"
+            ]
         }
     },
     "homepage": {
         "hero": {
             "slides": [
                 {
-                    "type": "video",
-                    "video": "/video/introvideo.mp4"
-                },
-                {
                     "type": "image",
-                    "image": "/images/banner1.png",
-                    "mobileImage": "/images/banner1-mobile.png",
+                    "image": "/images/banner1.webp",
+                    "mobileImage": "/images/banner1-mobile.webp",
                     "heading": "Years Of Legacy",
                     "subheading1": "Since 1931",
                     "subheading2": "Available in all sizes",
@@ -30,8 +31,8 @@
                 },
                 {
                     "type": "image",
-                    "image": "/images/banner2.png",
-                    "mobileImage": "/images/banner2mobile.png",
+                    "image": "/images/banner2.webp",
+                    "mobileImage": "/images/banner2mobile.webp",
                     "heading": "Apart from beginning",
                     "subheading1": "Available in all sizes",
                     "subheading2": "",
@@ -92,45 +93,6 @@
                     "text": "An innovative blend of luxury and digital craftsmanship."
                 }
             ]
-        },
-        "featured_section": {
-            "enabled": true,
-            "title": "Featured Collection",
-            "subtitle": "Handpicked designs for the season",
-            "actionText": "View All",
-            "actionHref": "/shop",
-            "limit": 8,
-            "showViewAll": true
         }
-    },
-    "shop": {
-        "categories": [
-            "All",
-            "Men",
-            "Women",
-            "Unisex"
-        ],
-        "collections": [
-            "New Arrivals",
-            "Best Sellers",
-            "Limited Edition"
-        ],
-        "items_per_page": 12,
-        "default_sort": "newest",
-        "show_filters": true,
-        "sort_options": [
-            {
-                "value": "newest",
-                "label": "Newest First"
-            },
-            {
-                "value": "price_asc",
-                "label": "Price: Low to High"
-            },
-            {
-                "value": "price_desc",
-                "label": "Price: High to Low"
-            }
-        ]
     }
 }
