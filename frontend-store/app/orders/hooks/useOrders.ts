@@ -1,26 +1,20 @@
 /**
  * Orders Hook
- * Manages order fetching and state
+ * ✅ OPTIMIZED: Uses React Query for caching and deduplication
  */
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/lib/api-client';
 import { logError } from '@/lib/logger';
 import { Order, OrderFilters } from '../types';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function useOrders(filters: OrderFilters = {}) {
-    const [orders, setOrders] = useState<Order[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
-    const [totalPages, setTotalPages] = useState(1);
-
-    useEffect(() => {
-        const fetchOrders = async () => {
-            setIsLoading(true);
-            setError(null);
-
+    const { data, isLoading, error, refetch } = useQuery({
+        queryKey: [...queryKeys.orders, filters],
+        queryFn: async () => {
             try {
                 const params = new URLSearchParams();
 
@@ -41,23 +35,24 @@ export function useOrders(filters: OrderFilters = {}) {
                 }
 
                 const response = await apiClient.get(`/orders?${params.toString()}`);
-                setOrders(response.data.orders || response.data);
-                setTotalPages(response.data.totalPages || 1);
+                return {
+                    orders: response.data.orders || response.data,
+                    totalPages: response.data.totalPages || 1
+                };
             } catch (err) {
                 logError(err, 'Failed to fetch orders');
-                setError(err as Error);
-            } finally {
-                setIsLoading(false);
+                throw err;
             }
-        };
+        },
+        staleTime: 30 * 1000, // 30 seconds - orders don't change frequently
+        retry: 2,
+    });
 
-        fetchOrders();
-    }, [filters.status, filters.search, filters.sortBy, filters.page, filters.limit]);
-
-    const retry = () => {
-        setError(null);
-        setIsLoading(true);
+    return {
+        orders: data?.orders || [],
+        totalPages: data?.totalPages || 1,
+        isLoading,
+        error: error as Error | null,
+        retry: refetch
     };
-
-    return { orders, isLoading, error, totalPages, retry };
 }

@@ -5,6 +5,10 @@ import { SettingsService } from './settings.service';
 export class PublicSettingsController {
     private readonly logger = new Logger(PublicSettingsController.name);
 
+    // In-memory cache
+    private settingsCache: { data: any; expires: number } | null = null;
+    private readonly CACHE_TTL = 3600000; // 1 hour
+
     constructor(private readonly settingsService: SettingsService) { }
 
     /**
@@ -14,22 +18,32 @@ export class PublicSettingsController {
     @Get()
     async getPublicSettings() {
         try {
-            // Get all public settings sections
-            const homepage = await this.settingsService.getSection('homepage', 'production');
-            const headerFooter = await this.settingsService.getSection('header-footer', 'production');
-            const shipping = await this.settingsService.getSection('shipping', 'production');
-            const policies = await this.settingsService.getSection('policies', 'production');
-            const productInfo = await this.settingsService.getSection('product-info', 'production');
+            // ✅ Check cache first
+            if (this.settingsCache && Date.now() < this.settingsCache.expires) {
+                this.logger.debug('Returning cached settings');
+                return {
+                    success: true,
+                    data: this.settingsCache.data
+                };
+            }
+
+            // ✅ OPTIMIZED: Get all sections in ONE database query
+            const sections = await this.settingsService.getMultipleSections(
+                ['homepage', 'header-footer', 'shipping', 'policies', 'product-info'],
+                'production'
+            );
+
+            // ✅ Cache the result
+            this.settingsCache = {
+                data: sections,
+                expires: Date.now() + this.CACHE_TTL
+            };
+
+            this.logger.debug('Settings fetched from DB and cached');
 
             return {
                 success: true,
-                data: {
-                    'homepage': homepage,
-                    'header-footer': headerFooter,
-                    'shipping': shipping,
-                    'policies': policies,
-                    'product-info': productInfo
-                }
+                data: sections
             };
         } catch (error) {
             this.logger.error('Failed to load public settings:', error);
@@ -38,5 +52,14 @@ export class PublicSettingsController {
                 error: 'Failed to load settings'
             };
         }
+    }
+
+    /**
+     * Clear cache (call this after admin updates settings)
+     * Internal use only
+     */
+    clearCache() {
+        this.settingsCache = null;
+        this.logger.log('Settings cache cleared');
     }
 }

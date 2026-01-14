@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { logError } from '@/lib/logger';
 import { useRouter } from "next/navigation";
 import apiClient from "@/lib/api-client";
+import { queryKeys } from "@/lib/queryKeys";
 
 interface ShippingAddress {
     id: string;
@@ -33,9 +35,9 @@ interface AddressFormData {
 
 export function useShippingData(userId?: string) {
     const router = useRouter();
+    const queryClient = useQueryClient();
     const [addresses, setAddresses] = useState<ShippingAddress[]>([]);
     const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
-    const [isLoadingAddresses, setIsLoadingAddresses] = useState(true);
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [addressForm, setAddressForm] = useState<AddressFormData>({
         fullName: '',
@@ -52,47 +54,47 @@ export function useShippingData(userId?: string) {
     const [isSavingAddress, setIsSavingAddress] = useState(false);
     const [addressError, setAddressError] = useState('');
 
-    // Fetch addresses
+    // ✅ OPTIMIZED: Use React Query - checks cache from login payload first
+    const { data: fetchedAddresses, isLoading: isLoadingAddresses } = useQuery({
+        queryKey: queryKeys.addresses(userId || ''),
+        queryFn: async () => {
+            const response = await apiClient.get('/shipping-addresses');
+            return response.data || [];
+        },
+        enabled: !!userId, // Only fetch if user is logged in
+        staleTime: 5 * 60 * 1000, // 5 minutes
+    });
+
+    // Sync fetched addresses to local state
     useEffect(() => {
-        const fetchAddresses = async () => {
-            if (!userId) {
-                const localAddress = typeof window !== 'undefined' ? localStorage.getItem('guest_address') : null;
-                if (localAddress) {
-                    try {
-                        const parsed = JSON.parse(localAddress);
-                        setAddresses([parsed]);
-                        setSelectedAddressId(parsed.id);
-                    } catch (e) {
-                        console.error('Failed to parse guest address', e);
-                    }
-                }
-                setIsLoadingAddresses(false);
-                return;
+        if (userId && fetchedAddresses) {
+            setAddresses(fetchedAddresses);
+            // Auto-select default address
+            const defaultAddr = fetchedAddresses.find(
+                (addr: ShippingAddress) => addr.isDefault
+            );
+            if (defaultAddr) {
+                setSelectedAddressId(defaultAddr.id);
+            } else if (fetchedAddresses.length > 0) {
+                setSelectedAddressId(fetchedAddresses[0].id);
             }
+        }
+    }, [fetchedAddresses, userId]);
 
-            setIsLoadingAddresses(true);
-            try {
-                const response = await apiClient.get('/shipping-addresses');
-                if (response.data && response.data.length > 0) {
-                    setAddresses(response.data);
-                    // Auto-select default address
-                    const defaultAddr = response.data.find(
-                        (addr: ShippingAddress) => addr.isDefault
-                    );
-                    if (defaultAddr) {
-                        setSelectedAddressId(defaultAddr.id);
-                    } else {
-                        setSelectedAddressId(response.data[0].id);
-                    }
+    // Guest address handling
+    useEffect(() => {
+        if (!userId) {
+            const localAddress = typeof window !== 'undefined' ? localStorage.getItem('guest_address') : null;
+            if (localAddress) {
+                try {
+                    const parsed = JSON.parse(localAddress);
+                    setAddresses([parsed]);
+                    setSelectedAddressId(parsed.id);
+                } catch (e) {
+                    console.error('Failed to parse guest address', e);
                 }
-            } catch (error) {
-                logError(error, 'Failed to load addresses');
-            } finally {
-                setIsLoadingAddresses(false);
             }
-        };
-
-        fetchAddresses();
+        }
     }, [userId]);
 
     const openAddressModal = () => {
@@ -186,6 +188,8 @@ export function useShippingData(userId?: string) {
                 setAddresses((prev) =>
                     prev.map((addr) => (addr.id === id ? response.data : addr))
                 );
+                // ✅ Invalidate React Query cache
+                queryClient.invalidateQueries({ queryKey: queryKeys.addresses(userId || '') });
             } else {
                 // CREATE new address
                 const response = await apiClient.post('/shipping-addresses', {
@@ -194,6 +198,8 @@ export function useShippingData(userId?: string) {
                 });
                 setAddresses((prev) => [...prev, response.data]);
                 setSelectedAddressId(response.data.id);
+                // ✅ Invalidate React Query cache
+                queryClient.invalidateQueries({ queryKey: queryKeys.addresses(userId || '') });
             }
 
 

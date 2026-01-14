@@ -27,7 +27,7 @@ function Reviews({ reviews: propReviews, enabled: propEnabled }: ReviewsProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   // Get reviews settings with fallback support
-  const { settings: reviewsSettings, isLoading: settingsLoading } = useReviewsSettings();
+  const { settings: reviewsSettings, loading: settingsLoading } = useReviewsSettings();
 
   // Extract values from settings with prop fallbacks
   const enabled = propEnabled ?? reviewsSettings?.enabled ?? true;

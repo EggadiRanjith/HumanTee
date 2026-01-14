@@ -6,8 +6,7 @@
 
 "use client";
 
-import { useState, useEffect, memo } from 'react';
-import { logError } from '@/lib/logger';
+import { memo } from 'react';
 import { SectionHeader, GradientOverlay } from '@/app/components/ui/layout';
 import {
   FeaturedProductsSkeleton,
@@ -15,47 +14,27 @@ import {
   FeaturedProductsError,
   ProductGrid
 } from './components';
-import { useSectionSettings } from '@/app/hooks/useSettings';
-import { fetchProducts } from '@/lib/app/api/products';
-import { adaptProducts } from '@/lib/app/adapters/product.adapter';
-import { Product } from '@/app/types/product.types';
+import { useFeaturedSettings } from './hooks/useFeaturedSettings';
+import { useProducts } from '@/app/contexts/ProductsContext';
 
 function FeaturedProducts() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [error, setError] = useState(false);
-  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  // Get products from shared context
+  const { products: allProducts, loading: isLoadingProducts, error: productsError } = useProducts();
 
   // Get featured settings from centralized cache
-  const { settings, isLoading: settingsLoading } = useSectionSettings('featured');
+  const { settings } = useFeaturedSettings();
 
   // Extract values with defaults
   const enabled = settings?.enabled ?? true;
   const title = settings?.title || "Featured Products";
   const subtitle = settings?.subtitle || "Discover our curated collection";
-
-  // Fetch products
-  useEffect(() => {
-    async function loadProducts() {
-      try {
-        const apiProducts = await fetchProducts();
-        const adaptedProducts = adaptProducts(apiProducts);
-        setProducts(adaptedProducts);
-      } catch (err) {
-        logError(err, 'Failed to fetch products');
-        setError(true);
-      } finally {
-        setIsLoadingProducts(false);
-      }
-    }
-
-    loadProducts();
-  }, []);
+  const error = !!productsError;
 
   // Don't render if explicitly disabled
   if (enabled === false) return null;
 
   // Loading state - show header + skeleton
-  if (settingsLoading || isLoadingProducts) {
+  if (isLoadingProducts) {
     return (
       <section className="relative w-full pt-12 pb-20 px-4 sm:px-6 md:px-10 lg:px-14 cinematic-bg-dusk">
         <GradientOverlay variant="aurora" />
@@ -94,7 +73,7 @@ function FeaturedProducts() {
   }
 
   // Empty state - show heading + empty
-  if (!products || products.length === 0) {
+  if (!allProducts || allProducts.length === 0) {
     return (
       <section className="relative w-full pt-12 pb-20 px-4 sm:px-6 md:px-10 lg:px-14 cinematic-bg-dusk">
         <GradientOverlay variant="aurora" />
@@ -112,7 +91,7 @@ function FeaturedProducts() {
   }
 
   // Limit products based on settings
-  const displayProducts = products.slice(0, settings?.limit || 8);
+  const displayProducts = allProducts.slice(0, settings?.limit || 8);
 
   return (
     <section

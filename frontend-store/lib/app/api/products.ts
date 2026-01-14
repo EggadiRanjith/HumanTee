@@ -6,7 +6,9 @@
 import apiClient from '@/lib/api-client';
 
 export async function fetchProducts() {
-    const res = await apiClient.get('/products');
+    // ✅ OPTIMIZED: Fetch all products (cached 30min on backend)
+    // Frontend filters/paginates client-side for instant navigation
+    const res = await apiClient.get('/products/all');
     return res.data.products;
 }
 
@@ -17,21 +19,43 @@ export async function fetchShopProducts(filters?: {
     page?: number;
     limit?: number;
 }) {
-    const params = new URLSearchParams();
-    if (filters?.productType) params.append('productType', filters.productType);
-    if (filters?.category) params.append('category', filters.category);
-    if (filters?.collection) params.append('collection', filters.collection);
-    if (filters?.page) params.append('page', filters.page.toString());
-    if (filters?.limit) params.append('limit', filters.limit.toString());
+    // ✅ OPTIMIZED: Use cached products from /products/all
+    // Filter and paginate client-side for instant results
+    const allProducts = await fetchProducts(); // Already cached
 
-    const queryString = params.toString();
-    const url = queryString ? `/products/shop?${queryString}` : '/products/shop';
+    let filtered = allProducts;
 
-    const res = await apiClient.get(url);
-    return res.data; // Now returns { products, total, page, limit, totalPages }
+    // Apply filters client-side
+    if (filters?.productType) {
+        filtered = filtered.filter((p: any) => p.productType === filters.productType);
+    }
+    if (filters?.category) {
+        filtered = filtered.filter((p: any) => p.category === filters.category);
+    }
+    if (filters?.collection) {
+        filtered = filtered.filter((p: any) => p.collection === filters.collection);
+    }
+
+    // Paginate client-side
+    const page = filters?.page || 1;
+    const limit = filters?.limit || 12;
+    const total = filtered.length;
+    const totalPages = Math.ceil(total / limit);
+    const startIndex = (page - 1) * limit;
+    const products = filtered.slice(startIndex, startIndex + limit);
+
+    return { products, total, page, limit, totalPages };
 }
 
 export async function fetchProductBySlug(slug: string) {
-    const res = await apiClient.get(`/products/${slug}`);
-    return res.data;
+    // ✅ OPTIMIZED: Find product from cached /products/all
+    // No additional API call needed
+    const allProducts = await fetchProducts(); // Already cached
+    const product = allProducts.find((p: any) => p.slug === slug);
+
+    if (!product) {
+        throw new Error(`Product with slug "${slug}" not found`);
+    }
+
+    return product;
 }

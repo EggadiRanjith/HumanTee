@@ -8,6 +8,8 @@ import { CartProvider } from "./contexts/CartContext";
 import { CheckoutProvider } from "./contexts/CheckoutContext";
 import { ToastProvider } from "./contexts/ToastContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { SettingsProvider } from "./contexts/SettingsContext";
+import { ProductsProvider } from "./contexts/ProductsContext";
 import { NavigationLoader } from "./components/ui/loaders";
 import ScrollToTop from "./components/ui/ScrollToTop";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -27,21 +29,25 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <LoadingProvider>
-          <HeaderProvider>
-            <AuthProvider>
-              <CartProvider>
-                <CheckoutProvider>
-                  <ToastProvider>
-                    <ScrollToTop />
-                    <NavigationLoader />
-                    {children}
-                  </ToastProvider>
-                </CheckoutProvider>
-              </CartProvider>
-            </AuthProvider>
-          </HeaderProvider>
-        </LoadingProvider>
+        <SettingsProvider>
+          <ProductsProvider>
+            <LoadingProvider>
+              <HeaderProvider>
+                <AuthProvider>
+                  <CartProvider>
+                    <CheckoutProvider>
+                      <ToastProvider>
+                        <ScrollToTop />
+                        <NavigationLoader />
+                        {children}
+                      </ToastProvider>
+                    </CheckoutProvider>
+                  </CartProvider>
+                </AuthProvider>
+              </HeaderProvider>
+            </LoadingProvider>
+          </ProductsProvider>
+        </SettingsProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

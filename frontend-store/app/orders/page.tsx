@@ -13,6 +13,7 @@ import { GradientOverlay } from "@/app/components/ui/layout";
 import { OrderCard } from "@/app/components/ui/orders";
 import { Pagination } from "@/app/components/ui/navigation/Pagination";
 import { useOrders, useOrdersFilters } from './hooks';
+import { Order } from './types';
 import {
   OrdersHeader,
   OrdersFilters,
@@ -100,7 +101,7 @@ function OrdersPageContent() {
           <>
             {/* Order Cards */}
             <div className="space-y-5">
-              {orders.map((order) => (
+              {orders.map((order: Order) => (
                 <OrderCard key={order.id} order={order} />
               ))}
             </div>

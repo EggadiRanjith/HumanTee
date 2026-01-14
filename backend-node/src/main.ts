@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
+import compression from 'compression';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -11,6 +12,21 @@ async function bootstrap() {
   // Increase payload size limit for image uploads (base64)
   app.use(require('express').json({ limit: '50mb' }));
   app.use(require('express').urlencoded({ limit: '50mb', extended: true }));
+
+  // PERFORMANCE: Enable gzip/brotli compression for API responses
+  // Reduces response sizes by 60-70% (JSON compression)
+  app.use(compression({
+    level: 6, // Balanced compression (1-9, higher = more compression but slower)
+    threshold: 1024, // Only compress responses > 1KB
+    filter: (req, res) => {
+      // Don't compress if explicitly disabled
+      if (req.headers['x-no-compression']) {
+        return false;
+      }
+      // Use compression.filter for default filtering
+      return compression.filter(req, res);
+    },
+  }));
 
   // Global validation pipe
   app.useGlobalPipes(
@@ -60,6 +76,21 @@ async function bootstrap() {
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+    // Content Security Policy - CRITICAL for XSS protection
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'self'; " +
+      "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://vercel.live; " +
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+      "font-src 'self' https://fonts.gstatic.com; " +
+      "img-src 'self' data: https://res.cloudinary.com https://lh3.googleusercontent.com; " +
+      "connect-src 'self' https://humantee.onrender.com https://*.vercel.app https://*.google.com; " +
+      "frame-src https://api.razorpay.com https://vercel.live; " +
+      "object-src 'none'; " +
+      "base-uri 'self';"
+    );
+
     next();
   });
 

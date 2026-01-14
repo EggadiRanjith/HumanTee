@@ -23,7 +23,7 @@ interface User {
 interface AuthContextType {
     user: User | null;
     isLoading: boolean;
-    login: (accessToken: string, userData: User, cart?: any, addresses?: any[]) => void;
+    login: (accessToken: string, userData: User, cart?: any, addresses?: any[], profile?: any) => void;
     logout: () => Promise<void>;
     isAuthenticated: boolean;
 }
@@ -93,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     // Phase 1 + Phase 2: Login with cache hydration
-    const login = async (accessToken: string, userData: User, cart?: any, addresses?: any[]) => {
+    const login = async (accessToken: string, userData: User, cart?: any, addresses?: any[], profile?: any) => {
         setAccessToken(accessToken);
 
         // CRITICAL FIX: Merge guest cart BEFORE setting user
@@ -116,9 +116,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: userData.email,
         });
 
-        // Phase 2: Hydrate React Query cache from login payload
+        // ✅ OPTIMIZED: Hydrate React Query cache from login payload
         // This prevents redundant API calls after login
-        queryClient.setQueryData(queryKeys.user, userData);
+        if (profile) {
+            queryClient.setQueryData(queryKeys.user, profile);
+        } else {
+            queryClient.setQueryData(queryKeys.user, userData);
+        }
 
         if (addresses) {
             queryClient.setQueryData(

@@ -195,9 +195,6 @@ export class AuthController {
             path: '/',
         });
 
-        // Phase 1.5: Delegate to aggregation service
-        const redirectUrl = result.user.role?.toLowerCase() === 'admin' ? '/post-login' : '/';
-
         // Log login to login_audit_logs (for both admin and user)
         await this.loginAuditService.logLogin({
             userId: result.user.id,
@@ -209,11 +206,25 @@ export class AuthController {
             userAgent,
         });
 
-        return this.loginAggregationService.buildLoginPayload(
-            result.accessToken,
-            result.user,
+        // ✅ OPTIMIZED: Return profile and addresses from verifyOtp (already fetched)
+        // No need to call buildLoginPayload which would re-fetch addresses
+        const redirectUrl = result.user.role?.toLowerCase() === 'admin' ? '/post-login' : '/';
+
+        // Fetch cart separately (not included in verifyOtp)
+        const cart = await this.loginAggregationService['cartService'].getActiveCart(result.user.id).catch(() => ({ items: [] }));
+
+        return {
+            version: 1,
+            accessToken: result.accessToken,
+            user: result.user,
+            profile: result.profile, // ✅ From verifyOtp
+            addresses: result.addresses, // ✅ From verifyOtp
+            cart: {
+                items: cart.items || [],
+                itemCount: cart.items?.length || 0,
+            },
             redirectUrl,
-        );
+        };
     }
 
     @Post('google')

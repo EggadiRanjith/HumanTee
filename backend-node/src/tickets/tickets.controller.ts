@@ -53,12 +53,19 @@ export class TicketsController {
     }
 
     /**
-     * Get ticket detail with messages
-     * GET /api/tickets/:ticketId
+     * Get ticket detail with paginated messages
+     * GET /api/tickets/:ticketId?page=1&limit=20
      */
     @Get(':ticketId')
-    async getTicketDetail(@Param('ticketId') ticketId: string, @Request() req) {
-        return this.ticketsService.getTicketDetail(ticketId, req.user.userId);
+    async getTicketDetail(
+        @Param('ticketId') ticketId: string,
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
+        @Request() req?,
+    ) {
+        const pageNum = page ? parseInt(page, 10) : 1;
+        const limitNum = limit ? parseInt(limit, 10) : 20;
+        return this.ticketsService.getTicketDetail(ticketId, req.user.userId, pageNum, limitNum);
     }
 
     /**
@@ -99,12 +106,19 @@ export class AdminTicketsController {
     }
 
     /**
-     * Get ticket detail (admin view)
-     * GET /admin/tickets/:ticketId
+     * Get ticket detail (admin view) with paginated messages
+     * GET /admin/tickets/:ticketId?page=1&limit=20
      */
     @Get(':ticketId')
-    async getTicketDetail(@Param('ticketId') ticketId: string) {
-        const ticket = await this.ticketsService.getTicketDetail(ticketId, null as any);
+    async getTicketDetail(
+        @Param('ticketId') ticketId: string,
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
+    ) {
+        const pageNum = page ? parseInt(page, 10) : 1;
+        const limitNum = limit ? parseInt(limit, 10) : 20;
+        // Admin can view any ticket (no userId check)
+        const ticket = await this.ticketsService.getTicketDetail(ticketId, null as any, pageNum, limitNum);
         return ticket;
     }
 

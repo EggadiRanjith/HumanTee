@@ -165,23 +165,42 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     if (isAuthenticated) {
-      // Backend cart
+      // Backend cart with OPTIMISTIC UPDATE
+      // ✅ OPTIMISTIC: Add to UI immediately
+      const previousItems = [...items];
+
+      if (existingItem) {
+        setItems((prev) =>
+          prev.map((i) =>
+            i.id === item.id && (!item.size || i.size === item.size)
+              ? { ...i, quantity: i.quantity + quantity }
+              : i
+          )
+        );
+      } else {
+        setItems((prev) => [...prev, { ...item, quantity } as CartItem]);
+      }
+
       try {
+        // API call in background
         await apiClient.post('/cart/items', {
           productId: item.id.toString(),
           variantId: item.variantId || item.id.toString(),
           quantity,
         });
+        // Reload to ensure sync with backend (get cartItemId, etc.)
         await loadBackendCart();
         onSuccess?.();
         return true;
       } catch (error: any) {
+        // ❌ ROLLBACK: Restore previous state on error
+        setItems(previousItems);
         const message = error.response?.data?.message || 'Failed to add item to cart';
         onError?.(message);
         return false;
       }
     } else {
-      // Guest cart
+      // Guest cart (already optimistic)
       if (existingItem) {
         setItems((prev) =>
           prev.map((i) =>
@@ -201,22 +220,30 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const removeFromCart = async (id: number | string, size?: string) => {
     if (isAuthenticated) {
-      // Backend cart
+      // Backend cart with OPTIMISTIC UPDATE
       const item = items.find((i) => i.id === id && (!size || i.size === size));
       if (item) {
+        // ✅ OPTIMISTIC: Remove from UI immediately
+        const previousItems = [...items];
+        setItems((prev) => prev.filter((i) => !(i.id === id && (!size || i.size === size))));
+
         try {
-          // Use cartItemId (backend cart item ID) for deletion
+          // API call in background
           await apiClient.delete(`/cart/items/${(item as any).cartItemId}`);
+          // Reload to ensure sync with backend
           await loadBackendCart();
         } catch (error) {
+          // ❌ ROLLBACK: Restore previous state on error
+          setItems(previousItems);
           logError(error, 'Failed to remove item');
         }
       }
     } else {
-      // Guest cart
+      // Guest cart (already optimistic)
       setItems((prev) => prev.filter((item) => !(item.id === id && (!size || item.size === size))));
     }
   };
+
 
   const updateQuantity = async (id: number | string, size: string, quantity: number) => {
     if (quantity <= 0) {
@@ -225,19 +252,32 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     if (isAuthenticated) {
-      // Backend cart
+      // Backend cart with OPTIMISTIC UPDATE
       const item = items.find((i) => i.id === id && i.size === size);
       if (item) {
+        // ✅ OPTIMISTIC: Update UI immediately
+        const previousItems = [...items];
+        setItems((prev) =>
+          prev.map((i) =>
+            i.id === id && i.size === size
+              ? { ...i, quantity }
+              : i
+          )
+        );
+
         try {
-          // Use cartItemId (backend cart item ID) for update
+          // API call in background
           await apiClient.patch(`/cart/items/${(item as any).cartItemId}`, { quantity });
+          // Reload to ensure sync with backend
           await loadBackendCart();
         } catch (error) {
+          // ❌ ROLLBACK: Restore previous state on error
+          setItems(previousItems);
           logError(error, 'Failed to update quantity');
         }
       }
     } else {
-      // Guest cart
+      // Guest cart (already optimistic)
       setItems((prev) =>
         prev.map((item) =>
           (item.id === id && item.size === size)
@@ -247,6 +287,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       );
     }
   };
+
 
   const clearCart = async () => {
     if (isAuthenticated) {

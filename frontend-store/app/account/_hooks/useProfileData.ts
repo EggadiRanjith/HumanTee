@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/api-client";
+import { queryKeys } from "@/lib/queryKeys";
 import { logError } from "@/lib/logger";
 
 interface UserProfile {
@@ -46,22 +48,14 @@ export function useProfileData(
     userEmail?: string,
     userRole?: string
 ): UseProfileDataReturn {
-    const [profile, setProfile] = useState<UserProfile | null>(null);
-    const [isLoadingProfile, setIsLoadingProfile] = useState(true);
-    const [profileError, setProfileError] = useState(false);
-    const [shippingAddresses, setShippingAddresses] = useState<ShippingAddress[]>([]);
-    const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
-    const [addressesError, setAddressesError] = useState(false);
+    const queryClient = useQueryClient();
 
-    // Fetch profile
-    const fetchProfile = async () => {
-        if (!userId) return;
-
-        setIsLoadingProfile(true);
-        setProfileError(false);
-        try {
+    // ✅ OPTIMIZED: Use React Query - checks cache from login payload first
+    const { data: profileData, isLoading: isLoadingProfile, error: profileError, refetch: retryProfile } = useQuery({
+        queryKey: queryKeys.user,
+        queryFn: async () => {
             const response = await apiClient.get('/auth/me');
-            setProfile({
+            return {
                 id: response.data.id,
                 email: response.data.email,
                 role: response.data.role,
@@ -69,39 +63,19 @@ export function useProfileData(
                 phone: response.data.profile?.phone,
                 avatarUrl: response.data.profile?.avatarUrl,
                 profileComplete: response.data.profileComplete,
-            });
-        } catch (error) {
-            logError(error, 'Failed to load profile');
-            setProfileError(true);
-            // Fallback
-            setProfile({
-                id: userId,
-                email: userEmail || '',
-                role: userRole || 'customer',
-                profileComplete: false,
-            });
-        } finally {
-            setIsLoadingProfile(false);
-        }
-    };
+            };
+        },
+        enabled: !!userId,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+    });
 
-    useEffect(() => {
-        if (userId) {
-            fetchProfile();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [userId]); // Only depend on userId - fetch fresh data from /auth/me
-
-    // Fetch addresses
-    const fetchAddresses = async () => {
-        if (!userId) return;
-
-        setIsLoadingAddresses(true);
-        setAddressesError(false);
-        try {
+    // ✅ OPTIMIZED: Use React Query - checks cache from login payload first
+    const { data: addressesData, isLoading: isLoadingAddresses, error: addressesError, refetch: retryAddresses } = useQuery({
+        queryKey: queryKeys.addresses(userId || ''),
+        queryFn: async () => {
             const response = await apiClient.get('/shipping-addresses');
             if (response.data && response.data.length > 0) {
-                const addresses = response.data.map((addr: any) => ({
+                return response.data.map((addr: any) => ({
                     id: addr.id,
                     fullName: addr.fullName,
                     phone: addr.phone,
@@ -115,45 +89,35 @@ export function useProfileData(
                     country: addr.country,
                     isDefault: addr.isDefault,
                 }));
-                setShippingAddresses(addresses);
             }
-        } catch (error) {
-            logError(error, 'Failed to load shipping addresses');
-            setAddressesError(true);
-        } finally {
-            setIsLoadingAddresses(false);
-        }
-    };
-
-    useEffect(() => {
-        if (userId) {
-            fetchAddresses();
-        }
-    }, [userId]);
+            return [];
+        },
+        enabled: !!userId,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+    });
 
     const updateProfile = (updated: Partial<UserProfile>) => {
-        setProfile((prev) => (prev ? { ...prev, ...updated } : null));
+        queryClient.setQueryData(queryKeys.user, (old: any) =>
+            old ? { ...old, ...updated } : null
+        );
     };
 
     const updateAddresses = (addresses: ShippingAddress[]) => {
-        setShippingAddresses(addresses);
-    };
-
-    const retryProfile = () => {
-        fetchProfile();
-    };
-
-    const retryAddresses = () => {
-        fetchAddresses();
+        queryClient.setQueryData(queryKeys.addresses(userId || ''), addresses);
     };
 
     return {
-        profile,
+        profile: profileData || (userId ? {
+            id: userId,
+            email: userEmail || '',
+            role: userRole || 'customer',
+            profileComplete: false,
+        } : null),
         isLoadingProfile,
-        profileError,
-        shippingAddresses,
+        profileError: !!profileError,
+        shippingAddresses: addressesData || [],
         isLoadingAddresses,
-        addressesError,
+        addressesError: !!addressesError,
         updateProfile,
         updateAddresses,
         retryProfile,

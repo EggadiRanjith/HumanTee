@@ -6,12 +6,9 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback, Suspense } from 'react';
-import { logError } from '@/lib/logger';
+import React, { useState, useMemo, useCallback, Suspense } from 'react';
 import { GradientOverlay } from '@/app/components/ui/layout';
-import { fetchShopProducts } from '@/lib/app/api/products';
-import { adaptProducts } from '@/lib/app/adapters/product.adapter';
-import { Product } from '@/app/types/product.types';
+import { useProducts } from '@/app/contexts/ProductsContext';
 import { ProductGrid } from '@/app/components/sections/FeaturedProducts/components';
 import { Pagination } from '@/app/components/ui/navigation/Pagination';
 import { useShopFilters } from './hooks';
@@ -23,7 +20,7 @@ import {
   ShopError
 } from './components';
 import ShopFilters from './ShopFilters';
-import { publicSettingsApi } from '@/lib/app/api/public-settings';
+
 
 interface ShopSettings {
   categories?: string[];
@@ -34,69 +31,42 @@ interface ShopSettings {
 }
 
 function ShopPageContent() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [totalPages, setTotalPages] = useState(1);
+  // Get all products from shared context
+  const { products: allProducts, loading } = useProducts();
 
   // URL-based filters (shareable links!)
   const { filters, setFilters, clearFilters, activeFilterCount } = useShopFilters();
 
-  // Extract primitive values to stabilize useEffect dependencies
-  const category = filters.category;
-  const collection = filters.collection;
-  const page = filters.page;
+  // Hardcoded shop configuration (no backend settings needed)
+  const itemsPerPage = 12;
+  const showFilters = true;
 
-  // Shop settings state (API only, no fallbacks)
-  const [shopSettings, setShopSettings] = useState<ShopSettings | null>(null);
-  const [settingsLoading, setSettingsLoading] = useState(true);
+  // Client-side filtering and pagination
+  const { filteredProducts, totalPages } = useMemo(() => {
+    let filtered = [...allProducts];
 
-  // Load shop settings from API (no fallbacks)
-  useEffect(() => {
-    async function loadSettings() {
-      try {
-        const allSettings = await publicSettingsApi.getAll();
-        const shopData = allSettings?.shop;
-        setShopSettings(shopData || null);
-      } catch (err) {
-        logError(err, 'Failed to load shop settings');
-        setShopSettings(null); // No fallback, just null
-      } finally {
-        setSettingsLoading(false);
-      }
+    // Apply category filter
+    if (filters.category) {
+      filtered = filtered.filter(p => p.category === filters.category);
     }
-    loadSettings();
-  }, []);
 
-  const itemsPerPage = shopSettings?.items_per_page || 12;
+    // Apply collection filter
+    if (filters.collection) {
+      filtered = filtered.filter(p => p.collection === filters.collection);
+    }
 
-  // Load products when filters change
-  useEffect(() => {
-    if (settingsLoading) return;
+    // Calculate pagination
+    const total = filtered.length;
+    const pages = Math.ceil(total / itemsPerPage);
+    const currentPage = filters.page || 1;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedProducts = filtered.slice(startIndex, startIndex + itemsPerPage);
 
-    const loadProducts = async () => {
-      setLoading(true);
-      setError(false);
-
-      try {
-        const data = await fetchShopProducts({
-          category,
-          collection,
-          page: page || 1,
-          limit: itemsPerPage
-        });
-        setProducts(adaptProducts(data.products));
-        setTotalPages(data.totalPages);
-      } catch (err) {
-        logError(err, 'Failed to fetch shop products');
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
+    return {
+      filteredProducts: paginatedProducts,
+      totalPages: pages
     };
-
-    loadProducts();
-  }, [category, collection, page, itemsPerPage, settingsLoading]);
+  }, [allProducts, filters.category, filters.collection, filters.page, itemsPerPage]);
 
   // Handle filter changes
   const handleFilterChange = useCallback((newFilters: {
@@ -121,19 +91,19 @@ function ShopPageContent() {
   // Extract unique categories and collections from products
   const uniqueCategories = React.useMemo(() => {
     const cats = new Set<string>();
-    products.forEach(p => {
+    allProducts.forEach(p => {
       if (p.category) cats.add(p.category);
     });
     return Array.from(cats).sort();
-  }, [products]);
+  }, [allProducts]);
 
   const uniqueCollections = React.useMemo(() => {
     const colls = new Set<string>();
-    products.forEach(p => {
+    allProducts.forEach(p => {
       if (p.collection) colls.add(p.collection);
     });
     return Array.from(colls).sort();
-  }, [products]);
+  }, [allProducts]);
 
   // Standard sort options
   const sortOptions = [
@@ -152,7 +122,7 @@ function ShopPageContent() {
         <ShopHeader />
 
         {/* Filters */}
-        {shopSettings?.show_filters !== false && (
+        {showFilters && (
           <ShopFilters
             onFilterChange={handleFilterChange}
             categories={uniqueCategories}
@@ -171,15 +141,13 @@ function ShopPageContent() {
         />
 
         {/* Product Grid or States */}
-        {loading || settingsLoading ? (
+        {loading ? (
           <ShopSkeleton />
-        ) : error ? (
-          <ShopEmpty />
-        ) : products.length === 0 ? (
+        ) : filteredProducts.length === 0 ? (
           <ShopEmpty />
         ) : (
           <>
-            <ProductGrid products={products} showViewAll={false} />
+            <ProductGrid products={filteredProducts} showViewAll={false} />
             <Pagination
               currentPage={filters.page || 1}
               totalPages={totalPages}

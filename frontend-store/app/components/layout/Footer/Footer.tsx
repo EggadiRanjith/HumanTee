@@ -6,12 +6,12 @@ import { usePathname } from "next/navigation";
 import { useMediaQuery } from "@/app/hooks/useMediaQuery";
 import ScrollingText from "../shared/ScrollingText";
 import { BrandSection, FooterNav, FooterSkeleton } from "./components";
-import { useSectionSettings } from "@/app/hooks/useSettings";
+import { useFooterSettings } from "./hooks/useFooterSettings";
 import { FOOTER_NAV_SECTIONS } from "./constants";
 
 function Footer() {
   // Get header-footer settings from centralized cache
-  const { settings, isLoading } = useSectionSettings('header-footer');
+  const { settings, isLoading } = useFooterSettings();
   const pathname = usePathname();
 
   if (pathname?.startsWith('/maintenance')) {

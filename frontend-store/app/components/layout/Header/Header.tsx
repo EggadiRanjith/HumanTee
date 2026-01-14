@@ -12,7 +12,7 @@ import { useCartSummary } from "@/app/contexts/CartContext";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { AuthStatus, AuthStatusMobile } from "./components/AuthStatus";
 import { MobileMenu, CartBadge, HeaderSkeleton } from "./components";
-import { useSectionSettings } from "@/app/hooks/useSettings";
+import { useHeaderSettings } from "./hooks/useHeaderSettings";
 import { HEADER_Z_INDEX, NAV_LINKS, ICON_SIZES } from "./constants";
 import { FOCUS_RING } from "../shared/design-tokens";
 
@@ -21,7 +21,7 @@ function Header() {
   const { user, isAuthenticated } = useAuth();
   const pathname = usePathname();
   // Get header-footer settings from centralized cache
-  const { settings, isLoading } = useSectionSettings('header-footer');
+  const { settings, isLoading } = useHeaderSettings();
 
   // Hide header on maintenance page
   if (pathname?.startsWith('/maintenance')) {

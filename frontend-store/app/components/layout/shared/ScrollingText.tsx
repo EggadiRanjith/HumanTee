@@ -1,11 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useSectionSettings } from "@/app/hooks/useSettings";
+import { useSettings } from "@/app/contexts/SettingsContext";
 
 export default function ScrollingText() {
     // Fetch footer banner settings from header-footer section
-    const { settings, isLoading } = useSectionSettings('header-footer');
+    const { settings, loading: isLoading } = useSettings();
+    const headerFooter = settings?.['header-footer'];
 
     // Import fallback settings
     const fallbackSettings = require('@/config/fallback-settings.json');

@@ -1,54 +1,22 @@
 /**
  * Reviews Settings Hook
- * Fetches reviews from API with fallback support
+ * ✅ OPTIMIZED: Uses shared SettingsContext
  */
 
 "use client";
 
-import { useState, useEffect } from "react";
-import { settingsApi } from "@/lib/api/settings";
+import { useSettings } from "@/app/contexts/SettingsContext";
 import fallbackSettings from "@/config/fallback-settings.json";
-import { Review } from "@/app/types/review.types";
-
-interface ReviewsSettings {
-    enabled: boolean;
-    title: string;
-    items: Review[];
-}
 
 export function useReviewsSettings() {
-    const [settings, setSettings] = useState<ReviewsSettings>({
-        enabled: fallbackSettings.homepage.reviews.enabled,
-        title: fallbackSettings.homepage.reviews.title,
-        items: fallbackSettings.homepage.reviews.items as Review[],
-    });
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
+    const { settings, loading, error } = useSettings();
 
-    useEffect(() => {
-        async function fetchReviewsSettings() {
-            try {
-                const data = await settingsApi.getPublicSettings();
+    // Group reviews settings into a shape that match other settings hooks
+    const reviewsData = {
+        items: settings?.homepage?.reviews?.reviews || fallbackSettings.homepage.reviews.items,
+        enabled: settings?.homepage?.reviews_settings?.enabled ?? fallbackSettings.homepage.reviews.enabled,
+        title: settings?.homepage?.reviews_settings?.title || "Customer Reviews"
+    };
 
-                // Extract reviews from the unified settings response
-                const reviewsData = data?.['homepage-reviews' as keyof typeof data] as any;
-                if (reviewsData) {
-                    setSettings({
-                        enabled: reviewsData.enabled ?? true,
-                        title: reviewsData.title || "What Our Customers Say",
-                        items: reviewsData.items || reviewsData.reviews || [],
-                    });
-                }
-            } catch (err) {
-                console.warn("⚠️ Failed to fetch reviews settings, using fallback:", err);
-                setError(err as Error);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-
-        fetchReviewsSettings();
-    }, []);
-
-    return { settings, isLoading, error };
+    return { settings: reviewsData, loading, error };
 }

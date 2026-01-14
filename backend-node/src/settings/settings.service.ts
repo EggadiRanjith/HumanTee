@@ -39,6 +39,30 @@ export class SettingsService {
     }
 
     /**
+     * Get multiple sections in ONE database query (optimized)
+     */
+    async getMultipleSections(sections: string[], environment: string = 'production'): Promise<Record<string, Record<string, any>>> {
+        // Single query with IN clause
+        const settings = await this.settingRepository
+            .createQueryBuilder('setting')
+            .where('setting.section IN (:...sections)', { sections })
+            .andWhere('setting.environment = :environment', { environment })
+            .andWhere('setting.isActive = :isActive', { isActive: true })
+            .andWhere('setting.isPublished = :isPublished', { isPublished: true })
+            .getMany();
+
+        // Group by section
+        return settings.reduce((acc, setting) => {
+            if (!acc[setting.section]) {
+                acc[setting.section] = {};
+            }
+            const shortKey = setting.key.replace(`${setting.section}.`, '');
+            acc[setting.section][shortKey] = setting.value;
+            return acc;
+        }, {} as Record<string, Record<string, any>>);
+    }
+
+    /**
      * Update section settings (ATOMIC with validation and history)
      */
     async updateSection(

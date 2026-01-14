@@ -1,10 +1,9 @@
 "use client";
 
 import { Hero, FeaturedProducts } from "./components/sections";
-import { logError } from '@/lib/logger';
-import { Suspense, memo, useEffect, useState } from "react";
+import { Suspense, memo } from "react";
 import dynamic from "next/dynamic";
-import { publicSettingsApi } from "@/lib/app/api/public-settings";
+import { useSettings } from "./contexts/SettingsContext";
 
 // Skeleton loader for lazy sections
 const SectionSkeleton = memo(() => (
@@ -23,24 +22,9 @@ const Reviews = dynamic(() => import("./components/sections/Reviews/Reviews"), {
 });
 
 export default function Home() {
-    const [homepageSettings, setHomepageSettings] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        // Fetch homepage settings from API
-        async function loadSettings() {
-            try {
-                const settings = await publicSettingsApi.getHomepage();
-                setHomepageSettings(settings);
-            } catch (error) {
-                logError(error, 'Failed to load homepage settings');
-                // Will fall back to hardcoded data in components
-            } finally {
-                setLoading(false);
-            }
-        }
-        loadSettings();
-    }, []);
+    // ✅ OPTIMIZED: Use shared settings context (1 API call for entire app)
+    const { settings } = useSettings();
+    const homepageSettings = settings?.homepage;
 
     return (
         <>

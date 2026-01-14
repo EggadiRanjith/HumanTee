@@ -14,7 +14,7 @@ import { useHeroCarousel, useVideoPlayer, useIsMobile } from "./hooks";
 import { isSlideVisible, getSlideContentClasses } from "./utils";
 import { HERO_CONSTANTS, SLIDE_STYLES } from "./constants";
 import { HeroProps } from "./types";
-import { useSectionSettings } from "@/app/hooks/useSettings";
+import { useHeroSettings } from "./hooks/useHeroSettings";
 
 
 
@@ -23,7 +23,7 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
   const isMobile = useIsMobile(768);
 
   // Fetch hero settings from centralized cache
-  const { settings: heroSettings } = useSectionSettings('hero');
+  const { settings: heroSettings } = useHeroSettings();
 
   // Use prop slides if provided, otherwise use API/fallback slides
   const slides = propSlides && propSlides.length > 0 ? propSlides : heroSettings?.slides;

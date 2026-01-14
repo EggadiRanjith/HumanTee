@@ -34,7 +34,9 @@ import { ShippingModule } from '../shipping/shipping.module';
             imports: [ConfigModule],
             useFactory: async (configService: ConfigService) => ({
                 secret: configService.get<string>('JWT_SECRET'),
-                signOptions: { expiresIn: '15m' },
+                signOptions: {
+                    expiresIn: (configService.get<string>('JWT_EXPIRATION') || '15m') as any
+                },
             }),
             inject: [ConfigService],
         }),

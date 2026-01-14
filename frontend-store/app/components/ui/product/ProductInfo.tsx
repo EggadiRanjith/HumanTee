@@ -19,7 +19,7 @@ import { QuantitySelector } from './QuantitySelector';
 import { ProductDetails } from './ProductDetails';
 import { SizeGuide } from '@/app/components/ui/modals/SizeGuide';
 import { FiInfo } from 'react-icons/fi';
-import { useSectionSettings } from "@/app/hooks/useSettings";
+import { useSettings } from "@/app/contexts/SettingsContext";
 
 // Dynamic import to prevent SSR issues
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
@@ -47,7 +47,8 @@ const ProductInfoComponent = ({ product }: ProductInfoProps) => {
     const { showToast } = useToast();
 
     // Get product-info settings from centralized cache
-    const { settings: pageSettings } = useSectionSettings('product-info');
+    const { settings } = useSettings();
+    const pageSettings = settings?.['product-info'];
 
     // Extract settings with proper typing
     const productSettings: ProductSettings = pageSettings || {

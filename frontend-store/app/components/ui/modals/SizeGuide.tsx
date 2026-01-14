@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { FiX, FiInfo, FiChevronLeft, FiChevronRight } from "react-icons/fi";
-import { useSectionSettings } from "@/app/hooks/useSettings";
+import { useSettings } from "@/app/contexts/SettingsContext";
 import { FocusTrap } from "@/app/components/ui/accessibility/FocusTrap";
 
 interface SizeGuideProps {
@@ -17,7 +17,8 @@ export function SizeGuide({ isOpen, onClose }: SizeGuideProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
 
     // Get product-info settings from centralized cache
-    const { settings } = useSectionSettings('product-info');
+    const { settings: allSettings } = useSettings();
+    const settings = allSettings?.['product-info'];
 
     // Extract size guide images from settings
     useEffect(() => {

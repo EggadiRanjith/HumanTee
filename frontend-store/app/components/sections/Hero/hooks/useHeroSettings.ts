@@ -1,55 +1,25 @@
 /**
- * Hero Settings Hook
- * Fetches hero slides from API with fallback support
+ * Custom hook for Hero settings management
+ * ✅ OPTIMIZED: Uses shared SettingsContext (no individual API call)
  */
 
 "use client";
 
-import { useState, useEffect } from "react";
-import { HeroSlide, HeroSettings } from "../types";
+import { useSettings } from "@/app/contexts/SettingsContext";
 import fallbackSettings from "@/config/fallback-settings.json";
+import { HeroSettings } from "../types";
 
 export function useHeroSettings() {
-    const [settings, setSettings] = useState<HeroSettings>({
-        slides: fallbackSettings.homepage.hero.slides as HeroSlide[],
-    });
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
+    const { settings, loading, error } = useSettings();
 
-    useEffect(() => {
-        async function fetchHeroSettings() {
-            try {
-                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-                const response = await fetch(`${apiUrl}/api/settings/hero`, {
-                    cache: "no-store",
-                });
+    // Extract hero slides with fallback
+    const heroSlides = settings?.homepage?.hero_slides?.slides || fallbackSettings.homepage.hero.slides;
 
-                if (!response.ok) {
-                    throw new Error(`API responded with status: ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                // Map API response to HeroSettings
-                // API returns: { data: { homepage: { hero_slides: { slides: [...] } } } }
-                const slides = data?.data?.homepage?.hero_slides?.slides || data?.slides;
-
-                if (slides && Array.isArray(slides)) {
-                    setSettings({
-                        slides: slides,
-                    });
-                }
-            } catch (err) {
-                console.warn("⚠️ Failed to fetch hero settings, using fallback:", err);
-                setError(err as Error);
-                // Keep fallback settings (already set in initial state)
-            } finally {
-                setIsLoading(false);
-            }
-        }
-
-        fetchHeroSettings();
-    }, []);
-
-    return { settings, isLoading, error };
+    return {
+        settings: {
+            slides: heroSlides
+        } as HeroSettings,
+        loading,
+        error
+    };
 }

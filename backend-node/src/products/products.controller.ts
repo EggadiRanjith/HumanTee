@@ -24,6 +24,18 @@ export class ProductsController {
     }
 
     /**
+     * ✅ NEW: GET /products/all
+     * Get ALL ACTIVE products (optimized for small catalogs)
+     * Frontend uses this for featured, shop, and product detail
+     * Client-side filtering/pagination for instant navigation
+     */
+    @Get('all')
+    async getAllProducts(): Promise<{ products: ProductResponseDto[] }> {
+        const products = await this.productsService.getAllProducts();
+        return { products };
+    }
+
+    /**
      * GET /products/shop
      * List all ACTIVE products with optional filters
      * Query params: productType, category, collection

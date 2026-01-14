@@ -97,19 +97,55 @@ export class TicketsService {
     }
 
     /**
-     * Get ticket detail with full conversation
+     * Get ticket detail with paginated messages
+     * @param page - Page number (default: 1)
+     * @param limit - Messages per page (default: 20)
      */
-    async getTicketDetail(ticketId: string, userId: string): Promise<Ticket> {
+    async getTicketDetail(
+        ticketId: string,
+        userId: string,
+        page: number = 1,
+        limit: number = 20
+    ): Promise<{
+        ticket: Ticket;
+        messages: TicketMessage[];
+        pagination: {
+            page: number;
+            limit: number;
+            total: number;
+            totalPages: number;
+        };
+    }> {
+        // Fetch ticket without messages first
         const ticket = await this.ticketRepository.findOne({
             where: { id: ticketId, userId },
-            relations: ['user', 'user.profile', 'messages', 'messages.user', 'messages.user.profile', 'statusHistory', 'statusHistory.changedByUser', 'order'],
+            relations: ['user', 'user.profile', 'statusHistory', 'statusHistory.changedByUser', 'order'],
         });
 
         if (!ticket) {
             throw new NotFoundException('Ticket not found');
         }
 
-        return ticket;
+        // Fetch messages separately with pagination
+        const skip = (page - 1) * limit;
+        const [messages, total] = await this.messageRepository.findAndCount({
+            where: { ticketId },
+            relations: ['user', 'user.profile'],
+            order: { createdAt: 'ASC' }, // Oldest first
+            skip,
+            take: limit,
+        });
+
+        return {
+            ticket,
+            messages,
+            pagination: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit),
+            },
+        };
     }
 
     /**

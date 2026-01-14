@@ -39,6 +39,30 @@ export class ProductsService {
     }
 
     /**
+     * ✅ NEW: Get ALL ACTIVE products (optimized for small catalogs < 200 products)
+     * Cache: 30 minutes (use for featured, shop, and product detail)
+     * Frontend filters/paginates client-side for instant navigation
+     */
+    async getAllProducts(): Promise<ProductResponseDto[]> {
+        return this.cacheService.remember(
+            'products:all',
+            async () => {
+                const products = await this.productRepo.find({
+                    where: {
+                        status: ProductStatus.ACTIVE
+                    },
+                    relations: ['variants', 'images', 'collectionMaps', 'collectionMaps.collection'],
+                    order: {
+                        created_at: 'DESC'
+                    }
+                });
+                return products.map((product) => this.transformProduct(product));
+            },
+            { ttl: 1800 } // 30 minutes
+        );
+    }
+
+    /**
      * Get single ACTIVE product by slug with Redis caching
      * Cache: 5 minutes (product details change occasionally)
      */

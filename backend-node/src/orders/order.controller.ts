@@ -18,8 +18,10 @@ export class OrderController {
     /**
      * Prepare order - Calculate and create Razorpay order WITHOUT saving to DB
      * POST /orders/prepare
+     * SECURITY: Strict rate limit to prevent payment abuse
      */
     @Post('prepare')
+    @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 per minute (stricter than controller)
     async prepareOrder(@Request() req, @Body() createOrderDto: CreateOrderDto) {
         const userId = req.user?.userId || null;
         const result = await this.orderService.prepareOrder(userId, createOrderDto) as any;
@@ -37,9 +39,11 @@ export class OrderController {
      * Confirm order - Verify payment and save to database
      * POST /orders/confirm
      * Requires authentication to link order to user
+     * SECURITY: Very strict rate limit for payment confirmation
      */
     @Post('confirm')
     @UseGuards(JwtAuthGuard)
+    @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 per minute (very strict)
     async confirmOrder(@Request() req, @Body() data: {
         idempotencyKey: string;  // CRITICAL: Frontend-generated unique key
         razorpayOrderId: string;

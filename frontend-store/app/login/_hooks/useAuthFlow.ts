@@ -87,9 +87,9 @@ export function useAuthFlow() {
                 throw new Error('Invalid OTP');
             }
 
-            // OPTIMIZED: Backend returns profile + addresses in login response
+            // ✅ OPTIMIZED: Backend returns profile + addresses in login response
             const data = await response.json();
-            await authLogin(data.accessToken, data.user, null, data.addresses);
+            await authLogin(data.accessToken, data.user, null, data.addresses, data.profile);
 
             setSuccess("Login successful! Redirecting...");
             setTimeout(() => {
@@ -124,9 +124,9 @@ export function useAuthFlow() {
                 throw new Error(errorData.message || 'Google login failed');
             }
 
-            // OPTIMIZED: Backend returns profile + addresses in login response
+            // ✅ OPTIMIZED: Backend returns profile + addresses in login response
             const data = await response.json();
-            await authLogin(data.accessToken, data.user, null, data.addresses);
+            await authLogin(data.accessToken, data.user, null, data.addresses, data.profile);
 
             // Redirect to the URL specified in query params, or homepage
             const redirectUrl = searchParams.get('redirect') || '/';
