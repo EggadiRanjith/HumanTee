@@ -82,6 +82,7 @@ const nextConfig: NextConfig = {
               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
               img-src 'self' data: https:;
               font-src 'self' data: https://fonts.gstatic.com;
+              media-src 'self' https://res.cloudinary.com;
               connect-src 'self' ${apiUrl} https://sentry.io https://api.razorpay.com;
               frame-src 'self' https://api.razorpay.com;
               report-uri /api/csp-report;
