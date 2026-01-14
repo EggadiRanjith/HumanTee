@@ -27,23 +27,26 @@ import { SessionService } from './session.service';
                     password: process.env.REDIS_PASSWORD,
                     db: parseInt(process.env.REDIS_DB || '0'),
 
-                    // Connection pool - DISABLED FOR DEVELOPMENT
-                    maxRetriesPerRequest: 0, // Don't retry
-                    enableReadyCheck: false,
-                    enableOfflineQueue: false,
+                    // Connection pool - PRODUCTION OPTIMIZED
+                    maxRetriesPerRequest: 3, // Retry failed commands
+                    enableReadyCheck: true, // Wait for ready state
+                    enableOfflineQueue: true, // Queue commands when offline
 
-                    // Reconnection strategy - DISABLED
-                    retryStrategy: () => null, // Don't reconnect
+                    // Reconnection strategy - PRODUCTION
+                    retryStrategy: (times) => {
+                        const delay = Math.min(times * 50, 2000); // Max 2s delay
+                        return delay;
+                    },
 
                     // Timeouts
-                    connectTimeout: 1000,
-                    commandTimeout: 1000,
+                    connectTimeout: 5000, // 5s for initial connection
+                    commandTimeout: 3000, // 3s for commands
 
                     // Keep-alive
                     keepAlive: 30000,
 
-                    // Lazy connect (don't connect until needed)
-                    lazyConnect: true,
+                    // Connect immediately (not lazy)
+                    lazyConnect: false, // Connect on startup
                 },
             }),
         }),
