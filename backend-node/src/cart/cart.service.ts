@@ -84,7 +84,7 @@ export class CartService {
 
                 return cart;
             },
-            { ttl: 300 } // 5 minutes (cart changes frequently)
+            { ttl: 1800 } // 30 min - invalidated on cart updates
         );
     }
 

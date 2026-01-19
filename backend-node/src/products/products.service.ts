@@ -34,7 +34,7 @@ export class ProductsService {
                 });
                 return products.map((product) => this.transformProduct(product));
             },
-            { ttl: 600 } // 10 minutes
+            { ttl: 7200 } // 2 hours - featured products change rarely
         );
     }
 
@@ -58,7 +58,7 @@ export class ProductsService {
                 });
                 return products.map((product) => this.transformProduct(product));
             },
-            { ttl: 1800 } // 30 minutes
+            { ttl: 7200 } // 2 hours - all products, client-side filtering
         );
     }
 
@@ -81,7 +81,7 @@ export class ProductsService {
 
                 return this.transformProduct(product);
             },
-            { ttl: 300 } // 5 minutes
+            { ttl: 3600 } // 1 hour - product details change occasionally
         );
     }
 
