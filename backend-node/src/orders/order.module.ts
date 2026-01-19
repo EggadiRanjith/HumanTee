@@ -19,12 +19,14 @@ import { DiscountsModule } from '../discounts/discounts.module';
 import { RazorpayService } from '../payments/razorpay.service';
 import { AuthModule } from '../auth/auth.module';
 import { RedisModule } from '../redis/redis.module';
+import { EmailModule } from '../email/email.module';
 
 @Module({
     imports: [
         DiscountsModule,
         AuthModule,
         RedisModule,
+        EmailModule,
         PassportModule,
         JwtModule.register({
             secret: process.env.JWT_SECRET || 'your-secret-key',
