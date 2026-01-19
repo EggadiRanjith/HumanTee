@@ -192,7 +192,7 @@ export class AuthController {
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
             secure: isProduction,  // HTTPS only in production
-            sameSite: isProduction ? 'none' : 'lax',  // 'none' for cross-origin in prod
+            sameSite: 'lax',  // Works for same-site and cross-site top-level navigation
             maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
             path: '/',
         });
