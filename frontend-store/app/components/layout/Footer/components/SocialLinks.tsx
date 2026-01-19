@@ -19,6 +19,7 @@ export default function SocialLinks({ instagram, maps }: SocialLinksProps) {
             {/* Follow Us */}
             <Link
                 href={instagram}
+                prefetch={false}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Follow us on Instagram"
@@ -48,6 +49,7 @@ export default function SocialLinks({ instagram, maps }: SocialLinksProps) {
             {/* Location */}
             <Link
                 href={maps}
+                prefetch={false}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="View our location on Google Maps"

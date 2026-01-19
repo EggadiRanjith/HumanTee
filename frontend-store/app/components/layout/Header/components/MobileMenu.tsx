@@ -58,6 +58,7 @@ export default function MobileMenu({ open, onClose, headerHeight }: MobileMenuPr
                         <Link
                             key={link.href}
                             href={link.href}
+                            prefetch={link.href === '/shop' ? true : false}
                             onClick={onClose}
                             className="px-3 py-3 text-sm hover:text-white hover:bg-white/5 rounded-lg transition-colors"
                         >

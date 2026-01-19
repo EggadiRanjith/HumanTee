@@ -134,7 +134,7 @@ export default function ShippingPolicyPage() {
               Email us
             </Link>
             <span className="hidden sm:block text-white/20">/</span>
-            <Link href={`tel:${settings.contact.phone.replace(/[^0-9+]/g, '')}`} className="hover:text-white/80">
+            <Link href={`tel:${settings.contact.phone?.replace(/[^0-9+]/g, '') || ''}`} className="hover:text-white/80">
               Call us
             </Link>
           </div>

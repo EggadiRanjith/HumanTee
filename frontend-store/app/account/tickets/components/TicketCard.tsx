@@ -35,7 +35,7 @@ const TicketCardComponent = ({ ticket }: TicketCardProps) => {
                         {ticket.subject}
                     </h3>
                     <div className="flex items-center gap-3 text-[11px] text-white/30 uppercase tracking-widest mt-1">
-                        <span>Category: {ticket.category.replace('_', ' ')}</span>
+                        <span>Category: {ticket.category?.replace('_', ' ') || 'N/A'}</span>
                     </div>
                 </div>
 

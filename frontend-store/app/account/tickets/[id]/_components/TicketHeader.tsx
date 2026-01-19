@@ -57,7 +57,7 @@ export default function TicketHeader({
                         </span>
                     </div>
                     <p className="text-white/40 text-xs mt-1 uppercase tracking-widest">
-                        {category.replace('_', ' ')} • Opened on {new Date(createdAt).toLocaleDateString()}
+                        {category?.replace('_', ' ') || 'General'} • Opened on {new Date(createdAt).toLocaleDateString()}
                     </p>
                 </div>
             </div>

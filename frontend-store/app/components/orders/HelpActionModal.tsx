@@ -6,6 +6,7 @@ import { m, AnimatePresence } from "framer-motion";
 import { FiX, FiPlusCircle, FiList, FiAlertCircle, FiChevronRight, FiLoader } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import apiClient from "@/lib/api-client";
+import { useSettings } from "@/app/contexts/SettingsContext";
 
 interface HelpActionModalProps {
     isOpen: boolean;
@@ -18,6 +19,9 @@ export function HelpActionModal({ isOpen, onClose, orderId, orderNumber }: HelpA
     const router = useRouter();
     const [isChecking, setIsChecking] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Get settings for feature flags
+    const { settings } = useSettings();
 
     // Body scroll lock
     useEffect(() => {
@@ -39,6 +43,12 @@ export function HelpActionModal({ isOpen, onClose, orderId, orderNumber }: HelpA
     }, [isOpen]);
 
     const handleRaiseTicket = async () => {
+        // ✅ Feature flag: Skip if tickets disabled
+        if (!settings?.features?.ticketsEnabled) {
+            setError('Support tickets are currently unavailable');
+            return;
+        }
+
         setError(null);
         setIsChecking(true);
         try {

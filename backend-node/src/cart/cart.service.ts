@@ -84,7 +84,7 @@ export class CartService {
 
                 return cart;
             },
-            { ttl: 3600 } // 1 hour
+            { ttl: 300 } // 5 minutes (cart changes frequently)
         );
     }
 

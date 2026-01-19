@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -70,29 +71,62 @@ async function bootstrap() {
     next();
   });
 
-  // SECURITY: Security headers
-  app.use((req: any, res: any, next: any) => {
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
-    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-
-    // Content Security Policy - CRITICAL for XSS protection
-    res.setHeader(
-      'Content-Security-Policy',
-      "default-src 'self'; " +
-      "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://vercel.live; " +
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-      "font-src 'self' https://fonts.gstatic.com; " +
-      "img-src 'self' data: https://res.cloudinary.com https://lh3.googleusercontent.com; " +
-      "connect-src 'self' https://humantee.onrender.com https://*.vercel.app https://*.google.com; " +
-      "frame-src https://api.razorpay.com https://vercel.live; " +
-      "object-src 'none'; " +
-      "base-uri 'self';"
-    );
-
-    next();
-  });
+  // SECURITY: Helmet - Battle-tested security headers
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'", // Required for Razorpay
+          "https://checkout.razorpay.com",
+          "https://vercel.live"
+        ],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'", // Required for inline styles
+          "https://fonts.googleapis.com"
+        ],
+        fontSrc: [
+          "'self'",
+          "https://fonts.gstatic.com"
+        ],
+        imgSrc: [
+          "'self'",
+          "data:",
+          "https://res.cloudinary.com",
+          "https://lh3.googleusercontent.com"
+        ],
+        connectSrc: [
+          "'self'",
+          "https://humantee.onrender.com",
+          "https://*.vercel.app",
+          "https://*.google.com",
+          "https://api.razorpay.com"
+        ],
+        frameSrc: [
+          "https://api.razorpay.com",
+          "https://checkout.razorpay.com",
+          "https://vercel.live"
+        ],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+      },
+    },
+    hsts: {
+      maxAge: 31536000, // 1 year
+      includeSubDomains: true,
+      preload: true,
+    },
+    frameguard: {
+      action: 'deny',
+    },
+    noSniff: true,
+    xssFilter: true,
+    referrerPolicy: {
+      policy: 'strict-origin-when-cross-origin',
+    },
+  }));
 
   // CORS configuration from environment
   const corsEnabled = process.env.CORS_ENABLED === 'true';

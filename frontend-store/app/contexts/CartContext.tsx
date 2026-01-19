@@ -6,6 +6,7 @@ import apiClient from "@/lib/api-client";
 import { logError } from "@/lib/logger";
 import { discountsApi, type DiscountSuggestion } from "@/lib/api/discounts";
 import type { AppliedDiscount } from "@/app/types/discount.types";
+import { useSettings } from "@/app/contexts/SettingsContext";
 
 export interface CartItem {
   id: number | string;
@@ -60,6 +61,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const authContext = useContext(AuthContext);
   const isAuthenticated = authContext?.isAuthenticated ?? false;
   const authLoading = authContext?.isLoading ?? true;
+
+  // Access settings for feature flags
+  const { settings } = useSettings();
 
   // Phase 2: INDEPENDENT summary state (not derived!)
   const [totalItems, setTotalItems] = useState(0);
@@ -342,6 +346,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Discount functionality
   const applyDiscount = async (code: string) => {
+    // ✅ Feature flag: Skip if discounts disabled
+    if (!settings?.features?.discountsEnabled) {
+      throw new Error('Discount codes are currently unavailable');
+    }
+
     try {
       const discount = await discountsApi.validateCode({
         code,
@@ -397,6 +406,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Fetch discount suggestions
   const fetchSuggestions = async () => {
+    // ✅ Feature flag: Skip if discounts disabled
+    if (!settings?.features?.discountsEnabled) {
+      setSuggestions([]);
+      return;
+    }
+
     if (items.length === 0) {
       setSuggestions([]);
       return;

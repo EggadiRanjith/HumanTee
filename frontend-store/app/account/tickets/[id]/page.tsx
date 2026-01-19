@@ -256,7 +256,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                                 </span>
                             </div>
                             <p className="text-white/40 text-[9px] sm:text-[10px] md:text-xs mt-1 uppercase tracking-widest truncate">
-                                {ticket.category.replace('_', ' ')} • Opened {new Date(ticket.createdAt).toLocaleDateString()}
+                                {ticket.category?.replace('_', ' ') || 'General'} • Opened {new Date(ticket.createdAt).toLocaleDateString()}
                             </p>
                         </div>
                     </div>
@@ -459,7 +459,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                                         <div className="w-1.5 h-1.5 rounded-full bg-white/20 mt-1.5 flex-shrink-0" />
                                         <div>
                                             <p className="text-[11px] text-white/70">
-                                                Status changed to <span className="text-white font-medium">{entry.toStatus.replace('_', ' ')}</span>
+                                                Status changed to <span className="text-white font-medium">{entry.toStatus?.replace('_', ' ') || entry.toStatus}</span>
                                             </p>
                                             <p className="text-[9px] text-white/20 uppercase tracking-widest mt-0.5">
                                                 {new Date(entry.createdAt).toLocaleDateString()}

@@ -241,12 +241,10 @@ export class OrderService {
                 if (result.affected === 0) {
                     // Either variant doesn't exist OR insufficient stock
                     // This is an edge case - stock was available during prepare but sold out during confirm
-                    const variant = await manager.findOne(ProductVariant, { where: { id: item.variantId } });
-                    if (!variant) {
-                        throw new BadRequestException(`Variant ${item.variantId} not found`);
-                    }
+                    // ✅ OPTIMIZATION: Variants already fetched at line 88-91 (batch query)
+                    // No need to query DB again - just show error without detailed stock info
                     throw new ConflictException(
-                        `Stock depleted during checkout. Available: ${variant.stock_quantity}, Required: ${item.quantity}`
+                        `Stock depleted during checkout for variant ${item.variantId}`
                     );
                 }
             }

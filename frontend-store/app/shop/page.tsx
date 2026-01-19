@@ -9,6 +9,7 @@
 import React, { useState, useMemo, useCallback, Suspense } from 'react';
 import { GradientOverlay } from '@/app/components/ui/layout';
 import { useProducts } from '@/app/contexts/ProductsContext';
+import { ProductsProvider } from '@/app/providers'; // Local provider import
 import { ProductGrid } from '@/app/components/sections/FeaturedProducts/components';
 import { Pagination } from '@/app/components/ui/navigation/Pagination';
 import { useShopFilters } from './hooks';
@@ -163,8 +164,11 @@ function ShopPageContent() {
 // Wrap in Suspense to fix useSearchParams error
 export default function ShopPage() {
   return (
-    <Suspense fallback={<ShopSkeleton />}>
-      <ShopPageContent />
-    </Suspense>
+    // ✅ LOCAL ProductsProvider: Only fetch /products/all on shop page
+    <ProductsProvider>
+      <Suspense fallback={<ShopSkeleton />}>
+        <ShopPageContent />
+      </Suspense>
+    </ProductsProvider>
   );
 }

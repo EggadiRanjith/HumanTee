@@ -5,8 +5,18 @@ import { useQuery } from '@tanstack/react-query';
 import { publicSettingsApi } from '@/lib/app/api/public-settings';
 import { queryKeys } from '@/lib/queryKeys';
 
+interface FeatureFlags {
+    discountsEnabled: boolean;
+    ticketsEnabled: boolean;
+}
+
+interface Settings {
+    features?: FeatureFlags;
+    [key: string]: any;
+}
+
 interface SettingsContextType {
-    settings: any;
+    settings: Settings | null;
     loading: boolean;
     error: string | null;
 }
@@ -24,6 +34,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         queryFn: async () => {
             console.log('🔄 Fetching settings from API...');
             const data = await publicSettingsApi.getAll();
+
+            // Add default feature flags if not present
+            if (!data.features) {
+                data.features = {};
+            }
+            data.features.discountsEnabled = data.features?.discounts_enabled ?? true;
+            data.features.ticketsEnabled = data.features?.tickets_enabled ?? true;
+
             return data;
         },
         staleTime: Infinity, // Never consider data stale - settings rarely change

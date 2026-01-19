@@ -19,7 +19,7 @@ export class PublicSettingsController {
             // ✅ OPTIMIZED: Get all sections in ONE database query
             // Caching handled by service layer (Redis)
             const sections = await this.settingsService.getMultipleSections(
-                ['homepage', 'header-footer', 'shipping', 'policies', 'product-info'],
+                ['homepage', 'header-footer', 'shipping', 'policies', 'product-info', 'features'],
                 'production'
             );
 

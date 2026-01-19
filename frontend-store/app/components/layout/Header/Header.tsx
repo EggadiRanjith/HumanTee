@@ -140,6 +140,7 @@ function Header() {
             {/* BRAND */}
             <Link
               href="/"
+              prefetch={false}
               onClick={stopPropagation}
               className="flex items-center gap-2 sm:gap-3 transition-all duration-300 hover:opacity-90 min-w-0 flex-shrink"
             >
@@ -191,6 +192,7 @@ function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
+                  prefetch={link.href === '/shop' ? true : false}
                   onClick={(e) => handleProtectedNavigation(e, link.href)}
                   className={`
                 uppercase tracking-[0.20em] transition-all duration-300
@@ -222,6 +224,7 @@ function Header() {
 
                 <Link
                   href="/cart"
+                  prefetch={true}
                   onClick={stopPropagation}
                   className="
                 relative p-1 
@@ -245,6 +248,7 @@ function Header() {
 
                 <Link
                   href="/cart"
+                  prefetch={true}
                   className="
                 relative transition-all duration-300
                 text-white hover:text-white/90

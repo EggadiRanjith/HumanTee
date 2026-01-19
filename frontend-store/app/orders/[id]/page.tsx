@@ -23,6 +23,8 @@ import {
   OrderItems,
   OrderSummary
 } from './components';
+import { useSettings } from "@/app/contexts/SettingsContext";
+import { useOrder } from '../hooks/useOrder';
 
 export default function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -30,6 +32,9 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+
+  // Settings for feature flags
+  const { settings } = useSettings();
 
   // Unwrap params Promise
   const { id } = use(params);
@@ -127,19 +132,21 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
         {/* Order Items */}
         <OrderItems items={order.items} />
 
-        {/* Need Help Button */}
-        <button
-          onClick={() => setIsHelpModalOpen(true)}
-          className="
-            w-full flex items-center justify-center gap-2
-            px-6 py-3 rounded-xl mt-6
-            luxury-glass border border-white/10 
-            text-white/70 hover:text-white hover:bg-white/10
-            transition-all text-sm uppercase tracking-[0.18em]
-          "
-        >
-          <FiHelpCircle className="w-4 h-4" /> Need Help?
-        </button>
+        {/* Need Help Button - Only show if tickets feature enabled */}
+        {settings?.features?.ticketsEnabled && (
+          <button
+            onClick={() => setIsHelpModalOpen(true)}
+            className="
+              w-full flex items-center justify-center gap-2
+              px-6 py-3 rounded-xl mt-6
+              luxury-glass border border-white/10 
+              text-white/70 hover:text-white hover:bg-white/10
+              transition-all text-sm uppercase tracking-[0.18em]
+            "
+          >
+            <FiHelpCircle className="w-4 h-4" /> Need Help?
+          </button>
+        )}
 
         {/* Help Modal */}
         <LazyMotion features={domAnimation}>

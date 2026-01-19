@@ -21,7 +21,7 @@ export default function FooterNav({ section, isDesktop }: FooterNavProps) {
     const pathname = usePathname();
     const containerRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
-    const contentId = `footer-nav-${section.title.toLowerCase().replace(/\s+/g, '-')}`;
+    const contentId = `footer-nav-${section.title?.toLowerCase().replace(/\s+/g, '-') || 'section'}`;
 
     // Auto-close on desktop
     useEffect(() => {

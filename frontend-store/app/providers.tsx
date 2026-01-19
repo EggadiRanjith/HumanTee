@@ -9,7 +9,7 @@ import { CheckoutProvider } from "./contexts/CheckoutContext";
 import { ToastProvider } from "./contexts/ToastContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { SettingsProvider } from "./contexts/SettingsContext";
-import { ProductsProvider } from "./contexts/ProductsContext";
+export { ProductsProvider } from "./contexts/ProductsContext"; // Export for pages that need it (shop, homepage)
 import { NavigationLoader } from "./components/ui/loaders";
 import ScrollToTop from "./components/ui/ScrollToTop";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -30,23 +30,22 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <SettingsProvider>
-          <ProductsProvider>
-            <LoadingProvider>
-              <HeaderProvider>
-                <AuthProvider>
-                  <CartProvider>
-                    <CheckoutProvider>
-                      <ToastProvider>
-                        <ScrollToTop />
-                        <NavigationLoader />
-                        {children}
-                      </ToastProvider>
-                    </CheckoutProvider>
-                  </CartProvider>
-                </AuthProvider>
-              </HeaderProvider>
-            </LoadingProvider>
-          </ProductsProvider>
+          {/* ✅ REMOVED ProductsProvider - no longer global */}
+          <LoadingProvider>
+            <HeaderProvider>
+              <AuthProvider>
+                <CartProvider>
+                  <CheckoutProvider>
+                    <ToastProvider>
+                      <ScrollToTop />
+                      <NavigationLoader />
+                      {children}
+                    </ToastProvider>
+                  </CheckoutProvider>
+                </CartProvider>
+              </AuthProvider>
+            </HeaderProvider>
+          </LoadingProvider>
         </SettingsProvider>
       </QueryClientProvider>
     </ErrorBoundary>

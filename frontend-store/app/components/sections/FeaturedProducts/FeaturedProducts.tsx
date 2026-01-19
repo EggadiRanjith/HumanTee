@@ -16,6 +16,7 @@ import {
 } from './components';
 import { useFeaturedSettings } from './hooks/useFeaturedSettings';
 import { useProducts } from '@/app/contexts/ProductsContext';
+import { ProductsProvider } from '@/app/providers'; // Local provider
 
 function FeaturedProducts() {
   // Get products from shared context
@@ -119,8 +120,11 @@ function FeaturedProducts() {
   );
 }
 
-// Memo with comparison function
-export default memo(FeaturedProducts, () => {
-  // No props - prevent re-renders
-  return true;
-});
+// ✅ Wrap with local ProductsProvider
+export default function FeaturedProductsWithProvider() {
+  return (
+    <ProductsProvider>
+      <FeaturedProducts />
+    </ProductsProvider>
+  );
+}

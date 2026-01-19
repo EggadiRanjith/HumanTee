@@ -4,6 +4,13 @@ import { fetchProductBySlug } from '@/lib/app/api/products';
 import { adaptProduct } from '@/lib/app/adapters/product.adapter';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { cache } from 'react';
+
+// ✅ CRITICAL: Cache product fetch to prevent duplicate calls
+// Without this, generateMetadata AND ProductPage both fetch the same product
+const getCachedProduct = cache(async (slug: string) => {
+  return fetchProductBySlug(slug);
+});
 
 // ISR: Revalidate every 60 seconds
 export const revalidate = 60;
@@ -12,7 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
   const { handle } = await params;
 
   try {
-    const apiProduct = await fetchProductBySlug(handle);
+    const apiProduct = await getCachedProduct(handle); // ✅ Uses cache
     const product = adaptProduct(apiProduct);
 
     return {
@@ -41,7 +48,7 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
 
   let apiProduct;
   try {
-    apiProduct = await fetchProductBySlug(handle);
+    apiProduct = await getCachedProduct(handle); // ✅ Cache hit (already fetched in generateMetadata)
   } catch {
     notFound();
   }

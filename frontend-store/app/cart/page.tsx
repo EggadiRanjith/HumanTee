@@ -19,6 +19,7 @@ import { EmptyCart } from "@/app/components/ui/EmptyState";
 import { CartHeader, CartSkeleton, DiscountSection } from "./components";
 import { useCartOperations } from "./hooks";
 import type { LottieAnimation } from "./types";
+import { useSettings } from "@/app/contexts/SettingsContext";
 
 // Dynamic import to prevent SSR issues
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
@@ -41,6 +42,9 @@ export default function CartPage() {
         handleApplyDiscount,
         handleRemoveDiscount,
     } = useCartOperations();
+
+    // Settings for feature flags
+    const { settings } = useSettings();
 
     // Local state
     const [showIntro, setShowIntro] = useState(true);
@@ -144,23 +148,25 @@ export default function CartPage() {
 
                     {/* Order Summary Section - Mobile: Full width, Desktop: 1/3 width, Sticky */}
                     <div className="lg:col-span-1 space-y-4 sm:space-y-5 lg:sticky lg:top-24 lg:self-start">
-                        {/* Discount Section Container */}
-                        <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-3 sm:p-4 lg:p-5">
-                            <h2 className="text-white text-sm sm:text-base font-medium mb-3 sm:mb-4">
-                                Discounts
-                            </h2>
-                            <DiscountSection
-                                suggestions={suggestions}
-                                appliedDiscount={appliedDiscount}
-                                isLoadingSuggestions={isLoadingSuggestions}
-                                showManualEntry={showManualEntry}
-                                cartTotal={cartSummary.subtotal}
-                                onApply={handleApplyDiscount}
-                                onRemove={handleRemoveDiscount}
-                                onOpenManualEntry={() => setShowManualEntry(true)}
-                                onCloseManualEntry={() => setShowManualEntry(false)}
-                            />
-                        </div>
+                        {/* Discount Section - Only show if feature enabled */}
+                        {settings?.features?.discountsEnabled && (
+                            <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-3 sm:p-4 lg: p-5">
+                                <h2 className="text-white text-sm sm:text-base font-medium mb-3 sm:mb-4">
+                                    Discounts
+                                </h2>
+                                <DiscountSection
+                                    suggestions={suggestions}
+                                    appliedDiscount={appliedDiscount}
+                                    isLoadingSuggestions={isLoadingSuggestions}
+                                    showManualEntry={showManualEntry}
+                                    cartTotal={cartSummary.subtotal}
+                                    onApply={handleApplyDiscount}
+                                    onRemove={handleRemoveDiscount}
+                                    onOpenManualEntry={() => setShowManualEntry(true)}
+                                    onCloseManualEntry={() => setShowManualEntry(false)}
+                                />
+                            </div>
+                        )}
 
                         {/* Cart Summary Container */}
                         <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-3 sm:p-4 lg:p-5">
