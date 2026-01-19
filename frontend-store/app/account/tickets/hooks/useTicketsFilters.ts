@@ -19,10 +19,10 @@ export function useTicketsFilters() {
         status: (searchParams.get('status') as any) || 'all',
         category: (searchParams.get('category') as any) || 'all',
         search: searchParams.get('search') || undefined,
-        sortBy: (searchParams.get('sortBy') as any) || 'newest',
-        page: parseInt(searchParams.get('page') || '1'),
+        sortBy: (searchParams.get('sortBy') as any) || undefined, // Don't set default
+        page: searchParams.get('page') ? parseInt(searchParams.get('page')!) : undefined, // Optional
         orderId: searchParams.get('orderId') || undefined,
-        limit: 10,
+        limit: undefined, // Backend doesn't support limit param
     };
 
     // Update filters in URL
@@ -54,8 +54,7 @@ export function useTicketsFilters() {
     const hasActiveFilters = !!(
         (filters.status && filters.status !== 'all') ||
         (filters.category && filters.category !== 'all') ||
-        filters.search ||
-        (filters.sortBy && filters.sortBy !== 'newest')
+        filters.search
     );
 
     return {

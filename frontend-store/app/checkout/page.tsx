@@ -53,7 +53,13 @@ export default function CheckoutPage() {
         );
     }
 
-    // NavigationLoader will handle the transition
-    return null;
+    // Show loading while redirecting (NavigationLoader will take over)
+    return (
+        <div className="min-h-screen brand-bg pt-[var(--header-height)] flex items-center justify-center">
+            <div className="text-center">
+                <div className="w-12 h-12 border-3 border-white/20 border-t-white rounded-full animate-spin mx-auto" />
+            </div>
+        </div>
+    );
 }
 
