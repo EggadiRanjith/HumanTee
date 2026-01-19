@@ -48,14 +48,8 @@ export async function fetchShopProducts(filters?: {
 }
 
 export async function fetchProductBySlug(slug: string) {
-    // ✅ OPTIMIZED: Find product from cached /products/all
-    // No additional API call needed
-    const allProducts = await fetchProducts(); // Already cached
-    const product = allProducts.find((p: any) => p.slug === slug);
-
-    if (!product) {
-        throw new Error(`Product with slug "${slug}" not found`);
-    }
-
-    return product;
+    // ✅ OPTIMIZED: Fetch ONLY this specific product (50 KB instead of 13 MB)
+    // Uses dedicated backend endpoint: GET /products/:slug
+    const res = await apiClient.get(`/products/${slug}`);
+    return res.data;
 }
