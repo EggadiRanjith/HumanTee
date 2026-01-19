@@ -38,24 +38,39 @@ function NavigationLoaderContent() {
 
     // Auto-hide loader after route change
     useEffect(() => {
+        let cancelled = false;
+
         // Scroll to top when route changes
         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 
-        const timer = setTimeout(() => {
-            // Wait for multiple animation frames to ensure new content is fully rendered
-            // This prevents showing old page content during navigation
-            requestAnimationFrame(() => {
+        const hideLoader = () => {
+            if (cancelled) return;
+
+            // Wait for document to be fully loaded
+            if (document.readyState === 'complete') {
+                // Extra RAF cycles to ensure content is rendered
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
-                        setLoading(false);
-                        // Scroll to top again after loader hides
-                        setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }), 0);
+                        requestAnimationFrame(() => {
+                            setLoading(false);
+                            // Scroll to top again after loader hides
+                            setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }), 0);
+                        });
                     });
                 });
-            });
-        }, 1500); // Increased from 800ms to 1500ms for better UX
+            } else {
+                // Document not ready, check again in 100ms
+                setTimeout(hideLoader, 100);
+            }
+        };
 
-        return () => clearTimeout(timer);
+        // Start checking after minimum delay (prevent flash during fast navigations)
+        const timer = setTimeout(hideLoader, 500);
+
+        return () => {
+            cancelled = true;
+            clearTimeout(timer);
+        };
     }, [pathname, searchParams, setLoading]);
 
     // Critical Fix #1: Error timeout (decoupled from navigation state)

@@ -142,10 +142,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
           <Header />
 
-          {/* Page Content - Wrapper controls padding based on route */}
-          <MainContentWrapper>
-            {children}
-          </MainContentWrapper>
+          {/* Page Content with min-height to prevent collapse during loading */}
+          <div className="flex-1 min-h-[calc(100vh-400px)]">
+            <MainContentWrapper>
+              {children}
+            </MainContentWrapper>
+          </div>
 
           <Footer />
 
