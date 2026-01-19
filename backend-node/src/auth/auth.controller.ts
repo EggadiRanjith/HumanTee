@@ -186,12 +186,14 @@ export class AuthController {
             userAgent,
         );
 
-        // Set refresh token as httpOnly cookie (no domain = works for localhost and 127.0.0.1)
+        // SECURITY: Set refresh token cookie (adapt to environment)
+        const isProduction = process.env.NODE_ENV === 'production';
+
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
-            secure: false,
-            sameSite: 'lax', // Works for same-origin (same IP, different ports)
-            maxAge: 7 * 24 * 60 * 60 * 1000,
+            secure: isProduction,  // HTTPS only in production
+            sameSite: isProduction ? 'none' : 'lax',  // 'none' for cross-origin in prod
+            maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
             path: '/',
         });
 
@@ -247,12 +249,14 @@ export class AuthController {
             throw new UnauthorizedException('Admin users must login through the admin panel');
         }
 
-        // Set refresh token as httpOnly cookie with proper security (no domain = works for localhost and 127.0.0.1)
+        // SECURITY: Set refresh token cookie (adapt to environment)
+        const isProduction = process.env.NODE_ENV === 'production';
+
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
-            secure: false,
-            sameSite: 'lax', // Works for same-origin (same IP, different ports)
-            maxAge: 7 * 24 * 60 * 60 * 1000,
+            secure: isProduction,  // HTTPS only in production
+            sameSite: isProduction ? 'none' : 'lax',  // 'none' for cross-origin in prod
+            maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
             path: '/',
         });
 
@@ -297,12 +301,14 @@ export class AuthController {
             userAgent,
         );
 
-        // Set new refresh token as httpOnly cookie (no domain = works for localhost and 127.0.0.1)
+        // SECURITY: Set new refresh token (adapt to environment)
+        const isProduction = process.env.NODE_ENV === 'production';
+
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
-            secure: false,
-            sameSite: 'lax', // Works for same-origin (same IP, different ports)
-            maxAge: 7 * 24 * 60 * 60 * 1000,
+            secure: isProduction,  // HTTPS only in production
+            sameSite: isProduction ? 'none' : 'lax',  // 'none' for cross-origin in prod
+            maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
             path: '/',
         });
 
