@@ -186,13 +186,13 @@ export class AuthController {
             userAgent,
         );
 
-        // SECURITY: Set refresh token cookie (adapt to environment)
-        const isProduction = process.env.NODE_ENV === 'production';
+        // SECURITY: Set refresh token cookie (cross-origin compatible)
+        // MUST use sameSite: 'none' for cross-origin POST (Vercel → Render)
 
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
-            secure: isProduction,  // HTTPS only in production
-            sameSite: 'lax',  // Works for same-site and cross-site top-level navigation
+            secure: true,  // MUST be true for SameSite=None (both domains are HTTPS)
+            sameSite: 'none',  // REQUIRED for cross-origin cookie setting
             maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
             path: '/',
         });
