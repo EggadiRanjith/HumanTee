@@ -42,15 +42,18 @@ function NavigationLoaderContent() {
         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 
         const timer = setTimeout(() => {
-            // Wait for next paint to ensure new content is rendered
+            // Wait for multiple animation frames to ensure new content is fully rendered
+            // This prevents showing old page content during navigation
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    setLoading(false);
-                    // Scroll to top again after loader hides
-                    setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }), 0);
+                    requestAnimationFrame(() => {
+                        setLoading(false);
+                        // Scroll to top again after loader hides
+                        setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }), 0);
+                    });
                 });
             });
-        }, 800);
+        }, 1500); // Increased from 800ms to 1500ms for better UX
 
         return () => clearTimeout(timer);
     }, [pathname, searchParams, setLoading]);
