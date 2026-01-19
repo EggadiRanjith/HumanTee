@@ -19,6 +19,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { DiscountsService } from '../discounts/discounts.service';
 import { OrderDiscount } from '../entities/order-discount.entity';
 import { RazorpayService } from '../payments/razorpay.service';
+import { EmailService } from '../email/email.service';
 import { randomBytes } from 'crypto';
 
 @Injectable()
@@ -35,6 +36,7 @@ export class OrderService {
         private dataSource: DataSource,
         private discountsService: DiscountsService,
         private razorpayService: RazorpayService,
+        private emailService: EmailService,
         @Optional() @Inject(RedisService) private redisService?: RedisService,
     ) { }
 
@@ -287,6 +289,10 @@ export class OrderService {
                 reason: `Order created and paid via Razorpay: ${razorpayPaymentId}`,
             });
             await manager.save(OrderStatusHistory, history);
+
+            // Send order confirmation email (async, don't block response)
+            this.emailService.sendOrderConfirmation(order, shippingAddress.email, shippingAddress.fullName)
+                .catch(err => this.logger.error('Failed to send order confirmation email', err));
 
             return order;
         });
