@@ -25,5 +25,15 @@ export const AppDataSource = new DataSource({
     ...getDatabaseConfig(),
     entities: [__dirname + '/**/*.entity{.ts,.js}'],
     synchronize: true, // Auto-create tables on first deploy
-    logging: true,
+    logging: process.env.NODE_ENV === 'development',
+    // PERFORMANCE: Connection pooling
+    extra: {
+        max: 20, // Maximum pool size (default: 10)
+        min: 5,  // Minimum pool size
+        idleTimeoutMillis: 30000, // Close idle connections after 30s
+        connectionTimeoutMillis: 5000, // Fail if can't get connection in 5s
+        // CRITICAL: Query timeouts prevent slow queries from blocking
+        statement_timeout: 10000, // Kill queries running >10s
+        query_timeout: 10000, // Same as statement_timeout
+    },
 });

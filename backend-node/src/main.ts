@@ -4,15 +4,39 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import helmet from 'helmet';
+import * as Sentry from '@sentry/nestjs';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
+
+  // PRODUCTION: Initialize Sentry error tracking FIRST
+  if (process.env.SENTRY_DSN) {
+    Sentry.init({
+      dsn: process.env.SENTRY_DSN,
+      environment: process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'production',
+      tracesSampleRate: 0.1, // 10% of transactions for performance monitoring
+      profilesSampleRate: 0.1, // 10% for profiling
+      beforeSend(event) {
+        // Filter out sensitive data
+        if (event.request) {
+          delete event.request.cookies;
+          delete event.request.headers?.authorization;
+        }
+        return event;
+      },
+    });
+    logger.log('✅ Sentry error tracking enabled');
+  } else {
+    logger.warn('⚠️  Sentry DSN not configured - errors will only be logged locally');
+  }
+
   const app = await NestFactory.create(AppModule);
   const port = process.env.PORT || 3001;
 
-  // Increase payload size limit for image uploads (base64)
-  app.use(require('express').json({ limit: '50mb' }));
-  app.use(require('express').urlencoded({ limit: '50mb', extended: true }));
+  // Payload size limit (reduced from 50MB to prevent DoS)
+  // Use multipart/form-data for actual file uploads via Cloudinary
+  app.use(require('express').json({ limit: '10mb' }));
+  app.use(require('express').urlencoded({ limit: '10mb', extended: true }));
 
   // PERFORMANCE: Enable gzip/brotli compression for API responses
   // Reduces response sizes by 60-70% (JSON compression)
@@ -41,35 +65,7 @@ async function bootstrap() {
   // Cookie parser for refresh tokens
   app.use(cookieParser());
 
-  // SECURITY: CSRF protection for cookie-based endpoints
-  app.use((req: any, res: any, next: any) => {
-    // Read CSRF setting from environment
-    const csrfEnabled = process.env.CSRF_ENABLED === 'true';
 
-    if (!csrfEnabled) {
-      return next();
-    }
-
-    // CSRF protection for state-changing operations
-    const csrfProtectedPaths = [
-      '/auth/refresh',
-      '/cart',
-      '/orders',
-      '/shipping',
-      '/payments',
-    ];
-
-    if (csrfProtectedPaths.some(path => req.path.includes(path)) &&
-      ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
-      const csrfToken = req.headers['x-csrf-token'];
-      const cookieToken = req.cookies['csrf-token'];
-
-      if (!csrfToken || csrfToken !== cookieToken) {
-        return res.status(403).json({ message: 'Invalid CSRF token' });
-      }
-    }
-    next();
-  });
 
   // SECURITY: Helmet - Battle-tested security headers
   app.use(helmet({
@@ -152,9 +148,28 @@ async function bootstrap() {
 
   // Read CSRF setting for logging
   const csrfEnabled = process.env.CSRF_ENABLED === 'true';
-  logger.log(`🔒 Security: CSRF protection ${csrfEnabled ? 'ENABLED' : 'DISABLED'}`);
+  logger.log(`🔒 Security: CSRF protection DISABLED (broken implementation removed)`);
   logger.log(`🌐 Security: CORS ${corsEnabled ? `ENABLED (${corsOrigins.length} origins)` : 'DISABLED'}`);
   logger.log(`🔒 Security: Rate limiting enabled`);
   logger.log(`📊 Health check: /health`);
+
+  // PRODUCTION: Graceful shutdown on SIGTERM/SIGINT
+  // Prevents data corruption during deployments
+  const gracefulShutdown = async (signal: string) => {
+    logger.log(`\n${signal} received. Starting graceful shutdown...`);
+
+    try {
+      // Close server (stop accepting new requests)
+      await app.close();
+      logger.log('✅ Server closed. All connections drained.');
+      process.exit(0);
+    } catch (err) {
+      logger.error('❌ Error during shutdown:', err);
+      process.exit(1);
+    }
+  };
+
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 }
 bootstrap();

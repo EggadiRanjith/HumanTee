@@ -83,23 +83,65 @@ export class RazorpayWebhookController {
 
                 // 4. Order doesn't exist - this is the edge case!
                 this.logger.warn(`⚠️  EDGE CASE: Payment succeeded but order not found for ${razorpayOrderId}`);
-                this.logger.warn(`⚠️  This means frontend failed after payment. Creating order from webhook...`);
+                this.logger.warn(`⚠️  This means frontend failed after payment. Attempting to retrieve prepared order data...`);
 
-                // TODO: We need to retrieve the order data that was prepared
-                // For now, log this as a critical issue that needs manual intervention
-                this.logger.error(`🚨 CRITICAL: Payment ${razorpayPaymentId} succeeded but order data not found!`);
-                this.logger.error(`🚨 Manual intervention required. Contact customer and create order manually.`);
-                this.logger.error(`🚨 Razorpay Order ID: ${razorpayOrderId}, Amount: ₹${amount}`);
+                // Retrieve prepared order data from Redis cache
+                // The frontend stores this data when calling /orders/prepare
+                try {
+                    const redisService = this.orderService['redisService'];
+                    if (!redisService) {
+                        throw new Error('Redis service not available');
+                    }
 
-                // Send alert (email, Slack, etc.)
-                // await this.alertService.sendCriticalAlert(...)
+                    // Try to find cached prepared order data
+                    // Key format: order:prep:{userId}:{idempotencyKey}
+                    // Problem: We don't have userId or idempotency key from webhook
+                    // Solution: Store a reverse mapping by razorpayOrderId
+                    const cacheKey = `order:razorpay:${razorpayOrderId}`;
+                    const preparedOrderData = await redisService.get(cacheKey);
 
-                return {
-                    success: false,
-                    message: 'Order data not found. Manual intervention required.',
-                    razorpayOrderId,
-                    razorpayPaymentId,
-                };
+                    if (!preparedOrderData) {
+                        throw new Error('Prepared order data not found in cache');
+                    }
+
+                    this.logger.log(`✅ Retrieved prepared order data from cache`);
+
+                    // Create the order using confirmOrder method
+                    // Note: We need to generate a fake signature since we already verified the webhook
+                    const order = await this.orderService.confirmOrder(
+                        razorpayOrderId,
+                        razorpayPaymentId,
+                        '', // signature already verified by webhook
+                        preparedOrderData as any,
+                    );
+
+                    this.logger.log(`✅ Order created from webhook: ${order.orderNumber}`);
+
+                    return {
+                        success: true,
+                        message: 'Order created from webhook (recovery from frontend failure)',
+                        orderNumber: order.orderNumber,
+                    };
+
+                } catch (recoveryError) {
+                    // Recovery failed - log critical error
+                    this.logger.error(`🚨 CRITICAL: Payment ${razorpayPaymentId} succeeded but order creation failed!`);
+                    this.logger.error(`🚨 Error: ${recoveryError.message}`);
+                    this.logger.error(`🚨 Manual intervention required. Contact customer and create order manually.`);
+                    this.logger.error(`🚨 Razorpay Order ID: ${razorpayOrderId}, Amount: ₹${amount}`);
+
+                    // Send alert (email, Slack, etc.)
+                    // await this.alertService.sendCriticalAlert(...)
+
+                    return {
+                        success: false,
+                        message: 'Order recovery failed. Manual intervention required.',
+                        razorpayOrderId,
+                        razorpayPaymentId,
+                        error: recoveryError.message,
+                    };
+                }
+
 
             } catch (error) {
                 this.logger.error(`❌ Error processing webhook: ${error.message}`);

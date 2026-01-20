@@ -97,21 +97,46 @@ export class SettingsValidator {
      */
     private async testRazorpay(keyId: string): Promise<TestResult> {
         try {
-            // TODO: Implement actual Razorpay test
-            // For now, just validate format
+            // Validate format first
             if (!keyId.startsWith('rzp_')) {
                 return {
                     success: false,
-                    error: 'Invalid Razorpay Key ID format',
+                    error: 'Invalid Razorpay Key ID format (must start with rzp_)',
                 };
             }
 
-            // In production, make actual API call to Razorpay
-            // const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
-            // await razorpay.payments.fetch('test');
+            // Test actual Razorpay connection by fetching orders
+            // This verifies both key_id and key_secret are valid
+            const Razorpay = require('razorpay');
+
+            const razorpay = new Razorpay({
+                key_id: keyId,
+                key_secret: process.env.RAZORPAY_KEY_SECRET || '',
+            });
+
+            // Attempt to fetch orders (lightweight API call to verify credentials)
+            // Even if no orders exist, successful auth means valid credentials
+            await razorpay.orders.all({ count: 1 });
 
             return { success: true };
-        } catch (error) {
+        } catch (error: any) {
+            // Parse Razorpay error messages
+            if (error.statusCode === 401) {
+                return {
+                    success: false,
+                    error: 'Invalid Razorpay credentials (401 Unauthorized)',
+                    details: 'Check your Key ID and Key Secret',
+                };
+            }
+
+            if (error.code === 'ENOTFOUND' || error.code === 'ETIMEDOUT') {
+                return {
+                    success: false,
+                    error: 'Cannot connect to Razorpay servers',
+                    details: 'Check your internet connection',
+                };
+            }
+
             return {
                 success: false,
                 error: 'Failed to connect to Razorpay',
@@ -131,7 +156,26 @@ export class SettingsValidator {
             };
         }
 
-        // TODO: Implement actual email test (send test email)
+        // Note: This requires EmailService to be injected
+        // For now, validate configuration presence
+        const hasBrevo = !!(process.env.BREVO_API_KEY && process.env.EMAIL_FROM);
+        const hasSMTP = !!(
+            process.env.SMTP_HOST &&
+            process.env.SMTP_PORT &&
+            process.env.SMTP_USER &&
+            process.env.SMTP_PASSWORD
+        );
+
+        if (!hasBrevo && !hasSMTP) {
+            return {
+                success: false,
+                error: 'No email provider configured',
+                details: 'Configure either Brevo API or SMTP settings',
+            };
+        }
+
+        // Email provider configured - consider it valid
+        // Actual send test would require injecting EmailService
         return { success: true };
     }
 

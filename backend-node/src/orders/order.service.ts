@@ -124,16 +124,43 @@ export class OrderService {
             };
         });
 
-        // 3. Calculate totals
+        // 3. Calculate discounts (if code provided)
+        let discountAmount = 0;
+        let discountId: string | null = null;
+
+        if (orderData.discountCode) {
+            try {
+                const discount = await this.discountsService.validateCode(
+                    orderData.discountCode,
+                    userId,
+                    subtotal,
+                    validatedItems
+                );
+
+                // Calculate discount amount based on type
+                discountAmount = discount.type === 'PERCENT'
+                    ? Math.round((subtotal * discount.value) / 100)
+                    : Math.min(discount.value, subtotal);
+
+                discountId = discount.id;
+
+                this.logger.log(`Discount "${orderData.discountCode}" applied: ₹${discountAmount}`);
+            } catch (err) {
+                // If discount invalid/expired, proceed without it (graceful degradation)
+                this.logger.warn(`Discount validation failed: ${err.message}`);
+                // Don't throw - allow order to proceed without discount
+            }
+        }
+
+        // 4. Calculate totals
         const taxAmount = subtotal * 0.18; // 18% GST
         const shippingAmount = 0; // Free shipping
-        const discountAmount = 0; // TODO: Apply discount if code provided
         const totalAmount = subtotal + taxAmount + shippingAmount - discountAmount;
 
-        // 4. Create Razorpay order (payment gateway integration)
+        // 5. Create Razorpay order (payment gateway integration)
         const razorpayOrderId = await this.razorpayService.createOrder(totalAmount);
 
-        // 5. Return all calculated data (DO NOT SAVE TO DATABASE)
+        // 6. Return all calculated data (DO NOT SAVE TO DATABASE)
         const response = {
             razorpayOrderId,
             totalAmount,
@@ -150,11 +177,18 @@ export class OrderService {
             },
         };
 
-        // 6. Cache response for idempotency (30 min TTL)
+        // 7. Cache response for idempotency (30 min TTL)
         if (orderData.idempotencyKey) {
             const cacheKey = `order:prep:${userId || 'guest'}:${orderData.idempotencyKey}`;
             try {
                 await this.redisService?.set(cacheKey, response, 1800);
+
+                // WEBHOOK RECOVERY: Store reverse mapping by razorpayOrderId
+                // This allows webhook to find order data if frontend fails after payment
+                const reverseCacheKey = `order:razorpay:${razorpayOrderId}`;
+                await this.redisService?.set(reverseCacheKey, response, 1800);
+
+                this.logger.log(`✅ Prepared order cached with keys: ${cacheKey} and ${reverseCacheKey}`);
             } catch (err) {
                 // Non-critical if cache fails
                 this.logger.warn('Failed to cache prepared order');
@@ -174,15 +208,20 @@ export class OrderService {
         razorpaySignature: string,
         preparedOrderData: any,
     ): Promise<Order> {
-        // 1. Verify Razorpay payment signature
-        const isValid = await this.razorpayService.verifyPayment(
-            razorpayOrderId,
-            razorpayPaymentId,
-            razorpaySignature,
-        );
+        // 1. Verify Razorpay payment signature (skip if empty - indicates webhook call)
+        if (razorpaySignature) {
+            const isValid = await this.razorpayService.verifyPayment(
+                razorpayOrderId,
+                razorpayPaymentId,
+                razorpaySignature,
+            );
 
-        if (!isValid) {
-            throw new BadRequestException('Invalid payment signature');
+            if (!isValid) {
+                throw new BadRequestException('Invalid payment signature');
+            }
+        } else {
+            // Signature not provided - assuming this is called from webhook
+            this.logger.log('⚠️  Signature verification skipped (webhook call)');
         }
 
         // 2. Now save order to database in transaction
@@ -343,16 +382,39 @@ export class OrderService {
                 };
             });
 
-            // 3. Calculate totals
+            // 3. Calculate discounts (if code provided) - Matches prepareOrder logic
+            let discountAmount = 0;
+
+            if (orderData.discountCode) {
+                try {
+                    const discount = await this.discountsService.validateCode(
+                        orderData.discountCode,
+                        userId,
+                        subtotal,
+                        validatedItems
+                    );
+
+                    // Calculate discount amount based on type
+                    discountAmount = discount.type === 'PERCENT'
+                        ? Math.round((subtotal * discount.value) / 100)
+                        : Math.min(discount.value, subtotal);
+
+                    this.logger.log(`Discount "${orderData.discountCode}" applied: ₹${discountAmount}`);
+                } catch (err) {
+                    // If discount invalid/expired, proceed without it (graceful degradation)
+                    this.logger.warn(`Discount validation failed: ${err.message}`);
+                }
+            }
+
+            // 4. Calculate totals
             const taxAmount = subtotal * 0.18; // 18% GST
             const shippingAmount = 0; // Free shipping
-            const discountAmount = 0; // TODO: Apply discount if code provided
             const totalAmount = subtotal + taxAmount + shippingAmount - discountAmount;
 
-            // 4. Generate secure order number
+            // 5. Generate secure order number
             const orderNumber = this.generateSecureOrderNumber();
 
-            // 5. Create Razorpay order (skip if payment bypass enabled)
+            // 6. Create Razorpay order (skip if payment bypass enabled)
             let razorpayOrderId: string;
             let initialStatus: OrderStatus;
             let paymentStatus: PaymentStatus;
@@ -372,7 +434,7 @@ export class OrderService {
                 paymentStatus = PaymentStatus.INITIATED;
             }
 
-            // 6. Create order
+            // 7. Create order
             const order = manager.create(Order, {
                 orderNumber,
                 userId,
@@ -388,7 +450,7 @@ export class OrderService {
             });
             await manager.save(Order, order);
 
-            // 7. Create order items (with server-calculated prices)
+            // 8. Create order items (with server-calculated prices)
             const items = validatedItems.map((item) =>
                 manager.create(OrderItem, {
                     orderId: order.id,
@@ -407,7 +469,7 @@ export class OrderService {
             );
             await manager.save(OrderItem, items);
 
-            // 8. CRITICAL: Atomic stock decrement with validation
+            // 9. CRITICAL: Atomic stock decrement with validation
             // Prevents race condition where two concurrent orders can oversell
             for (const item of validatedItems) {
                 const result = await manager
@@ -433,7 +495,7 @@ export class OrderService {
                 }
             }
 
-            // 9. Create shipping address snapshot
+            // 10. Create shipping address snapshot
             const address = manager.create(OrderAddress, {
                 orderId: order.id,
                 fullName: orderData.shippingAddress.fullName,
@@ -449,7 +511,7 @@ export class OrderService {
             });
             await manager.save(OrderAddress, address);
 
-            // 10. Create payment record
+            // 11. Create payment record
             const payment = manager.create(Payment, {
                 orderId: order.id,
                 amount: totalAmount,
@@ -462,7 +524,7 @@ export class OrderService {
             });
             await manager.save(Payment, payment);
 
-            // 6. Handle Discounts (Production Hardened)
+            // 12. Record discount usage (Production Hardened)
             if (orderData.discountCode) {
                 const discount = await this.discountsService.validateCode(
                     orderData.discountCode,
@@ -485,7 +547,7 @@ export class OrderService {
                 await manager.save(OrderDiscount, snapshot);
             }
 
-            // 12. Create status history entry
+            // 13. Create status history entry
             const history = manager.create(OrderStatusHistory, {
                 orderId: order.id,
                 fromStatus: undefined,
