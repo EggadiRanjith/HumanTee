@@ -84,11 +84,12 @@ function Header() {
   // Protected routes that require authentication
   const protectedRoutes = ['/orders', '/account'];
 
-  // Handle navigation to protected routes
+  // Handle navigation to protected routes (use router.push for proper history)
   const handleProtectedNavigation = useCallback((e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (protectedRoutes.includes(href) && !isAuthenticated) {
       e.preventDefault();
-      window.location.href = '/login';
+      // Use window.location for navigation to preserve history stack
+      window.location.assign(`/login?redirect=${encodeURIComponent(href)}`);
     }
   }, [isAuthenticated]);
 

@@ -133,7 +133,7 @@ const ProductInfoComponent = ({ product }: ProductInfoProps) => {
                 <div className="flex items-center gap-3">
                     {product.originalPrice && (
                         <div className="text-white/55 text-[16px] sm:text-[18px] line-through">
-                            {product.currency} {product.originalPrice.toFixed(2)}
+                            {product.currency} {product.originalPrice?.toFixed(2)}
                         </div>
                     )}
                     <div className="text-white text-[20px] sm:text-[26px] font-light tracking-wide">
@@ -142,7 +142,7 @@ const ProductInfoComponent = ({ product }: ProductInfoProps) => {
                 </div>
                 {product.originalPrice && product.originalPrice > product.price && (
                     <div className="inline-block px-3 py-1 text-[12px] font-bold tracking-wider uppercase bg-gradient-to-r from-violet-500 to-fuchsia-400 text-white rounded-full shadow-glow-violet-medium">
-                        Save {product.currency} {(product.originalPrice - product.price).toFixed(2)}
+                        Save {product.currency} {((product.originalPrice || 0) - product.price).toFixed(2)}
                     </div>
                 )}
                 {product.badge && (

@@ -51,12 +51,9 @@ function OrdersPageContent() {
   }, []);
 
   // CRITICAL: Check auth and redirect BEFORE any rendering
-  // This prevents the page from being added to history
+  // Use router.push to preserve history (back button works)
   if (!authLoading && !isAuthenticated) {
-    // Use window.location.href for immediate redirect (no history entry)
-    if (typeof window !== 'undefined') {
-      window.location.href = '/login?redirect=/orders';
-    }
+    router.push('/login?redirect=/orders');
     return null;
   }
 

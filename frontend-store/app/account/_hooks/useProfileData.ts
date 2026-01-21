@@ -55,18 +55,24 @@ export function useProfileData(
         queryKey: queryKeys.user,
         queryFn: async () => {
             const response = await apiClient.get('/auth/me');
+            // Backend returns nested structure: response.data.profile.profile.fullName
+            const profileData = response.data.profile?.profile || response.data.profile || {};
             return {
                 id: response.data.id,
                 email: response.data.email,
                 role: response.data.role,
-                fullName: response.data.profile?.fullName,
-                phone: response.data.profile?.phone,
-                avatarUrl: response.data.profile?.avatarUrl,
+                fullName: profileData.fullName,
+                phone: profileData.phone,
+                avatarUrl: profileData.avatarUrl,
                 profileComplete: response.data.profileComplete,
             };
         },
         enabled: !!userId,
-        staleTime: 5 * 60 * 1000, // 5 minutes
+        staleTime: 30 * 60 * 1000, // 30 minutes - profile data doesn't change often
+        gcTime: 60 * 60 * 1000, // 1 hour - keep in memory even when unused
+        refetchOnWindowFocus: false, // Don't refetch when window regains focus
+        refetchOnMount: false, // Don't refetch on component mount if data exists
+        placeholderData: (previousData) => previousData, // Keep showing old data while refetching
     });
 
     // ✅ OPTIMIZED: Use React Query - checks cache from login payload first
@@ -93,7 +99,11 @@ export function useProfileData(
             return [];
         },
         enabled: !!userId,
-        staleTime: 5 * 60 * 1000, // 5 minutes
+        staleTime: 30 * 60 * 1000, // 30 minutes - addresses don't change often
+        gcTime: 60 * 60 * 1000, // 1 hour - keep in memory even when unused
+        refetchOnWindowFocus: false, // Don't refetch when window regains focus
+        refetchOnMount: false, // Don't refetch on component mount if data exists
+        placeholderData: (previousData) => previousData, // Keep showing old data while refetching
     });
 
     const updateProfile = (updated: Partial<UserProfile>) => {

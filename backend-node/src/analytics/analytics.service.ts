@@ -185,14 +185,10 @@ export class AnalyticsService {
      * Get product performance metrics
      */
     private async getProductMetrics(period: TimePeriod): Promise<any> {
-        console.log('🔍 getProductMetrics called - START');
-
         // Get all products
         const products = await this.productRepo.find({
             relations: ['variants'],
         });
-
-        console.log(`📦 Loaded ${products.length} products`);
 
         // Get orders with items in this period
         const orders = await this.orderRepo.find({
@@ -207,10 +203,6 @@ export class AnalyticsService {
         // Group by product NAME (not ID) since old product IDs may not exist
         const productRevenueMap = new Map<string, { revenue: number; orders: Set<string>; quantity: number; stock: number }>();
 
-        console.log('🔍 getProductMetrics called - START');
-        console.log(`📦 Loaded ${products.length} products`);
-        console.log('=== TOP PRODUCTS DEBUG ===');
-
         for (const order of orders) {
             if (!order.items || order.items.length === 0) continue;
 
@@ -220,12 +212,6 @@ export class AnalyticsService {
 
                 // Use product name as the key (not product ID)
                 const productName = product?.name || item.productNameSnapshot || 'Unknown Product';
-
-                console.log(`Item: Product ID: ${item.productId}`);
-                console.log(`  - Product found: ${!!product}`);
-                console.log(`  - Product name: ${product?.name || 'N/A'}`);
-                console.log(`  - Snapshot name: ${item.productNameSnapshot || 'N/A'}`);
-                console.log(`  - Final name: ${productName}`);
 
                 if (!productRevenueMap.has(productName)) {
                     productRevenueMap.set(productName, {
@@ -291,7 +277,6 @@ export class AnalyticsService {
                     // Product not found - infer from snapshot data
                     // Since all your products are "Drop 1", use that as default
                     category = 'Drop 1';
-                    console.log(`⚠️  Product ${item.productId} not found, using default category: "${category}"`);
                 }
 
                 if (!categoryMap.has(category)) {

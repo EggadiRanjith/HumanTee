@@ -5,6 +5,38 @@ import { logError } from "@/lib/logger";
 
 type AuthStep = 'email' | 'otp';
 
+// SECURITY: Whitelist of allowed redirect paths to prevent open redirect attacks
+const ALLOWED_REDIRECT_PREFIXES = [
+    '/',
+    '/checkout',
+    '/cart',
+    '/orders',
+    '/account',
+    '/shop',
+    '/product/',
+    '/contact',
+];
+
+/**
+ * Validates redirect URL to prevent open redirect attacks
+ * Only allows internal paths that start with known safe prefixes
+ */
+function validateRedirectUrl(url: string | null): string {
+    if (!url) return '/';
+
+    // Must start with / and not be a protocol-relative URL
+    if (!url.startsWith('/') || url.startsWith('//')) {
+        return '/';
+    }
+
+    // Check against whitelist
+    const isAllowed = ALLOWED_REDIRECT_PREFIXES.some(prefix =>
+        url === prefix || url.startsWith(prefix)
+    );
+
+    return isAllowed ? url : '/';
+}
+
 export function useAuthFlow() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -93,8 +125,8 @@ export function useAuthFlow() {
 
             setSuccess("Login successful! Redirecting...");
             setTimeout(() => {
-                // Redirect to the URL specified in query params, or homepage
-                const redirectUrl = searchParams.get('redirect') || '/';
+                // SECURITY: Validate redirect URL against whitelist
+                const redirectUrl = validateRedirectUrl(searchParams.get('redirect'));
                 router.push(redirectUrl);
             }, 1000);
         } catch (err) {
@@ -128,8 +160,8 @@ export function useAuthFlow() {
             const data = await response.json();
             await authLogin(data.accessToken, data.user, null, data.addresses, data.profile);
 
-            // Redirect to the URL specified in query params, or homepage
-            const redirectUrl = searchParams.get('redirect') || '/';
+            // SECURITY: Validate redirect URL against whitelist
+            const redirectUrl = validateRedirectUrl(searchParams.get('redirect'));
             router.push(redirectUrl);
         } catch (err: any) {
             logError(err, 'Google login error');

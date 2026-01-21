@@ -1,0 +1,12 @@
+# Security Contact Information
+# https://humantee.in/.well-known/security.txt
+
+Contact: mailto:security@humantee.in
+Contact: mailto:humanteeofficial@gmail.com
+Expires: 2027-01-21T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://humantee.in/.well-known/security.txt
+
+# Policy
+# We appreciate responsible disclosure of security vulnerabilities.
+# Please report any security issues to the contacts above.

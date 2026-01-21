@@ -145,9 +145,9 @@ const ProductCard = ({
 
                 {/* Pricing - India-tuned: Readable in sunlight */}
                 <div className="flex items-center justify-center gap-1.5 mt-1.5 mb-1 flex-wrap">
-                    {product.originalPrice && (
+                    {(product.originalPrice ?? 0) > 0 && (
                         <span className="text-white/55 text-[11px] line-through whitespace-nowrap">
-                            {product.currency} {product.originalPrice.toFixed(2)}
+                            {product.currency} {product.originalPrice?.toFixed(2)}
                         </span>
                     )}
                     <span className="brand-text-primary text-[13px] font-heading whitespace-nowrap">
@@ -156,10 +156,10 @@ const ProductCard = ({
                 </div>
 
                 {/* Savings Display - Luxury: Minimal */}
-                {product.originalPrice && product.originalPrice > product.price && (
+                {(product.originalPrice ?? 0) > 0 && (product.originalPrice ?? 0) > product.price && (
                     <div className="mb-1.5 flex justify-center">
                         <span className="inline-block px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-gradient-to-r from-violet-500 to-fuchsia-400 text-white rounded-full shadow-glow-violet-medium whitespace-nowrap max-w-full truncate">
-                            Save {product.currency} {(product.originalPrice - product.price).toFixed(2)}
+                            Save {product.currency} {((product.originalPrice || 0) - product.price).toFixed(2)}
                         </span>
                     </div>
                 )}

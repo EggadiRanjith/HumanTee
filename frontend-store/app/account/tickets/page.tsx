@@ -8,8 +8,8 @@
 
 import { Suspense, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FiLoader } from "react-icons/fi";
 import { useAuth } from "@/app/contexts/AuthContext";
+import { useLoading } from "@/app/contexts/LoadingContext";
 import { Pagination } from "@/app/components/ui/navigation/Pagination";
 import { useTickets, useTicketsFilters } from './hooks';
 import {
@@ -24,6 +24,7 @@ import {
 function TicketListPageContent() {
     const router = useRouter();
     const { isAuthenticated, isLoading: authLoading } = useAuth();
+    const { setLoading } = useLoading();
 
     // URL-based filters (shareable links!)
     const { filters, setFilters, clearFilters, hasActiveFilters } = useTicketsFilters();
@@ -56,6 +57,13 @@ function TicketListPageContent() {
         }
     }, [authLoading, isAuthenticated, router]);
 
+    // Hide navigation loader when data arrives
+    useEffect(() => {
+        if (!isLoading && !authLoading) {
+            setLoading(false);
+        }
+    }, [isLoading, authLoading, setLoading]);
+
     // Handle page change
     const handlePageChange = (page: number) => {
         setFilters({ page });
@@ -63,11 +71,13 @@ function TicketListPageContent() {
         // User can manually scroll if needed
     };
 
-    // Show loading during auth check
-    if (authLoading) {
+    // Show skeleton during auth check or data loading
+    if (authLoading || isLoading) {
         return (
-            <div className="min-h-screen brand-bg-dusk pt-[var(--header-height)] flex items-center justify-center">
-                <FiLoader className="w-8 h-8 animate-spin text-white/40" />
+            <div className="min-h-screen brand-bg-dusk pt-[var(--header-height)]">
+                <div className="max-w-screen-lg mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-8">
+                    <TicketsSkeleton count={6} />
+                </div>
             </div>
         );
     }
@@ -122,8 +132,10 @@ function TicketListPageContent() {
 export default function TicketListPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen brand-bg-dusk pt-[var(--header-height)] flex items-center justify-center">
-                <FiLoader className="w-8 h-8 animate-spin text-white/40" />
+            <div className="min-h-screen brand-bg-dusk pt-[var(--header-height)]">
+                <div className="max-w-screen-lg mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-8">
+                    <TicketsSkeleton count={6} />
+                </div>
             </div>
         }>
             <TicketListPageContent />

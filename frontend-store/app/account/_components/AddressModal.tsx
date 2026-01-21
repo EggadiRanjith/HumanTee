@@ -106,8 +106,8 @@ export default function AddressModal({
 
         try {
             // Strip ALL metadata fields that backend doesn't accept
-            // Use type assertion since these fields may exist at runtime
-            const { id, isDefault, ...addressData } = formData as any;
+            // Backend rejects: userId, createdAt, updatedAt, deletedAt, id, isDefault
+            const { id, isDefault, userId, createdAt, updatedAt, deletedAt, ...addressData } = formData as any;
             await onSave(addressData);
             onClose();
         } catch (err: any) {

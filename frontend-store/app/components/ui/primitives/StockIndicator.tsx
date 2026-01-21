@@ -77,7 +77,7 @@ export default function StockIndicator({
             </div>
             {showCount && (
                 <span className={`text-xs ${stockInfo.textColor} tracking-wide font-medium`}>
-                    {stock >= 20 ? 'In Stock' : `Only ${stockInfo.count} left!`}
+                    {stock === 0 ? 'Out of Stock' : stock >= 20 ? 'In Stock' : `Only ${stockInfo.count} left!`}
                 </span>
             )}
         </div>

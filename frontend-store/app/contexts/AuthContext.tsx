@@ -119,7 +119,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // ✅ OPTIMIZED: Hydrate React Query cache from login payload
         // This prevents redundant API calls after login
         if (profile) {
-            queryClient.setQueryData(queryKeys.user, profile);
+            // Normalize nested profile structure from backend
+            const profileData = profile.profile || {};
+            const normalizedProfile = {
+                id: profile.id || userData.id,
+                email: profile.email || userData.email,
+                role: profile.role || userData.role,
+                fullName: profileData.fullName,
+                phone: profileData.phone,
+                avatarUrl: profileData.avatarUrl,
+                profileComplete: profile.profileComplete,
+            };
+            queryClient.setQueryData(queryKeys.user, normalizedProfile);
         } else {
             queryClient.setQueryData(queryKeys.user, userData);
         }

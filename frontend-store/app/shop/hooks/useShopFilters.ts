@@ -29,7 +29,7 @@ export function useShopFilters() {
         page: parseInt(searchParams.get('page') || '1'),
     }), [searchParams]);
 
-    // Update filters in URL
+    // Update filters in URL (replace, don't push - prevents double-back issue)
     const setFilters = useCallback((newFilters: Partial<ShopFilters>) => {
         const params = new URLSearchParams(searchParams.toString());
 
@@ -42,13 +42,13 @@ export function useShopFilters() {
             }
         });
 
-        // Navigate to new URL
-        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+        // Replace URL (doesn't add to history stack)
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     }, [searchParams, router, pathname]);
 
     // Clear all filters
     const clearFilters = useCallback(() => {
-        router.push(pathname, { scroll: false });
+        router.replace(pathname, { scroll: false });
     }, [router, pathname]);
 
     // Check if any filters are active

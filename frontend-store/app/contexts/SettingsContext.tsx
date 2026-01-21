@@ -32,7 +32,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     const { data: settings, isLoading: loading, error } = useQuery({
         queryKey: queryKeys.settings,
         queryFn: async () => {
-            console.log('🔄 Fetching settings from API...');
             const data = await publicSettingsApi.getAll();
 
             // Add default feature flags if not present

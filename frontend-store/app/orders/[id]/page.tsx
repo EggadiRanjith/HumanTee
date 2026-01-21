@@ -8,20 +8,18 @@
 "use client";
 
 import Link from "next/link";
-import { logError } from '@/lib/logger';
 import { useState, useEffect, use } from "react";
 import { useAuth } from "@/app/contexts/AuthContext";
+import { useLoading } from "@/app/contexts/LoadingContext";
 import { useRouter } from "next/navigation";
-import apiClient from "@/lib/api-client";
-import axios from "axios";
 import { HelpActionModal } from "@/app/components/orders/HelpActionModal";
 import { LazyMotion, domAnimation } from "framer-motion";
-import { FiArrowLeft, FiLoader, FiHelpCircle } from "react-icons/fi";
-import { Order } from '../../types/order.types';
+import { FiArrowLeft, FiHelpCircle } from "react-icons/fi";
 import {
   OrderHeader,
   OrderItems,
-  OrderSummary
+  OrderSummary,
+  OrderDetailSkeleton
 } from './components';
 import { useSettings } from "@/app/contexts/SettingsContext";
 import { useOrder } from '../hooks/useOrder';
@@ -29,8 +27,7 @@ import { useOrder } from '../hooks/useOrder';
 export default function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const [order, setOrder] = useState<Order | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { setLoading } = useLoading();
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
 
   // Settings for feature flags
@@ -39,37 +36,33 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
   // Unwrap params Promise
   const { id } = use(params);
 
-  // Fetch order details
+  // Use the optimized useOrder hook instead of manual fetching
+  const { order, isLoading, error } = useOrder(id);
+
+  // Handle auth redirect for 401 errors
   useEffect(() => {
-    const fetchOrder = async () => {
-      try {
-        const response = await apiClient.get(`/orders/${id}`);
-        setOrder(response.data);
-      } catch (error: unknown) {
-        logError(error, 'Failed to fetch order');
-        if (axios.isAxiosError(error)) {
-          if (error.response?.status === 401 && !isAuthenticated) {
-            // Only redirect to login if it's a 401 AND it's not a public order
-            router.push(`/login?redirect=/orders/${id}`);
-          }
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (!authLoading) {
-      fetchOrder();
+    if (error && !isAuthenticated) {
+      router.push(`/login?redirect=/orders/${id}`);
     }
-  }, [authLoading, id, isAuthenticated, router]);
+  }, [error, isAuthenticated, id, router]);
 
-  // Loading state
+  // Hide navigation loader when data arrives or error occurs
+  useEffect(() => {
+    if (!isLoading) {
+      setLoading(false);
+    }
+  }, [isLoading, setLoading]);
+
+  // Hide loader when auth check completes without needing data fetch
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      setLoading(false);
+    }
+  }, [authLoading, isAuthenticated, setLoading]);
+
+  // Show skeleton while loading
   if (authLoading || isLoading) {
-    return (
-      <div className="min-h-screen brand-bg-dusk pt-[var(--header-height)] flex items-center justify-center">
-        <FiLoader className="w-8 h-8 animate-spin text-white/40" />
-      </div>
-    );
+    return <OrderDetailSkeleton />;
   }
 
   // Not found state

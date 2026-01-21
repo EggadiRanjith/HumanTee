@@ -2,13 +2,13 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FiLoader } from "react-icons/fi";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { GradientOverlay } from "@/app/components/ui/layout";
 import { InlineError } from "@/app/components/ui/errors";
 import { useProfileData } from "../_hooks/useProfileData";
 import AccountHeader from "../_components/AccountHeader";
 import AddressesSection from "../_components/AddressesSection";
+import { AddressesSkeleton } from "../_components/AddressesSkeleton";
 
 export default function AddressesPage() {
     const { user, isLoading: authLoading, isAuthenticated } = useAuth();
@@ -35,14 +35,7 @@ export default function AddressesPage() {
 
     // Loading state
     if (authLoading || isLoadingProfile) {
-        return (
-            <div className="min-h-screen brand-bg pt-[var(--header-height)] flex items-center justify-center">
-                <div className="text-center">
-                    <FiLoader className="w-12 h-12 animate-spin mx-auto mb-4 text-white/40" />
-                    <p className="text-white/60 text-sm">Loading addresses...</p>
-                </div>
-            </div>
-        );
+        return <AddressesSkeleton />;
     }
 
     // Error state

@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 import apiClient from "@/lib/api-client";
 import { useAuth } from "@/app/contexts/AuthContext";
+import { useLoading } from "@/app/contexts/LoadingContext";
 
 // CRITICAL: Prevent any scrolling before component even renders
 if (typeof window !== 'undefined') {
@@ -31,6 +32,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
     const router = useRouter();
     const { id } = use(params);
     const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+    const { setLoading } = useLoading();
 
     const [ticket, setTicket] = useState<any | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -69,7 +71,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         if (!authLoading && !isAuthenticated) {
             router.push(`/login?redirect=/account/tickets/${id}`);
         }
-    }, [authLoading, isAuthenticated, router]);
+    }, [authLoading, isAuthenticated, router, id]);
 
     useEffect(() => {
         const fetchTicket = async () => {
@@ -89,6 +91,13 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
             fetchTicket();
         }
     }, [isAuthenticated, id]);
+
+    // Hide navigation loader when data arrives
+    useEffect(() => {
+        if (!isLoading && !authLoading) {
+            setLoading(false);
+        }
+    }, [isLoading, authLoading, setLoading]);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messagesContainerRef = useRef<HTMLDivElement>(null);

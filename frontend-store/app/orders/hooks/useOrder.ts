@@ -8,7 +8,7 @@ import type { Order } from '@/app/types/order.types';
  * Uses React Query for caching and deduplication
  */
 export function useOrder(orderId: string) {
-    return useQuery({
+    const { data, isLoading, error } = useQuery({
         queryKey: queryKeys.order(orderId),
         queryFn: async () => {
             const response = await apiClient.get<Order>(`/orders/${orderId}`);
@@ -19,4 +19,10 @@ export function useOrder(orderId: string) {
         retry: 1,
         enabled: !!orderId, // Only fetch if orderId exists
     });
+
+    return {
+        order: data,
+        isLoading,
+        error
+    };
 }
