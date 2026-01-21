@@ -17,24 +17,9 @@ export default function AdminLoginPage() {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
 
-    const [brandName, setBrandName] = useState("HumanTee");
-    const [logo, setLogo] = useState<string>("/images/humantee-logo.png"); // Default to local logo
+    // Static brand config
+    const brandName = "HumanTee";
 
-    // Fetch brand config (non-blocking, silent fail)
-    useEffect(() => {
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/settings/header-footer`)
-            .then(res => res.ok ? res.json() : null)
-            .then(data => {
-                if (data?.success) {
-                    setBrandName(data.data?.brand_name || "HumanTee");
-                    // Only override logo if API provides one
-                    if (data.data?.logo_url) {
-                        setLogo(data.data.logo_url);
-                    }
-                }
-            })
-            .catch(() => { });
-    }, []);
 
     const sendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -101,10 +86,9 @@ export default function AdminLoginPage() {
             // Use AuthContext's verifyOtp function (handles httpOnly cookies)
             await verifyOtp(email, otp);
 
-            // If successful, redirect to post-login
-            // Small delay to ensure cookies are set
+            // Redirect directly to admin dashboard
             setTimeout(() => {
-                router.push("/post-login");
+                router.push("/admin");
             }, 100);
         } catch (error) {
             setMessage({
@@ -124,10 +108,13 @@ export default function AdminLoginPage() {
                     {/* Header */}
                     <div className="text-center mb-6">
                         <div className="mx-auto mb-4 h-16 w-16 rounded-lg bg-black flex items-center justify-center">
-                            <img
-                                src={logo}
+                            <Image
+                                src="/images/humantee-logo.png"
                                 alt={brandName}
-                                className="w-12 h-12 object-contain"
+                                width={48}
+                                height={48}
+                                className="object-contain"
+                                priority
                             />
                         </div>
 
@@ -193,9 +180,9 @@ export default function AdminLoginPage() {
 
                             <button
                                 disabled={loading}
-                                className="w-full rounded-lg bg-black py-3 text-white font-medium hover:bg-gray-900 disabled:opacity-60"
+                                className="w-full rounded-lg bg-black py-3 text-white font-medium hover:bg-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
                             >
-                                {loading ? "Verifying…" : "Verify & Login"}
+                                {loading ? "Validating..." : "Verify & Login"}
                             </button>
 
                             <button

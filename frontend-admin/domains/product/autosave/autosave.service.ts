@@ -24,6 +24,15 @@ import { SCHEMA_VERSION } from '../core/product.types';
 const AUTOSAVE_DEBOUNCE_MS = 8000; // 8 seconds
 const DRAFT_STORAGE_KEY = 'product_draft';
 
+// Global flag to disable autosave (e.g., during edit mode)
+let autosaveEnabled = true;
+
+export const setAutosaveEnabled = (enabled: boolean): void => {
+    autosaveEnabled = enabled;
+};
+
+export const isAutosaveEnabled = (): boolean => autosaveEnabled;
+
 // ============================================================================
 // DIRTY STATE OBSERVER
 // ============================================================================
@@ -105,14 +114,15 @@ export const aggregateProductData = (): ProductFormData => {
 export const sanitizeProductDataForAPI = (data: ProductFormData): any => {
     const { slug, version, updatedAt, ...cleanData } = data;
 
+    const sanitizedImages = data.images.map((img, index) => ({
+        url: img.cloudinaryUrl || img.url,
+        order: img.order ?? index,
+        isPrimary: index === 0, // First image is primary
+    }));
+
     return {
         ...cleanData,
-        // Sanitize images - remove frontend metadata and map to backend schema
-        images: data.images.map((img, index) => ({
-            url: img.url,
-            order: img.order ?? index,
-            isPrimary: index === 0, // First image is primary
-        })),
+        images: sanitizedImages,
         // Sanitize variants - remove frontend IDs and metadata
         variants: data.variants.map(({ id, skuLocked, ...variant }) => variant),
     };

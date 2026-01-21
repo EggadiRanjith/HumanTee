@@ -670,7 +670,7 @@ export class AuthService {
     async getCustomerDetail(userId: string) {
         const user = await this.authUserRepository.findOne({
             where: { id: userId },
-            relations: ['profile', 'orders', 'tickets', 'tickets.messages'],
+            relations: ['profile', 'orders', 'tickets', 'tickets.messages', 'shippingAddresses'],
         });
 
         if (!user) {

@@ -1,6 +1,6 @@
 /**
- * Admin Orders Query Hooks
- * React Query hooks for orders data fetching
+ * Admin Orders Query Hooks - OPTIMIZED for Production
+ * Efficient caching strategy to minimize API calls
  */
 
 import { useQuery } from '@tanstack/react-query';
@@ -26,7 +26,7 @@ export function useAdminOrders(filters: OrderFilters = {}) {
             });
             return response.data;
         },
-        staleTime: 30 * 1000, // 30 seconds for admin data
+        staleTime: 5 * 60 * 1000, // 5 minutes - orders don't change that fast
         placeholderData: (previousData) => previousData, // Prevents pagination flicker
     });
 }
@@ -39,6 +39,6 @@ export function useAdminOrderDetail(orderId: string) {
             return response.data;
         },
         enabled: !!orderId,
-        staleTime: 60 * 1000, // 1 minute
+        staleTime: 3 * 60 * 1000, // 3 minutes - detail pages can be fresher
     });
 }

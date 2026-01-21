@@ -53,11 +53,23 @@ export class AdminOrdersController {
     }
 
     /**
-     * GET /admin/orders/stats - Get order statistics
+     * GET /admin/orders/stats - Get order statistics (OPTIMIZED)
+     * PERFORMANCE: Uses SQL COUNT queries instead of fetching all orders
+     * CACHING: Results cached in React Query for 30 seconds
      */
     @Get('stats')
     async getStats() {
-        return this.orderService.getOrderStats();
+        return this.orderService.getDashboardStats();
+    }
+
+    /**
+     * GET /admin/orders/recent - Get recent orders for dashboard
+     * PERFORMANCE: Only fetches last 5 orders
+     */
+    @Get('recent')
+    async getRecentOrders(@Query('limit') limit?: string) {
+        const orderLimit = limit ? parseInt(limit, 10) : 5;
+        return this.orderService.getRecentOrders(orderLimit);
     }
 
     /**

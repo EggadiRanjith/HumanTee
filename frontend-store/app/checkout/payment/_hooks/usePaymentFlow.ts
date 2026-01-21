@@ -15,7 +15,7 @@ declare global {
 
 export function usePaymentFlow() {
     const router = useRouter();
-    const { items, clearCart } = useCart();
+    const { items, clearCart, appliedDiscount } = useCart();
     const { paymentMethod, setPaymentMethod, setOrderNumber, shippingData } = useCheckout();
     const { setLoading } = useLoading();
     const [isProcessing, setIsProcessing] = useState(false);
@@ -115,6 +115,7 @@ export function usePaymentFlow() {
                     postalCode: shippingData.postalCode,
                     country: shippingData.country || 'India',
                 },
+                discountCode: appliedDiscount?.code || undefined, // ← Send discount code for backend validation
             };
 
 

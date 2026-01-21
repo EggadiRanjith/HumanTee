@@ -14,14 +14,14 @@ interface CustomerFilters {
 
 export function useAdminCustomers(filters: CustomerFilters = {}) {
     return useQuery({
-        queryKey: queryKeys.customers(filters),
+        queryKey: ['customers', 'list', filters], // WORKAROUND: inline to bypass Turbopack cache bug
         queryFn: async () => {
             const response = await apiClient.get('/admin/users', {
                 params: filters
             });
             return response.data;
         },
-        staleTime: 60 * 1000, // 1 minute
+        staleTime: 5 * 60 * 1000, // 5 minutes
         placeholderData: (previousData) => previousData,
     });
 }

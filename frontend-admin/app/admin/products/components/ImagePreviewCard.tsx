@@ -78,11 +78,11 @@ export default function ImagePreviewCard({
                 )}
 
                 {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                <div className="absolute inset-0 bg-black/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                     {!image.isPrimary && (
                         <button
                             onClick={() => onSetPrimary(image.id)}
-                            className="bg-white hover:bg-gray-100 text-black px-3 py-1.5 rounded text-xs font-medium transition-colors"
+                            className="bg-white hover:bg-gray-100 text-black px-2 md:px-3 py-1 md:py-1.5 rounded text-[10px] md:text-xs font-medium transition-colors"
                             title="Set as primary"
                         >
                             Set Primary
@@ -90,7 +90,7 @@ export default function ImagePreviewCard({
                     )}
                     <button
                         onClick={() => onDelete(image.id)}
-                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors"
+                        className="bg-red-500 hover:bg-red-600 text-white px-2 md:px-3 py-1 md:py-1.5 rounded text-[10px] md:text-xs font-medium transition-colors"
                         title="Delete image"
                     >
                         Delete
@@ -99,11 +99,11 @@ export default function ImagePreviewCard({
             </div>
 
             {/* Reorder Buttons */}
-            <div className="absolute top-2 right-2 z-10 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute top-1 md:top-2 right-1 md:right-2 z-10 flex flex-col gap-0.5 md:gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 {index > 0 && (
                     <button
                         onClick={() => onReorder(index, index - 1)}
-                        className="bg-white hover:bg-gray-100 text-black w-6 h-6 rounded flex items-center justify-center text-xs font-bold shadow"
+                        className="bg-white hover:bg-gray-100 text-black w-5 h-5 md:w-6 md:h-6 rounded flex items-center justify-center text-[10px] md:text-xs font-bold shadow"
                         title="Move left"
                     >
                         ←
@@ -112,7 +112,7 @@ export default function ImagePreviewCard({
                 {index < totalImages - 1 && (
                     <button
                         onClick={() => onReorder(index, index + 1)}
-                        className="bg-white hover:bg-gray-100 text-black w-6 h-6 rounded flex items-center justify-center text-xs font-bold shadow"
+                        className="bg-white hover:bg-gray-100 text-black w-5 h-5 md:w-6 md:h-6 rounded flex items-center justify-center text-[10px] md:text-xs font-bold shadow"
                         title="Move right"
                     >
                         →

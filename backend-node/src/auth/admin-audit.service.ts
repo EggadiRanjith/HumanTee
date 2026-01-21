@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { AdminAuditLog } from '../entities/admin-audit-log.entity';
+import { SettingsCacheService } from '../settings/settings-cache.service';
 
 /**
  * Admin Audit Service
@@ -12,10 +13,13 @@ export class AdminAuditService {
     constructor(
         @InjectRepository(AdminAuditLog)
         private readonly auditLogRepo: Repository<AdminAuditLog>,
+        @Inject(forwardRef(() => SettingsCacheService))
+        private readonly settingsCacheService: SettingsCacheService,
     ) { }
 
     /**
      * Log an admin action
+     * ✅ NOW CHECKS IF FEATURE IS ENABLED BEFORE LOGGING!
      */
     async logAction(data: {
         adminId: string;
@@ -29,22 +33,36 @@ export class AdminAuditService {
         changes?: any;
         ipAddress: string;
         userAgent?: string;
-    }): Promise<AdminAuditLog> {
-        const log = this.auditLogRepo.create({
-            admin_id: data.adminId,
-            admin_email: data.adminEmail,
-            event_type: data.eventType,
-            entity_type: data.entityType,
-            entity_id: data.entityId,
-            entity_name: data.entityName,
-            before: data.before,
-            after: data.after,
-            changes: data.changes,
-            ip_address: data.ipAddress,
-            user_agent: data.userAgent,
-        });
+    }): Promise<AdminAuditLog | null> {
+        try {
+            // ✅ CHECK IF ADMIN AUDIT LOGGING IS ENABLED
+            const loggingEnabled = await this.settingsCacheService.isFeatureEnabled('admin_audit_logs_enabled');
 
-        return await this.auditLogRepo.save(log);
+            if (!loggingEnabled) {
+                // Skip logging when disabled (saves DB costs)
+                return null;
+            }
+
+            const log = this.auditLogRepo.create({
+                admin_id: data.adminId,
+                admin_email: data.adminEmail,
+                event_type: data.eventType,
+                entity_type: data.entityType,
+                entity_id: data.entityId,
+                entity_name: data.entityName,
+                before: data.before,
+                after: data.after,
+                changes: data.changes,
+                ip_address: data.ipAddress,
+                user_agent: data.userAgent,
+            });
+
+            return await this.auditLogRepo.save(log);
+        } catch (error) {
+            // Log error but don't throw - audit logging should never break the main flow
+            console.error('Failed to log admin audit action:', error);
+            return null;
+        }
     }
 
     /**

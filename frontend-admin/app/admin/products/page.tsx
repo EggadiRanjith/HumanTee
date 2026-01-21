@@ -96,8 +96,9 @@ export default function ProductsPage() {
     // Error state
     if (error) return <ProductsError error={error} onRetry={() => refetch()} />;
 
-    // Empty state - only show when NO products exist at all
-    if (products.length === 0) {
+    // Empty state - only show when NO products exist at all AND no filters active
+    const hasActiveFilters = status !== 'ALL' || category !== 'ALL' || searchQuery !== '';
+    if (products.length === 0 && !hasActiveFilters) {
         return <ProductsEmpty />;
     }
 
@@ -178,31 +179,28 @@ export default function ProductsPage() {
                 </div>
             </div>
 
-            {/* No Results State */}
-            {showNoResults && (
-                <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
-                    <FiPackage className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No products found</h3>
-                    <p className="text-gray-600 mb-4">
-                        Try adjusting your filters or search query
-                    </p>
-                    <button
-                        onClick={() => {
-                            setSearchQuery('');
-                            setStatus('ALL');
-                            setCategory('ALL');
-                        }}
-                        className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900"
-                    >
-                        Clear Filters
-                    </button>
-                </div>
-            )}
-
             {/* Products Grid (Mobile) - Compact */}
-            {!showNoResults && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:hidden gap-2.5 md:gap-3 lg:gap-4">
-                    {paginatedProducts.map((product) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:hidden gap-2.5 md:gap-3 lg:gap-4">
+                {showNoResults ? (
+                    <div className="col-span-full bg-white rounded-lg border border-gray-200 p-8 text-center">
+                        <FiPackage className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No products found</h3>
+                        <p className="text-gray-600 mb-4">
+                            Try adjusting your filters or search query
+                        </p>
+                        <button
+                            onClick={() => {
+                                setSearchQuery('');
+                                setStatus('ALL');
+                                setCategory('ALL');
+                            }}
+                            className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900"
+                        >
+                            Clear Filters
+                        </button>
+                    </div>
+                ) : (
+                    paginatedProducts.map((product) => (
                         <Link
                             key={product.id}
                             href={`/admin/products/${product.id}`}
@@ -260,41 +258,61 @@ export default function ProductsPage() {
                                 </div>
                             </div>
                         </Link>
-                    ))}
-                </div>
-            )}
+                    ))
+                )}
+            </div>
 
             {/* Products Table (Desktop) */}
-            {!showNoResults && (
-                <div className="hidden lg:block bg-white rounded-lg border border-gray-200 overflow-hidden">
-                    <table className="w-full">
-                        <thead className="bg-gray-50 border-b border-gray-200">
+            <div className="hidden lg:block bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
+                                Image
+                            </th>
+                            <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
+                                Product
+                            </th>
+                            <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
+                                Status
+                            </th>
+                            <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
+                                Price
+                            </th>
+                            <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
+                                Stock
+                            </th>
+                            <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
+                                Category
+                            </th>
+                            <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                        {showNoResults ? (
                             <tr>
-                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
-                                    Image
-                                </th>
-                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
-                                    Product
-                                </th>
-                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
-                                    Status
-                                </th>
-                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
-                                    Price
-                                </th>
-                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
-                                    Stock
-                                </th>
-                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
-                                    Category
-                                </th>
-                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">
-                                    Actions
-                                </th>
+                                <td colSpan={7} className="px-6 py-16 text-center">
+                                    <FiPackage className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No products found</h3>
+                                    <p className="text-gray-600 mb-4">
+                                        Try adjusting your filters or search query
+                                    </p>
+                                    <button
+                                        onClick={() => {
+                                            setSearchQuery('');
+                                            setStatus('ALL');
+                                            setCategory('ALL');
+                                        }}
+                                        className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900"
+                                    >
+                                        Clear Filters
+                                    </button>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                            {paginatedProducts.map((product) => (
+                        ) : (
+                            paginatedProducts.map((product) => (
                                 <tr key={product.id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -356,11 +374,11 @@ export default function ProductsPage() {
                                         </Link>
                                     </td>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
 
             {/* Pagination - Compact Mobile */}
             {!showNoResults && totalPages > 1 && (

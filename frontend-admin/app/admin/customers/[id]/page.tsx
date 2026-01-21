@@ -123,6 +123,41 @@ export default function CustomerDetailPage() {
                             <p className="text-lg md:text-xl font-bold text-black">₹{totalSpend.toFixed(2)}</p>
                         </div>
                     </div>
+
+                    {/* Shipping Addresses */}
+                    {customer.shippingAddresses && customer.shippingAddresses.length > 0 && (
+                        <div className="bg-white rounded-xl md:rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div className="px-4 md:px-6 py-2.5 md:py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                                <h3 className="text-[10px] md:text-xs font-bold text-black uppercase tracking-widest flex items-center gap-1.5 md:gap-2">
+                                    <FiMapPin className="w-3.5 h-3.5 md:w-4 md:h-4" /> Addresses
+                                </h3>
+                                <span className="text-[9px] md:text-[10px] font-bold text-gray-400">{customer.shippingAddresses.length}</span>
+                            </div>
+                            <div className="divide-y divide-gray-100">
+                                {customer.shippingAddresses.map((addr: any) => (
+                                    <div key={addr.id} className="p-4 md:p-6">
+                                        <div className="flex items-start justify-between mb-2">
+                                            <p className="text-xs md:text-sm font-bold text-black">{addr.fullName}</p>
+                                            {addr.isDefault && (
+                                                <span className="text-[8px] uppercase font-bold px-1.5 py-0.5 rounded border text-green-600 border-green-200 bg-green-50">
+                                                    Default
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="space-y-1 text-[10px] md:text-xs text-gray-600">
+                                            <p>{addr.houseNumber}, {addr.address}</p>
+                                            {addr.landmark && <p className="text-gray-400">Near: {addr.landmark}</p>}
+                                            <p>{addr.city}, {addr.state} - {addr.postalCode}</p>
+                                        </div>
+                                        <div className="mt-2 pt-2 border-t border-gray-50 flex gap-3 text-[10px] md:text-xs text-gray-500">
+                                            <span>📞 {addr.phone}</span>
+                                            <span>✉ {addr.email}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Activity Tabs (Orders & Tickets) - Compact Mobile, Original Desktop */}

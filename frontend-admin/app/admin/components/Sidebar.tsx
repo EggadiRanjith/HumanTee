@@ -16,25 +16,11 @@ export function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [brandName, setBrandName] = useState(BRAND_CONFIG.fallback);
-    const [logoUrl, setLogoUrl] = useState<string | null>(null);
+    const [brandName] = useState(BRAND_CONFIG.fallback);
+    const [logoUrl] = useState<string | null>(null);
 
-    // Fetch brand name and logo from API
-    useEffect(() => {
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings/header-footer`)
-            .then(res => res.ok ? res.json() : null)
-            .then(data => {
-                if (data?.brand_name) {
-                    setBrandName(data.brand_name);
-                }
-                if (data?.logo_url) {
-                    setLogoUrl(data.logo_url);
-                }
-            })
-            .catch(() => {
-                // Use fallback on error
-            });
-    }, []);
+    // Brand settings removed - using static fallback to avoid 404
+
 
     const links = [
         { href: '/admin', label: 'Dashboard', icon: '📊' },
@@ -60,7 +46,18 @@ export function Sidebar() {
             {/* Mobile Header */}
             <div className="lg:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
                 <div className="flex items-center justify-between p-4">
-                    <h1 className="text-lg font-semibold text-black">{brandName} {BRAND_CONFIG.adminSuffix}</h1>
+                    <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                            <Image
+                                src="/images/humantee-logo.png"
+                                alt={brandName}
+                                width={24}
+                                height={24}
+                                className="object-contain"
+                            />
+                        </div>
+                        <h1 className="text-lg font-semibold text-black">{brandName} {BRAND_CONFIG.adminSuffix}</h1>
+                    </div>
                     <button
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                         className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-black"
@@ -96,27 +93,22 @@ export function Sidebar() {
             >
                 {/* Header */}
                 <div className="p-6 border-b border-gray-200">
-                    {logoUrl ? (
-                        <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center flex-shrink-0">
                             <Image
-                                src={logoUrl}
+                                src="/images/humantee-logo.png"
                                 alt={brandName}
-                                width={40}
-                                height={40}
+                                width={32}
+                                height={32}
                                 className="object-contain"
                                 priority
                             />
-                            <div>
-                                <h1 className="text-xl font-semibold text-black">{brandName}</h1>
-                                <p className="text-xs text-gray-600">{BRAND_CONFIG.adminSuffix} Panel</p>
-                            </div>
                         </div>
-                    ) : (
-                        <>
+                        <div>
                             <h1 className="text-xl font-semibold text-black">{brandName}</h1>
-                            <p className="text-xs text-gray-600 mt-1">{BRAND_CONFIG.adminSuffix} Panel</p>
-                        </>
-                    )}
+                            <p className="text-xs text-gray-600">{BRAND_CONFIG.adminSuffix} Panel</p>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Navigation */}

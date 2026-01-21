@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useAdminTickets } from '@/lib/queries/useTickets';
 import { TicketsHeader, TicketsSkeleton, TicketsEmpty, TicketsError, TicketCard } from './components';
-import { FiSearch, FiFilter, FiLoader, FiAlertCircle, FiClock, FiCheckCircle, FiMessageSquare } from 'react-icons/fi';
+import { FiSearch, FiFilter, FiLoader, FiAlertCircle, FiRotateCw, FiCheckCircle, FiMessageSquare } from 'react-icons/fi';
 
 export default function TicketsPage() {
     const [statusFilter, setStatusFilter] = useState('ALL');
@@ -96,7 +96,7 @@ export default function TicketsPage() {
                         className="p-1.5 md:p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                         title="Refresh"
                     >
-                        <FiClock className={`w-4 h-4 md:w-5 md:h-5 ${isLoading ? 'animate-spin' : ''}`} />
+                        <FiRotateCw className={`w-4 h-4 md:w-5 md:h-5 ${isLoading ? 'animate-spin' : ''}`} />
                     </button>
                 </div>
             </div>

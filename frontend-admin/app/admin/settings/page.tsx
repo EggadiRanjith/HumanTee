@@ -44,6 +44,13 @@ const settingsCards = [
         href: '/admin/settings/system',
         icon: '⚙️',
     },
+    {
+        title: 'Feature Toggles',
+        description: 'Enable or disable features to optimize performance',
+        items: ['Discount codes', 'Support tickets', 'API optimization'],
+        href: '/admin/settings/features',
+        icon: '🎛️',
+    },
 ];
 
 export default function SettingsPage() {

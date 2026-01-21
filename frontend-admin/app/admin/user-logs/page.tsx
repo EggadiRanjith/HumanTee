@@ -5,8 +5,8 @@
 
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
-import apiClient from '@/lib/api-client';
+import React, { useState, useMemo } from 'react';
+import { useUserAuditLogs } from '@/lib/queries/useUserLogs';
 import {
     User,
     ShoppingBag,
@@ -15,7 +15,8 @@ import {
     CreditCard,
     ChevronRight,
     ArrowLeft,
-    Loader2
+    Loader2,
+    AlertCircle
 } from 'lucide-react';
 
 type AuditCategory = 'ALL' | 'AUTH' | 'ORDERS' | 'PAYMENTS' | 'PROFILE' | 'ADDRESSES';
@@ -43,24 +44,9 @@ export default function UserAuditLogsPage() {
     const [eventTypeFilter, setEventTypeFilter] = useState<string>('ALL');
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
-    const [logs, setLogs] = useState<AuditLog[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        fetchLogs();
-    }, []);
-
-    const fetchLogs = async () => {
-        setIsLoading(true);
-        try {
-            const response = await apiClient.get('/admin/user-audit-logs?limit=1000');
-            setLogs(response.data.logs || []);
-        } catch (error) {
-            console.error('Failed to fetch user audit logs:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    // Use React Query hook for user audit logs
+    const { data: logs = [], isLoading, error, refetch } = useUserAuditLogs();
 
     // Category definitions
     const categories = [
@@ -174,6 +160,37 @@ export default function UserAuditLogsPage() {
         return 'bg-gray-100 text-gray-700';
     };
 
+    // Loading state
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                    <Loader2 className="w-12 h-12 animate-spin text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">Loading user activity logs...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Error state
+    if (error) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                    <AlertCircle className="w-12 h-12 text-red-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-black mb-2">Failed to load user logs</h3>
+                    <p className="text-sm text-gray-500 mb-4">{error?.message || 'Unknown error'}</p>
+                    <button
+                        onClick={() => refetch()}
+                        className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     // Dashboard view
     if (selectedCategory === 'ALL') {
         return (
@@ -221,7 +238,7 @@ export default function UserAuditLogsPage() {
                         <h2 className="text-sm md:text-base lg:text-lg font-semibold text-black">Recent Activity</h2>
                     </div>
                     <div className="divide-y divide-gray-100">
-                        {(logs || []).slice(0, 10).map((log) => (
+                        {logs.slice(0, 10).map((log) => (
                             <div key={log.id} className="px-3 md:px-4 lg:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition-colors">
                                 <div className="flex items-center justify-between gap-3">
                                     <div className="flex-1 min-w-0">
@@ -338,12 +355,7 @@ export default function UserAuditLogsPage() {
 
             {/* Logs Table */}
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                {isLoading ? (
-                    <div className="p-12 flex flex-col items-center justify-center">
-                        <Loader2 className="w-8 h-8 animate-spin text-gray-400 mb-3" />
-                        <p className="text-sm text-gray-500">Loading user audit logs...</p>
-                    </div>
-                ) : filteredLogs.length === 0 ? (
+                {filteredLogs.length === 0 ? (
                     <div className="p-12 text-center text-gray-500">No audit logs found</div>
                 ) : (
                     <div className="overflow-x-auto">

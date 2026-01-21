@@ -124,6 +124,29 @@ async function bootstrap() {
     },
   }));
 
+  // PERFORMANCE: HTTP Caching Headers
+  // Add Cache-Control and ETag for GET requests to improve performance
+  app.use((req, res, next) => {
+    // Only apply to GET requests
+    if (req.method === 'GET') {
+      // Different cache strategies based on route
+      if (req.path.startsWith('/products')) {
+        // Products: cache for 5 minutes, stale-while-revalidate for 10 minutes
+        res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      } else if (req.path.startsWith('/settings') || req.path.startsWith('/homepage')) {
+        // Settings: cache for 1 hour
+        res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=7200');
+      } else if (req.path.startsWith('/admin')) {
+        // Admin: no caching
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      } else {
+        // Default: cache for 2 minutes
+        res.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=240');
+      }
+    }
+    next();
+  });
+
   // CORS configuration from environment
   const corsEnabled = process.env.CORS_ENABLED === 'true';
   const corsOrigins = process.env.CORS_ORIGINS?.split(',').map(o => o.trim()) || [];

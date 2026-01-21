@@ -116,7 +116,7 @@ export default function HeaderFooterSettings() {
                     {!isEditing ? (
                         <button
                             onClick={() => setIsEditing(true)}
-                            className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium shadow-sm"
+                            className="px-3 md:px-4 lg:px-6 py-1.5 md:py-2 lg:py-2.5 text-sm md:text-base bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium shadow-sm"
                         >
                             Edit
                         </button>
@@ -124,14 +124,14 @@ export default function HeaderFooterSettings() {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setIsEditing(false)}
-                                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                                className="px-3 md:px-4 lg:px-6 py-1.5 md:py-2 lg:py-2.5 text-sm md:text-base border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSave}
                                 disabled={isSaving || uploading}
-                                className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2 transition-colors font-medium shadow-sm"
+                                className="px-3 md:px-4 lg:px-6 py-1.5 md:py-2 lg:py-2.5 text-sm md:text-base bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2 transition-colors font-medium shadow-sm"
                             >
                                 {isSaving ? (
                                     <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -165,7 +165,7 @@ export default function HeaderFooterSettings() {
                                     onChange={(e: any) => setFormData(prev => ({ ...prev, brand_name: e.target.value }))}
                                     placeholder="HUMANTEE"
                                     readOnly={!isEditing}
-                                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                                    className={`w-full px-2 md:px-3 lg:px-4 py-1.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                                 />
                                 <p className="text-xs text-gray-500 mt-1">Displayed in the top-left corner</p>
                             </div>
@@ -248,7 +248,7 @@ export default function HeaderFooterSettings() {
                                     onChange={(e: any) => setFormData(prev => ({ ...prev, tagline: e.target.value }))}
                                     placeholder="Wear Your Story"
                                     readOnly={!isEditing}
-                                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                                    className={`w-full px-2 md:px-3 lg:px-4 py-1.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                                 />
                             </div>
 
@@ -266,7 +266,7 @@ export default function HeaderFooterSettings() {
                                     }))}
                                     placeholder="contact@humantee.com"
                                     readOnly={!isEditing}
-                                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                                    className={`w-full px-2 md:px-3 lg:px-4 py-1.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                                 />
                             </div>
 
@@ -284,7 +284,7 @@ export default function HeaderFooterSettings() {
                                     }))}
                                     placeholder="+91 7780-661493"
                                     readOnly={!isEditing}
-                                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                                    className={`w-full px-2 md:px-3 lg:px-4 py-1.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                                 />
                             </div>
 
@@ -303,7 +303,7 @@ export default function HeaderFooterSettings() {
                                         }))}
                                         placeholder="https://www.instagram.com/humanteeofficial/"
                                         readOnly={!isEditing}
-                                        className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                                        className={`w-full px-2 md:px-3 lg:px-4 py-1.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                                     />
                                 </div>
 
@@ -320,7 +320,7 @@ export default function HeaderFooterSettings() {
                                         }))}
                                         placeholder="https://maps.google.com"
                                         readOnly={!isEditing}
-                                        className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                                        className={`w-full px-2 md:px-3 lg:px-4 py-1.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                                     />
                                 </div>
                             </div>
@@ -336,7 +336,7 @@ export default function HeaderFooterSettings() {
                                     onChange={(e: any) => setFormData(prev => ({ ...prev, scrolling_text: e.target.value }))}
                                     placeholder="WEAR HUMANTEE · WEAR CONFIDENCE"
                                     readOnly={!isEditing}
-                                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                                    className={`w-full px-2 md:px-3 lg:px-4 py-1.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                                 />
                                 <p className="text-xs text-gray-500 mt-1">Large scrolling text displayed in footer</p>
                             </div>

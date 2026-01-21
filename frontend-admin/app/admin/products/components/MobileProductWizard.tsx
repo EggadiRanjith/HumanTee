@@ -17,6 +17,7 @@ import OrganizationTab from './tabs/OrganizationTab';
 import { useBasicInfoStore } from '@/domains/product/basic-info/basic-info.store';
 import { usePricingStore } from '@/domains/product/pricing/pricing.store';
 import { aggregateProductData, sanitizeProductDataForAPI, markAllDomainsClean } from '@/domains/product/autosave/autosave.service';
+import { discardDraft } from '@/domains/product/autosave/draft.recovery';
 import { toast } from 'sonner';
 import apiClient from '@/lib/api-client';
 
@@ -29,7 +30,11 @@ const STEPS = [
     { key: 'organization', label: 'Organization', component: OrganizationTab },
 ] as const;
 
-export default function MobileProductWizard() {
+interface MobileProductWizardProps {
+    productId?: string;
+}
+
+export default function MobileProductWizard({ productId }: MobileProductWizardProps = {}) {
     const router = useRouter();
     const [currentStep, setCurrentStep] = useState(0);
     const [isSaving, setIsSaving] = useState(false);
@@ -83,13 +88,61 @@ export default function MobileProductWizard() {
         setIsSaving(true);
         try {
             const productData = aggregateProductData();
-            const sanitizedData = sanitizeProductDataForAPI(productData);
-            const response = await apiClient.post('/admin/products', sanitizedData);
-            toast.success('Product created successfully!');
+
+            if (productId) {
+                // Edit mode - use same sanitization as desktop edit to avoid backend validation errors
+                const sanitizedData = {
+                    name: productData.name,
+                    description: productData.description,
+                    productType: productData.productType,
+                    category: productData.category,
+                    price: productData.price,
+                    compareAtPrice: productData.compareAtPrice,
+                    costPerItem: productData.costPerItem,
+                    taxable: productData.taxable,
+                    hasVariants: productData.hasVariants,
+                    trackInventory: productData.trackInventory,
+                    stock: productData.stock,
+                    sku: productData.sku,
+                    continueSellingWhenOutOfStock: productData.continueSellingWhenOutOfStock,
+                    lowStockThreshold: productData.lowStockThreshold,
+                    status: productData.status,
+                    isFeatured: productData.isFeatured,
+                    collections: productData.collections,
+                    // Sanitize images - remove id but keep order
+                    images: productData.images.map((img: any, index: number) => ({
+                        url: img.cloudinaryUrl || img.url,
+                        altText: img.altText,
+                        isPrimary: img.isPrimary,
+                        order: index,
+                    })),
+                    // Sanitize variants - remove backend-only properties
+                    variants: productData.variants.map((v: any) => ({
+                        size: v.size,
+                        color: v.color,
+                        colorHex: v.colorHex,
+                        sku: v.sku,
+                        stock: Number(v.stock) || 0,
+                        priceOverride: v.priceOverride ? Number(v.priceOverride) : undefined,
+                        weight: v.weight ? Number(v.weight) : undefined,
+                        // Strips: isActive, id, skuLocked
+                    })),
+                };
+
+                await apiClient.put(`/admin/products/${productId}`, sanitizedData);
+                toast.success('Product updated successfully!');
+            } else {
+                // Create mode - use existing sanitization
+                const sanitizedData = sanitizeProductDataForAPI(productData);
+                await apiClient.post('/admin/products', sanitizedData);
+                toast.success('Product created successfully!');
+                discardDraft(); // Clear draft from localStorage
+            }
+
             markAllDomainsClean();
             router.push('/admin/products');
         } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Failed to create product');
+            toast.error(error.response?.data?.message || 'Failed to save product');
             console.error(error);
         } finally {
             setIsSaving(false);
@@ -122,7 +175,7 @@ export default function MobileProductWizard() {
             </div>
 
             {/* Step Content */}
-            <div className="flex-1 overflow-y-auto px-4 py-6">
+            <div className="flex-1 overflow-y-auto px-4 py-6 pb-28">
                 <div className="max-w-2xl mx-auto">
                     <h2 className="text-xl font-bold text-black mb-4">
                         {STEPS[currentStep].label}
@@ -131,9 +184,18 @@ export default function MobileProductWizard() {
                 </div>
             </div>
 
-            {/* Navigation Buttons */}
-            <div className="bg-white border-t border-gray-200 px-4 py-4 sticky bottom-0">
-                <div className="max-w-2xl mx-auto flex gap-3">
+            {/* Navigation Buttons - Fixed to Bottom */}
+            <div className="bg-white border-t border-gray-200 px-4 py-4 fixed bottom-0 left-0 right-0 z-50">
+                <div className="max-w-2xl mx-auto flex gap-2">
+                    <button
+                        onClick={() => router.push('/admin/products')}
+                        disabled={isSaving}
+                        className="px-3 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 flex-shrink-0"
+                        title="Cancel"
+                    >
+                        ✕
+                    </button>
+
                     {!isFirstStep && (
                         <button
                             onClick={handleBack}

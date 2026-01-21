@@ -76,12 +76,12 @@ export default function OrdersPage() {
 
     const orders = data?.orders || [];
 
-    // Filtered and sorted orders
-    const filteredOrders = useMemo(() => {
-        let filtered = [...orders];
+    // Sort orders (backend already filtered by status)
+    const sortedOrders = useMemo(() => {
+        let sorted = [...orders];
 
         // Sort
-        filtered = filtered.sort((a, b) => {
+        sorted = sorted.sort((a, b) => {
             let comparison = 0;
             if (sortBy === 'date') {
                 comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
@@ -91,12 +91,12 @@ export default function OrdersPage() {
             return sortOrder === 'asc' ? comparison : -comparison;
         });
 
-        return filtered;
+        return sorted;
     }, [orders, sortBy, sortOrder]);
 
     // Paginated orders
-    const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
-    const paginatedOrders = filteredOrders.slice(
+    const totalPages = Math.ceil(sortedOrders.length / itemsPerPage);
+    const paginatedOrders = sortedOrders.slice(
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage
     );
@@ -113,7 +113,7 @@ export default function OrdersPage() {
     if (error) return <OrdersError error={error} onRetry={() => refetch()} />;
 
     // Empty state
-    if (filteredOrders.length === 0 && !searchQuery && statusFilter === 'ALL') {
+    if (sortedOrders.length === 0 && !searchQuery && statusFilter === 'ALL') {
         return <OrdersEmpty />;
     }
 
@@ -334,7 +334,7 @@ export default function OrdersPage() {
 
             {/* Empty State */}
             {
-                filteredOrders.length === 0 && !isLoading && (
+                sortedOrders.length === 0 && !isLoading && (
                     <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
                         <div className="text-4xl mb-4">🔍</div>
                         <h3 className="text-lg font-medium text-black mb-2">No orders found</h3>

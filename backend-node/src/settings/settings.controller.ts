@@ -1,12 +1,16 @@
 import { Controller, Get, Post, Body, Param, UseGuards, Req } from '@nestjs/common';
 import { SettingsService } from './settings.service';
+import { SettingsCacheService } from './settings-cache.service';
 import { AdminJwtGuard } from '../auth/guards/admin-jwt.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 
 @Controller('admin/settings')
 @UseGuards(AdminJwtGuard, AdminGuard)
 export class SettingsController {
-    constructor(private readonly settingsService: SettingsService) { }
+    constructor(
+        private readonly settingsService: SettingsService,
+        private readonly settingsCacheService: SettingsCacheService,
+    ) { }
 
     /**
      * Get all settings for a section
@@ -30,6 +34,12 @@ export class SettingsController {
     ) {
         const userId = req.user?.id;
         await this.settingsService.updateSection(section, data, userId, 'Admin update');
+
+        // Clear feature cache when features are updated
+        if (section === 'features') {
+            this.settingsCacheService.clearFeatureCache();
+        }
+
         return { message: 'Settings updated successfully' };
     }
 

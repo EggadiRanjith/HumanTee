@@ -8,7 +8,7 @@
 import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/lib/api-client';
 
 interface OrderItem {
@@ -35,12 +35,16 @@ interface Order {
     createdAt: string;
     updatedAt: string;
     totalAmount: number;
+    subtotal?: number;
+    taxAmount?: number;
+    shippingAmount?: number;
+    discountAmount?: number;
     address: {
         fullName: string;
         email: string;
         phone: string;
-        address?: string;
-        houseNumber?: string;
+        addressLine1?: string;
+        addressLine2?: string;
         landmark?: string;
         city: string;
         state: string;
@@ -56,6 +60,21 @@ interface Order {
         transactionId?: string;
         providerPaymentId?: string;
         providerOrderId?: string;
+        createdAt: string;
+    }>;
+    statusHistory?: Array<{
+        id: string;
+        fromStatus: string | null;
+        toStatus: string;
+        changedBy: string;
+        reason: string;
+        createdAt: string;
+    }>;
+    shipments?: Array<{
+        id: string;
+        carrier?: string;
+        trackingNumber?: string;
+        status: string;
         createdAt: string;
     }>;
 }
@@ -93,6 +112,7 @@ const formatStatus = (status: string) => {
 export default function OrderDetailPage() {
     const params = useParams();
     const orderId = params.id as string;
+    const queryClient = useQueryClient();
 
     const [showStatusModal, setShowStatusModal] = useState(false);
     const [newStatus, setNewStatus] = useState('');
@@ -126,6 +146,8 @@ export default function OrderDetailPage() {
         setUpdateError(null);
         try {
             await apiClient.patch(`/admin/orders/${orderId}/status`, { status: newStatus });
+            // Invalidate orders list cache so list page shows updated status
+            await queryClient.invalidateQueries({ queryKey: ['orders'] });
             await refetch();
             setShowStatusModal(false);
         } catch (err: any) {
@@ -199,53 +221,135 @@ export default function OrderDetailPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-4 md:space-y-6">
-                    {/* Order Items - Compact Mobile */}
+                    {/* Order Items - Enhanced with SKU */}
                     <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-4 lg:p-6">
                         <h2 className="text-base md:text-lg font-semibold text-black mb-3 md:mb-4">Order Items</h2>
                         <div className="space-y-3 md:space-y-4">
-                            {order.items.map((item, index) => {
-                                // Debug: Log the actual item structure (only first item)
-                                if (index === 0) {
-                                    console.log('Order item structure:', item);
-                                    console.log('Available fields:', Object.keys(item));
-                                }
-
-                                // Handle different possible field names from API
+                            {order.items.map((item: any, index: number) => {
                                 const price = Number(item.unitPrice || 0);
                                 const quantity = Number(item.quantity || 0);
                                 const subtotal = Number(item.lineTotal || price * quantity);
 
                                 return (
                                     <div key={item.id || index} className="flex gap-3 md:gap-4 pb-3 md:pb-4 border-b border-gray-200 last:border-0 last:pb-0">
-                                        <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center">
+                                        <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden">
                                             {item.imageUrlSnapshot ? (
-                                                <img src={item.imageUrlSnapshot} alt={item.productNameSnapshot} className="w-full h-full object-cover rounded-lg" />
+                                                <img
+                                                    src={item.imageUrlSnapshot.startsWith('data:') ? item.imageUrlSnapshot : item.imageUrlSnapshot}
+                                                    alt={item.productNameSnapshot}
+                                                    className="w-full h-full object-cover"
+                                                />
                                             ) : (
                                                 <span className="text-xl md:text-2xl">📦</span>
                                             )}
                                         </div>
-                                        <div className="flex-1">
-                                            <h3 className="font-medium text-black text-sm md:text-base">{item.productNameSnapshot}</h3>
-                                            {item.variantLabelSnapshot && (
-                                                <p className="text-xs md:text-sm text-gray-600 mt-1">{item.variantLabelSnapshot}</p>
-                                            )}
-                                            <p className="text-xs md:text-sm text-gray-600">Quantity: {quantity}</p>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-medium text-black text-sm md:text-base truncate">{item.productNameSnapshot}</h3>
+                                            <div className="flex flex-col gap-0.5 mt-1">
+                                                {item.variantLabelSnapshot && (
+                                                    <p className="text-xs md:text-sm text-gray-600">Variant: {item.variantLabelSnapshot}</p>
+                                                )}
+                                                {item.skuSnapshot && (
+                                                    <p className="text-xs text-gray-500 font-mono">SKU: {item.skuSnapshot}</p>
+                                                )}
+                                                <p className="text-xs md:text-sm text-gray-600 mt-1">Qty: {quantity} × ₹{price.toLocaleString()}</p>
+                                            </div>
                                         </div>
-                                        <div className="text-right">
-                                            <div className="font-medium text-black text-sm md:text-base">₹{subtotal.toLocaleString()}</div>
-                                            <div className="text-xs md:text-sm text-gray-500">₹{price.toLocaleString()} each</div>
+                                        <div className="text-right flex-shrink-0">
+                                            <div className="font-semibold text-black text-sm md:text-base">₹{subtotal.toLocaleString()}</div>
                                         </div>
                                     </div>
                                 );
                             })}
                         </div>
-                        <div className="mt-4 md:mt-6 pt-3 md:pt-4 border-t border-gray-200">
-                            <div className="flex justify-between text-base md:text-lg font-semibold text-black">
+
+                        {/* Financial Breakdown - CRITICAL ADDITION */}
+                        <div className="mt-4 md:mt-6 pt-3 md:pt-4 border-t border-gray-200 space-y-2">
+                            <div className="flex justify-between text-sm text-gray-600">
+                                <span>Subtotal</span>
+                                <span>₹{Number(order.subtotal || 0).toLocaleString()}</span>
+                            </div>
+                            {Number(order.taxAmount || 0) > 0 && (
+                                <div className="flex justify-between text-sm text-gray-600">
+                                    <span>Tax (GST)</span>
+                                    <span>₹{Number(order.taxAmount).toLocaleString()}</span>
+                                </div>
+                            )}
+                            {Number(order.shippingAmount || 0) > 0 && (
+                                <div className="flex justify-between text-sm text-gray-600">
+                                    <span>Shipping</span>
+                                    <span>₹{Number(order.shippingAmount).toLocaleString()}</span>
+                                </div>
+                            )}
+                            {Number(order.discountAmount || 0) > 0 && (
+                                <div className="flex justify-between text-sm text-green-600">
+                                    <span>Discount</span>
+                                    <span>-₹{Number(order.discountAmount).toLocaleString()}</span>
+                                </div>
+                            )}
+                            <div className="flex justify-between text-base md:text-lg font-semibold text-black pt-2 border-t border-gray-200">
                                 <span>Total</span>
-                                <span>₹{order.totalAmount.toLocaleString()}</span>
+                                <span>₹{Number(order.totalAmount).toLocaleString()}</span>
                             </div>
                         </div>
                     </div>
+
+                    {/* Status History Timeline - CRITICAL ADDITION */}
+                    {order.statusHistory && order.statusHistory.length > 0 && (
+                        <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+                            <h2 className="text-lg font-semibold text-black mb-4">Order Timeline</h2>
+                            <div className="relative">
+                                {/* Timeline line */}
+                                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+
+                                <div className="space-y-4">
+                                    {order.statusHistory.map((history: any, index: number) => (
+                                        <div key={history.id || index} className="relative flex gap-4">
+                                            {/* Timeline dot */}
+                                            <div className={`relative z-10 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${index === order.statusHistory.length - 1
+                                                ? 'bg-green-100 border-2 border-green-500'
+                                                : 'bg-gray-100 border-2 border-gray-300'
+                                                }`}>
+                                                <div className={`w-3 h-3 rounded-full ${index === order.statusHistory.length - 1 ? 'bg-green-500' : 'bg-gray-400'
+                                                    }`}></div>
+                                            </div>
+
+                                            {/* Timeline content */}
+                                            <div className="flex-1 pb-4">
+                                                <div className="flex items-start justify-between gap-2 mb-1">
+                                                    <div>
+                                                        {history.fromStatus && (
+                                                            <p className="text-xs text-gray-500">
+                                                                {formatStatus(history.fromStatus)}
+                                                                <span className="mx-1">→</span>
+                                                            </p>
+                                                        )}
+                                                        <p className={`text-sm font-semibold ${index === order.statusHistory.length - 1 ? 'text-green-600' : 'text-gray-900'
+                                                            }`}>
+                                                            {formatStatus(history.toStatus)}
+                                                        </p>
+                                                    </div>
+                                                    <time className="text-xs text-gray-500 flex-shrink-0">
+                                                        {new Date(history.createdAt).toLocaleString('en-US', {
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                            hour: '2-digit',
+                                                            minute: '2-digit'
+                                                        })}
+                                                    </time>
+                                                </div>
+                                                {history.reason && (
+                                                    <p className="text-xs text-gray-600 mt-1 italic">
+                                                        {history.reason}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Payment Information */}
                     {order.payments && order.payments.length > 0 && (
@@ -329,12 +433,16 @@ export default function OrderDetailPage() {
                     {/* Shipping Address */}
                     <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
                         <h2 className="text-lg font-semibold text-black mb-4">Shipping Address</h2>
-                        <div className="text-sm text-gray-600 space-y-1">
-                            {order.address.houseNumber && <div>{order.address.houseNumber}</div>}
-                            {order.address.address && <div>{order.address.address}</div>}
-                            {order.address.landmark && <div>Landmark: {order.address.landmark}</div>}
+                        <div className="text-sm text-gray-700 space-y-1.5">
+                            <div className="font-medium text-black">{order.address.fullName}</div>
+                            {order.address.addressLine1 && <div>{order.address.addressLine1}</div>}
+                            {order.address.addressLine2 && <div>{order.address.addressLine2}</div>}
+                            {order.address.landmark && <div className="text-gray-600">Near: {order.address.landmark}</div>}
                             <div>{order.address.city}, {order.address.state} {order.address.postalCode}</div>
                             <div>{order.address.country || 'India'}</div>
+                            <div className="pt-2 border-t border-gray-100 mt-2">
+                                <div className="text-gray-600">📞 {order.address.phone}</div>
+                            </div>
                         </div>
                     </div>
                 </div>

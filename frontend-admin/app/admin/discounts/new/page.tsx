@@ -14,6 +14,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { queryKeys } from '@/lib/queryKeys';
 import { discountsApi } from '@/lib/api/discounts';
 import * as productsApi from '@/lib/api/products';
 
@@ -22,6 +25,7 @@ type DiscountScope = 'PRODUCT' | 'GROUP' | 'GLOBAL';
 
 export default function CreateDiscountPage() {
     const router = useRouter();
+    const queryClient = useQueryClient();
 
     const [isLoading, setIsLoading] = useState(false);
     const [isDataLoading, setIsDataLoading] = useState(true);
@@ -106,17 +110,17 @@ export default function CreateDiscountPage() {
 
     const handleSave = async () => {
         if (!name || !code || !value) {
-            alert('Please fill in Name, Code, and Value');
+            toast.error('Please fill in Name, Code, and Value');
             return;
         }
 
         // Hardening Validation
         if (type === 'PERCENT' && (Number(value) < 0 || Number(value) > 100)) {
-            alert('Percentage value must be between 0 and 100');
+            toast.error('Percentage value must be between 0 and 100');
             return;
         }
         if (Number(value) < 0) {
-            alert('Discount value cannot be negative');
+            toast.error('Discount value cannot be negative');
             return;
         }
 
@@ -148,11 +152,20 @@ export default function CreateDiscountPage() {
             };
 
             await discountsApi.create(payload);
-            alert('Discount successfully created! 🚀');
-            router.push('/admin/discounts');
+
+            // Invalidate discounts cache to show new discount
+            await queryClient.invalidateQueries({ queryKey: queryKeys.discounts });
+
+            // Show inline success toast
+            toast.success('Discount created successfully! 🎉');
+
+            // Navigate back after brief delay
+            setTimeout(() => {
+                router.push('/admin/discounts');
+            }, 800);
         } catch (error: any) {
             // Save failed
-            alert(error.response?.data?.message || 'Failed to save discount');
+            toast.error(error.response?.data?.message || 'Failed to save discount');
         } finally {
             setIsLoading(false);
         }
@@ -268,7 +281,7 @@ export default function CreateDiscountPage() {
                                 <label className="block text-sm font-medium text-gray-900 mb-2">
                                     Stackable
                                 </label>
-                                <label className="relative inline-flex items-center cursor-pointer mt-2">
+                                <label className="relative inline-flex items-center cursor-pointer">
                                     <input
                                         type="checkbox"
                                         checked={stackable}
@@ -276,7 +289,7 @@ export default function CreateDiscountPage() {
                                         className="sr-only peer"
                                     />
                                     <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-black rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                                    <span className="ml-3 text-sm text-gray-600">Can combine with others</span>
+                                    <span className="ml-2 md:ml-3 text-xs md:text-sm text-gray-600">Combine</span>
                                 </label>
                             </div>
                         </div>

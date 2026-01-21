@@ -14,6 +14,8 @@ import { v4 as uuidv4 } from 'uuid';
 export interface MediaImage {
     id: string;
     url: string;
+    cloudinaryUrl?: string;
+    cloudinaryPublicId?: string;
     file?: File;
     altText: string;
     status: 'TEMP' | 'ACTIVE';
@@ -21,6 +23,8 @@ export interface MediaImage {
     order: number;
     expiresAt?: Date;
     uploadedAt: Date;
+    uploadProgress?: number;
+    uploadError?: string;
 }
 
 interface MediaState {
@@ -28,7 +32,7 @@ interface MediaState {
     isDirty: boolean;
 
     // Actions
-    addImage: (data: { id?: string; url: string; file?: File; altText: string }) => void;
+    addImage: (data: { id?: string; url: string; cloudinaryUrl?: string; file?: File; altText: string }) => void;
     updateImage: (id: string, updates: Partial<MediaImage>) => void;
     deleteImage: (id: string) => void;
     reorderImages: (newOrder: string[]) => void;
@@ -57,11 +61,12 @@ export const useMediaStore = create<MediaState>()((set) => ({
         set((state) => {
             const newImage: MediaImage = {
                 id,
-                url: data.url,
+                url: data.cloudinaryUrl || data.url, // Prefer cloudinaryUrl
+                cloudinaryUrl: data.cloudinaryUrl,
                 file: data.file,
                 altText: data.altText,
                 status: 'TEMP',
-                isPrimary: state.images.length === 0, // First image is primary
+                isPrimary: state.images.length === 0,
                 order: state.images.length,
                 expiresAt,
                 uploadedAt: now,

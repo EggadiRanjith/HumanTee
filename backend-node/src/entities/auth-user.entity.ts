@@ -4,6 +4,7 @@ import { UserProfile } from './user-profile.entity';
 import { OAuthAccount } from './oauth-account.entity';
 import { Order } from './order.entity';
 import { Ticket } from './ticket.entity';
+import { ShippingAddress } from './shipping-address.entity';
 
 @Entity('auth_users')
 export class AuthUser {
@@ -49,4 +50,7 @@ export class AuthUser {
 
     @OneToMany(() => Ticket, (ticket) => ticket.user)
     tickets: Ticket[];
+
+    @OneToMany(() => ShippingAddress, (address) => address.user)
+    shippingAddresses: ShippingAddress[];
 }

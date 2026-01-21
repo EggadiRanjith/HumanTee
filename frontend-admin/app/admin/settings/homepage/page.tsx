@@ -102,7 +102,7 @@ export default function HomepageSettings() {
                     {!isEditing ? (
                         <button
                             onClick={() => setIsEditing(true)}
-                            className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium shadow-sm"
+                            className="px-2 md:px-3 lg:px-4 xl:px-6 py-1 md:py-1.5 lg:py-2 xl:py-2.5 text-xs md:text-sm lg:text-base bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium shadow-sm"
                         >
                             Edit
                         </button>
@@ -110,14 +110,14 @@ export default function HomepageSettings() {
                         <div className="flex gap-3">
                             <button
                                 onClick={handleCancel}
-                                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                                className="px-2 md:px-3 lg:px-4 xl:px-6 py-1 md:py-1.5 lg:py-2 xl:py-2.5 text-xs md:text-sm lg:text-base border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSave}
                                 disabled={updateMutation.isPending}
-                                className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2 transition-colors font-medium shadow-sm"
+                                className="px-2 md:px-3 lg:px-4 xl:px-6 py-1 md:py-1.5 lg:py-2 xl:py-2.5 text-xs md:text-sm lg:text-base bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2 transition-colors font-medium shadow-sm"
                             >
                                 {updateMutation.isPending ? (
                                     <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />

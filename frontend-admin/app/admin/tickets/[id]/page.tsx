@@ -6,6 +6,7 @@ import Link from 'next/link';
 import apiClient from '@/lib/api-client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { useAdminTicketDetail } from '@/lib/queries/useTickets';
 import {
     FiArrowLeft, FiSend, FiClock, FiCheckCircle,
     FiAlertCircle, FiUser, FiShield, FiLoader,
@@ -19,48 +20,35 @@ export default function TicketDetailPage() {
     const ticketId = params.id as string;
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const [ticket, setTicket] = useState<any | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    // Use React Query hook for ticket data
+    const { data: ticket, isLoading, error, refetch } = useAdminTicketDetail(ticketId);
+
     const [isActionLoading, setIsActionLoading] = useState(false);
     const [replyText, setReplyText] = useState('');
-    const [error, setError] = useState<string | null>(null);
 
     // Form states for updates
-    const [status, setStatus] = useState('');
-    const [priority, setPriority] = useState('');
-    const [assignedTo, setAssignedTo] = useState('');
+    const [status, setStatus] = useState(ticket?.status || '');
+    const [priority, setPriority] = useState(ticket?.priority || '');
+    const [assignedTo, setAssignedTo] = useState(ticket?.assignedTo || '');
     const [updateNote, setUpdateNote] = useState('');
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
-    };
-
+    // Update form states when ticket data changes
     useEffect(() => {
-        fetchTicket();
-    }, [ticketId]);
+        if (ticket) {
+            setStatus(ticket.status);
+            setPriority(ticket.priority);
+            setAssignedTo(ticket.assignedTo || '');
+        }
+    }, [ticket]);
 
+    // Auto-scroll to bottom when messages update
     useEffect(() => {
         if (ticket?.messages) {
-            scrollToBottom();
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
         }
     }, [ticket?.messages]);
 
-    const fetchTicket = async () => {
-        setIsLoading(true);
-        try {
-            const response = await apiClient.get(`/admin/tickets/${ticketId}`);
-            const data = response.data;
-            setTicket(data);
-            setStatus(data.status);
-            setPriority(data.priority);
-            setAssignedTo(data.assignedTo || '');
-        } catch (err: any) {
-            // Failed to fetch ticket
-            setError("Failed to load ticket details.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
+
 
     const handleSendReply = async () => {
         if (!replyText.trim()) return;
@@ -71,9 +59,13 @@ export default function TicketDetailPage() {
                 attachments: []
             });
             setReplyText('');
-            await fetchTicket();
-            // Invalidate tickets cache so list page shows updated data
-            queryClient.invalidateQueries({ queryKey: ['admin-tickets'] });
+            // Invalidate cache and refetch to show updates immediately
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ['tickets', 'detail', ticketId] }),
+                queryClient.invalidateQueries({ queryKey: ['tickets'] })
+            ]);
+            // Force refetch the current ticket to show new message
+            await refetch();
             toast.success("Reply sent successfully!");
         } catch (err: any) {
             toast.error("Failed to send reply. Please try again.");
@@ -92,9 +84,13 @@ export default function TicketDetailPage() {
                 note: updateNote || `Updated ticket properties`
             });
             setUpdateNote('');
-            await fetchTicket();
-            // Invalidate tickets cache so list page shows updated data
-            queryClient.invalidateQueries({ queryKey: ['admin-tickets'] });
+            // Invalidate cache and refetch to show updates immediately
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ['tickets', 'detail', ticketId] }),
+                queryClient.invalidateQueries({ queryKey: ['tickets'] })
+            ]);
+            // Force refetch the current ticket to show updated status/activity log
+            await refetch();
             toast.success("Ticket updated successfully!");
         } catch (err: any) {
             // Failed to update ticket
@@ -123,6 +119,22 @@ export default function TicketDetailPage() {
         );
     }
 
+    if (error) {
+        return (
+            <div className="text-center py-20">
+                <FiAlertCircle className="w-12 h-12 text-red-300 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-black">Failed to load ticket</h3>
+                <p className="text-sm text-gray-500 mt-2">{error?.message || 'Unknown error'}</p>
+                <button
+                    onClick={() => refetch()}
+                    className="mt-4 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+                >
+                    Retry
+                </button>
+            </div>
+        );
+    }
+
     if (!ticket) {
         return (
             <div className="text-center py-20">
@@ -147,26 +159,27 @@ export default function TicketDetailPage() {
                     </Link>
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 md:gap-2 lg:gap-3 flex-wrap">
-                            <h1 className="text-base md:text-lg lg:text-xl font-bold text-black font-mono">{ticket.ticketNumber}</h1>
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold border ${getStatusStyle(ticket.status)}`}>
-                                {ticket.status.replace(/_/g, ' ')}
+                            <h1 className="text-base md:text-lg lg:text-xl font-bold text-black font-mono">{ticket?.ticketNumber || 'Loading...'}</h1>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold border ${getStatusStyle(ticket?.status || '')}`}>
+                                {ticket?.status?.replace(/_/g, ' ') || 'Loading'}
                             </span>
                         </div>
-                        <p className="text-xs md:text-sm text-gray-500 mt-0.5 line-clamp-1">{ticket.subject}</p>
+                        <p className="text-xs md:text-sm text-gray-500 mt-0.5 line-clamp-1">{ticket?.subject || 'Loading...'}</p>
                     </div>
                 </div>
                 <div className="flex gap-2 flex-wrap">
                     <button
-                        onClick={() => router.push(`/admin/orders/${ticket.orderId}`)}
-                        className="px-3 md:px-4 py-1.5 md:py-2 border border-gray-200 rounded-lg text-xs font-medium hover:bg-gray-50 transition-all flex items-center gap-1.5 md:gap-2"
+                        onClick={() => ticket?.orderId && router.push(`/admin/orders/${ticket.orderId}`)}
+                        disabled={!ticket?.orderId}
+                        className="px-3 md:px-4 py-1.5 md:py-2 border border-gray-200 rounded-lg text-xs font-medium hover:bg-gray-50 transition-all flex items-center gap-1.5 md:gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <FiTrendingUp className="w-3 h-3 md:w-3.5 md:h-3.5" /> View Order
                     </button>
                     <button
-                        onClick={fetchTicket}
+                        onClick={() => refetch()}
                         className="p-1.5 md:p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                     >
-                        <FiClock className={`w-3.5 h-3.5 md:w-4 md:h-4 ${isActionLoading ? 'animate-spin' : ''}`} />
+                        <FiClock className={`w-3.5 h-3.5 md:w-4 md:h-4 ${isLoading ? 'animate-spin' : ''}`} />
                     </button>
                 </div>
             </div>
@@ -247,20 +260,20 @@ export default function TicketDetailPage() {
                                     <textarea
                                         value={replyText}
                                         onChange={(e) => setReplyText(e.target.value)}
-                                        placeholder="Type your response to the customer..."
-                                        className="w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all resize-none min-h-[100px]"
+                                        placeholder="Type message..."
+                                        className="w-full pl-1.5 md:pl-4 pr-8 md:pr-12 py-1 md:py-3 bg-gray-50 border border-gray-200 rounded-lg md:rounded-xl text-xs md:text-sm focus:ring-1 md:focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all resize-none min-h-[60px] md:min-h-[100px]"
                                     />
                                     <button
                                         onClick={handleSendReply}
                                         disabled={!replyText.trim() || isActionLoading}
-                                        className="absolute right-3 bottom-3 p-3 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-all shadow-md"
+                                        className="absolute right-1 md:right-3 top-1/2 -translate-y-1/2 md:bottom-3 md:top-auto md:translate-y-0 p-1.5 md:p-3 bg-black text-white rounded-md md:rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-all"
                                     >
-                                        {isActionLoading ? <FiLoader className="w-5 h-5 animate-spin" /> : <FiSend className="w-5 h-5" />}
+                                        {isActionLoading ? <FiLoader className="w-3 h-3 md:w-5 md:h-5 animate-spin" /> : <FiSend className="w-3 h-3 md:w-5 md:h-5" />}
                                     </button>
                                 </div>
-                                <div className="mt-2 flex items-center justify-between px-1">
-                                    <span className="text-[10px] text-gray-400 uppercase tracking-widest flex items-center gap-1.5 font-medium">
-                                        <FiInfo className="w-3 h-3" /> Customer will be notified via email
+                                <div className="mt-1 md:mt-2 flex items-center justify-between px-0.5 md:px-1">
+                                    <span className="text-[8px] md:text-[10px] text-gray-400 uppercase tracking-wider md:tracking-widest font-medium">
+                                        Customer notified via email
                                     </span>
                                     <button className="text-[10px] text-gray-400 hover:text-black uppercase tracking-widest font-medium transition-colors">
                                         Use Template
@@ -338,23 +351,26 @@ export default function TicketDetailPage() {
                                 </select>
                             </div>
                             <div>
-                                <label className="text-[10px] text-gray-500 uppercase tracking-widest mb-1.5 block font-bold">Assign To</label>
+                                <label className="text-[10px] md:text-[11px] text-gray-500 uppercase tracking-widest mb-1.5 block font-bold">Assign To</label>
                                 <input
                                     type="text"
                                     value={assignedTo}
                                     onChange={(e) => setAssignedTo(e.target.value)}
                                     placeholder="Admin User ID (UUID)"
-                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-black transition-all"
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 md:px-3 py-1.5 md:py-2 text-xs md:text-sm focus:outline-none focus:border-black transition-all"
                                 />
+                                <p className="text-[9px] md:text-[10px] text-gray-400 mt-1">Enter admin user UUID to assign this ticket</p>
                             </div>
                             <div className="pt-2">
+                                <label className="text-[10px] md:text-[11px] text-gray-500 uppercase tracking-widest mb-1.5 block font-bold">Update Note</label>
                                 <textarea
                                     value={updateNote}
                                     onChange={(e) => setUpdateNote(e.target.value)}
                                     placeholder="Add a note for this change (optional)"
-                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-black transition-all resize-none mb-3"
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 md:px-3 py-1.5 md:py-2 text-xs focus:outline-none focus:border-black transition-all resize-none mb-3"
                                     rows={2}
                                 />
+                                <p className="text-[9px] md:text-[10px] text-gray-400 mb-3">This note will be added to the activity log</p>
                                 <button
                                     onClick={handleUpdateTicket}
                                     disabled={isActionLoading}
@@ -379,6 +395,9 @@ export default function TicketDetailPage() {
                                     <p className="text-[11px] leading-relaxed text-gray-600">
                                         Status set to <span className="font-bold text-black uppercase text-[10px]">{log.toStatus.replace(/_/g, ' ')}</span>
                                     </p>
+                                    {log.note && log.note !== 'Ticket created' && log.note !== 'Updated ticket properties' && (
+                                        <p className="text-[10px] text-gray-500 mt-1 italic">Note: {log.note}</p>
+                                    )}
                                     <p className="text-[9px] text-gray-400 mt-0.5">
                                         {new Date(log.createdAt).toLocaleDateString()} • {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </p>

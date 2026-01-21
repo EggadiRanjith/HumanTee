@@ -15,6 +15,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { queryKeys } from '@/lib/queryKeys';
 import { discountsApi } from '@/lib/api/discounts';
 import { getAllProducts } from '@/lib/api/products';
 
@@ -25,6 +28,7 @@ export default function EditDiscountPage() {
     const router = useRouter();
     const params = useParams();
     const discountId = params.id as string;
+    const queryClient = useQueryClient();
 
     const [isLoading, setIsLoading] = useState(false);
     const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -208,11 +212,20 @@ export default function EditDiscountPage() {
             };
 
             await discountsApi.update(discountId, payload);
-            alert('Discount successfully updated! 🚀');
-            router.push('/admin/discounts');
+
+            // Invalidate discounts cache to show updated data
+            await queryClient.invalidateQueries({ queryKey: queryKeys.discounts });
+
+            // Show inline success toast
+            toast.success('Discount updated successfully! 🎉');
+
+            // Navigate back after brief delay
+            setTimeout(() => {
+                router.push('/admin/discounts');
+            }, 800);
         } catch (error: any) {
             // Update failed
-            alert(error.response?.data?.message || 'Failed to update discount');
+            toast.error(error.response?.data?.message || 'Failed to update discount');
         } finally {
             setIsLoading(false);
         }
@@ -339,7 +352,7 @@ export default function EditDiscountPage() {
                                 <label className="block text-sm font-medium text-gray-900 mb-2">
                                     Stackable
                                 </label>
-                                <label className="relative inline-flex items-center cursor-pointer mt-2">
+                                <label className="relative inline-flex items-center cursor-pointer">
                                     <input
                                         type="checkbox"
                                         checked={stackable}
@@ -347,7 +360,7 @@ export default function EditDiscountPage() {
                                         className="sr-only peer"
                                     />
                                     <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-black rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                                    <span className="ml-3 text-sm text-gray-600">Can combine with others</span>
+                                    <span className="ml-2 md:ml-3 text-xs md:text-sm text-gray-600">Combine</span>
                                 </label>
                             </div>
                         </div>

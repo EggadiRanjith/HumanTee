@@ -86,16 +86,17 @@ export default function VariantForm({
                     <input
                         type="text"
                         value={formData.sku}
-                        onChange={(e: any) => setFormData({ ...formData, sku: e.target.value })}
+                        onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
                         placeholder="e.g., HT-M-BLK-A1B2"
-                        className="flex-1 px-4 py-3 border-2 border-gray-400 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black focus:border-black outline-none"
+                        className="flex-1 min-w-0 px-2 md:px-3 py-1.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
                     />
                     <button
                         type="button"
                         onClick={handleGenerateSKU}
-                        className="bg-gray-100 hover:bg-gray-200 text-black px-4 py-3 rounded-lg font-medium transition-colors text-sm whitespace-nowrap"
+                        className="px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 rounded-lg transition-colors whitespace-nowrap flex-shrink-0"
                     >
-                        Generate
+                        <span className="hidden sm:inline">Generate</span>
+                        <span className="sm:hidden">Gen</span>
                     </button>
                 </div>
             </div>

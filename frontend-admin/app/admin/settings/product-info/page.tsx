@@ -128,7 +128,7 @@ export default function ProductInfoSettings() {
                     {!isEditing ? (
                         <button
                             onClick={() => setIsEditing(true)}
-                            className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
+                            className="px-2 md:px-3 lg:px-4 xl:px-6 py-1 md:py-1.5 lg:py-2 xl:py-2.5 text-xs md:text-sm lg:text-base bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
                         >
                             Edit
                         </button>
@@ -136,14 +136,14 @@ export default function ProductInfoSettings() {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setIsEditing(false)}
-                                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                                className="px-2 md:px-3 lg:px-4 xl:px-6 py-1 md:py-1.5 lg:py-2 xl:py-2.5 text-xs md:text-sm lg:text-base border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSave}
                                 disabled={isSaving}
-                                className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2 transition-colors font-medium shadow-sm"
+                                className="px-2 md:px-3 lg:px-4 xl:px-6 py-1 md:py-1.5 lg:py-2 xl:py-2.5 text-xs md:text-sm lg:text-base bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2 transition-colors font-medium shadow-sm"
                             >
                                 {isSaving ? (
                                     <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -189,7 +189,7 @@ export default function ProductInfoSettings() {
                     />
 
                     {/* Size Guide Multi-Images */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 overflow-hidden">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 md:p-4 lg:p-6 overflow-hidden">
                         <div className="border-b border-gray-100 pb-4 mb-6">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-lg font-semibold text-gray-900">Size Guide Images</h2>

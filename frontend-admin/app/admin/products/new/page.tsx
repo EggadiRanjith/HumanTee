@@ -618,53 +618,6 @@ export default function NewProductPage() {
                                         </p>
                                     )}
                                 </div>
-                                <div className="hidden sm:flex gap-2 flex-shrink-0">
-                                    <button
-                                        onClick={() => router.back()}
-                                        className="bg-gray-100 hover:bg-gray-200 text-black px-3 md:px-4 py-2 md:py-2.5 rounded-lg font-medium transition-colors text-xs md:text-sm"
-                                    >
-                                        Cancel
-                                    </button>
-                                    {/* Back Button - Show on all steps except first */}
-                                    {currentStep > 0 && (
-                                        <button
-                                            onClick={handleBack}
-                                            className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 md:px-4 py-2 md:py-2.5 rounded-lg font-medium transition-colors text-xs md:text-sm"
-                                        >
-                                            ← Back
-                                        </button>
-                                    )}
-
-                                    {/* Continue Button - Show on all steps except last */}
-                                    {currentStep < wizardSteps.length - 1 && (
-                                        <button
-                                            onClick={handleContinue}
-                                            className="bg-black hover:bg-gray-900 text-white px-3 md:px-4 py-2 md:py-2.5 rounded-lg font-medium transition-colors text-xs md:text-sm"
-                                        >
-                                            Continue →
-                                        </button>
-                                    )}
-
-                                    {/* Save Draft & Publish - Show only on last step */}
-                                    {currentStep === wizardSteps.length - 1 && (
-                                        <>
-                                            <button
-                                                onClick={handleSaveDraft}
-                                                disabled={isSaving}
-                                                className="bg-gray-800 hover:bg-gray-900 text-white px-3 md:px-4 py-2 md:py-2.5 rounded-lg font-medium transition-colors text-xs md:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                {isSaving ? 'Saving...' : 'Save Draft'}
-                                            </button>
-                                            <button
-                                                onClick={handlePublish}
-                                                disabled={isSaving}
-                                                className="bg-black hover:bg-gray-900 text-white px-3 md:px-4 py-2 md:py-2.5 rounded-lg font-medium transition-colors text-xs md:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                {isSaving ? 'Publishing...' : 'Publish Product'}
-                                            </button>
-                                        </>
-                                    )}
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -681,18 +634,78 @@ export default function NewProductPage() {
                     </div>
 
                     {/* Tab Content - Compact Mobile */}
-                    <div className="max-w-7xl mx-auto px-3 md:px-4 lg:px-6 py-4 md:py-6 pb-24 sm:pb-8">
+                    <div className="max-w-7xl mx-auto px-3 md:px-4 lg:px-6 py-4 md:py-6 pb-32">
                         {renderTabContent()}
+                    </div>
+
+                    {/* Desktop Footer - Sticky Bottom - Matches Mobile Design */}
+                    <div className="hidden sm:block fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 z-20 shadow-lg">
+                        <div className="max-w-7xl mx-auto flex justify-between items-center gap-3">
+                            <button
+                                onClick={() => router.back()}
+                                className="bg-gray-100 hover:bg-gray-200 text-black px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+                            >
+                                Cancel
+                            </button>
+                            <div className="flex gap-3">
+                                {/* Back Button - Show on all steps except first */}
+                                {currentStep > 0 && (
+                                    <button
+                                        onClick={handleBack}
+                                        className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+                                    >
+                                        ← Back
+                                    </button>
+                                )}
+
+                                {/* Continue Button - Show on all steps except last */}
+                                {currentStep < wizardSteps.length - 1 && (
+                                    <button
+                                        onClick={handleContinue}
+                                        className="bg-black hover:bg-gray-900 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm"
+                                    >
+                                        Continue →
+                                    </button>
+                                )}
+
+                                {/* Save Draft & Publish - Show only on last step */}
+                                {currentStep === wizardSteps.length - 1 && (
+                                    <>
+                                        <button
+                                            onClick={handleSaveDraft}
+                                            disabled={isSaving}
+                                            className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {isSaving ? 'Saving...' : 'Save Draft'}
+                                        </button>
+                                        <button
+                                            onClick={handlePublish}
+                                            disabled={isSaving}
+                                            className="bg-black hover:bg-gray-900 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {isSaving ? 'Publishing...' : 'Publish Product'}
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
                     </div>
 
                     {/* Mobile Footer - Fixed - Compact */}
                     <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-3 py-2.5 flex gap-2 z-20 shadow-lg">
                         <button
+                            onClick={() => router.back()}
+                            disabled={isSaving}
+                            className="px-3 py-2.5 border border-gray-300 rounded-lg font-medium transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Cancel
+                        </button>
+                        <button
                             onClick={handleSaveDraft}
                             disabled={isSaving}
                             className="flex-1 bg-gray-800 hover:bg-gray-900 text-white px-3 py-2.5 rounded-lg font-medium transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isSaving ? 'Saving...' : 'Save Draft'}
+                            {isSaving ? 'Saving...' : 'Draft'}
                         </button>
                         <button
                             onClick={handlePublish}

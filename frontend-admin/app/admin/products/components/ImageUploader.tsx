@@ -17,9 +17,29 @@ export default function ImageUploader({
     const [isDragging, setIsDragging] = useState(false);
     const [localImages, setLocalImages] = useState<ProductImage[]>(images);
 
-    // Sync local state with prop changes
+    // Sync local state with prop changes - PRESERVE cloudinaryUrl!
     useEffect(() => {
-        setLocalImages(images);
+        // Merge incoming props with local state to preserve cloudinaryUrl
+        setLocalImages(prev => {
+            // Create a map of local images with their cloudinaryUrl
+            const localCloudinaryUrls = new Map(
+                prev.map(img => [img.id, { cloudinaryUrl: img.cloudinaryUrl, url: img.url }])
+            );
+
+            // Merge: use prop data but preserve cloudinaryUrl from local if available
+            return images.map(img => {
+                const local = localCloudinaryUrls.get(img.id);
+                if (local?.cloudinaryUrl && !img.cloudinaryUrl) {
+                    // Local has cloudinaryUrl that prop doesn't - preserve it!
+                    return {
+                        ...img,
+                        cloudinaryUrl: local.cloudinaryUrl,
+                        url: local.cloudinaryUrl, // Also use cloudinaryUrl as url
+                    };
+                }
+                return img;
+            });
+        });
     }, [images]);
 
     const handleFileSelect = useCallback(
@@ -59,36 +79,38 @@ export default function ImageUploader({
             newImages.forEach(async (image, index) => {
                 try {
                     const result = await uploadImageToCloudinary(image.file!, (progress) => {
-                        // Update progress in local state
-                        setLocalImages(prev => {
-                            const updated = prev.map((img) =>
+                        // Update progress in local state only (no onChange during render)
+                        setLocalImages(prev =>
+                            prev.map((img) =>
                                 img.id === image.id
                                     ? { ...img, uploadProgress: progress.percentage }
                                     : img
-                            );
-                            onChange(updated);
-                            return updated;
-                        });
+                            )
+                        );
                     });
 
-                    // Update with Cloudinary URL
-                    onChange((prevImages) =>
-                        prevImages.map((img) =>
+                    // Update with Cloudinary URL - DEFER onChange to avoid render cycle issues
+                    setLocalImages(prev => {
+                        const updated = prev.map((img) =>
                             img.id === image.id
                                 ? {
                                     ...img,
+                                    url: result.url, // Replace base64 with Cloudinary URL
                                     cloudinaryUrl: result.url,
                                     cloudinaryPublicId: result.publicId,
                                     uploadProgress: 100,
                                     uploadError: undefined,
                                 }
                                 : img
-                        )
-                    );
+                        );
+                        // Defer onChange to next microtask to avoid updating parent during render
+                        queueMicrotask(() => onChange(updated));
+                        return updated;
+                    });
                 } catch (error: any) {
                     // Mark upload as failed
-                    onChange((prevImages) =>
-                        prevImages.map((img) =>
+                    setLocalImages(prev => {
+                        const updated = prev.map((img) =>
                             img.id === image.id
                                 ? {
                                     ...img,
@@ -96,8 +118,11 @@ export default function ImageUploader({
                                     uploadError: error.message || 'Upload failed',
                                 }
                                 : img
-                        )
-                    );
+                        );
+                        // Defer onChange to next microtask
+                        queueMicrotask(() => onChange(updated));
+                        return updated;
+                    });
                 }
             });
         },

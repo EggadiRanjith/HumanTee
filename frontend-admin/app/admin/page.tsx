@@ -11,7 +11,6 @@ import Link from 'next/link';
 import { useDashboardData } from './hooks/useDashboardData';
 import { useLowStockProducts } from '@/lib/queries/useLowStockProducts';
 import { DashboardStats } from './components/DashboardStats';
-import { DashboardCharts } from './components/DashboardPieCharts';
 import { RecentOrdersList } from './components/RecentOrdersList';
 import { QuickActions } from './components/QuickActions';
 
@@ -39,7 +38,6 @@ export default function DashboardPage() {
     };
 
     const recentOrders = data?.recentOrders || [];
-    const allOrders = data?.allOrders || [];
 
     if (isLoading) {
         return (
@@ -125,9 +123,6 @@ export default function DashboardPage() {
 
             {/* Stats Grid */}
             <DashboardStats stats={stats} />
-
-            {/* Charts - Orders & Revenue Over Time */}
-            <DashboardCharts orders={allOrders} />
 
             {/* Order Status Breakdown - Compact Mobile */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">

@@ -39,10 +39,13 @@ export default function CustomersPage() {
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
             filtered = filtered.filter(c => new Date(c.created_at) >= thirtyDaysAgo);
         } else if (activeFilter === 'top') {
-            // Top 10 highest spenders
-            filtered = filtered
+            // Top 10 highest spenders - FIXED: now returns correctly
+            // Sort by totalSpend descending and take top 10
+            filtered = [...filtered]
                 .sort((a, b) => (b.totalSpend || 0) - (a.totalSpend || 0))
                 .slice(0, 10);
+            // Return early to prevent re-sorting
+            return filtered;
         }
 
         // Apply sorting
@@ -86,8 +89,10 @@ export default function CustomersPage() {
     // Error state
     if (error) return <CustomersError error={error} onRetry={() => refetch()} />;
 
-    // Empty state
-    if (customers.length === 0) return <CustomersEmpty />;
+    // Empty state - ONLY show if truly no customers from API (not filtered/searched)
+    if (customers.length === 0 && !searchQuery && activeFilter === 'all') {
+        return <CustomersEmpty />;
+    }
 
     return (
         <div className="space-y-4 md:space-y-6">

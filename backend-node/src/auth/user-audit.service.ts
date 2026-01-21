@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserAuditLog } from '../entities/user-audit-log.entity';
+import { SettingsCacheService } from '../settings/settings-cache.service';
 
 interface LogActionParams {
     userId: string;
@@ -22,13 +23,24 @@ export class UserAuditService {
     constructor(
         @InjectRepository(UserAuditLog)
         private readonly auditLogRepository: Repository<UserAuditLog>,
+        @Inject(forwardRef(() => SettingsCacheService))
+        private readonly settingsCacheService: SettingsCacheService,
     ) { }
 
     /**
      * Log a user action
+     * ✅ NOW CHECKS IF FEATURE IS ENABLED BEFORE LOGGING!
      */
     async logAction(params: LogActionParams): Promise<void> {
         try {
+            // ✅ CHECK IF USER AUDIT LOGGING IS ENABLED
+            const loggingEnabled = await this.settingsCacheService.isFeatureEnabled('user_audit_logs_enabled');
+
+            if (!loggingEnabled) {
+                // Skip logging when disabled (saves DB costs)
+                return;
+            }
+
             const log = this.auditLogRepository.create({
                 userId: params.userId,
                 userEmail: params.userEmail,

@@ -93,7 +93,7 @@ export default function MaintenanceSettingsPage() {
                     {!isEditing ? (
                         <button
                             onClick={() => setIsEditing(true)}
-                            className="flex items-center justify-center gap-2 px-6 py-2.5 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-all shadow-sm"
+                            className="flex items-center justify-center gap-2 px-2 md:px-3 lg:px-4 xl:px-6 py-1 md:py-1.5 lg:py-2 xl:py-2.5 text-xs md:text-sm lg:text-base bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-all shadow-sm"
                         >
                             <FiEdit3 /> Edit Settings
                         </button>
@@ -101,14 +101,14 @@ export default function MaintenanceSettingsPage() {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setIsEditing(false)}
-                                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                                className="px-2 md:px-3 lg:px-4 xl:px-6 py-1 md:py-1.5 lg:py-2 xl:py-2.5 text-xs md:text-sm lg:text-base border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSave}
                                 disabled={isSaving}
-                                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-all disabled:opacity-50 shadow-sm"
+                                className="flex items-center justify-center gap-2 px-2 md:px-3 lg:px-4 xl:px-6 py-1 md:py-1.5 lg:py-2 xl:py-2.5 text-xs md:text-sm lg:text-base bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-all disabled:opacity-50 shadow-sm"
                             >
                                 {isSaving ? (
                                     <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -181,7 +181,7 @@ export default function MaintenanceSettingsPage() {
                                 Page Content Customization
                             </h3>
                         </div>
-                        <div className="p-6 space-y-6">
+                        <div className="p-3 md:p-4 lg:p-6 space-y-4 md:space-y-6">
                             {/* Title */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -192,7 +192,7 @@ export default function MaintenanceSettingsPage() {
                                     value={settings.title}
                                     readOnly={!isEditing}
                                     onChange={(e: any) => setSettings({ ...settings, title: e.target.value })}
-                                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : 'bg-white shadow-sm'}`}
+                                    className={`w-full px-2 md:px-3 lg:px-4 py-1.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : 'bg-white shadow-sm'}`}
                                     placeholder="e.g. We'll Be Right Back"
                                 />
                             </div>
@@ -223,7 +223,7 @@ export default function MaintenanceSettingsPage() {
                                         value={settings.estimatedTime}
                                         readOnly={!isEditing}
                                         onChange={(e: any) => setSettings({ ...settings, estimatedTime: e.target.value })}
-                                        className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : 'bg-white shadow-sm'}`}
+                                        className={`w-full px-2 md:px-3 lg:px-4 py-1.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : 'bg-white shadow-sm'}`}
                                         placeholder="e.g. 2 hours"
                                     />
                                 </div>
@@ -239,7 +239,7 @@ export default function MaintenanceSettingsPage() {
                                         value={settings.contactEmail}
                                         readOnly={!isEditing}
                                         onChange={(e: any) => setSettings({ ...settings, contactEmail: e.target.value })}
-                                        className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : 'bg-white shadow-sm'}`}
+                                        className={`w-full px-2 md:px-3 lg:px-4 py-1.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : 'bg-white shadow-sm'}`}
                                         placeholder="e.g. support@humantee.com"
                                     />
                                 </div>

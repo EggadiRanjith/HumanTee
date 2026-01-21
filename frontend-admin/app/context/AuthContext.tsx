@@ -119,8 +119,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             throw new Error('Admin access required');
         }
 
-        // Set user state (tokens are in httpOnly cookies)
-        setUser(data.user);
+        // CRITICAL FIX: Verify cookies were actually set by fetching /auth/me
+        // This ensures the httpOnly cookies are working before we set user state
+        try {
+            const meResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+                method: 'GET',
+                credentials: 'include',  // Send the cookies we just received
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!meResponse.ok) {
+                throw new Error('Cookie verification failed - cookies not set properly');
+            }
+
+            const meData = await meResponse.json();
+
+            // Verify it's the same admin user
+            if (meData.role?.toLowerCase() !== 'admin' || meData.id !== data.user.id) {
+                throw new Error('Authentication verification failed');
+            }
+
+            // NOW set user state (cookies are confirmed working)
+            setUser(meData);
+        } catch (error) {
+            // Cookie verification failed
+            console.error('Cookie verification error:', error);
+            throw new Error('Login failed - session not established. Please try again.');
+        }
 
         // NO TOKEN STORAGE - Cookies are automatic ✅
     };

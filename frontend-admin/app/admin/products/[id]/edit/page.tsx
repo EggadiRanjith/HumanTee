@@ -112,7 +112,7 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
             if (product.images && product.images.length > 0) {
                 mediaStore.setImages(product.images.map((img: any) => ({
                     id: img.id,
-                    url: img.url,
+                    url: img.cloudinaryUrl || img.url,
                     altText: img.altText || '',
                     isPrimary: img.isPrimary || false,
                 })));
@@ -154,7 +154,7 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
                 collections: productData.collections,
                 // Sanitize images - remove id but keep order
                 images: productData.images.map((img: any, index: number) => ({
-                    url: img.url,
+                    url: img.cloudinaryUrl || img.url,
                     altText: img.altText,
                     isPrimary: img.isPrimary,
                     order: index,
@@ -162,9 +162,13 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
                 // Sanitize variants - remove id, stockQuantity, isActive and rename to stock
                 variants: productData.variants.map((v: any) => ({
                     size: v.size,
+                    color: v.color,
+                    colorHex: v.colorHex,
                     sku: v.sku,
-                    price: v.price,
-                    stock: v.stockQuantity || v.stock || 0,
+                    stock: Number(v.stock) || 0,
+                    priceOverride: v.priceOverride ? Number(v.priceOverride) : undefined,
+                    weight: v.weight ? Number(v.weight) : undefined,
+                    // ⚠️ Strip out backend-only properties:isActive, id, skuLocked
                 })),
             };
 
@@ -203,7 +207,7 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
         <div className="min-h-screen bg-gray-50">
             {/* Mobile: Show wizard instead of tabs */}
             {isMobile ? (
-                <MobileProductWizard />
+                <MobileProductWizard productId={id} />
             ) : (
                 <>
                     {/* Header - Compact Mobile */}

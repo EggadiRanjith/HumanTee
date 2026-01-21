@@ -14,7 +14,7 @@ export function useAdminDiscounts() {
             const data = await discountsApi.getAll();
             return data;
         },
-        staleTime: 60 * 1000, // 1 minute
+        staleTime: 5 * 60 * 1000, // 5 minutes - optimized like orders/customers
     });
 }
 

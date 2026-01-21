@@ -108,7 +108,10 @@ export default function DiscountsPage() {
     // NOW conditional returns are safe
     if (isLoading) return <DiscountsSkeleton />;
     if (error) return <DiscountsError error={error} onRetry={() => discountsQuery.refetch()} />;
-    if (discounts.length === 0) return <DiscountsEmpty />;
+    // Only show empty state if NO discounts exist (not when filtered)
+    if (discounts.length === 0 && !searchQuery && statusFilter === 'ALL') {
+        return <DiscountsEmpty />;
+    }
 
     const getStatus = (discount: Discount) => {
         const now = new Date();

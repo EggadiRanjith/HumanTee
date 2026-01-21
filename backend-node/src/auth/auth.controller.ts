@@ -96,21 +96,29 @@ export class AuthController {
         // SECURITY: Set httpOnly cookies (cannot be accessed by JavaScript)
         const isProduction = process.env.NODE_ENV === 'production';
 
+        console.log('🍪 Setting admin cookies:', {
+            accessToken: result.accessToken?.substring(0, 20) + '...',
+            refreshToken: result.refreshToken?.substring(0, 20) + '...',
+            isProduction,
+        });
+
         res.cookie('admin_access_token', result.accessToken, {
             httpOnly: true,  // Prevents XSS attacks
-            secure: isProduction,  // HTTPS only in production
-            sameSite: isProduction ? 'strict' : 'lax',  // Lax for dev (different ports)
+            secure: false,  // Allow HTTP in development
+            sameSite: 'lax',  // Lax allows cross-IP in development
             maxAge: 15 * 60 * 1000,  // 15 minutes
             path: '/',
         });
 
         res.cookie('admin_refresh_token', result.refreshToken, {
             httpOnly: true,
-            secure: isProduction,
-            sameSite: isProduction ? 'strict' : 'lax',  // Lax for dev (different ports)
+            secure: false,  // Allow HTTP in development
+            sameSite: 'lax',  // Lax allows cross-IP in development
             maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
             path: '/',
         });
+
+        console.log('✅ Admin cookies set successfully');
 
         // Log admin login
         await this.loginAuditService.logLogin({
@@ -168,6 +176,46 @@ export class AuthController {
 
         return { message: 'Logout successful' };
     }
+
+    /**
+     * Get Current User - Works for both admin and regular users
+     * Uses FlexibleJwtGuard which handles both cookies and Authorization header
+     */
+    @Get('me')
+    @UseGuards(FlexibleJwtGuard)
+    async getCurrentUser(@Req() req: Request) {
+        console.log('🔍 /auth/me called');
+        console.log('📦 Cookies received:', req.cookies);
+        console.log('👤 User from guard:', req['user']);
+
+        // FlexibleJwtGuard already verified the token and attached user to request
+        const guardUser = req['user'] as any;
+
+        if (!guardUser || !guardUser.userId) {
+            console.error('❌ No user in request after guard');
+            throw new UnauthorizedException('User not found');
+        }
+
+        // Get full user data from database
+        const fullUser = await this.authService.findUserByEmail(guardUser.email);
+
+        if (!fullUser) {
+            console.error('❌ User not found in database:', guardUser.email);
+            throw new UnauthorizedException('User not found');
+        }
+
+        console.log('✅ Returning user data:', { id: fullUser.id, email: fullUser.email, role: fullUser.role });
+
+        // Return user data without sensitive info
+        return {
+            id: fullUser.id,
+            email: fullUser.email,
+            role: fullUser.role,
+            name: fullUser.profile?.full_name || fullUser.email,
+        };
+    }
+
+
 
     @Post('verify-otp')
     @Throttle({ default: { limit: 10, ttl: 60000 } })  // 10 attempts per minute

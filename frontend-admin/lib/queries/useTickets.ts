@@ -15,7 +15,7 @@ interface TicketFilters {
 
 export function useAdminTickets(filters: TicketFilters = {}) {
     return useQuery({
-        queryKey: queryKeys.tickets(filters),
+        queryKey: ['tickets', 'list', filters], // WORKAROUND: inline to bypass Turbopack cache bug
         queryFn: async () => {
             const response = await apiClient.get('/admin/tickets', {
                 params: filters
@@ -29,10 +29,15 @@ export function useAdminTickets(filters: TicketFilters = {}) {
 
 export function useAdminTicketDetail(ticketId: string) {
     return useQuery({
-        queryKey: queryKeys.ticketDetail(ticketId),
+        queryKey: ['tickets', 'detail', ticketId], // WORKAROUND: inline to bypass Turbopack cache bug
         queryFn: async () => {
             const response = await apiClient.get(`/admin/tickets/${ticketId}`);
-            return response.data;
+            // API returns { ticket: {...}, messages: [...] }
+            // Combine them into single object for easier access
+            return {
+                ...response.data.ticket,
+                messages: response.data.messages || []
+            };
         },
         enabled: !!ticketId,
         staleTime: 60 * 1000, // 1 minute

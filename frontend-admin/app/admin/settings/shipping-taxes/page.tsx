@@ -153,7 +153,7 @@ export default function ShippingTaxesSettings() {
                     {!isEditing ? (
                         <button
                             onClick={() => setIsEditing(true)}
-                            className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium shadow-sm"
+                            className="px-2 md:px-3 lg:px-4 xl:px-6 py-1 md:py-1.5 lg:py-2 xl:py-2.5 text-xs md:text-sm lg:text-base bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium shadow-sm"
                         >
                             Edit
                         </button>
@@ -161,14 +161,14 @@ export default function ShippingTaxesSettings() {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setIsEditing(false)}
-                                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                                className="px-2 md:px-3 lg:px-4 xl:px-6 py-1 md:py-1.5 lg:py-2 xl:py-2.5 text-xs md:text-sm lg:text-base border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSave}
                                 disabled={isSaving}
-                                className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2 transition-colors font-medium shadow-sm"
+                                className="px-2 md:px-3 lg:px-4 xl:px-6 py-1 md:py-1.5 lg:py-2 xl:py-2.5 text-xs md:text-sm lg:text-base bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2 transition-colors font-medium shadow-sm"
                             >
                                 {isSaving ? (
                                     <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -192,7 +192,7 @@ export default function ShippingTaxesSettings() {
                             {isEditing && (
                                 <button
                                     onClick={handleAddZone}
-                                    className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+                                    className="flex items-center gap-2 px-2 md:px-3 lg:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
                                 >
                                     <FiPlus size={16} />
                                     Add Zone
@@ -329,7 +329,7 @@ export default function ShippingTaxesSettings() {
                                                     setTaxRate(val === '' ? '' : Number(val));
                                                 }}
                                                 readOnly={!isEditing}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black disabled:bg-gray-50 disabled:cursor-not-allowed"
+                                                className="w-full px-2 md:px-3 lg:px-4 py-1.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black disabled:bg-gray-50 disabled:cursor-not-allowed"
                                                 placeholder="18"
                                                 min="0"
                                                 max="100"
@@ -346,7 +346,7 @@ export default function ShippingTaxesSettings() {
                                                 value={taxLabel}
                                                 onChange={(e: any) => setTaxLabel(e.target.value)}
                                                 readOnly={!isEditing}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black disabled:bg-gray-50 disabled:cursor-not-allowed"
+                                                className="w-full px-2 md:px-3 lg:px-4 py-1.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black disabled:bg-gray-50 disabled:cursor-not-allowed"
                                                 placeholder="GST"
                                             />
                                         </div>

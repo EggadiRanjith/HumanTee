@@ -30,7 +30,7 @@ export default function MediaTab({ errors }: MediaTabProps) {
 
         return images.map((img) => ({
             id: img.id,
-            url: img.url,
+            url: img.cloudinaryUrl || img.url,
             file: img.file,
             altText: img.altText,
             isPrimary: img.isPrimary,
@@ -40,8 +40,18 @@ export default function MediaTab({ errors }: MediaTabProps) {
 
     // Handle changes from ImageUploader
     const handleImagesChange = useCallback(
-        (updatedImages: ProductImage[]) => {
-            const currentImages = Array.isArray(images) ? images : [];
+        (updatedImages: ProductImage[] | any) => {
+            // Safety check: ensure updatedImages is an array
+            if (!Array.isArray(updatedImages)) {
+                console.error('updatedImages is not an array:', updatedImages);
+                return;
+            }
+
+
+            // CRITICAL: Read DIRECTLY from store to avoid stale closure!
+            // Using 'images' from closure can be stale when queueMicrotask fires
+            const storeImages = useMediaStore.getState().images;
+            const currentImages = Array.isArray(storeImages) ? storeImages : [];
             const currentIds = new Set(currentImages.map((i) => i.id));
             const nextIds = new Set(updatedImages.map((i) => i.id));
 
@@ -57,15 +67,23 @@ export default function MediaTab({ errors }: MediaTabProps) {
                 const existing = currentImages.find((i) => i.id === img.id);
 
                 if (!existing) {
-                    // New image - pass the ID from ImageUploader
+                    // New image - pass cloudinaryUrl for proper storage
                     addImage({
                         id: img.id,
                         url: img.url,
+                        cloudinaryUrl: img.cloudinaryUrl,
                         file: img.file,
                         altText: img.altText,
                     });
                 } else {
                     // Update existing image
+                    // CRITICAL: Update cloudinaryUrl when it becomes available after upload
+                    if (img.cloudinaryUrl && existing.cloudinaryUrl !== img.cloudinaryUrl) {
+                        updateImage(img.id, {
+                            cloudinaryUrl: img.cloudinaryUrl,
+                            url: img.cloudinaryUrl,
+                        });
+                    }
                     if (existing.altText !== img.altText) {
                         updateImage(img.id, { altText: img.altText });
                     }

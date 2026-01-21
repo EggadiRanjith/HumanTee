@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -26,6 +26,7 @@ import { UserAuditService } from './user-audit.service';
 import { EmailModule } from '../email/email.module';
 import { CartModule } from '../cart/cart.module';
 import { ShippingModule } from '../shipping/shipping.module';
+import { SettingsModule } from '../settings/settings.module';
 
 @Module({
     imports: [
@@ -53,6 +54,7 @@ import { ShippingModule } from '../shipping/shipping.module';
         EmailModule,
         CartModule,
         ShippingModule,
+        forwardRef(() => SettingsModule), // Import SettingsModule to access SettingsCacheService
     ],
     controllers: [AuthController, AdminUsersController, AuditLogsController, AdminUserAuditController],
     providers: [AuthService, AuthCronService, LoginAggregationService, AdminAuditService, LoginAuditService, UserAuditService, JwtStrategy, GoogleStrategy],
