@@ -43,9 +43,6 @@ export function OrderSummaryCheckout({ items, pincode, appliedDiscount, discount
     // Calculate total price from items
     const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-    // Use discounted total if discount is applied, otherwise use regular total
-    const subtotal = discountedTotal !== undefined ? discountedTotal : totalPrice;
-
     // Fetch shipping zones and tax settings
     useEffect(() => {
         const fetchSettings = async () => {
@@ -69,16 +66,21 @@ export function OrderSummaryCheckout({ items, pincode, appliedDiscount, discount
         fetchSettings();
     }, []);
 
-    // Calculate shipping (only if pincode is provided)
+    // IMPORTANT: Calculate shipping based on ORIGINAL totalPrice (before discount)
+    //  This ensures shipping thresholds work correctly
     const shipping = pincode && zones.length > 0
-        ? calculateShipping(pincode, subtotal, zones)
+        ? calculateShipping(pincode, totalPrice, zones)
         : null;
 
-    // Calculate tax
-    const tax = calculateTax(subtotal, taxSettings);
+    // Calculate tax on original price (GST is on MRP, not discounted price)
+    const tax = calculateTax(totalPrice, taxSettings);
 
-    // Calculate final total
-    const finalTotal = calculateTotal(subtotal, taxSettings, shipping?.cost || 0);
+    // Calculate final total correctly:
+    // Start with original price, add shipping, add tax (if not inclusive), THEN subtract discount
+    let finalTotal = totalPrice;
+    if (shipping) finalTotal += shipping.cost;
+    if (!tax.isInclusive) finalTotal += tax.amount;
+    if (appliedDiscount) finalTotal -= appliedDiscount.discountAmount;
 
     return (
         <motion.div

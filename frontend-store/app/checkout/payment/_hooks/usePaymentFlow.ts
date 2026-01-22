@@ -15,7 +15,7 @@ declare global {
 
 export function usePaymentFlow() {
     const router = useRouter();
-    const { items, clearCart, appliedDiscount } = useCart();
+    const { items, clearCart, appliedDiscount, discountedTotal } = useCart();
     const { paymentMethod, setPaymentMethod, setOrderNumber, shippingData } = useCheckout();
     const { setLoading } = useLoading();
     const [isProcessing, setIsProcessing] = useState(false);
@@ -251,5 +251,7 @@ export function usePaymentFlow() {
         isProcessing,
         error,
         handlePlaceOrder,
+        appliedDiscount,
+        discountedTotal,
     };
 }

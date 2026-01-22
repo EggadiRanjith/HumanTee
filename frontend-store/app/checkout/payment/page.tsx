@@ -23,6 +23,8 @@ export default function PaymentPage() {
         shippingData,
         isProcessing,
         handlePlaceOrder,
+        appliedDiscount,
+        discountedTotal,
     } = usePaymentFlow();
 
     // Optional redirect to login has been removed for guest checkout support
@@ -79,7 +81,12 @@ export default function PaymentPage() {
                             transition={{ duration: 0.4, delay: 0.3 }}
                             className="lg:col-span-1"
                         >
-                            <OrderSummaryCheckout items={items} pincode={shippingData.postalCode} />
+                            <OrderSummaryCheckout
+                                items={items}
+                                pincode={shippingData.postalCode}
+                                appliedDiscount={appliedDiscount}
+                                discountedTotal={discountedTotal}
+                            />
                         </motion.div>
                     </div>
                 </div>

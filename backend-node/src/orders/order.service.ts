@@ -153,7 +153,9 @@ export class OrderService {
         }
 
         // 4. Calculate totals
-        const taxAmount = subtotal * 0.18; // 18% GST
+        // GST is INCLUSIVE in product prices (as per Indian MRP law)
+        // The product prices already contain 18% GST, so we don't add it again
+        const taxAmount = 0; // GST already included in product MRP
         const shippingAmount = 0; // Free shipping
         const totalAmount = subtotal + taxAmount + shippingAmount - discountAmount;
 
@@ -407,7 +409,8 @@ export class OrderService {
             }
 
             // 4. Calculate totals
-            const taxAmount = subtotal * 0.18; // 18% GST
+            // GST is INCLUSIVE in product prices (as per Indian MRP law)
+            const taxAmount = 0; // GST already included in product MRP
             const shippingAmount = 0; // Free shipping
             const totalAmount = subtotal + taxAmount + shippingAmount - discountAmount;
 
