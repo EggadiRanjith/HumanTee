@@ -31,8 +31,8 @@ export function useCartOperations() {
     );
 
     const handleUpdateQuantity = useCallback(
-        (itemId: string | number, size: string, quantity: number) => {
-            updateQuantity(String(itemId), size, quantity);
+        async (itemId: string | number, size: string, quantity: number) => {
+            await updateQuantity(String(itemId), size, quantity);
         },
         [updateQuantity]
     );
