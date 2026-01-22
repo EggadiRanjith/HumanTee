@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Req, Header } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { CartService } from './cart.service';
@@ -16,6 +16,9 @@ export class CartController {
      * GET /cart - Get active cart
      */
     @Get()
+    @Header('Cache-Control', 'no-store, no-cache, must-revalidate, private')
+    @Header('Pragma', 'no-cache')
+    @Header('Expires', '0')
     async getCart(@Req() req: any) {
         const cart = await this.cartService.getActiveCart(req.user.userId);
         return {
