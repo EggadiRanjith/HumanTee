@@ -20,7 +20,7 @@ const AddressModal = dynamic(() => import("./_components/AddressModal"), { ssr: 
 
 export default function ShippingPage() {
     const router = useRouter();
-    const { items, totalPrice } = useCart();
+    const { items, totalPrice, appliedDiscount, discountedTotal } = useCart();
     const { setShippingData } = useCheckout();
     const { setLoading } = useLoading();
     const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -159,6 +159,8 @@ export default function ShippingPage() {
                                 addresses.find((addr) => addr.id === selectedAddressId)
                                     ?.postalCode
                             }
+                            appliedDiscount={appliedDiscount}
+                            discountedTotal={discountedTotal}
                         />
                     </div>
                 </div>

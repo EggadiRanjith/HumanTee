@@ -26,9 +26,11 @@ interface CartItem {
 interface OrderSummaryCheckoutProps {
     items: CartItem[];
     pincode?: string; // Optional: only available after address selection
+    appliedDiscount?: { code: string; discountAmount: number } | null;
+    discountedTotal?: number;
 }
 
-export function OrderSummaryCheckout({ items, pincode }: OrderSummaryCheckoutProps) {
+export function OrderSummaryCheckout({ items, pincode, appliedDiscount, discountedTotal }: OrderSummaryCheckoutProps) {
     const [zones, setZones] = useState<ShippingZone[]>([]);
     const [taxSettings, setTaxSettings] = useState<TaxSettings>({
         enabled: true,
@@ -38,8 +40,11 @@ export function OrderSummaryCheckout({ items, pincode }: OrderSummaryCheckoutPro
     });
     const [isLoading, setIsLoading] = useState(true);
 
-    // Calculate totalPrice from items
+    // Calculate total price from items
     const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+    // Use discounted total if discount is applied, otherwise use regular total
+    const subtotal = discountedTotal !== undefined ? discountedTotal : totalPrice;
 
     // Fetch shipping zones and tax settings
     useEffect(() => {
@@ -66,14 +71,14 @@ export function OrderSummaryCheckout({ items, pincode }: OrderSummaryCheckoutPro
 
     // Calculate shipping (only if pincode is provided)
     const shipping = pincode && zones.length > 0
-        ? calculateShipping(pincode, totalPrice, zones)
+        ? calculateShipping(pincode, subtotal, zones)
         : null;
 
     // Calculate tax
-    const tax = calculateTax(totalPrice, taxSettings);
+    const tax = calculateTax(subtotal, taxSettings);
 
     // Calculate final total
-    const finalTotal = calculateTotal(totalPrice, taxSettings, shipping?.cost || 0);
+    const finalTotal = calculateTotal(subtotal, taxSettings, shipping?.cost || 0);
 
     return (
         <motion.div
@@ -118,6 +123,14 @@ export function OrderSummaryCheckout({ items, pincode }: OrderSummaryCheckoutPro
                         <span className="text-white">₹{totalPrice.toFixed(2)}</span>
                     </div>
 
+                    {/* Discount */}
+                    {appliedDiscount && (
+                        <div className="flex justify-between text-xs sm:text-sm">
+                            <span className="text-green-400">Discount ({appliedDiscount.code})</span>
+                            <span className="text-green-400">-₹{appliedDiscount.discountAmount.toFixed(2)}</span>
+                        </div>
+                    )}
+
                     {/* Shipping */}
                     <div className="flex justify-between text-[12px] sm:text-[13px]">
                         <span className="text-white/60">Shipping</span>
@@ -134,15 +147,13 @@ export function OrderSummaryCheckout({ items, pincode }: OrderSummaryCheckoutPro
                         )}
                     </div>
 
-                    {/* Tax */}
-                    <div className="flex justify-between text-xs sm:text-sm">
-                        <span className="text-white/60">Tax ({tax.label})</span>
-                        {tax.isInclusive ? (
-                            <span className="text-white/40 text-xs">Included in price</span>
-                        ) : (
+                    {/* Tax - Only show if not inclusive or has explicit amount */}
+                    {(!tax.isInclusive && tax.amount > 0) && (
+                        <div className="flex justify-between text-xs sm:text-sm">
+                            <span className="text-white/60">Tax ({tax.label})</span>
                             <span className="text-white">₹{tax.amount.toFixed(2)}</span>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
                     <div className="flex justify-between text-base sm:text-lg font-light pt-2 border-t border-white/10">
                         <span className="text-white">Total</span>
