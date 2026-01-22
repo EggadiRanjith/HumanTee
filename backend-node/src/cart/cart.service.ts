@@ -110,7 +110,7 @@ export class CartService {
 
         const variants = await this.variantRepo.find({
             where: { id: In(variantIds) },
-            relations: ['product'],
+            relations: ['product', 'product.images'], // ✅ Include images to fetch URLs
         });
 
         // Create variant lookup map
@@ -173,6 +173,10 @@ export class CartService {
                     existingItem.quantity += guestItem.quantity;
                     await this.cartItemRepository.save(existingItem);
                 } else {
+                    // Get primary product image
+                    const primaryImage = variant.product.images?.find(img => img.is_primary && img.status === 'ACTIVE');
+                    const imageUrl = primaryImage?.url || null;
+
                     // Create with fresh snapshots
                     const newItem = this.cartItemRepository.create({
                         cart_id: cart.id,
@@ -183,7 +187,7 @@ export class CartService {
                         currency: 'INR',
                         product_title: variant.product.name,
                         variant_label: variant.size,
-                        product_image: null,
+                        product_image: imageUrl, // ✅ Include actual product image
                     });
                     await this.cartItemRepository.save(newItem);
                 }

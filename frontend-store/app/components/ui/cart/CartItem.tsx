@@ -8,8 +8,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { FiTrash2, FiMinus, FiPlus } from 'react-icons/fi';
-import { useState } from 'react';
+import { FiTrash2, FiMinus, FiPlus, FiLoader } from 'react-icons/fi';
+import { useState, useRef, useEffect } from 'react';
 
 interface CartItemType {
     id: number | string;
@@ -25,15 +25,23 @@ interface CartItemType {
 interface CartItemProps {
     item: CartItemType;
     index: number;
-    onUpdateQuantity: (id: number | string, size: string, quantity: number) => void;
+    onUpdateQuantity: (id: number | string, size: string, quantity: number) => Promise<void>;
     onRemove: (id: number | string, size?: string) => void;
 }
 
 export function CartItem({ item, index, onUpdateQuantity, onRemove }: CartItemProps) {
     const lineTotal = item.price * item.quantity;
     const [stockError, setStockError] = useState<string | null>(null);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [updatingDirection, setUpdatingDirection] = useState<'increment' | 'decrement' | null>(null);
+    const [pendingQuantity, setPendingQuantity] = useState<number | null>(null);
+    const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const requestIdRef = useRef<number>(0); // Track active request
 
-    const handleQuantityChange = (newQuantity: number) => {
+    const handleQuantityChange = (newQuantity: number, direction: 'increment' | 'decrement') => {
+        // Block if already updating (API call in progress)
+        if (isUpdating) return;
+
         // Check stock before updating
         if (item.availableStock !== undefined && newQuantity > item.availableStock) {
             setStockError(`Only ${item.availableStock} items available`);
@@ -42,8 +50,43 @@ export function CartItem({ item, index, onUpdateQuantity, onRemove }: CartItemPr
         }
 
         setStockError(null);
-        onUpdateQuantity(item.id, item.size || '', newQuantity);
+        setPendingQuantity(newQuantity); // Show new quantity immediately (optimistic UI)
+        setIsUpdating(true); // Show spinner immediately
+        setUpdatingDirection(direction); // Track which button was clicked
+
+        // Clear existing timer
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+        }
+
+        // Increment request ID for this new request
+        const currentRequestId = ++requestIdRef.current;
+
+        // Set new timer - send request after 300ms of no clicks
+        debounceTimerRef.current = setTimeout(async () => {
+            try {
+                await onUpdateQuantity(item.id, item.size || '', newQuantity);
+            } finally {
+                // Only clear spinner if this is still the active request
+                if (currentRequestId === requestIdRef.current) {
+                    setIsUpdating(false);
+                    setUpdatingDirection(null);
+                    setPendingQuantity(null);
+                }
+            }
+        }, 300);
     };
+
+    // Cleanup timer on unmount
+    useEffect(() => {
+        return () => {
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+            }
+        };
+    }, []);
+
+    const displayQuantity = pendingQuantity ?? item.quantity;
 
     return (
         <motion.div
@@ -99,31 +142,43 @@ export function CartItem({ item, index, onUpdateQuantity, onRemove }: CartItemPr
                         {/* Quantity Controls */}
                         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                             <button
-                                onClick={() => handleQuantityChange(item.quantity - 1)}
+                                onClick={() => handleQuantityChange(item.quantity - 1, 'decrement')}
+                                disabled={isUpdating}
                                 aria-label="Decrease quantity"
                                 className="
                                     w-9 h-9 sm:w-10 sm:h-10 rounded-lg luxury-glass border border-white/10
                                     text-white/70 hover:text-white hover:bg-white/10
                                     transition-colors flex items-center justify-center flex-shrink-0
+                                    disabled:opacity-50 disabled:cursor-not-allowed
                                 "
                             >
-                                <FiMinus size={14} />
+                                {isUpdating && updatingDirection === 'decrement' ? (
+                                    <FiLoader size={14} className="animate-spin" />
+                                ) : (
+                                    <FiMinus size={14} />
+                                )}
                             </button>
 
                             <span className="text-white text-[12px] sm:text-[13px] font-light min-w-[1.5rem] text-center">
-                                {item.quantity}
+                                {displayQuantity}
                             </span>
 
                             <button
-                                onClick={() => handleQuantityChange(item.quantity + 1)}
+                                onClick={() => handleQuantityChange(item.quantity + 1, 'increment')}
+                                disabled={isUpdating}
                                 aria-label="Increase quantity"
                                 className="
                                     w-9 h-9 sm:w-10 sm:h-10 rounded-lg luxury-glass border border-white/10
                                     text-white/70 hover:text-white hover:bg-white/10
                                     transition-colors flex items-center justify-center flex-shrink-0
+                                    disabled:opacity-50 disabled:cursor-not-allowed
                                 "
                             >
-                                <FiPlus size={14} />
+                                {isUpdating && updatingDirection === 'increment' ? (
+                                    <FiLoader size={14} className="animate-spin" />
+                                ) : (
+                                    <FiPlus size={14} />
+                                )}
                             </button>
                         </div>
 

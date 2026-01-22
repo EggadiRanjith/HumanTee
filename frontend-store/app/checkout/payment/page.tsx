@@ -10,6 +10,7 @@ import { usePaymentFlow } from "./_hooks/usePaymentFlow";
 import PaymentForm from "./_components/PaymentForm";
 import DeliveryInfo from "./_components/DeliveryInfo";
 import PaymentActions from "./_components/PaymentActions";
+import { PaymentSkeleton } from "./_components/PaymentSkeleton";
 
 export default function PaymentPage() {
     const router = useRouter();
@@ -32,6 +33,11 @@ export default function PaymentPage() {
     if (!hasShippingData) {
         router.push("/checkout/shipping");
         return null;
+    }
+
+    // Show skeleton during auth loading
+    if (authLoading) {
+        return <PaymentSkeleton />;
     }
 
     return (

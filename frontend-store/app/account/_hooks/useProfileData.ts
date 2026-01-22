@@ -72,7 +72,7 @@ export function useProfileData(
         gcTime: 60 * 60 * 1000, // 1 hour - keep in memory even when unused
         refetchOnWindowFocus: false, // Don't refetch when window regains focus
         refetchOnMount: false, // Don't refetch on component mount if data exists
-        placeholderData: (previousData) => previousData, // Keep showing old data while refetching
+        placeholderData: (previousData) => previousData, // ✅ Keep showing old data even when session expires (matches address behavior)
     });
 
     // ✅ OPTIMIZED: Use React Query - checks cache from login payload first

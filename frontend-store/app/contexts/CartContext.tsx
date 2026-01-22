@@ -76,8 +76,35 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (authLoading) return;
 
       if (isAuthenticated) {
-        // Logged in → Load from backend
+        // 1. Check if guest cart exists in localStorage
+        const guestCartJson = localStorage.getItem("humantee-cart");
+
+        if (guestCartJson) {
+          try {
+            const guestItems = JSON.parse(guestCartJson);
+
+            if (guestItems.length > 0) {
+              // 2. Merge guest cart with backend cart
+              const mergePayload = {
+                items: guestItems.map((item: any) => ({
+                  productId: item.id.toString(),
+                  variantId: item.variantId || item.id.toString(),
+                  quantity: item.quantity,
+                })),
+              };
+
+              await apiClient.post('/cart/merge', mergePayload);
+            }
+          } catch (error) {
+            logError(error, 'Failed to merge guest cart');
+          }
+        }
+
+        // 3. Load merged cart from backend
         await loadBackendCart();
+
+        // 4. Clear localStorage after successful merge
+        localStorage.removeItem("humantee-cart");
       } else {
         // Guest → Load from localStorage
         loadLocalCart();
@@ -130,13 +157,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Save guest cart to localStorage (without images to prevent quota errors)
+  // Save guest cart to localStorage (keep image URLs - they're just strings)
   useEffect(() => {
     if (!isAuthenticated && !authLoading && items.length >= 0) {
       try {
-        // Remove image data to prevent localStorage quota errors
-        const itemsToStore = items.map(({ image, ...item }) => item);
-        localStorage.setItem("humantee-cart", JSON.stringify(itemsToStore));
+        // Keep image URLs - they're small (~100 bytes each) and needed for cart display
+        localStorage.setItem("humantee-cart", JSON.stringify(items));
       } catch (error) {
         // If quota exceeded, clear old cart and try again
         if (error instanceof DOMException && error.name === 'QuotaExceededError') {
@@ -270,10 +296,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         );
 
         try {
-          // API call in background
+          // API call in background - don't reload cart to avoid race conditions
           await apiClient.patch(`/cart/items/${(item as any).cartItemId}`, { quantity });
-          // Reload to ensure sync with backend
-          await loadBackendCart();
         } catch (error) {
           // ❌ ROLLBACK: Restore previous state on error
           setItems(previousItems);

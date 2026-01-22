@@ -13,6 +13,7 @@ import { GradientOverlay } from "@/app/components/ui/layout";
 import { useShippingData } from "./_hooks/useShippingData";
 import AddressSelector from "./_components/AddressSelector";
 import ShippingActions from "./_components/ShippingActions";
+import { ShippingSkeleton } from "./_components/ShippingSkeleton";
 
 // Lazy-load modal (Phase 1.1 - Runtime optimization)
 const AddressModal = dynamic(() => import("./_components/AddressModal"), { ssr: false });
@@ -103,6 +104,11 @@ export default function ShippingPage() {
                 </div>
             </div>
         );
+    }
+
+    // Show skeleton during loading
+    if (authLoading || isLoadingAddresses) {
+        return <ShippingSkeleton />;
     }
 
     return (

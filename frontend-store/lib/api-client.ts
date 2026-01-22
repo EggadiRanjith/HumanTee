@@ -61,7 +61,7 @@ export function clearAccessToken() {
 // Create axios instance
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 10000, // 10s hard cap
+    timeout: 30000, // 30s timeout (increased from 10s for slow cart operations)
     withCredentials: true, // Send cookies with requests
     headers: {
         'Content-Type': 'application/json',
