@@ -9,13 +9,15 @@ interface DiscountInputProps {
     appliedDiscount: AppliedDiscount | null;
     onApply: (code: string) => Promise<void>;
     onRemove: () => void;
+    isDisabled?: boolean;
 }
 
 export default function DiscountInput({
     cartTotal,
     appliedDiscount,
     onApply,
-    onRemove
+    onRemove,
+    isDisabled = false
 }: DiscountInputProps) {
     const [code, setCode] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -105,7 +107,7 @@ export default function DiscountInput({
 
                     <button
                         onClick={handleApply}
-                        disabled={isLoading || !code.trim()}
+                        disabled={isLoading || !code.trim() || isDisabled}
                         className="
               px-6 py-2.5 rounded-lg
               bg-white/10 border border-white/20

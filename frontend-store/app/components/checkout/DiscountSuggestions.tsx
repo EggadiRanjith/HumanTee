@@ -12,6 +12,7 @@ interface DiscountSuggestionsProps {
     onApply: (code: string) => Promise<void>;
     onRemove: () => void;
     onManualEntry: () => void;
+    isDisabled?: boolean;
 }
 
 export default function DiscountSuggestions({
@@ -19,7 +20,8 @@ export default function DiscountSuggestions({
     appliedDiscount,
     onApply,
     onRemove,
-    onManualEntry
+    onManualEntry,
+    isDisabled = false
 }: DiscountSuggestionsProps) {
     const [isApplying, setIsApplying] = useState<string | null>(null);
 
@@ -96,7 +98,7 @@ export default function DiscountSuggestions({
                             ) : (
                                 <button
                                     onClick={() => handleApply(bestSuggestion.code)}
-                                    disabled={isApplying === bestSuggestion.code}
+                                    disabled={isApplying === bestSuggestion.code || isDisabled}
                                     className="px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-xs font-medium hover:bg-white/15 disabled:opacity-50 transition-all whitespace-nowrap"
                                 >
                                     {isApplying === bestSuggestion.code ? 'Applying...' : 'Apply'}

@@ -31,6 +31,7 @@ interface CartItemsContextType {
   getItemInCart: (id: number | string, size?: string) => CartItem | undefined;
   hydrateCart: (cart: any) => void; // Phase 1: Explicit cart hydration from login
   isLoading: boolean;
+  isUpdatingCart: boolean; // Track when cart is being updated
   // Discount operations
   appliedDiscount: AppliedDiscount | null;
   applyDiscount: (code: string) => Promise<void>;
@@ -52,6 +53,7 @@ const CartSummaryContext = createContext<CartSummaryContextType | undefined>(und
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdatingCart, setIsUpdatingCart] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
   const [suggestions, setSuggestions] = useState<DiscountSuggestion[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
@@ -285,6 +287,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // Backend cart with OPTIMISTIC UPDATE
       const item = items.find((i) => i.id === id && i.size === size);
       if (item) {
+        // ✅ Set updating state
+        setIsUpdatingCart(true);
+
         // ✅ OPTIMISTIC: Update UI immediately
         const previousItems = [...items];
         setItems((prev) =>
@@ -302,6 +307,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
           // ❌ ROLLBACK: Restore previous state on error
           setItems(previousItems);
           logError(error, 'Failed to update quantity');
+        } finally {
+          // ✅ Clear updating state
+          setIsUpdatingCart(false);
         }
       }
     } else {
@@ -491,13 +499,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     getItemInCart,
     hydrateCart, // Phase 1: Expose hydration method
     isLoading,
+    isUpdatingCart,
     appliedDiscount,
     applyDiscount,
     removeDiscount,
     suggestions,
     fetchSuggestions,
     isLoadingSuggestions,
-  }), [items, isLoading, appliedDiscount, suggestions, isLoadingSuggestions]);
+  }), [items, isLoading, isUpdatingCart, appliedDiscount, suggestions, isLoadingSuggestions]);
 
   const summaryValue = useMemo(() => ({
     totalItems,

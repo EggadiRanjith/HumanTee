@@ -21,6 +21,7 @@ interface DiscountSectionProps {
     onRemove: () => void;
     onOpenManualEntry: () => void;
     onCloseManualEntry: () => void;
+    isUpdatingCart?: boolean;
 }
 
 export function DiscountSection({
@@ -33,6 +34,7 @@ export function DiscountSection({
     onRemove,
     onOpenManualEntry,
     onCloseManualEntry,
+    isUpdatingCart = false,
 }: DiscountSectionProps) {
     return (
         <>
@@ -44,6 +46,7 @@ export function DiscountSection({
                     onApply={onApply}
                     onRemove={onRemove}
                     onManualEntry={onOpenManualEntry}
+                    isDisabled={isUpdatingCart}
                 />
             )}
 
@@ -59,7 +62,7 @@ export function DiscountSection({
                     >
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
+                            animate={{ scale: 1, opacity: 0 }}
                             exit={{ scale: 0.9, opacity: 0 }}
                             className="w-full max-w-md p-6 rounded-2xl luxury-glass border border-white/20 bg-[#0d0d1a]"
                             onClick={(e) => e.stopPropagation()}
@@ -87,6 +90,7 @@ export function DiscountSection({
                                     onCloseManualEntry();
                                 }}
                                 onRemove={onRemove}
+                                isDisabled={isUpdatingCart}
                             />
                         </motion.div>
                     </motion.div>

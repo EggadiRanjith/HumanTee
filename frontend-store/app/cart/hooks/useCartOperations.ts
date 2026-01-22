@@ -20,6 +20,7 @@ export function useCartOperations() {
         discountedTotal,
         suggestions,
         isLoadingSuggestions,
+        isUpdatingCart,
     } = useCart();
 
     // Memoized cart operations to prevent unnecessary re-renders
@@ -72,5 +73,6 @@ export function useCartOperations() {
         handleUpdateQuantity,
         handleApplyDiscount,
         handleRemoveDiscount,
+        isUpdatingCart,
     };
 }

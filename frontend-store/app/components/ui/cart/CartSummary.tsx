@@ -15,9 +15,10 @@ interface CartSummaryProps {
     onCheckout: () => void;
     discount?: AppliedDiscount | null;
     total?: number;
+    isUpdatingCart?: boolean;
 }
 
-export function CartSummary({ subtotal, totalItems, onCheckout, discount, total }: CartSummaryProps) {
+export function CartSummary({ subtotal, totalItems, onCheckout, discount, total, isUpdatingCart = false }: CartSummaryProps) {
     const finalTotal = total !== undefined ? total : subtotal;
 
     return (
@@ -75,15 +76,17 @@ export function CartSummary({ subtotal, totalItems, onCheckout, discount, total 
             {/* Checkout Button */}
             <button
                 onClick={onCheckout}
+                disabled={isUpdatingCart}
                 aria-label={`Proceed to checkout with ${totalItems} ${totalItems === 1 ? 'item' : 'items'}`}
                 className="
                     w-full py-3 sm:py-4 rounded-full
                     bg-white text-black
                     text-xs uppercase tracking-[0.18em] font-medium
                     hover:bg-white/90 transition-colors
+                    disabled:opacity-50 disabled:cursor-not-allowed
                 "
             >
-                Proceed to Checkout
+                {isUpdatingCart ? 'Updating Cart...' : 'Proceed to Checkout'}
             </button>
 
             {/* Continue Shopping Link */}

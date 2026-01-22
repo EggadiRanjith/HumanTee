@@ -41,6 +41,7 @@ export default function CartPage() {
         handleUpdateQuantity,
         handleApplyDiscount,
         handleRemoveDiscount,
+        isUpdatingCart,
     } = useCartOperations();
 
     // Settings for feature flags
