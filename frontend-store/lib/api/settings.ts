@@ -20,7 +20,9 @@ export const settingsApi = {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                cache: 'no-store', // Always fetch fresh data
+                // COST OPTIMIZATION: Cache for 5 minutes to reduce backend load
+                // Settings don't change frequently, safe to cache
+                next: { revalidate: 300 }, // 5 minutes
             });
 
             if (!response.ok) {

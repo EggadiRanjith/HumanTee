@@ -8,6 +8,7 @@
 import Image from 'next/image';
 import { useState, useEffect, memo } from 'react';
 import { FiZoomIn, FiX } from 'react-icons/fi';
+import { cloudinaryPresets } from '@/lib/cloudinary-transform';
 
 // Constants
 const AUTO_ADVANCE_INTERVAL = 3000;
@@ -166,7 +167,7 @@ const ProductImageGalleryComponent = ({ images, title, subtitle, productId }: Pr
                     onTouchEnd={handleTouchEnd}
                 >
                     <Image
-                        src={images[currentImageIndex]}
+                        src={cloudinaryPresets.productDetail(images[currentImageIndex])}
                         alt={title}
                         fill
                         sizes="(max-width: 768px) 100vw, 50vw"
@@ -208,7 +209,7 @@ const ProductImageGalleryComponent = ({ images, title, subtitle, productId }: Pr
                 `}
                             >
                                 <Image
-                                    src={img}
+                                    src={cloudinaryPresets.productThumbnail(img)}
                                     alt={`${title} - View ${index + 1}`}
                                     fill
                                     sizes="(max-width: 768px) 25vw, 12.5vw"
@@ -282,7 +283,7 @@ const ProductImageGalleryComponent = ({ images, title, subtitle, productId }: Pr
                                     style={{ transform: `scale(${zoomScale / 100})` }}
                                 >
                                     <Image
-                                        src={images[currentImageIndex]}
+                                        src={cloudinaryPresets.productZoom(images[currentImageIndex])}
                                         alt={title}
                                         fill
                                         className="object-contain"

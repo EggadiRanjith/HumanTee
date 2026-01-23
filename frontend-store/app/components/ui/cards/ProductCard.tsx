@@ -15,6 +15,7 @@ import { Product } from '@/app/types/product.types';
 import { Badge, StockIndicator } from '@/app/components/ui/primitives';
 import { SafeImage } from '@/app/components/ui/primitives/SafeImage';
 import { getImagePlaceholder } from '@/lib/app/image-placeholders';
+import { cloudinaryPresets } from '@/lib/cloudinary-transform';
 
 
 interface ProductCardProps {
@@ -91,7 +92,7 @@ const ProductCard = ({
             "
                 >
                     <SafeImage
-                        src={product.image}
+                        src={cloudinaryPresets.productThumbnail(product.image)}
                         alt={(product as any).imageAlt || product.title}
                         fill
                         priority={priority}

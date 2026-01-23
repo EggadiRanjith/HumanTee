@@ -3,7 +3,7 @@
  * Handles contact form submissions to the backend
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://humantee.onrender.com';
 
 export interface ContactFormData {
     name: string;
