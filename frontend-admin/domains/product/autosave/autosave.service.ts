@@ -148,6 +148,22 @@ export const markAllDomainsClean = (): void => {
 export const saveDraftToLocalStorage = (userId: string): void => {
     const data = aggregateProductData();
 
+    // CRITICAL: Strip base64 image data to prevent QuotaExceededError
+    // Base64 images can be 5-10 MB each, localStorage limit is ~10 MB total!
+    // Only save Cloudinary URLs (which are tiny ~100 bytes)
+    const sanitizedImages = data.images
+        .filter(img => img.cloudinaryUrl || (!img.url?.startsWith('data:'))) // Skip base64-only images
+        .map(img => ({
+            id: img.id,
+            url: img.cloudinaryUrl || img.url, // Prefer Cloudinary URL
+            cloudinaryUrl: img.cloudinaryUrl,
+            cloudinaryPublicId: img.cloudinaryPublicId,
+            altText: img.altText,
+            isPrimary: img.isPrimary,
+            order: img.order,
+            // DO NOT include: file, url (if base64), uploadProgress, uploadError
+        }));
+
     // Generate UUID compatible with older browsers
     const generateId = () => {
         return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -158,12 +174,41 @@ export const saveDraftToLocalStorage = (userId: string): void => {
         productId: undefined,
         userId,
         schemaVersion: SCHEMA_VERSION,
-        data,
+        data: {
+            ...data,
+            images: sanitizedImages, // Use sanitized images without base64
+        },
         createdAt: new Date(),
         updatedAt: new Date(),
     };
 
-    localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+    try {
+        localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+    } catch (error: any) {
+        if (error.name === 'QuotaExceededError') {
+            console.error('❌ localStorage quota exceeded! Clearing old drafts and retrying...');
+            // Clear draft and try again with minimal data
+            clearDraftFromLocalStorage();
+
+            // Try one more time with even more minimal data (no images at all)
+            const minimalDraft = {
+                ...draft,
+                data: {
+                    ...draft.data,
+                    images: [], // Skip images entirely
+                }
+            };
+
+            try {
+                localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(minimalDraft));
+                console.warn('⚠️ Saved draft WITHOUT images due to quota limits');
+            } catch (retryError) {
+                console.error('❌ Failed to save even minimal draft:', retryError);
+            }
+        } else {
+            throw error; // Re-throw non-quota errors
+        }
+    }
 };
 
 export const loadDraftFromLocalStorage = (): ProductDraft | null => {

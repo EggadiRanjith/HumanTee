@@ -3,7 +3,29 @@ import { MetadataRoute } from 'next';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = 'https://humantee.in';
 
-    return [
+    // Fetch all products for dynamic sitemap
+    let productUrls: MetadataRoute.Sitemap = [];
+
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://humantee.onrender.com'}/products/all`, {
+            cache: 'no-store',
+        });
+
+        if (response.ok) {
+            const products = await response.json();
+
+            productUrls = products.map((product: any) => ({
+                url: `${baseUrl}/product/${product.handle || product.id}`,
+                lastModified: product.updated_at ? new Date(product.updated_at) : new Date(),
+                changeFrequency: 'weekly' as const,
+                priority: 0.8, // Products are high priority for e-commerce
+            }));
+        }
+    } catch (error) {
+        console.error('Failed to fetch products for sitemap:', error);
+    }
+
+    const staticPages: MetadataRoute.Sitemap = [
         {
             url: baseUrl,
             lastModified: new Date(),
@@ -34,5 +56,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             changeFrequency: 'monthly',
             priority: 0.3,
         },
+    ];
+
+    return [
+        ...staticPages,
+        ...productUrls, // Include all products
     ];
 }

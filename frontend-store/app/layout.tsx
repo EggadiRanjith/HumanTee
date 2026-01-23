@@ -61,20 +61,23 @@ const benzin = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
   title: {
-    default: "HumanTee - Premium Handcrafted T-Shirts | Since 1931",
+    default: "Premium Heavyweight Handcrafted T-Shirts | HumanTee",
     template: "%s | HumanTee"
   },
-  description: "Discover luxury premium craftsmanship with HumanTee. Handcrafted heavyweight tees with bespoke designs. Free shipping on orders above ₹2000.",
-  keywords: ["premium t-shirts", "luxury clothing", "handcrafted apparel", "heavyweight tees", "sustainable fashion", "limited edition"],
+  description: "Heavyweight handcrafted t-shirts designed for everyday wear and long life. Limited designs, premium fabric, and free shipping above ₹2000.",
+  keywords: ["heavyweight t-shirts", "premium t-shirts", "handcrafted apparel", "durable tees", "limited edition clothing", "luxury everyday wear"],
   authors: [{ name: "HumanTee" }],
   creator: "HumanTee",
   publisher: "HumanTee",
+  alternates: {
+    canonical: "https://humantee.in",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "https://humantee.com",
-    title: "HumanTee - Premium Handcrafted T-Shirts",
-    description: "Luxury fashion since 1931. Handcrafted with precision.",
+    title: "Premium Heavyweight Handcrafted T-Shirts | HumanTee",
+    description: "Built for comfort, durability, and everyday luxury.",
     siteName: "HumanTee",
     images: [
       {
@@ -87,8 +90,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "HumanTee - Premium Handcrafted T-Shirts",
-    description: "Luxury fashion since 1931. Handcrafted with precision.",
+    title: "Premium Heavyweight Handcrafted T-Shirts | HumanTee",
+    description: "Everyday luxury tees made with premium heavyweight fabric.",
     images: ["/images/banner1.webp"],
   },
   robots: {
@@ -118,9 +121,17 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Favicons and App Icons */}
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <meta name="theme-color" content="#000000" />
+
         {/* Preload critical fonts for faster FCP */}
 
         {/* Preconnect to external domains for faster loading */}
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
         <link rel="preconnect" href="https://www.instagram.com" />
         <link rel="preconnect" href="https://maps.google.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />

@@ -26,10 +26,14 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
       title: `${product.title} | HumanTee`,
       description: product.subtitle || product.title,
       keywords: ["t-shirt", product.title, "premium clothing", "HumanTee"],
+      alternates: {
+        canonical: `https://humantee.in/product/${handle}`,
+      },
       openGraph: {
         title: `${product.title} | HumanTee`,
         description: product.subtitle || product.title,
         images: product.images?.map(url => ({ url })) || [{ url: product.image }],
+        url: `https://humantee.in/product/${handle}`,
       },
       twitter: {
         card: 'summary_large_image',
