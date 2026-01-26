@@ -49,7 +49,7 @@ export default function ImageUploader({
             const remainingSlots = maxImages - images.length;
             const filesToProcess = Array.from(files).slice(0, remainingSlots);
 
-            // Create preview images immediately (base64)
+            // Create preview images immediately (base64) - NO UPLOAD YET
             const previewPromises = filesToProcess.map((file, index) => {
                 return new Promise<ProductImage>((resolve) => {
                     if (file.type.startsWith('image/')) {
@@ -57,12 +57,12 @@ export default function ImageUploader({
                         reader.onload = (e: any) => {
                             resolve({
                                 id: `temp-${Date.now()}-${index}`,
-                                url: e.target?.result as string, // Base64 for preview
-                                file,
+                                url: e.target?.result as string, // Base64 for preview ONLY
+                                file, // Keep file for later upload
                                 altText: file.name.replace(/\.[^/.]+$/, ''),
                                 isPrimary: images.length === 0 && index === 0,
                                 order: images.length + index,
-                                uploadProgress: 0, // Start upload
+                                // NO uploadProgress - upload happens on Save
                             });
                         };
                         reader.readAsDataURL(file);
@@ -72,59 +72,9 @@ export default function ImageUploader({
 
             const newImages = await Promise.all(previewPromises);
 
-            // Add images with preview immediately (for UX)
+            // Add images with base64 preview immediately (for UX)
+            //  Cloudinary upload will happen when user clicks Save
             onChange([...images, ...newImages]);
-
-            // Upload to Cloudinary in background
-            newImages.forEach(async (image, index) => {
-                try {
-                    const result = await uploadImageToCloudinary(image.file!, (progress) => {
-                        // Update progress in local state only (no onChange during render)
-                        setLocalImages(prev =>
-                            prev.map((img) =>
-                                img.id === image.id
-                                    ? { ...img, uploadProgress: progress.percentage }
-                                    : img
-                            )
-                        );
-                    });
-
-                    // Update with Cloudinary URL - DEFER onChange to avoid render cycle issues
-                    setLocalImages(prev => {
-                        const updated = prev.map((img) =>
-                            img.id === image.id
-                                ? {
-                                    ...img,
-                                    url: result.url, // Replace base64 with Cloudinary URL
-                                    cloudinaryUrl: result.url,
-                                    cloudinaryPublicId: result.publicId,
-                                    uploadProgress: 100,
-                                    uploadError: undefined,
-                                }
-                                : img
-                        );
-                        // Defer onChange to next microtask to avoid updating parent during render
-                        queueMicrotask(() => onChange(updated));
-                        return updated;
-                    });
-                } catch (error: any) {
-                    // Mark upload as failed
-                    setLocalImages(prev => {
-                        const updated = prev.map((img) =>
-                            img.id === image.id
-                                ? {
-                                    ...img,
-                                    uploadProgress: undefined,
-                                    uploadError: error.message || 'Upload failed',
-                                }
-                                : img
-                        );
-                        // Defer onChange to next microtask
-                        queueMicrotask(() => onChange(updated));
-                        return updated;
-                    });
-                }
-            });
         },
         [images, maxImages, onChange]
     );

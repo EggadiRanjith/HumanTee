@@ -59,9 +59,7 @@ export const productSchema = z.object({
         .nullable(),
 
     // Status
-    status: z.enum(['draft', 'published', 'archived'], {
-        errorMap: () => ({ message: 'Status must be draft, published, or archived' }),
-    }).default('draft'),
+    status: z.enum(['draft', 'published', 'archived']).default('draft'),
 
     // Featured
     isFeatured: z.boolean().default(false),

@@ -370,13 +370,13 @@ ${preheader ? `
             .map(
                 (item) => `
 <tr>
-<td style="padding:8px 0;border-bottom:1px solid #f0f0f0;">
+<td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;font-size:14px;color:#333333;">
     ${this.escapeHtml(item.name)}
 </td>
-<td style="padding:8px 0;border-bottom:1px solid #f0f0f0;text-align:center;">
+<td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;text-align:center;font-size:14px;color:#666666;">
     ${item.quantity}
 </td>
-<td style="padding:8px 0;border-bottom:1px solid #f0f0f0;text-align:right;">
+<td style="padding:12px 8px;border-bottom:1px solid #f0f0f0;text-align:right;font-size:14px;font-weight:600;color:#333333;">
     ₹${item.price.toFixed(2)}
 </td>
 </tr>
@@ -388,16 +388,16 @@ ${preheader ? `
             title: `Order Confirmation #${this.escapeHtml(orderNumber)}`,
             preheader: `Your order has been confirmed`,
             content: `
-<p style="margin:0 0 14px;">Hi <strong>${this.escapeHtml(customerName)}</strong>,</p>
-<p style="margin:0 0 20px;">
+<p style="margin:0 0 14px;font-size:15px;line-height:1.6;">Hi <strong>${this.escapeHtml(customerName)}</strong>,</p>
+<p style="margin:0 0 20px;font-size:15px;line-height:1.6;">
     Thank you for your order! We've received your payment and are preparing your items for shipment.
 </p>
 
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0;">
 <tr>
-<td style="background-color:#fafafa;padding:16px;">
+<td style="background-color:#fafafa;padding:16px;border-left:3px solid #111111;">
     <p style="margin:0;font-size:13px;color:#666666;">Order Number</p>
-    <p style="margin:4px 0 0;font-size:16px;font-weight:600;color:#111111;">
+    <p style="margin:4px 0 0;font-size:18px;font-weight:600;color:#111111;">
         #${this.escapeHtml(orderNumber)}
     </p>
 </td>
@@ -405,37 +405,37 @@ ${preheader ? `
 </table>
 
 <h3 style="margin:24px 0 12px;font-size:16px;font-weight:600;color:#111111;">Order Items</h3>
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;">
-<tr style="border-bottom:2px solid #e0e0e0;">
-<th style="padding:8px 0;text-align:left;font-size:13px;color:#666666;">Item</th>
-<th style="padding:8px 0;text-align:center;font-size:13px;color:#666666;">Qty</th>
-<th style="padding:8px 0;text-align:right;font-size:13px;color:#666666;">Price</th>
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;border:1px solid #e0e0e0;">
+<tr style="background-color:#fafafa;border-bottom:2px solid #e0e0e0;">
+<th style="padding:12px 8px;text-align:left;font-size:13px;font-weight:600;color:#666666;">Item</th>
+<th style="padding:12px 8px;text-align:center;font-size:13px;font-weight:600;color:#666666;">Qty</th>
+<th style="padding:12px 8px;text-align:right;font-size:13px;font-weight:600;color:#666666;">Price</th>
 </tr>
 ${itemsHtml}
-<tr>
-<td colspan="2" style="padding:12px 0 4px;text-align:right;font-size:14px;">Subtotal:</td>
-<td style="padding:12px 0 4px;text-align:right;font-size:14px;">₹${subtotal.toFixed(2)}</td>
+<tr style="background-color:#f9f9f9;">
+<td colspan="2" style="padding:12px 8px 4px;text-align:right;font-size:14px;color:#666666;">Subtotal:</td>
+<td style="padding:12px 8px 4px;text-align:right;font-size:14px;color:#333333;">₹${subtotal.toFixed(2)}</td>
 </tr>
-<tr>
-<td colspan="2" style="padding:4px 0;text-align:right;font-size:14px;">Shipping:</td>
-<td style="padding:4px 0;text-align:right;font-size:14px;">₹${shipping.toFixed(2)}</td>
+<tr style="background-color:#f9f9f9;">
+<td colspan="2" style="padding:4px 8px 12px;text-align:right;font-size:14px;color:#666666;">Shipping:</td>
+<td style="padding:4px 8px 12px;text-align:right;font-size:14px;color:#333333;">₹${shipping.toFixed(2)}</td>
 </tr>
-<tr style="border-top:2px solid #111111;">
-<td colspan="2" style="padding:12px 0 0;text-align:right;font-size:16px;font-weight:600;">Total:</td>
-<td style="padding:12px 0 0;text-align:right;font-size:16px;font-weight:600;">₹${total.toFixed(2)}</td>
+<tr style="border-top:2px solid #111111;background-color:#fafafa;">
+<td colspan="2" style="padding:16px 8px;text-align:right;font-size:16px;font-weight:600;color:#111111;">Total:</td>
+<td style="padding:16px 8px;text-align:right;font-size:18px;font-weight:700;color:#111111;">₹${total.toFixed(2)}</td>
 </tr>
 </table>
 
 <h3 style="margin:24px 0 12px;font-size:16px;font-weight:600;color:#111111;">Shipping Address</h3>
 <table width="100%" cellpadding="0" cellspacing="0" border="0">
 <tr>
-<td style="background-color:#fafafa;padding:16px;">
-    <p style="margin:0;font-size:14px;line-height:1.6;color:#444444;white-space:pre-wrap;">${this.escapeHtml(shippingAddress)}</p>
+<td style="background-color:#fafafa;padding:16px;border:1px solid #e0e0e0;">
+    <p style="margin:0;font-size:14px;line-height:1.8;color:#444444;white-space:pre-line;">${this.escapeHtml(shippingAddress)}</p>
 </td>
 </tr>
 </table>
 
-<p style="margin:24px 0 0;font-size:13px;color:#666666;">
+<p style="margin:24px 0 0;font-size:13px;color:#666666;line-height:1.6;">
     You'll receive a shipping confirmation email with tracking details once your order ships.
 </p>
             `,

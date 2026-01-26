@@ -11,9 +11,7 @@ export const orderStatusSchema = z.object({
         'delivered',
         'cancelled',
         'refunded',
-    ], {
-        errorMap: () => ({ message: 'Invalid order status' }),
-    }),
+    ]),
 });
 
 export type OrderStatusData = z.infer<typeof orderStatusSchema>;

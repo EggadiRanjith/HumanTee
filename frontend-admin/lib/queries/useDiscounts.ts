@@ -7,10 +7,26 @@ import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import { discountsApi } from '@/lib/api/discounts';
 
+// Type definition for discount response
+interface Discount {
+    id: string;
+    name: string;
+    code: string;
+    type: 'PERCENT' | 'FLAT';
+    value: number;
+    scope: 'GLOBAL' | 'PRODUCT' | 'GROUP';
+    isActive: boolean;
+    startDate: string;
+    endDate: string | null;
+    productsCount?: number;
+    usageCount?: number;
+    usageLimit?: number | null;
+}
+
 export function useAdminDiscounts() {
-    return useQuery({
+    return useQuery<Discount[]>({
         queryKey: queryKeys.discounts,
-        queryFn: async () => {
+        queryFn: async (): Promise<Discount[]> => {
             const data = await discountsApi.getAll();
             return data;
         },

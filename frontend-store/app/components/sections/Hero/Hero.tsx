@@ -23,7 +23,12 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
   const isMobile = useIsMobile(768);
 
   // Fetch hero settings from centralized cache
-  const { settings: heroSettings } = useHeroSettings();
+  const { settings: heroSettings, loading } = useHeroSettings();
+
+  // Show skeleton while loading (first render before data arrives)
+  if (loading) {
+    return <HeroSkeleton />;
+  }
 
   // Use prop slides if provided, otherwise use API/fallback slides
   const slides = propSlides && propSlides.length > 0 ? propSlides : heroSettings?.slides;
@@ -34,16 +39,9 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
   const { currentIndex } = useHeroCarousel(slides?.length || 0, videoHasPlayed);
 
 
-  // Loading state - show skeleton instead of error page
+  // Fallback if no slides available after loading
   if (!slides || slides.length === 0) {
-    return (
-      <section
-        className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden -mt-[var(--header-height)] pt-[var(--header-height)] px-4"
-        aria-label="Hero section loading"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-black animate-pulse" />
-      </section>
-    );
+    return <HeroSkeleton />;
   }
 
   return (

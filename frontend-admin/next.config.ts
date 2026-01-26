@@ -5,7 +5,6 @@ const nextConfig: NextConfig = {
 
   // Performance optimizations
   compress: true,
-  swcMinify: true,
 
   // Remove console logs in production
   compiler: {

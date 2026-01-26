@@ -12,8 +12,8 @@ const WARNING_DURATION = 5 * 60 * 1000; // 5 minutes before timeout
  */
 export function useSessionTimeout() {
     const { logout, isAuthenticated } = useAuth();
-    const timeoutRef = useRef<NodeJS.Timeout>();
-    const warningRef = useRef<NodeJS.Timeout>();
+    const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+    const warningRef = useRef<ReturnType<typeof setTimeout>>();
     const warningShownRef = useRef(false);
 
     const resetTimeout = useCallback(() => {

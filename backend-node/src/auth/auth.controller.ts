@@ -225,6 +225,7 @@ export class AuthController {
             httpOnly: true,
             secure: true,  // MUST be true for SameSite=None (both domains are HTTPS)
             sameSite: 'none',  // REQUIRED for cross-origin cookie setting
+            domain: '.humantee.in',  // Share cookie across all subdomains (humantee.in, app.humantee.in)
             maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
             path: '/',
         });
@@ -288,6 +289,7 @@ export class AuthController {
             httpOnly: true,
             secure: isProduction,  // HTTPS only in production
             sameSite: isProduction ? 'none' : 'lax',  // 'none' for cross-origin in prod
+            domain: isProduction ? '.humantee.in' : undefined,  // Share across subdomains in production
             maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
             path: '/',
         });
@@ -340,6 +342,7 @@ export class AuthController {
             httpOnly: true,
             secure: isProduction,  // HTTPS only in production
             sameSite: isProduction ? 'none' : 'lax',  // 'none' for cross-origin in prod
+            domain: isProduction ? '.humantee.in' : undefined,  // Share across subdomains in production
             maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
             path: '/',
         });

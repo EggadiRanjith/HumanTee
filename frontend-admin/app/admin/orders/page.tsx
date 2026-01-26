@@ -283,7 +283,7 @@ export default function OrdersPage() {
             {totalPages > 1 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-lg border border-gray-200 p-2.5 md:p-4 gap-3 sm:gap-0">
                     <div className="text-xs md:text-sm text-gray-600 hidden sm:block">
-                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredOrders.length)} of {filteredOrders.length} orders
+                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, sortedOrders.length)} of {sortedOrders.length} orders
                     </div>
                     <div className="flex gap-2">
                         <button

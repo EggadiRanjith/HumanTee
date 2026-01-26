@@ -26,6 +26,8 @@ import { useOrganizationStore } from '@/domains/product/organization/organizatio
 import { observeHasUnsavedChanges, aggregateProductData, markAllDomainsClean } from '@/domains/product/autosave/autosave.service';
 import { attemptDraftRecovery, discardDraft } from '@/domains/product/autosave/draft.recovery';
 import { ConfirmActionModal } from '@/app/admin/components/ConfirmActionModal';
+import { UploadProgressModal } from '@/app/components/UploadProgressModal';
+import { useImageUploads } from '@/app/hooks/useImageUploads';
 import { toast } from 'sonner';
 
 export default function NewProductPage() {
@@ -34,6 +36,9 @@ export default function NewProductPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [showDraftRecovery, setShowDraftRecovery] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+
+    // Image upload hook for deferred uploads
+    const { uploadItems, isUploading, uploadPendingImages, resetUploads } = useImageUploads();
 
     // Detect mobile viewport
     useEffect(() => {
@@ -178,6 +183,9 @@ export default function NewProductPage() {
         try {
             const productData = aggregateProductData();
 
+            // Upload pending images first (shows progress modal)
+            const imagesWithCloudinaryUrls = await uploadPendingImages(productData.images);
+
             // Transform data for backend strictly
             const draftRequest = {
                 name: productData.name,
@@ -190,9 +198,9 @@ export default function NewProductPage() {
                 currency: productData.currency || 'INR',
                 taxable: productData.taxable ?? true,
 
-                // Media - Use Cloudinary URL if available, otherwise base64
-                images: productData.images.map(img => ({
-                    url: img.cloudinaryUrl || img.url, // Prefer Cloudinary URL
+                // Media - Use Cloudinary URLs (already uploaded above)
+                images: imagesWithCloudinaryUrls.map(img => ({
+                    url: img.cloudinaryUrl || img.url,
                     altText: img.altText || '',
                     isPrimary: img.isPrimary,
                     order: img.order,
@@ -401,44 +409,16 @@ export default function NewProductPage() {
         try {
             const productData = aggregateProductData();
 
-            // STEP 1: Prepare images - use Cloudinary URLs if already uploaded
-            const uploadedImages = await Promise.all(
-                productData.images.map(async (img, index) => {
-                    // If image was already uploaded to Cloudinary (via ImageUploader), use that URL
-                    if (img.cloudinaryUrl) {
-                        return {
-                            url: img.cloudinaryUrl,
-                            altText: img.altText || '',
-                            isPrimary: img.isPrimary,
-                            order: img.order,
-                        };
-                    }
+            // STEP 1: Upload all pending images (shows progress modal)
+            const imagesWithCloudinaryUrls = await uploadPendingImages(productData.images);
 
-                    // Fallback: Upload base64 to Cloudinary (for images that failed to upload earlier)
-                    const dataURLtoFile = (dataurl: string, filename: string): File => {
-                        const arr = dataurl.split(',');
-                        const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
-                        const bstr = atob(arr[1]);
-                        let n = bstr.length;
-                        const u8arr = new Uint8Array(n);
-                        while (n--) {
-                            u8arr[n] = bstr.charCodeAt(n);
-                        }
-                        return new File([u8arr], filename, { type: mime });
-                    };
-
-                    const { uploadImageToCloudinary } = await import('@/lib/api/uploadToCloudinary');
-                    const file = dataURLtoFile(img.url, `product-image-${index}.png`);
-                    const result = await uploadImageToCloudinary(file);
-
-                    return {
-                        url: result.url,
-                        altText: img.altText || '',
-                        isPrimary: img.isPrimary,
-                        order: img.order,
-                    };
-                })
-            );
+            // STEP 2: Prepare image data for backend
+            const uploadedImages = imagesWithCloudinaryUrls.map(img => ({
+                url: img.cloudinaryUrl || img.url,
+                altText: img.altText || '',
+                isPrimary: img.isPrimary,
+                order: img.order,
+            }));
 
 
 
@@ -552,6 +532,12 @@ export default function NewProductPage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
+            {/* Upload Progress Modal - Global overlay */}
+            <UploadProgressModal
+                isOpen={isUploading}
+                items={uploadItems}
+                onComplete={resetUploads}
+            />
             {/* Draft Recovery Banner - Improved UX - Compact Mobile */}
             {showDraftRecovery && (
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200 px-3 md:px-4 lg:px-6 py-3 md:py-4">

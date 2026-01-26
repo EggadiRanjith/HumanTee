@@ -6,6 +6,8 @@ import { useAuth } from '@/app/context/AuthContext';
 import { Sidebar } from './components/Sidebar';
 import { NavigationLoader } from '../components/NavigationLoader';
 
+import { DashboardErrorBoundary } from './components/DashboardErrorBoundary';
+
 /**
  * Admin Layout (Client Component)
  * Uses AuthContext for authentication
@@ -47,7 +49,9 @@ export default function AdminLayout({
             {/* Main Content */}
             <main className="lg:ml-64 pt-16 lg:pt-0">
                 <div className="p-4 lg:p-6">
-                    {children}
+                    <DashboardErrorBoundary>
+                        {children}
+                    </DashboardErrorBoundary>
                 </div>
             </main>
         </div>

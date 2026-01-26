@@ -174,7 +174,7 @@ export default function OrderDetailPage() {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <div className="text-center">
-                    <p className="text-red-600 mb-4">{error || 'Order not found'}</p>
+                    <p className="text-red-600 mb-4">{error instanceof Error ? error.message : (error as any)?.message || 'Order not found'}</p>
                     <Link href="/admin/orders" className="text-black hover:underline">
                         ← Back to orders
                     </Link>
@@ -306,11 +306,11 @@ export default function OrderDetailPage() {
                                     {order.statusHistory.map((history: any, index: number) => (
                                         <div key={history.id || index} className="relative flex gap-4">
                                             {/* Timeline dot */}
-                                            <div className={`relative z-10 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${index === order.statusHistory.length - 1
+                                            <div className={`relative z-10 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${index === (order.statusHistory?.length ?? 0) - 1
                                                 ? 'bg-green-100 border-2 border-green-500'
                                                 : 'bg-gray-100 border-2 border-gray-300'
                                                 }`}>
-                                                <div className={`w-3 h-3 rounded-full ${index === order.statusHistory.length - 1 ? 'bg-green-500' : 'bg-gray-400'
+                                                <div className={`w-3 h-3 rounded-full ${index === (order.statusHistory?.length ?? 0) - 1 ? 'bg-green-500' : 'bg-gray-400'
                                                     }`}></div>
                                             </div>
 

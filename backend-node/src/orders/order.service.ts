@@ -332,7 +332,13 @@ export class OrderService {
             await manager.save(OrderStatusHistory, history);
 
             // Send order confirmation email (async, don't block response)
-            this.emailService.sendOrderConfirmation(order, shippingAddress.email, shippingAddress.fullName)
+            // Attach items and address for email template
+            const orderWithData = {
+                ...order,
+                items: orderItems, // Already saved OrderItem entities
+                address: address,  // Already saved OrderAddress entity
+            };
+            this.emailService.sendOrderConfirmation(orderWithData, shippingAddress.email, shippingAddress.fullName)
                 .catch(err => this.logger.error('Failed to send order confirmation email', err));
 
             return order;

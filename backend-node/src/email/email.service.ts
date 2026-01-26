@@ -66,22 +66,23 @@ export class EmailService {
     const orderNumber = order.orderNumber || order.id.substring(0, 8).toUpperCase();
     const totalAmount = parseFloat(order.totalAmount || 0);
 
-    // Build shipping address string
-    const address = order.shippingAddress || {};
-    const shippingAddress = `${address.fullName || name}
-${address.addressLine1 || ''}
-${address.addressLine2 || ''}
-${address.city || ''}, ${address.state || ''} ${address.postalCode || ''}
-${address.country || 'India'}`.trim();
+    // Build shipping address string from order.address relation or embedded address object
+    const addr = order.address || order.shippingAddress || {};
+    const shippingAddress = `${addr.fullName || name}
+${addr.addressLine1 || addr.address || ''}${addr.addressLine2 ? '\n' + addr.addressLine2 : ''}${addr.landmark ? '\n' + addr.landmark : ''}
+${addr.city || ''}, ${addr.state || ''} ${addr.postalCode || ''}
+${addr.country || 'India'}`.trim();
 
     // Map order items to template format
-    const items = (order.items || []).map((item: any) => ({
-      name: item.productNameSnapshot || item.productName || 'Product',
+    // Handle both array formats: order.items (from DB with relations) or order.orderItems
+    const orderItems = order.items || order.orderItems || [];
+    const items = orderItems.map((item: any) => ({
+      name: `${item.productNameSnapshot || item.productName || 'Product'}${item.variantLabelSnapshot ? ' - ' + item.variantLabelSnapshot : ''}`,
       quantity: item.quantity || 1,
       price: parseFloat(item.unitPrice || item.price || 0),
     }));
 
-    const subtotal = items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+    const subtotal = parseFloat(order.subtotal || items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0));
     const shipping = parseFloat(order.shippingAmount || 0);
 
     const html = this.emailTemplateService.generateOrderConfirmation(
@@ -100,7 +101,7 @@ ${address.country || 'India'}`.trim();
       html,
     });
 
-    this.logger.log(`📧 Order confirmation sent to ${email} for order ${order.id}`);
+    this.logger.log(`📧 Order confirmation sent to ${email} for order ${order.id || orderNumber}`);
   }
 
   async sendEmail(options: {

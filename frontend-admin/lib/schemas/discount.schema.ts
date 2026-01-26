@@ -18,9 +18,7 @@ export const discountSchema = z.object({
         .trim(),
 
     // Discount Type
-    type: z.enum(['percentage', 'fixed_amount'], {
-        errorMap: () => ({ message: 'Type must be percentage or fixed amount' }),
-    }),
+    type: z.enum(['percentage', 'fixed_amount']),
 
     // Discount Value
     value: z.number()

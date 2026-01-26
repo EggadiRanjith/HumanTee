@@ -45,14 +45,14 @@ export default function DiscountsPage() {
 
     // Use React Query hook
     const discountsQuery = useAdminDiscounts();
-    const { data: discounts = [], isLoading, error } = discountsQuery;
+    const { data: discounts = [], isLoading, error, refetch } = discountsQuery;
 
     // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
     const handleDelete = async (id: string) => {
         try {
             await discountsApi.delete(id);
             toast.success('Discount deleted successfully!');
-            await discountsQuery.refetch();
+            await refetch();
         } catch (err) {
             toast.error('Failed to delete discount');
         }
@@ -107,7 +107,7 @@ export default function DiscountsPage() {
 
     // NOW conditional returns are safe
     if (isLoading) return <DiscountsSkeleton />;
-    if (error) return <DiscountsError error={error} onRetry={() => discountsQuery.refetch()} />;
+    if (error) return <DiscountsError error={error} onRetry={() => refetch()} />;
     // Only show empty state if NO discounts exist (not when filtered)
     if (discounts.length === 0 && !searchQuery && statusFilter === 'ALL') {
         return <DiscountsEmpty />;
@@ -264,7 +264,7 @@ export default function DiscountsPage() {
                             onClick={() => {
                                 setSearchQuery('');
                                 setStatusFilter('ALL');
-                                if (error) void discountsQuery.refetch();
+                                if (error) void refetch();
                             }}
                             className="text-sm text-black hover:underline font-medium"
                         >

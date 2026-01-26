@@ -224,7 +224,7 @@ export function DashboardCharts({ orders }: Props) {
                                 dot={false}
                             />
                             <Tooltip
-                                formatter={(value: number) => `₹${value.toLocaleString()}`}
+                                formatter={(value: number | undefined) => `₹${(value ?? 0).toLocaleString()}`}
                                 contentStyle={{
                                     backgroundColor: '#fff',
                                     border: '1px solid #e5e7eb',
@@ -249,7 +249,7 @@ export function DashboardCharts({ orders }: Props) {
                             />
                             <YAxis tick={{ fontSize: 11 }} />
                             <Tooltip
-                                formatter={(value: number) => `₹${value.toLocaleString()}`}
+                                formatter={(value: number | undefined) => `₹${(value ?? 0).toLocaleString()}`}
                                 contentStyle={{
                                     backgroundColor: '#fff',
                                     border: '1px solid #e5e7eb',
