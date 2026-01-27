@@ -98,11 +98,11 @@ function NavigationLoaderContent() {
                     level: 'warning',
                     extra: {
                         pathname,
-                        duration: 10000,
+                        duration: 30000,
                         timestamp: Date.now()
                     }
                 });
-            }, 10000);
+            }, 30000); // Increased from 10s to 30s for slow API responses
 
             return () => clearTimeout(timeout);
         }
@@ -175,21 +175,47 @@ function NavigationLoaderContent() {
         trackWebVitals(pathname);
     }, [pathname]);
 
-    // Critical Fix #1: Timeout error UI
+    // Critical Fix #1: Timeout error UI - Luxury redesign
     if (hasTimedOut) {
         return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
-                <div className="text-center p-8 max-w-md">
-                    <p className="text-white text-lg mb-4">
-                        Page took too long to load
-                    </p>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="px-6 py-3 bg-white text-black rounded-lg hover:bg-white/90 transition-colors"
-                    >
-                        Reload Page
-                    </button>
-                </div>
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-[#0a0118] via-[#1a0a2e] to-[#0f0520] backdrop-blur-2xl">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="relative max-w-md mx-4"
+                >
+                    {/* Glow effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-violet-600/20 via-fuchsia-600/20 to-pink-600/20 blur-3xl rounded-3xl" />
+
+                    {/* Modal card */}
+                    <div className="relative bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 rounded-2xl p-8 sm:p-10 backdrop-blur-xl shadow-2xl">
+                        {/* Icon */}
+                        <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 border border-white/10 flex items-center justify-center">
+                            <svg className="w-8 h-8 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+
+                        {/* Title */}
+                        <h3 className="text-white text-xl sm:text-2xl font-light text-center mb-3 tracking-wide">
+                            Connection Timeout
+                        </h3>
+
+                        {/* Description */}
+                        <p className="text-white/50 text-sm text-center mb-8 leading-relaxed">
+                            The page is taking longer than expected to load. Please check your connection and try again.
+                        </p>
+
+                        {/* Button */}
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600 text-white text-sm uppercase tracking-[0.2em] font-medium hover:brightness-110 transition-all shadow-lg shadow-fuchsia-500/25 hover:shadow-fuchsia-500/40"
+                        >
+                            Reload Page
+                        </button>
+                    </div>
+                </motion.div>
             </div>
         );
     }

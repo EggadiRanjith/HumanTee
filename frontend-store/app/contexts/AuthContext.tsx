@@ -43,9 +43,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const checkAuth = async () => {
             try {
                 // Try to refresh session using httpOnly cookie
-                const response = await apiClient.post('/auth/refresh');
+                const response = await apiClient.post('/auth/refresh', {}, {
+                    // Prevent automatic retry on 401 for this initial check
+                    validateStatus: (status) => status < 500,
+                });
 
-                if (response.data) {
+                // Only set user if refresh was successful (200)
+                if (response.status === 200 && response.data) {
                     // Set access token and user from refresh response
                     setAccessToken(response.data.accessToken);
                     setUser(response.data.user);
@@ -55,9 +59,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         id: response.data.user.id,
                         email: response.data.user.email,
                     });
+                } else {
+                    // 401 or other non-200 status = user not logged in
+                    setUser(null);
+                    clearAccessToken();
                 }
             } catch (error) {
-                // Refresh failed - user is not logged in
+                // Network error or other failure - user is not logged in
                 setUser(null);
                 clearAccessToken();
             } finally {
