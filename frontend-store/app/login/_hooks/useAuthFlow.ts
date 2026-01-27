@@ -50,6 +50,7 @@ export function useAuthFlow() {
     const [error, setError] = useState("");
     const [googleError, setGoogleError] = useState("");
     const [success, setSuccess] = useState("");
+    const [googleSuccess, setGoogleSuccess] = useState("");
 
     const validateEmail = (email: string) => {
         return /\S+@\S+\.\S+/.test(email);
@@ -140,6 +141,7 @@ export function useAuthFlow() {
     const handleGoogleLogin = async (credentialResponse: any) => {
         setGoogleLoading(true);
         setGoogleError("");
+        setGoogleSuccess("");
         setError("");
 
         try {
@@ -166,6 +168,12 @@ export function useAuthFlow() {
             // ✅ OPTIMIZED: Backend returns profile + addresses in login response
             const data = await response.json();
             await authLogin(data.accessToken, data.user, null, data.addresses, data.profile);
+
+            // Show success message
+            setGoogleSuccess("Login successful! Redirecting...");
+
+            // Brief delay to show success message
+            await new Promise(resolve => setTimeout(resolve, 500));
 
             // SECURITY: Validate redirect URL against whitelist
             const redirectUrl = validateRedirectUrl(searchParams.get('redirect'));
@@ -196,6 +204,7 @@ export function useAuthFlow() {
         error,
         googleError,
         success,
+        googleSuccess,
         handleSendOtp,
         handleVerifyOtp,
         handleGoogleLogin,

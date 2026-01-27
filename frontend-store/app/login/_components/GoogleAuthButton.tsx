@@ -79,8 +79,14 @@ export default function GoogleAuthButton({
 
                     <FcGoogle className="w-5 h-5 relative z-10" />
                     <span className="relative z-10">
-                        {isLoading ? 'Connecting...' : 'Continue with Google'}
+                        {isLoading ? 'Connecting to Google...' : 'Continue with Google'}
                     </span>
+                    {/* Loading spinner */}
+                    {isLoading && (
+                        <div className="absolute right-4 relative z-10">
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        </div>
+                    )}
                 </motion.button>
             </div>
         </>

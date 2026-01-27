@@ -299,8 +299,14 @@ export class AuthService {
             const newAccessToken = this.generateAccessToken(user.id, user.email, user.role);
             const newRefreshToken = await this.generateRefreshToken(user.id);
 
-            // Audit log
-
+            // Fetch complete user data (profile + addresses)
+            const [profile, addresses] = await Promise.all([
+                this.getProfile(user.id),
+                this.dataSource.getRepository('ShippingAddress').find({
+                    where: { userId: user.id },
+                    order: { isDefault: 'DESC', createdAt: 'DESC' },
+                }),
+            ]);
 
             return {
                 accessToken: newAccessToken,
@@ -310,6 +316,8 @@ export class AuthService {
                     email: user.email,
                     role: user.role,
                 },
+                profile,
+                addresses,
             };
         } catch (error) {
             if (error instanceof UnauthorizedException) {

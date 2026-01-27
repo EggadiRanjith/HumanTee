@@ -387,10 +387,11 @@ export class AuthController {
             });
         }
 
-        return {
-            accessToken: result.accessToken,
-            user: result.user,
-        };
+        return this.loginAggregationService.buildLoginPayload(
+            result.accessToken,
+            result.user,
+            '/', // Default redirect for refresh
+        );
     }
 
     @UseGuards(JwtAuthGuard)

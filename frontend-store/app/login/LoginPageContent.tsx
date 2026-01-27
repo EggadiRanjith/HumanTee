@@ -27,6 +27,7 @@ export default function LoginPage() {
         error,
         googleError,
         success,
+        googleSuccess,
         handleSendOtp,
         handleVerifyOtp,
         handleGoogleLogin,
@@ -189,6 +190,18 @@ export default function LoginPage() {
                                                 }}
                                                 isLoading={googleLoading}
                                             />
+
+                                            {/* Google Success Message */}
+                                            {googleSuccess && (
+                                                <div className="mt-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                                    <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    <p className="text-green-300 text-sm font-medium">
+                                                        {googleSuccess}
+                                                    </p>
+                                                </div>
+                                            )}
 
                                             {/* Google Error Message */}
                                             {googleError && (

@@ -16,4 +16,5 @@ export const queryKeys = {
     orderDetail: (userId: string, orderId: string) => ['user', userId, 'order', orderId] as const,
     tickets: (userId: string, page: number) => ['user', userId, 'tickets', page] as const,
     ticketDetail: (userId: string, ticketId: string) => ['user', userId, 'ticket', ticketId] as const,
+    cart: (userId: string) => ['user', userId, 'cart'] as const,
 } as const;

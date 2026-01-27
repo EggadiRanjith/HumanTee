@@ -61,15 +61,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 // Backend may return 201 Created instead of 200 OK
                 if ((response.status === 200 || response.status === 201) && response.data) {
                     console.warn('✅ Session restored successfully');
-                    // Set access token and user from refresh response
-                    setAccessToken(response.data.accessToken);
-                    setUser(response.data.user);
 
-                    // Set Sentry context
-                    setUserContext({
-                        id: response.data.user.id,
-                        email: response.data.user.email,
-                    });
+                    // Use the existing login function to ensure complete state hydration
+                    // (Profile, Cart, Addresses, Sentry, Tab sync)
+                    await login(
+                        response.data.accessToken,
+                        response.data.user,
+                        response.data.cart,
+                        response.data.addresses,
+                        response.data.profile
+                    );
                 } else {
                     console.warn('❌ Refresh failed - status:', response.status);
                     // 401 or other non-success status = user not logged in
@@ -160,6 +161,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             queryClient.setQueryData(
                 queryKeys.addresses(userData.id),
                 addresses
+            );
+        }
+
+        if (cart) {
+            queryClient.setQueryData(
+                queryKeys.cart(userData.id),
+                cart
             );
         }
     };
