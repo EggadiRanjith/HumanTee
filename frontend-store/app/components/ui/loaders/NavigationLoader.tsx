@@ -57,34 +57,24 @@ function NavigationLoaderContent() {
             // Scroll to top immediately
             window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 
-            // Hide loader after minimum display time
-            const MIN_DISPLAY = 700; // ms - sweet spot for perceived responsiveness
-            let cancelled = false;
-
+            // BULLETPROOF: Force hide after 700ms, no exceptions
+            const MIN_DISPLAY = 700;
             const hideTimer = setTimeout(() => {
-                if (cancelled) return;
+                setLoading(false);
+            }, MIN_DISPLAY);
 
-                const elapsed = Date.now() - loadStartTimeRef.current;
-                const remaining = Math.max(0, MIN_DISPLAY - elapsed);
-
-                setTimeout(() => {
-                    if (cancelled) return;
-
-                    // Hide on next paint boundary (single RAF is sufficient)
-                    requestAnimationFrame(() => {
-                        if (!cancelled) {
-                            setLoading(false);
-                        }
-                    });
-                }, remaining);
-            }, 0);
+            // Also add a safety timeout to force hide if something goes wrong
+            const safetyTimer = setTimeout(() => {
+                setLoading(false);
+            }, MIN_DISPLAY + 100);
 
             return () => {
-                cancelled = true;
                 clearTimeout(hideTimer);
+                clearTimeout(safetyTimer);
             };
         }
-    }, [pathname, searchParams, setLoading]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pathname, searchParams]); // Removed setLoading from deps to prevent race condition
 
     // Error timeout (independent of navigation)
     useEffect(() => {
