@@ -20,6 +20,7 @@ import { RazorpayService } from '../payments/razorpay.service';
 import { AuthModule } from '../auth/auth.module';
 import { RedisModule } from '../redis/redis.module';
 import { EmailModule } from '../email/email.module';
+import { SettingsModule } from '../settings/settings.module';
 
 @Module({
     imports: [
@@ -27,6 +28,7 @@ import { EmailModule } from '../email/email.module';
         AuthModule,
         RedisModule,
         EmailModule,
+        SettingsModule,
         PassportModule,
         JwtModule.register({
             secret: process.env.JWT_SECRET || 'your-secret-key',

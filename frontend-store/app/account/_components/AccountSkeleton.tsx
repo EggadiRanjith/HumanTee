@@ -3,9 +3,13 @@
  * Matches the exact layout of the account dashboard
  */
 
+import { GradientOverlay } from "@/app/components/ui/layout";
+
 export function AccountSkeleton() {
     return (
         <div className="min-h-screen brand-bg pt-[var(--header-height)] pb-16 sm:pb-20 lg:pb-24 font-sans">
+            <GradientOverlay variant="violet" />
+
             <div className="relative max-w-screen-xl mx-auto px-3 sm:px-4 md:px-6 lg:px-10">
                 <div className="py-11 sm:py-8 md:py-10 lg:py-14">
                     {/* Header Skeleton */}

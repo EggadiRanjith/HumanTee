@@ -9,6 +9,7 @@ import { useProfileData } from "./_hooks/useProfileData";
 import AccountCard from "./_components/AccountCard";
 import AccountHeader from "./_components/AccountHeader";
 import ProfileWarning from "./_components/ProfileWarning";
+import { AccountSkeleton } from "./_components/AccountSkeleton";
 
 export default function AccountPage() {
     const { user, isLoading: authLoading, logout, isAuthenticated } = useAuth();
@@ -35,9 +36,9 @@ export default function AccountPage() {
         }
     };
 
-    // Loading state - navigation loader handles visual feedback
+    // Loading state - show skeleton
     if (authLoading || isLoadingProfile) {
-        return null;
+        return <AccountSkeleton />;
     }
 
     if (!profile) {

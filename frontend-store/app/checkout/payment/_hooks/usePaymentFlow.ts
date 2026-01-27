@@ -170,6 +170,7 @@ export function usePaymentFlow() {
                             level: 'info'
                         });
                         setIsProcessing(false);
+                        setOrderLock(null); // ← CRITICAL: Clear lock so user can retry
                     }
                 },
                 prefill: {

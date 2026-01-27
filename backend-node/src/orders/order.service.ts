@@ -20,6 +20,7 @@ import { DiscountsService } from '../discounts/discounts.service';
 import { OrderDiscount } from '../entities/order-discount.entity';
 import { RazorpayService } from '../payments/razorpay.service';
 import { EmailService } from '../email/email.service';
+import { SettingsService } from '../settings/settings.service';
 import { randomBytes } from 'crypto';
 
 @Injectable()
@@ -37,6 +38,7 @@ export class OrderService {
         private discountsService: DiscountsService,
         private razorpayService: RazorpayService,
         private emailService: EmailService,
+        private settingsService: SettingsService,
         @Optional() @Inject(RedisService) private redisService?: RedisService,
     ) { }
 
@@ -55,6 +57,76 @@ export class OrderService {
         }
 
         return `${prefix}-${code}`;
+    }
+
+    /**
+     * Calculate shipping cost based on pincode and cart total
+     * Matches frontend logic in shippingCalculation.ts
+     */
+    private async calculateShipping(postalCode: string, cartTotal: number): Promise<number> {
+        try {
+            // Fetch shipping zones from settings
+            const shippingSettings = await this.settingsService.getSection('shipping');
+            const zones = shippingSettings?.zones || [];
+
+            if (!zones || zones.length === 0) {
+                this.logger.warn('No shipping zones configured, defaulting to ₹0');
+                return 0;
+            }
+
+            // Find matching zone
+            const matchedZone = zones.find((zone: any) => {
+                if (!zone.isActive) return false;
+                return this.matchesPincode(postalCode, zone.pincodes || []);
+            });
+
+            if (!matchedZone) {
+                this.logger.warn(`No shipping zone found for pincode ${postalCode}, defaulting to ₹0`);
+                return 0;
+            }
+
+            // Check if free shipping threshold is met
+            const isFree = matchedZone.freeShippingThreshold !== null &&
+                cartTotal >= matchedZone.freeShippingThreshold;
+
+            const cost = isFree ? 0 : (matchedZone.rate || 0);
+            this.logger.log(`Shipping for ${postalCode}: ₹${cost} (zone: ${matchedZone.name}, free: ${isFree})`);
+            return cost;
+        } catch (error) {
+            this.logger.error(`Error calculating shipping: ${error.message}`, error.stack);
+            return 0; // Graceful fallback to free shipping on error
+        }
+    }
+
+    /**
+     * Match pincode against zone patterns
+     * Supports ranges (180000-194999) and wildcards (110*)
+     */
+    private matchesPincode(pincode: string, patterns: string[]): boolean {
+        const pin = parseInt(pincode);
+
+        for (const pattern of patterns) {
+            // Range format: 180000-194999
+            if (pattern.includes('-')) {
+                const [start, end] = pattern.split('-').map(p => parseInt(p));
+                if (pin >= start && pin <= end) {
+                    return true;
+                }
+            }
+            // Wildcard format: 110*
+            else if (pattern.includes('*')) {
+                const prefix = pattern.replace('*', '');
+                if (pincode.startsWith(prefix)) {
+                    return true;
+                }
+            }
+            // Exact match
+            else if (pincode === pattern) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -152,17 +224,22 @@ export class OrderService {
             }
         }
 
-        // 4. Calculate totals
+        // 4. Calculate shipping (FIXED: was hardcoded to 0)
+        const shippingAmount = await this.calculateShipping(
+            orderData.shippingAddress.postalCode,
+            subtotal
+        );
+
+        // 5. Calculate totals
         // GST is INCLUSIVE in product prices (as per Indian MRP law)
         // The product prices already contain 18% GST, so we don't add it again
         const taxAmount = 0; // GST already included in product MRP
-        const shippingAmount = 0; // Free shipping
         const totalAmount = subtotal + taxAmount + shippingAmount - discountAmount;
 
-        // 5. Create Razorpay order (payment gateway integration)
+        // 6. Create Razorpay order (payment gateway integration)
         const razorpayOrderId = await this.razorpayService.createOrder(totalAmount);
 
-        // 6. Return all calculated data (DO NOT SAVE TO DATABASE)
+        // 7. Return all calculated data (DO NOT SAVE TO DATABASE)
         const response = {
             razorpayOrderId,
             totalAmount,
@@ -179,7 +256,7 @@ export class OrderService {
             },
         };
 
-        // 7. Cache response for idempotency (30 min TTL)
+        // 8. Cache response for idempotency (30 min TTL)
         if (orderData.idempotencyKey) {
             const cacheKey = `order:prep:${userId || 'guest'}:${orderData.idempotencyKey}`;
             try {
