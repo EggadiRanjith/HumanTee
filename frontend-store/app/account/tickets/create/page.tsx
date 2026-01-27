@@ -153,6 +153,8 @@ function CreateTicketPageContent() {
             });
 
             setSuccess(true);
+            // Scroll to top to show success message
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             setTimeout(() => {
                 router.push(`/account/tickets/${response.data.id}`);
             }, 2000);

@@ -17,13 +17,24 @@ export default function GoogleAuthButton({
     // This is much faster and more reliable in production environments
     const login = useGoogleLogin({
         onSuccess: (tokenResponse) => {
+            console.log('✅ Google OAuth Success:', tokenResponse);
             // NOTE: useGoogleLogin by default returns an access_token response.
             // If your backend specifically needs an ID Token, you'd usually use the component,
             // but the hook is more robust for custom UI.
             // We pass the response to the parent handler.
             onSuccess(tokenResponse);
         },
-        onError: () => {
+        onError: (error) => {
+            console.error('❌ Google OAuth Error:', error);
+            console.error('Error details:', {
+                error,
+                clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+                origin: window.location.origin,
+            });
+            onError();
+        },
+        onNonOAuthError: (error) => {
+            console.error('🔴 Google Non-OAuth Error:', error);
             onError();
         },
     });
@@ -47,8 +58,15 @@ export default function GoogleAuthButton({
                     whileHover={{ scale: isLoading ? 1 : 1.02 }}
                     whileTap={{ scale: isLoading ? 1 : 0.98 }}
                     onClick={() => {
+                        console.log('🔵 Google button clicked');
+                        console.log('Client ID:', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
+                        console.log('Origin:', window.location.origin);
                         if (!isLoading) {
-                            login();
+                            try {
+                                login();
+                            } catch (err) {
+                                console.error('❌ Login function error:', err);
+                            }
                         }
                     }}
                     disabled={isLoading}

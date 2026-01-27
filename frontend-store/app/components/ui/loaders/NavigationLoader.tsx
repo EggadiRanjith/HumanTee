@@ -26,54 +26,67 @@ function NavigationLoaderContent() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
-    // Critical Fix #1: Decoupled error state
+    // Timeout error state
     const [hasTimedOut, setHasTimedOut] = useState(false);
 
-    // Critical Fix #3: Reduced motion detection
+    // Reduced motion detection
     const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
-    // Critical Fix #2: Focus management
+    // Focus management
     const loaderRef = useRef<HTMLDivElement>(null);
     const previousFocus = useRef<HTMLElement | null>(null);
 
-    // Auto-hide loader after route change
+    // Track previous pathname for autonomous navigation detection
+    const previousPathnameRef = useRef<string>(pathname);
+    const loadStartTimeRef = useRef<number>(0);
+
+    // AUTONOMOUS NAVIGATION DETECTION
+    // Show loader when pathname changes, hide after minimum display time
     useEffect(() => {
-        let cancelled = false;
+        const currentPath = pathname + (searchParams?.toString() || '');
+        const previousPath = previousPathnameRef.current;
 
-        // Scroll to top when route changes
-        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        // Navigation detected: pathname changed
+        if (currentPath !== previousPath) {
+            previousPathnameRef.current = currentPath;
 
-        const hideLoader = () => {
-            if (cancelled) return;
+            // Show loader and record start time
+            setLoading(true);
+            loadStartTimeRef.current = Date.now();
 
-            // Wait for document to be fully loaded
-            if (document.readyState === 'complete') {
-                // Extra RAF cycles to ensure content is rendered
-                requestAnimationFrame(() => {
+            // Scroll to top immediately
+            window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+
+            // Hide loader after minimum display time
+            const MIN_DISPLAY = 700; // ms - sweet spot for perceived responsiveness
+            let cancelled = false;
+
+            const hideTimer = setTimeout(() => {
+                if (cancelled) return;
+
+                const elapsed = Date.now() - loadStartTimeRef.current;
+                const remaining = Math.max(0, MIN_DISPLAY - elapsed);
+
+                setTimeout(() => {
+                    if (cancelled) return;
+
+                    // Hide on next paint boundary (single RAF is sufficient)
                     requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
+                        if (!cancelled) {
                             setLoading(false);
-                            // Scroll to top again after loader hides
-                            setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }), 0);
-                        });
+                        }
                     });
-                });
-            } else {
-                // Document not ready, check again in 100ms
-                setTimeout(hideLoader, 100);
-            }
-        };
+                }, remaining);
+            }, 0);
 
-        // Start checking after minimum delay (prevent flash during fast navigations)
-        const timer = setTimeout(hideLoader, 500);
-
-        return () => {
-            cancelled = true;
-            clearTimeout(timer);
-        };
+            return () => {
+                cancelled = true;
+                clearTimeout(hideTimer);
+            };
+        }
     }, [pathname, searchParams, setLoading]);
 
-    // Critical Fix #1: Error timeout (decoupled from navigation state)
+    // Error timeout (independent of navigation)
     useEffect(() => {
         if (isLoading) {
             setHasTimedOut(false);
@@ -81,7 +94,6 @@ function NavigationLoaderContent() {
             const timeout = setTimeout(() => {
                 setHasTimedOut(true);
 
-                // Log to Sentry
                 Sentry.captureMessage('Navigation timeout', {
                     level: 'warning',
                     extra: {
@@ -96,29 +108,7 @@ function NavigationLoaderContent() {
         }
     }, [isLoading, pathname]);
 
-    // Detect navigation clicks
-    useEffect(() => {
-        const handleClick = (e: MouseEvent) => {
-            const target = e.target as HTMLElement;
-            const link = target.closest("a");
-
-            if (link && link.href && !link.target && !link.download) {
-                if (typeof window !== 'undefined') {
-                    const url = new URL(link.href);
-                    const current = new URL(window.location.href);
-
-                    if (url.origin === current.origin && url.pathname !== current.pathname) {
-                        setLoading(true);
-                    }
-                }
-            }
-        };
-
-        document.addEventListener("click", handleClick);
-        return () => document.removeEventListener("click", handleClick);
-    }, [setLoading]);
-
-    // Critical Fix #2: ARIA busy state + prevent scrolling
+    // ARIA busy state + prevent scrolling
     useEffect(() => {
         if (isLoading) {
             document.body.setAttribute('aria-busy', 'true');

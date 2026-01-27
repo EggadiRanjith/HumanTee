@@ -15,6 +15,7 @@ export function useTickets(filters: TicketFilters = {}) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
     const [totalPages, setTotalPages] = useState(1);
+    const [retryCount, setRetryCount] = useState(0); // ✅ Add retry trigger
 
     useEffect(() => {
         const fetchTickets = async () => {
@@ -67,11 +68,11 @@ export function useTickets(filters: TicketFilters = {}) {
         };
 
         fetchTickets();
-    }, [filters.orderId, filters.status, filters.category, filters.search, filters.sortBy, filters.page, filters.limit]);
+    }, [filters.orderId, filters.status, filters.category, filters.search, filters.sortBy, filters.page, filters.limit, retryCount]); // ✅ Add retryCount to deps
 
+    // ✅ Fix retry to actually trigger refetch
     const retry = () => {
-        setError(null);
-        setIsLoading(true);
+        setRetryCount(prev => prev + 1);
     };
 
     return { tickets, isLoading, error, totalPages, retry };

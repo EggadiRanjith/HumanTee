@@ -20,7 +20,6 @@ import {
 import Link from "next/link";
 import apiClient from "@/lib/api-client";
 import { useAuth } from "@/app/contexts/AuthContext";
-import { useLoading } from "@/app/contexts/LoadingContext";
 
 // CRITICAL: Prevent any scrolling before component even renders
 if (typeof window !== 'undefined') {
@@ -32,7 +31,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
     const router = useRouter();
     const { id } = use(params);
     const { user, isAuthenticated, isLoading: authLoading } = useAuth();
-    const { setLoading } = useLoading();
+
 
     const [ticket, setTicket] = useState<any | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -92,27 +91,23 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         }
     }, [isAuthenticated, id]);
 
-    // Hide navigation loader when data arrives
-    useEffect(() => {
-        if (!isLoading && !authLoading) {
-            setLoading(false);
-        }
-    }, [isLoading, authLoading, setLoading]);
+
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messagesContainerRef = useRef<HTMLDivElement>(null);
 
     // CRITICAL: Force messages container to stay at top on mount
     useEffect(() => {
-        if (messagesContainerRef.current) {
+        if (messagesContainerRef.current && isInitialLoad) {
             messagesContainerRef.current.scrollTop = 0;
         }
-    }, [ticket]);
+    }, [ticket, isInitialLoad]);
 
+    // Auto-scroll messages container to bottom ONLY, not the whole page
     useEffect(() => {
-        // Auto-scroll to bottom when new messages arrive
-        if (ticket?.messages && !isInitialLoad) {
-            scrollToBottom();
+        // Scroll to bottom of messages when messages load or new message arrives
+        if (ticket?.messages && !isInitialLoad && messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
         }
     }, [ticket?.messages, isInitialLoad]);
 

@@ -17,7 +17,7 @@ export default function CheckoutPage() {
         if (items.length > 0 && !hasRedirected.current) {
             hasRedirected.current = true;
             setLoading(true);
-            router.push("/checkout/shipping");
+            router.replace("/checkout/shipping");
         }
         // Only run on mount, not on items change
         // eslint-disable-next-line react-hooks/exhaustive-deps

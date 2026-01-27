@@ -10,7 +10,6 @@
 import Link from "next/link";
 import { useState, useEffect, use } from "react";
 import { useAuth } from "@/app/contexts/AuthContext";
-import { useLoading } from "@/app/contexts/LoadingContext";
 import { useRouter } from "next/navigation";
 import { HelpActionModal } from "@/app/components/orders/HelpActionModal";
 import { LazyMotion, domAnimation } from "framer-motion";
@@ -27,7 +26,7 @@ import { useOrder } from '../hooks/useOrder';
 export default function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const { setLoading } = useLoading();
+
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
 
   // Settings for feature flags
@@ -46,19 +45,7 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
     }
   }, [error, isAuthenticated, id, router]);
 
-  // Hide navigation loader when data arrives or error occurs
-  useEffect(() => {
-    if (!isLoading) {
-      setLoading(false);
-    }
-  }, [isLoading, setLoading]);
 
-  // Hide loader when auth check completes without needing data fetch
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      setLoading(false);
-    }
-  }, [authLoading, isAuthenticated, setLoading]);
 
   // Show skeleton while loading
   if (authLoading || isLoading) {

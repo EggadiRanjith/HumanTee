@@ -10,6 +10,7 @@ import { ProductStatus } from '../enums/product-status.enum';
 import { InventoryMode } from '../enums/inventory-mode.enum';
 import { CreateProductDto, UpdateProductDto } from './dto/create-product.dto';
 import { ProductResponseDto } from './dto/product-response.dto';
+import { CacheService } from '../../redis/cache.service';
 
 @Injectable()
 export class AdminProductsService {
@@ -24,6 +25,7 @@ export class AdminProductsService {
         private readonly collectionRepo: Repository<Collection>,
         @InjectRepository(ProductCollectionMap)
         private readonly collectionMapRepo: Repository<ProductCollectionMap>,
+        private readonly cacheService: CacheService,
     ) { }
 
     /**
@@ -108,6 +110,9 @@ export class AdminProductsService {
         if (dto.collections && dto.collections.length > 0) {
             await this.linkCollections(savedProduct.id, dto.collections);
         }
+
+        // 🚀 Clear product cache so new product appears instantly
+        await this.clearProductCache(savedProduct.slug);
 
         return this.getProductById(savedProduct.id);
     }
@@ -201,6 +206,9 @@ export class AdminProductsService {
             await this.linkCollections(id, dto.collections);
         }
 
+        // 🚀 Clear product cache so updates appear instantly
+        await this.clearProductCache(product.slug);
+
         return this.getProductById(id);
     }
 
@@ -242,7 +250,11 @@ export class AdminProductsService {
             throw new NotFoundException('Product not found');
         }
 
+        const productSlug = product.slug;
         await this.productRepo.remove(product);
+
+        // 🚀 Clear product cache so deletion is reflected instantly
+        await this.clearProductCache(productSlug);
     }
 
     /**
@@ -397,5 +409,28 @@ export class AdminProductsService {
             createdAt: product.created_at,
             updatedAt: product.updated_at,
         };
+    }
+
+    /**
+     * Clear all product-related cache entries
+     * Called after create/update/delete to ensure instant visibility
+     */
+    private async clearProductCache(productSlug: string): Promise<void> {
+        try {
+            // Clear specific product cache
+            await this.cacheService.forget(`product:slug:${productSlug}`);
+
+            // Clear all product list caches
+            await this.cacheService.forget('products:all');
+            await this.cacheService.forget('products:featured');
+
+            // Clear shop filter caches (all permutations)
+            await this.cacheService.forgetByPattern('shop:*');
+
+            console.log(`✅ Cleared product cache for: ${productSlug}`);
+        } catch (error) {
+            // Don't fail the operation if cache clearing fails
+            console.error('⚠️  Failed to clear product cache:', error.message);
+        }
     }
 }

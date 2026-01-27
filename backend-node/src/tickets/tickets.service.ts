@@ -5,6 +5,7 @@ import { Ticket, TicketMessage, TicketStatusHistory, TicketStatus } from '../ent
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { AddMessageDto } from './dto/add-message.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
+import { CacheService } from '../redis/cache.service';
 
 @Injectable()
 export class TicketsService {
@@ -15,6 +16,7 @@ export class TicketsService {
         private messageRepository: Repository<TicketMessage>,
         @InjectRepository(TicketStatusHistory)
         private statusHistoryRepository: Repository<TicketStatusHistory>,
+        private readonly cacheService: CacheService,
     ) { }
 
     /**
@@ -190,7 +192,12 @@ export class TicketsService {
             attachments: addMessageDto.attachments || null,
         });
 
-        return this.messageRepository.save(message);
+        const savedMessage = await this.messageRepository.save(message);
+
+        // 🚀 Clear ticket cache so new message appears instantly
+        await this.clearTicketCache(ticketId, ticket.userId);
+
+        return savedMessage;
     }
 
     /**
@@ -286,7 +293,12 @@ export class TicketsService {
             attachments: attachments || null,
         });
 
-        return this.messageRepository.save(reply);
+        const savedReply = await this.messageRepository.save(reply);
+
+        // 🚀 Clear ticket cache so admin reply appears instantly
+        await this.clearTicketCache(ticketId, ticket.userId);
+
+        return savedReply;
     }
 
     /**
@@ -305,5 +317,24 @@ export class TicketsService {
 
         const sequence = (count + 1).toString().padStart(5, '0');
         return `TKT-${dateStr}-${sequence}`;
+    }
+
+    /**
+     * Clear ticket-related cache entries
+     * Called after adding messages to ensure instant visibility
+     */
+    private async clearTicketCache(ticketId: string, userId: string): Promise<void> {
+        try {
+            // Clear specific ticket detail cache (if cached)
+            await this.cacheService.forget(`ticket:${ticketId}`);
+
+            // Clear user's ticket list cache
+            await this.cacheService.forget(`tickets:user:${userId}`);
+
+            console.log(`✅ Cleared ticket cache for: ${ticketId}`);
+        } catch (error) {
+            // Don't fail the operation if cache clearing fails
+            console.error('⚠️  Failed to clear ticket cache:', error.message);
+        }
     }
 }

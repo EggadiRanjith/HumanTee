@@ -112,6 +112,7 @@ export function useAuthFlow() {
             const response = await fetch(`${apiUrl}/auth/verify-otp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',  // CRITICAL: Required for cookie saving
                 body: JSON.stringify({ email, otp }),
             });
 
