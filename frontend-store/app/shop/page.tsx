@@ -40,7 +40,8 @@ function ShopPageContent() {
 
   // Hardcoded shop configuration (no backend settings needed)
   const itemsPerPage = 12;
-  const showFilters = true;
+  // TODO: Re-enable when server-side filtering is implemented
+  const showFilters = false; // Temporarily disabled for API optimization
 
   // Client-side filtering and pagination
   const { filteredProducts, totalPages } = useMemo(() => {

@@ -24,14 +24,20 @@ interface BackendProduct {
     id: string;
     title: string;
     slug: string;
-    description: string;
-    status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
+    description?: string;  // Optional in summary format
+    status?: 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
     category?: string;  // For filtering
     collection?: string;  // For filtering (if returned as string)
     basePrice: number;  // Base price
     compareAtPrice?: number;  // Compare at price (original price)
-    variants: BackendVariant[];
+
+    // FULL format fields (from /products/:slug)
+    variants?: BackendVariant[];
     images?: BackendImage[];  // Added images array
+
+    // SUMMARY format fields (from /products/all)
+    primaryImage?: string;  // Single image URL
+    inStock?: boolean;      // Simple stock availability
 }
 
 interface BackendVariant {
@@ -46,53 +52,54 @@ interface BackendVariant {
 
 /**
  * Adapt backend product to frontend Product type
- * This is mapping only - no business logic
+ * Handles both FULL product (from /products/:slug) and SUMMARY (from /products/all)
  */
-export function adaptProduct(apiProduct: BackendProduct): Product {
-    const activeVariants = apiProduct.variants?.filter(v => v.isActive) ?? [];
+export function adaptProduct(apiProduct: any): Product {
+    // NEW OPTIMIZED SUMMARY FORMAT (from /products/all)
+    if ('primaryImage' in apiProduct && 'inStock' in apiProduct) {
+        return {
+            id: apiProduct.id,
+            title: apiProduct.title,
+            subtitle: '', // Summary doesn't include description
+            stock: apiProduct.inStock ? 100 : 0, // Simplified stock indicator
+            price: apiProduct.basePrice ?? 0,
+            currency: 'INR',
+            handle: apiProduct.slug,
+            image: apiProduct.primaryImage || '/images/placeholder.jpg',
+            imageAlt: apiProduct.title,
+            originalPrice: apiProduct.compareAtPrice,
+            badge: undefined,
+            category: apiProduct.category,
+            collection: apiProduct.collection,
+            images: apiProduct.primaryImage ? [apiProduct.primaryImage] : [],
+        };
+    }
+
+    // OLD FULL FORMAT (from /products/:slug with variants/images arrays)
+    const activeVariants = apiProduct.variants?.filter((v: any) => v.isActive) ?? [];
     const firstVariant = activeVariants[0];
 
     // Get primary image or first image, fallback to placeholder
     const images = apiProduct.images ?? [];
-    const primaryImage = images.find(img => img.isPrimary);  // Fixed: camelCase
+    const primaryImage = images.find((img: any) => img.isPrimary);
     const firstImage = images.length > 0 ? images[0] : null;
     const productImage = primaryImage || firstImage;
 
     return {
-        // UUID as string (Phase 4 type change)
         id: apiProduct.id,
-
-        // Direct mappings
         title: apiProduct.title,
         subtitle: apiProduct.description,
-
-        // CORRECTION 3: Explicit stock calculation
-        // Sum of all active variant stock (display-only)
-        stock: activeVariants.reduce((sum, v) => sum + v.stock, 0),
-
-        // Price from first active variant or base price (display-only)
+        stock: activeVariants.reduce((sum: number, v: any) => sum + v.stock, 0),
         price: firstVariant?.price ?? apiProduct.basePrice ?? 0,
-
-        // CORRECTION 2: Currency from variant, not hardcoded
         currency: 'INR',
-
-        // CORRECTION 4: handle = slug (unified)
         handle: apiProduct.slug,
-
-        // CORRECTION 5: Use Cloudinary image from backend, with fallback
         image: productImage?.url || '/images/placeholder.jpg',
-        imageAlt: productImage?.altText || apiProduct.title,  // Fixed: camelCase
-
-        // Optional fields
-        originalPrice: apiProduct.compareAtPrice, // Map compareAtPrice to originalPrice for strikethrough display
-        badge: undefined, // No badge logic yet
-
-        // Filter fields
+        imageAlt: productImage?.altText || apiProduct.title,
+        originalPrice: apiProduct.compareAtPrice,
+        badge: undefined,
         category: apiProduct.category,
         collection: apiProduct.collection,
-
-        // Multi-image support
-        images: images.filter(img => img.status === 'ACTIVE' || !img.status).map(img => img.url),
+        images: images.filter((img: any) => img.status === 'ACTIVE' || !img.status).map((img: any) => img.url),
     };
 }
 
