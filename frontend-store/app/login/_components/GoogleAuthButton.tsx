@@ -17,7 +17,7 @@ export default function GoogleAuthButton({
     // This is much faster and more reliable in production environments
     const login = useGoogleLogin({
         onSuccess: (tokenResponse) => {
-            console.log('✅ Google OAuth Success:', tokenResponse);
+            console.warn('✅ Google OAuth Success:', tokenResponse);
             // NOTE: useGoogleLogin by default returns an access_token response.
             // If your backend specifically needs an ID Token, you'd usually use the component,
             // but the hook is more robust for custom UI.
@@ -58,9 +58,9 @@ export default function GoogleAuthButton({
                     whileHover={{ scale: isLoading ? 1 : 1.02 }}
                     whileTap={{ scale: isLoading ? 1 : 0.98 }}
                     onClick={() => {
-                        console.log('🔵 Google button clicked');
-                        console.log('Client ID:', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
-                        console.log('Origin:', window.location.origin);
+                        console.warn('🔵 Google button clicked');
+                        console.warn('Client ID:', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
+                        console.warn('Origin:', window.location.origin);
                         if (!isLoading) {
                             try {
                                 login();
