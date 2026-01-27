@@ -10,7 +10,8 @@ interface LoadingContextType {
 const LoadingContext = createContext<LoadingContextType | undefined>(undefined);
 
 export function LoadingProvider({ children }: { children: ReactNode }) {
-  const [isLoading, setIsLoading] = useState(true);
+  // Start with false - only show loader during actual navigations
+  const [isLoading, setIsLoading] = useState(false);
 
   const setLoading = (loading: boolean) => {
     setIsLoading(loading);
