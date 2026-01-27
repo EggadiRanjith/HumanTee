@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useAdminTickets } from '@/lib/queries/useTickets';
 import { TicketsHeader, TicketsSkeleton, TicketsEmpty, TicketsError, TicketCard } from './components';
-import { FiSearch, FiFilter, FiLoader, FiAlertCircle, FiRotateCw, FiCheckCircle, FiMessageSquare } from 'react-icons/fi';
+import { FiSearch, FiFilter, FiLoader, FiAlertCircle, FiRotateCw, FiCheckCircle, FiMessageSquare, FiClock } from 'react-icons/fi';
 
 export default function TicketsPage() {
     const [statusFilter, setStatusFilter] = useState('ALL');
@@ -23,10 +23,10 @@ export default function TicketsPage() {
     // Calculate stats - MUST be before conditional returns to maintain hook order
     const stats = useMemo(() => {
         return {
-            open: tickets.filter(t => t.status === 'open').length,
-            inProgress: tickets.filter(t => t.status === 'in_progress').length,
-            waiting: tickets.filter(t => t.status === 'waiting_on_customer').length,
-            resolved: tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length
+            open: tickets.filter((t: any) => t.status === 'open').length,
+            inProgress: tickets.filter((t: any) => t.status === 'in_progress').length,
+            waiting: tickets.filter((t: any) => t.status === 'waiting_on_customer').length,
+            resolved: tickets.filter((t: any) => t.status === 'resolved' || t.status === 'closed').length
         };
     }, [tickets]);
 
@@ -267,4 +267,5 @@ export default function TicketsPage() {
         </div>
     );
 }
+
 

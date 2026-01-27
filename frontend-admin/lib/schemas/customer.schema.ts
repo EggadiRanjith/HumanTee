@@ -92,8 +92,8 @@ export const customerAddressSchema = z.object({
     country: z.string()
         .min(1, 'Country is required')
         .max(100, 'Country name is too long')
-        .default('India')
-        .trim(),
+        .trim()
+        .default('India'),
 
     isDefault: z.boolean().default(false),
 });

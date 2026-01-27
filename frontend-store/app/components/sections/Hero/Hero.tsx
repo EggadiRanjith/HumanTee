@@ -25,19 +25,19 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
   // Fetch hero settings from centralized cache
   const { settings: heroSettings, loading } = useHeroSettings();
 
-  // Show skeleton while loading (first render before data arrives)
-  if (loading) {
-    return <HeroSkeleton />;
-  }
-
   // Use prop slides if provided, otherwise use API/fallback slides
   const slides = propSlides && propSlides.length > 0 ? propSlides : heroSettings?.slides;
 
-  // Custom hooks for state management
+  // ✅ CRITICAL: All hooks MUST be called before any conditional returns
+  // This ensures hooks are called in the same order every render
   const { videoRef, videoHasPlayed, videoError, setVideoHasPlayed, handleVideoError } =
     useVideoPlayer(0, isMobile);
   const { currentIndex } = useHeroCarousel(slides?.length || 0, videoHasPlayed);
 
+  // Show skeleton while loading (first render before data arrives)
+  if (loading) {
+    return <HeroSkeleton />;
+  }
 
   // Fallback if no slides available after loading
   if (!slides || slides.length === 0) {

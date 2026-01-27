@@ -161,6 +161,8 @@ export const saveDraftToLocalStorage = (userId: string): void => {
             altText: img.altText,
             isPrimary: img.isPrimary,
             order: img.order,
+            status: img.status,
+            uploadedAt: img.uploadedAt,
             // DO NOT include: file, url (if base64), uploadProgress, uploadError
         }));
 

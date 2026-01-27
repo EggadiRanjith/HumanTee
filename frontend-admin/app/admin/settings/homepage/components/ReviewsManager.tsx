@@ -42,7 +42,7 @@ export function ReviewsManager({ reviews, enabled, onChange, onEnabledChange, is
 
     const updateReview = (index: number, field: keyof Review, value: any) => {
         const newReviews = [...reviews];
-        newReviews[index][field] = value;
+        (newReviews[index] as any)[field] = value;
         onChange(newReviews);
     };
 

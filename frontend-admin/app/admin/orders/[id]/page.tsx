@@ -324,7 +324,7 @@ export default function OrderDetailPage() {
                                                                 <span className="mx-1">→</span>
                                                             </p>
                                                         )}
-                                                        <p className={`text-sm font-semibold ${index === order.statusHistory.length - 1 ? 'text-green-600' : 'text-gray-900'
+                                                        <p className={`text-sm font-semibold ${index === (order.statusHistory?.length ?? 0) - 1 ? 'text-green-600' : 'text-gray-900'
                                                             }`}>
                                                             {formatStatus(history.toStatus)}
                                                         </p>

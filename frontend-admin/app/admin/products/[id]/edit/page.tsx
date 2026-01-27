@@ -172,7 +172,6 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
                 })),
             };
 
-            console.log('Saving sanitized product data:', sanitizedData);
             await apiClient.put(`/admin/products/${id}`, sanitizedData);
             toast.success('Product updated successfully!');
             markAllDomainsClean();

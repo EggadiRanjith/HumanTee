@@ -10,7 +10,7 @@ import { use, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/lib/api-client';
 import { ProductPreview } from './components/ProductPreview';
-import { ProductEditForm } from './components/ProductEditForm';
+// import { ProductEditForm } from './components/ProductEditForm';
 
 interface ProductDetailPageProps {
     params: Promise<{ id: string }>;
@@ -68,16 +68,17 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     };
 
     // Toggle between modes
-    if (isEditMode) {
-        return (
-            <ProductEditForm
-                productId={id}
-                product={product}
-                onSave={handleSave}
-                onCancel={handleCancel}
-            />
-        );
-    }
+    // TODO: Implement ProductEditForm component
+    // if (isEditMode) {
+    //     return (
+    //         <ProductEditForm
+    //             productId={id}
+    //             product={product}
+    //             onSave={handleSave}
+    //             onCancel={handleCancel}
+    //         />
+    //     );
+    // }
 
     return (
         <ProductPreview

@@ -91,7 +91,7 @@ export default function UserAuditLogsPage() {
     const categoryCounts = useMemo(() => {
         const counts: Record<string, number> = {};
         categories.forEach(cat => {
-            counts[cat.id] = (logs || []).filter(log =>
+            counts[cat.id] = (logs || []).filter((log: any) =>
                 cat.events.includes(log.eventType)
             ).length;
         });
@@ -106,14 +106,14 @@ export default function UserAuditLogsPage() {
         if (selectedCategory !== 'ALL') {
             const category = categories.find(c => c.id === selectedCategory);
             if (category) {
-                filtered = filtered.filter(log => category.events.includes(log.eventType));
+                filtered = filtered.filter((log: any) => category.events.includes(log.eventType));
             }
         }
 
         // Filter by search query
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
-            filtered = filtered.filter(log =>
+            filtered = filtered.filter((log: any) =>
                 log.userEmail.toLowerCase().includes(query) ||
                 log.entityId?.toLowerCase().includes(query) ||
                 log.entityName?.toLowerCase().includes(query)
@@ -122,17 +122,17 @@ export default function UserAuditLogsPage() {
 
         // Filter by event type
         if (eventTypeFilter !== 'ALL') {
-            filtered = filtered.filter(log => log.eventType === eventTypeFilter);
+            filtered = filtered.filter((log: any) => log.eventType === eventTypeFilter);
         }
 
         // Filter by date range
         if (startDate) {
-            filtered = filtered.filter(log => new Date(log.createdAt) >= new Date(startDate));
+            filtered = filtered.filter((log: any) => new Date(log.createdAt) >= new Date(startDate));
         }
         if (endDate) {
             const end = new Date(endDate);
             end.setHours(23, 59, 59, 999);
-            filtered = filtered.filter(log => new Date(log.createdAt) <= end);
+            filtered = filtered.filter((log: any) => new Date(log.createdAt) <= end);
         }
 
         return filtered;
@@ -238,7 +238,7 @@ export default function UserAuditLogsPage() {
                         <h2 className="text-sm md:text-base lg:text-lg font-semibold text-black">Recent Activity</h2>
                     </div>
                     <div className="divide-y divide-gray-100">
-                        {logs.slice(0, 10).map((log) => (
+                        {logs.slice(0, 10).map((log: any) => (
                             <div key={log.id} className="px-3 md:px-4 lg:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition-colors">
                                 <div className="flex items-center justify-between gap-3">
                                     <div className="flex-1 min-w-0">
@@ -380,7 +380,7 @@ export default function UserAuditLogsPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
-                                {filteredLogs.map((log) => (
+                                {filteredLogs.map((log: any) => (
                                     <React.Fragment key={log.id}>
                                         <tr className="hover:bg-gray-50 transition-colors">
                                             <td className="px-4 sm:px-6 py-4 text-sm text-gray-900 whitespace-nowrap">

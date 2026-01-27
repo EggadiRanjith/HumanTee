@@ -10,6 +10,7 @@ import apiClient from '@/lib/api-client';
 interface TicketFilters {
     status?: string;
     priority?: string;
+    search?: string;
     page?: number;
 }
 

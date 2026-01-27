@@ -53,7 +53,7 @@ export function usePrefetch<T>(
     queryFn: () => Promise<T>,
     enabled: boolean = true
 ) {
-    const prefetchTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+    const prefetchTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     const handleMouseEnter = useCallback(() => {
         if (!enabled) return;

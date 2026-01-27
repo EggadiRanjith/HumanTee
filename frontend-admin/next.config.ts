@@ -21,26 +21,6 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 365, // 1 year
   },
 
-  // Performance budgets
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.performance = {
-        maxAssetSize: 244000, // 244kb
-        maxEntrypointSize: 244000,
-        hints: 'warning',
-      };
-    }
-
-    // Tree shaking optimization
-    config.optimization = {
-      ...config.optimization,
-      usedExports: true,
-      sideEffects: false,
-    };
-
-    return config;
-  },
-
   // Experimental features for better performance
   experimental: {
     optimizeCss: true,

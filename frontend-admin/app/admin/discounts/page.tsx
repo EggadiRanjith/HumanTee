@@ -45,7 +45,8 @@ export default function DiscountsPage() {
 
     // Use React Query hook
     const discountsQuery = useAdminDiscounts();
-    const { data: discounts = [], isLoading, error, refetch } = discountsQuery;
+    const { data: discounts = [], isLoading, error } = discountsQuery;
+    const refetch = discountsQuery.refetch;
 
     // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
     const handleDelete = async (id: string) => {
@@ -264,7 +265,7 @@ export default function DiscountsPage() {
                             onClick={() => {
                                 setSearchQuery('');
                                 setStatusFilter('ALL');
-                                if (error) void refetch();
+                                if (error) { void refetch(); }
                             }}
                             className="text-sm text-black hover:underline font-medium"
                         >
