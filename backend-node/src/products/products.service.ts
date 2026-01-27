@@ -39,11 +39,12 @@ export class ProductsService {
     }
 
     /**
-     * ✅ NEW: Get ALL ACTIVE products (optimized for small catalogs < 200 products)
-     * Cache: 30 minutes (use for featured, shop, and product detail)
-     * Frontend filters/paginates client-side for instant navigation
+     * ✅ OPTIMIZED: Get ALL ACTIVE products (summary data only)
+     * Returns minimal data for product lists/grids (~1-2MB instead of 13MB)
+     * Use findBySlug() for full product details
+     * Cache: 2 hours (product list changes rarely)
      */
-    async getAllProducts(): Promise<ProductResponseDto[]> {
+    async getAllProducts(): Promise<any[]> {
         return this.cacheService.remember(
             'products:all',
             async () => {
@@ -51,14 +52,14 @@ export class ProductsService {
                     where: {
                         status: ProductStatus.ACTIVE
                     },
-                    relations: ['variants', 'images', 'collectionMaps', 'collectionMaps.collection'],
+                    relations: ['images', 'variants'], // Need primary image and stock check
                     order: {
                         created_at: 'DESC'
                     }
                 });
-                return products.map((product) => this.transformProduct(product));
+                return products.map((product) => this.transformProductSummary(product));
             },
-            { ttl: 7200 } // 2 hours - all products, client-side filtering
+            { ttl: 7200 } // 2 hours - all products, summary data only
         );
     }
 
@@ -211,6 +212,30 @@ export class ProductsService {
                         displayOrder: img.display_order,
                     }))
                 : [],
+        };
+    }
+
+    /**
+     * Transform Product entity to summary DTO (optimized for lists/grids)
+     * Returns only essential fields, no variants, single primary image
+     */
+    private transformProductSummary(product: Product): any {
+        // Find primary image or use first active image
+        const primaryImage = product.images?.find(img => img.is_primary && img.status === 'ACTIVE')
+            || product.images?.find(img => img.status === 'ACTIVE');
+
+        // Check if ANY active variant has stock > 0
+        const hasStock = product.variants?.some(v => v.is_active && v.stock_quantity > 0) || false;
+
+        return {
+            id: product.id,
+            title: product.name,
+            slug: product.slug,
+            category: product.category,
+            basePrice: Number(product.base_price),
+            compareAtPrice: product.compare_at_price ? Number(product.compare_at_price) : undefined,
+            primaryImage: primaryImage ? primaryImage.url : null,
+            inStock: hasStock,
         };
     }
 
