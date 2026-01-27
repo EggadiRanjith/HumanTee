@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useLoading } from "@/app/contexts/LoadingContext";
 import emptyAnimation from "@/public/animation/lottie/empty.json";
 
 // Dynamic import to prevent SSR issues
@@ -28,6 +29,8 @@ export default function EmptyState({
     primary,
     secondary,
 }: EmptyStateProps) {
+    const { setLoading } = useLoading();
+
     return (
         <div className="
             min-h-[calc(100vh-var(--header-height)-6rem)] 
@@ -118,6 +121,7 @@ export default function EmptyState({
                 {primary && (
                     <Link
                         href={primary.href}
+                        onClick={() => setLoading(true)}
                         className="
                             w-full sm:w-auto
                             px-8 sm:px-10 md:px-12 lg:px-14
@@ -142,6 +146,7 @@ export default function EmptyState({
                 {secondary && (
                     <Link
                         href={secondary.href}
+                        onClick={() => setLoading(true)}
                         className="
                             w-full sm:w-auto
                             px-8 sm:px-10 md:px-12 lg:px-14

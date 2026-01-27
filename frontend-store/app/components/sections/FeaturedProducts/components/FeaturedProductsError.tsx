@@ -7,6 +7,7 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { useLoading } from '@/app/contexts/LoadingContext';
 import errorAnimation from '@/public/animation/lottie/system-animation/500.json';
 
 // Dynamically import Lottie to avoid SSR issues
@@ -17,6 +18,7 @@ interface FeaturedProductsErrorProps {
 }
 
 export default function FeaturedProductsError({ message }: FeaturedProductsErrorProps = {}) {
+    const { setLoading } = useLoading();
     const description = message || 'We encountered an error loading products. Please try again later.';
 
     return (
@@ -36,6 +38,7 @@ export default function FeaturedProductsError({ message }: FeaturedProductsError
             </p>
             <Link
                 href="/shop"
+                onClick={() => setLoading(true)}
                 className="
           brand-text-muted text-step--1 tracking-wide 
           border border-white/10 rounded-full

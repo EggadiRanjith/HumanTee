@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { FiTrash2, FiMinus, FiPlus, FiLoader } from 'react-icons/fi';
 import { useState, useRef, useEffect } from 'react';
+import { useLoading } from '@/app/contexts/LoadingContext';
 
 interface CartItemType {
     id: number | string;
@@ -30,6 +31,7 @@ interface CartItemProps {
 }
 
 export function CartItem({ item, index, onUpdateQuantity, onRemove }: CartItemProps) {
+    const { setLoading } = useLoading();
     const lineTotal = item.price * item.quantity;
     const [stockError, setStockError] = useState<string | null>(null);
     const [isUpdating, setIsUpdating] = useState(false);
@@ -116,7 +118,7 @@ export function CartItem({ item, index, onUpdateQuantity, onRemove }: CartItemPr
                 <div className="flex-1 min-w-0 flex flex-col justify-between">
                     {/* Title and Size */}
                     <div className="min-w-0">
-                        <Link href={`/product/${item.id}`}>
+                        <Link href={`/product/${item.id}`} onClick={() => setLoading(true)}>
                             <h3 className="text-[12px] sm:text-[13px] font-light tracking-wide hover:text-brand-secondary transition-colors truncate">
                                 {item.title}
                             </h3>

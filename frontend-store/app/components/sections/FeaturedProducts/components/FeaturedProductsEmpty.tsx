@@ -7,6 +7,7 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { useLoading } from '@/app/contexts/LoadingContext';
 import emptyAnimation from '@/public/animation/lottie/empty_shop.json';
 
 // Dynamically import Lottie to avoid SSR issues
@@ -17,6 +18,7 @@ interface FeaturedProductsEmptyProps {
 }
 
 export default function FeaturedProductsEmpty({ message }: FeaturedProductsEmptyProps = {}) {
+    const { setLoading } = useLoading();
     const description = message || 'Check back soon for our curated collection';
 
     return (
@@ -36,6 +38,7 @@ export default function FeaturedProductsEmpty({ message }: FeaturedProductsEmpty
             </p>
             <Link
                 href="/shop"
+                onClick={() => setLoading(true)}
                 className="
           brand-text-muted text-step--1 tracking-wide 
           border border-white/10 rounded-full

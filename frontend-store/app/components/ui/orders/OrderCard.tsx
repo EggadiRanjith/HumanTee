@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { memo } from 'react';
 import { FiPackage, FiTruck, FiCheckCircle, FiClock } from 'react-icons/fi';
 import { Order, OrderStatus } from '@/app/types/order.types';
+import { useLoading } from '@/app/contexts/LoadingContext';
 
 interface OrderCardProps {
     order: Order;
@@ -54,6 +55,7 @@ function getStatusConfig(status: OrderStatus) {
 }
 
 const OrderCardComponent = ({ order }: OrderCardProps) => {
+    const { setLoading } = useLoading();
     const status = getStatusConfig(order.status);
     const Icon = status.icon;
 
@@ -100,6 +102,7 @@ const OrderCardComponent = ({ order }: OrderCardProps) => {
 
                     <Link
                         href={`/orders/${order.id}`}
+                        onClick={() => setLoading(true)}
                         className="
               px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl border border-white/10 
               text-white/80 text-[12px] uppercase tracking-[0.18em]

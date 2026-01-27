@@ -4,7 +4,10 @@
  * Static luxury typography (no stagger animation)
  */
 
+"use client";
+
 import Link from 'next/link';
+import { useLoading } from '@/app/contexts/LoadingContext';
 
 interface SectionHeaderProps {
     title: string;
@@ -21,6 +24,8 @@ export default function SectionHeader({
     variant = 'default',
     className = ''
 }: SectionHeaderProps) {
+    const { setLoading } = useLoading();
+
     if (variant === 'centered') {
         return (
             <div className={`text-center mb-12 ${className}`}>
@@ -41,6 +46,7 @@ export default function SectionHeader({
             {actionText && actionHref && (
                 <Link
                     href={actionHref}
+                    onClick={() => setLoading(true)}
                     className="
             text-white/70 text-[12px]
             uppercase tracking-[0.22em]

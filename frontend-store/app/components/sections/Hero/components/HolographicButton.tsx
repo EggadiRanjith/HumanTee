@@ -9,6 +9,7 @@ import { motion, useMotionValue } from "framer-motion";
 import Link from "next/link";
 import { useCallback, memo } from "react";
 import { FOCUS_RING } from "@/app/components/layout/shared/design-tokens";
+import { useLoading } from "@/app/contexts/LoadingContext";
 
 interface HolographicButtonProps {
     text: string;
@@ -16,6 +17,8 @@ interface HolographicButtonProps {
 }
 
 function HolographicButton({ text, href = "/shop" }: HolographicButtonProps) {
+    const { setLoading } = useLoading();
+
     // Simulated Gyro / Mouse Parallax
     const x = useMotionValue(0);
     const y = useMotionValue(0);
@@ -33,7 +36,7 @@ function HolographicButton({ text, href = "/shop" }: HolographicButtonProps) {
     );
 
     return (
-        <Link href={href} className="inline-block relative group">
+        <Link href={href} onClick={() => setLoading(true)} className="inline-block relative group">
             <motion.button
                 className={`
           relative overflow-hidden

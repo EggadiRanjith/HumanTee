@@ -10,6 +10,7 @@ import { AnimatePresence } from "framer-motion";
 import { useHeaderContext } from "../shared/useHeaderContext";
 import { useCartSummary } from "@/app/contexts/CartContext";
 import { useAuth } from "@/app/contexts/AuthContext";
+import { useLoading } from "@/app/contexts/LoadingContext";
 import { AuthStatus, AuthStatusMobile } from "./components/AuthStatus";
 import { MobileMenu, CartBadge, HeaderSkeleton } from "./components";
 import { useHeaderSettings } from "./hooks/useHeaderSettings";
@@ -19,6 +20,7 @@ import { FOCUS_RING } from "../shared/design-tokens";
 function Header() {
   const { totalItems } = useCartSummary();
   const { user, isAuthenticated } = useAuth();
+  const { setLoading } = useLoading();
   const pathname = usePathname();
   // Get header-footer settings from centralized cache
   const { settings, isLoading } = useHeaderSettings();
@@ -142,7 +144,10 @@ function Header() {
             <Link
               href="/"
               prefetch={false}
-              onClick={stopPropagation}
+              onClick={(e) => {
+                setLoading(true);
+                stopPropagation(e);
+              }}
               className="flex items-center gap-2 sm:gap-3 transition-all duration-300 hover:opacity-90 min-w-0 flex-shrink"
             >
               {settings?.logo_url && settings.logo_url.trim() !== '' && (
@@ -194,7 +199,10 @@ function Header() {
                   key={link.href}
                   href={link.href}
                   prefetch={link.href === '/shop' ? true : false}
-                  onClick={(e) => handleProtectedNavigation(e, link.href)}
+                  onClick={(e) => {
+                    setLoading(true);
+                    handleProtectedNavigation(e, link.href);
+                  }}
                   className={`
                 uppercase tracking-[0.20em] transition-all duration-300
                 ${pathname === link.href
@@ -226,7 +234,10 @@ function Header() {
                 <Link
                   href="/cart"
                   prefetch={true}
-                  onClick={stopPropagation}
+                  onClick={(e) => {
+                    setLoading(true);
+                    stopPropagation(e);
+                  }}
                   className="
                 relative p-1 
                 hover:scale-105 transition-transform duration-200
@@ -250,6 +261,7 @@ function Header() {
                 <Link
                   href="/cart"
                   prefetch={true}
+                  onClick={() => setLoading(true)}
                   className="
                 relative transition-all duration-300
                 text-white hover:text-white/90
@@ -277,7 +289,7 @@ function Header() {
           />
         )}
       </AnimatePresence>
-    </div>
+    </div >
   );
 }
 

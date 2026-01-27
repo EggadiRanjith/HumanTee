@@ -16,6 +16,7 @@ import { Badge, StockIndicator } from '@/app/components/ui/primitives';
 import { SafeImage } from '@/app/components/ui/primitives/SafeImage';
 import { getImagePlaceholder } from '@/lib/app/image-placeholders';
 import { cloudinaryPresets } from '@/lib/cloudinary-transform';
+import { useLoading } from '@/app/contexts/LoadingContext';
 
 
 interface ProductCardProps {
@@ -31,6 +32,8 @@ const ProductCard = ({
     priority = false,
     className = ''
 }: ProductCardProps) => {
+    const { setLoading } = useLoading();
+
     // Magnetic / Tilt Logic
     const ref = useRef<HTMLDivElement>(null);
     const x = useMotionValue(0);
@@ -83,6 +86,7 @@ const ProductCard = ({
             >
                 <Link
                     href={`/product/${(product as any).handle || product.id}`}
+                    onClick={() => setLoading(true)}
                     className="
               block relative w-full aspect-[4/5]
               overflow-hidden rounded-md 

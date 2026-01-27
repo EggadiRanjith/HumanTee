@@ -2,11 +2,14 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { useLoading } from '@/app/contexts/LoadingContext';
 import errorAnimation from '@/public/animation/lottie/system-animation/500.json';
 
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 
 export function ShopError() {
+    const { setLoading } = useLoading();
+
     return (
         <div className="flex flex-col items-center justify-center py-20 px-4">
             <div className="w-[250px] sm:w-[320px] lg:w-[380px] mb-8">
@@ -36,6 +39,7 @@ export function ShopError() {
                 </button>
                 <Link
                     href="/"
+                    onClick={() => setLoading(true)}
                     className="
             brand-text-muted text-step--1 tracking-wide 
             border border-white/10 rounded-full

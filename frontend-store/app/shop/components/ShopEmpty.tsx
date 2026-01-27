@@ -2,11 +2,14 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { useLoading } from '@/app/contexts/LoadingContext';
 import emptyAnimation from '@/public/animation/lottie/empty_shop.json';
 
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 
 export function ShopEmpty() {
+    const { setLoading } = useLoading();
+
     return (
         <div className="flex flex-col items-center justify-center py-16 sm:py-20 lg:py-24 min-h-[60vh]">
             <div className="w-[200px] sm:w-[280px] lg:w-[320px] mb-6">
@@ -24,6 +27,7 @@ export function ShopEmpty() {
             </p>
             <Link
                 href="/"
+                onClick={() => setLoading(true)}
                 className="
           brand-text-muted text-step--1 tracking-wide 
           border border-white/10 rounded-full

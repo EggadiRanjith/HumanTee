@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 import type { NavSection } from "../types";
 import { FOCUS_RING } from "../../shared/design-tokens";
+import { useLoading } from "@/app/contexts/LoadingContext";
 
 interface FooterNavProps {
     section: NavSection;
@@ -17,6 +18,7 @@ interface FooterNavProps {
 }
 
 export default function FooterNav({ section, isDesktop }: FooterNavProps) {
+    const { setLoading } = useLoading();
     const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname();
     const containerRef = useRef<HTMLDivElement>(null);
@@ -120,6 +122,7 @@ export default function FooterNav({ section, isDesktop }: FooterNavProps) {
                             >
                                 <Link
                                     href={link.url}
+                                    onClick={() => setLoading(true)}
                                     className="
                                     block py-3 border-b border-white/10 
                                     hover:text-white hover:pl-2

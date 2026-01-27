@@ -8,6 +8,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import type { AppliedDiscount } from '@/app/types/discount.types';
+import { useLoading } from '@/app/contexts/LoadingContext';
 
 interface CartSummaryProps {
     subtotal: number;
@@ -19,6 +20,7 @@ interface CartSummaryProps {
 }
 
 export function CartSummary({ subtotal, totalItems, onCheckout, discount, total, isUpdatingCart = false }: CartSummaryProps) {
+    const { setLoading } = useLoading();
     const finalTotal = total !== undefined ? total : subtotal;
 
     return (
@@ -92,6 +94,7 @@ export function CartSummary({ subtotal, totalItems, onCheckout, discount, total,
             {/* Continue Shopping Link */}
             <Link
                 href="/shop"
+                onClick={() => setLoading(true)}
                 className="
                     block w-full py-2.5 sm:py-3 rounded-full text-center
                     border border-white/10 luxury-glass

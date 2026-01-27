@@ -3,6 +3,7 @@
 import { ProductCard } from '@/app/components/ui/cards';
 import Link from 'next/link';
 import { Product } from '@/app/types/product.types';
+import { useLoading } from '@/app/contexts/LoadingContext';
 
 interface ProductGridProps {
     products: Product[];
@@ -10,6 +11,8 @@ interface ProductGridProps {
 }
 
 export function ProductGrid({ products, showViewAll = true }: ProductGridProps) {
+    const { setLoading } = useLoading();
+
     return (
         <>
             {/* Product Grid - Luxury: Tight gaps for refined layout */}
@@ -28,6 +31,7 @@ export function ProductGrid({ products, showViewAll = true }: ProductGridProps) 
                 <div className="sm:hidden mt-10 flex justify-center">
                     <Link
                         href="/shop"
+                        onClick={() => setLoading(true)}
                         className="
                 flex items-center justify-center
                 min-h-[44px] min-w-[120px]

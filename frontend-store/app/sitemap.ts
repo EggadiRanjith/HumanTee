@@ -7,7 +7,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     let productUrls: MetadataRoute.Sitemap = [];
 
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://humantee.onrender.com'}/products/all`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://app.humantee.in'}/products/all`, {
             cache: 'no-store',
         });
 

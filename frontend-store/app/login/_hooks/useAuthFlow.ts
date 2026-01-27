@@ -1,6 +1,7 @@
 import { useState, FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
+import { useLoading } from "@/app/contexts/LoadingContext";
 import { logError } from "@/lib/logger";
 
 type AuthStep = 'email' | 'otp';
@@ -41,6 +42,7 @@ export function useAuthFlow() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { login: authLogin } = useAuth();
+    const { setLoading } = useLoading();
 
     const [step, setStep] = useState<AuthStep>('email');
     const [email, setEmail] = useState("");
@@ -140,6 +142,7 @@ export function useAuthFlow() {
 
     const handleGoogleLogin = async (credentialResponse: any) => {
         setGoogleLoading(true);
+        setLoading(true); // Show global full-screen loader
         setGoogleError("");
         setGoogleSuccess("");
         setError("");
@@ -183,6 +186,7 @@ export function useAuthFlow() {
             setGoogleError(err.message || "Google login failed. Please try again.");
         } finally {
             setGoogleLoading(false);
+            setLoading(false); // Hide global loader
         }
     };
 

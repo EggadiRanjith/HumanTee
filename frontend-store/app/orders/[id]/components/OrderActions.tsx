@@ -5,17 +5,21 @@
 
 import Link from 'next/link';
 import { FiShoppingBag, FiHelpCircle } from 'react-icons/fi';
+import { useLoading } from '@/app/contexts/LoadingContext';
 
 interface OrderActionsProps {
     onHelpClick: () => void;
 }
 
 export function OrderActions({ onHelpClick }: OrderActionsProps) {
+    const { setLoading } = useLoading();
+
     return (
         <div className="flex flex-col gap-3">
             {/* Reorder */}
             <Link
                 href="/shop"
+                onClick={() => setLoading(true)}
                 className="
           w-full flex items-center justify-center gap-2
           px-6 py-3 rounded-xl
