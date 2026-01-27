@@ -29,6 +29,10 @@ const ProductImageGalleryComponent = ({ images, title, subtitle, productId }: Pr
     const [touchEnd, setTouchEnd] = useState(0);
     const [zoomScale, setZoomScale] = useState(100);
 
+    // Pinch-to-zoom state
+    const [initialDistance, setInitialDistance] = useState(0);
+    const [lastScale, setLastScale] = useState(100);
+
     // Preload next image for smoother transitions
     useEffect(() => {
         if (images[currentImageIndex + 1]) {
@@ -155,6 +159,39 @@ const ProductImageGalleryComponent = ({ images, title, subtitle, productId }: Pr
         setTouchEnd(0);
     };
 
+    // Pinch-to-zoom handlers for zoom modal
+    const getTouchDistance = (touches: React.TouchList) => {
+        const touch1 = touches[0];
+        const touch2 = touches[1];
+        const dx = touch2.clientX - touch1.clientX;
+        const dy = touch2.clientY - touch1.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    const handleZoomTouchStart = (e: React.TouchEvent) => {
+        if (e.touches.length === 2) {
+            // Two fingers -Start pinch zoom
+            const distance = getTouchDistance(e.touches);
+            setInitialDistance(distance);
+            setLastScale(zoomScale);
+        }
+    };
+
+    const handleZoomTouchMove = (e: React.TouchEvent) => {
+        if (e.touches.length === 2 && initialDistance > 0) {
+            e.preventDefault();
+            const currentDistance = getTouchDistance(e.touches);
+            const scale = currentDistance / initialDistance;
+            const newScale = Math.min(Math.max(lastScale * scale, 50), 300);
+            setZoomScale(Math.round(newScale));
+        }
+    };
+
+    const handleZoomTouchEnd = () => {
+        setInitialDistance(0);
+        setLastScale(zoomScale);
+    };
+
     return (
         <>
             <div className="w-full max-w-md mx-auto lg:mx-0 space-y-4">
@@ -277,6 +314,9 @@ const ProductImageGalleryComponent = ({ images, title, subtitle, productId }: Pr
                                 className="relative w-full h-full px-14 sm:px-20 md:px-24 lg:px-28 xl:px-32"
                                 style={{ touchAction: 'none' }}
                                 onClick={(e) => e.stopPropagation()}
+                                onTouchStart={handleZoomTouchStart}
+                                onTouchMove={handleZoomTouchMove}
+                                onTouchEnd={handleZoomTouchEnd}
                             >
                                 <div
                                     className="relative w-full h-full transition-transform duration-300 ease-out"

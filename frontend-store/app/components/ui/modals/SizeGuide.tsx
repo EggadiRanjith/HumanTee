@@ -72,7 +72,7 @@ export function SizeGuide({ isOpen, onClose }: SizeGuideProps) {
         <AnimatePresence>
             {isOpen && (
                 <FocusTrap isActive={isOpen} onEscape={onClose}>
-                    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4">
+                    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-3 md:p-4">
                         {/* Backdrop */}
                         <motion.div
                             initial={{ opacity: 0 }}
@@ -88,28 +88,28 @@ export function SizeGuide({ isOpen, onClose }: SizeGuideProps) {
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="relative w-full max-w-3xl max-h-[90vh] flex flex-col bg-[#050512] border border-white/10 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden text-white"
+                            className="relative w-full max-w-3xl max-h-[95vh] flex flex-col bg-[#050512] border border-white/10 rounded-xl sm:rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden text-white"
                         >
                             {/* Header */}
-                            <div className="sticky top-0 z-10 bg-[#050512]/80 border-b border-white/10 backdrop-blur-xl p-4 sm:p-6 flex items-center justify-between flex-shrink-0">
+                            <div className="sticky top-0 z-10 bg-[#050512]/80 border-b border-white/10 backdrop-blur-xl p-3 sm:p-4 md:p-5 flex items-center justify-between flex-shrink-0">
                                 <div>
-                                    <h2 className="text-xl sm:text-2xl font-light tracking-wide">Size Guide</h2>
-                                    <p className="text-white/40 text-[10px] sm:text-[11px] uppercase tracking-widest mt-1">Measurements & Fit</p>
+                                    <h2 className="text-base sm:text-lg md:text-xl font-light tracking-wide">Size Guide</h2>
+                                    <p className="text-white/40 text-[9px] sm:text-[10px] uppercase tracking-widest mt-0.5">Measurements & Fit</p>
                                 </div>
                                 <button
                                     onClick={onClose}
                                     aria-label="Close size guide"
-                                    className="p-2 sm:p-3 rounded-full bg-white/5 hover:bg-white/10 transition-all border border-white/10 active:scale-95"
+                                    className="p-1.5 sm:p-2 rounded-full bg-white/5 hover:bg-white/10 transition-all border border-white/10 active:scale-95"
                                 >
-                                    <FiX className="w-5 h-5 text-white/70" />
+                                    <FiX className="w-4 h-4 sm:w-5 sm:h-5 text-white/70" />
                                 </button>
                             </div>
 
                             {/* Content Area */}
-                            <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 custom-scrollbar">
-                                <div className="space-y-6 flex flex-col items-center">
+                            <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-3 md:p-4 custom-scrollbar">
+                                <div className="space-y-3 sm:space-y-4 flex flex-col items-center">
                                     {/* Image Container */}
-                                    <div className="w-full relative min-h-[300px] flex items-center justify-center bg-zinc-900/50 rounded-xl border border-white/5 group">
+                                    <div className="w-full relative min-h-[250px] sm:min-h-[300px] flex items-center justify-center bg-zinc-900/50 rounded-lg sm:rounded-xl border border-white/5 group">
                                         <AnimatePresence mode="wait">
                                             {images.length > 0 ? (
                                                 <motion.div
@@ -125,7 +125,7 @@ export function SizeGuide({ isOpen, onClose }: SizeGuideProps) {
                                                         alt={`Size Chart ${currentIndex + 1}`}
                                                         width={800}
                                                         height={600}
-                                                        className="max-w-full max-h-[60vh] object-contain rounded-lg shadow-2xl"
+                                                        className="max-w-full max-h-[50vh] sm:max-h-[60vh] object-contain rounded-md sm:rounded-lg shadow-2xl"
                                                         loading="lazy"
                                                     />
                                                 </motion.div>
@@ -173,15 +173,15 @@ export function SizeGuide({ isOpen, onClose }: SizeGuideProps) {
                                     </div>
 
                                     {/* Fit Info Footer */}
-                                    <div className="w-full bg-violet-500/5 border border-violet-500/10 rounded-xl p-5">
-                                        <div className="flex gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-violet-500/10 flex-shrink-0 flex items-center justify-center">
-                                                <FiInfo className="w-5 h-5 text-violet-400" />
+                                    <div className="w-full bg-violet-500/5 border border-violet-500/10 rounded-lg sm:rounded-xl p-3 sm:p-4">
+                                        <div className="flex gap-2.5 sm:gap-3">
+                                            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-violet-500/10 flex-shrink-0 flex items-center justify-center">
+                                                <FiInfo className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-violet-400" />
                                             </div>
-                                            <div className="text-sm">
-                                                <p className="text-violet-300 font-medium mb-1 uppercase tracking-wider text-[11px]">Fit Recommendation</p>
-                                                <p className="text-white/60 leading-relaxed">
-                                                    For the most accurate fit, we recommend measuring your favorite t-shirt while flat and comparing those dimensions with the chart above. Our apparel follows standard unisex sizing.
+                                            <div className="text-xs sm:text-sm">
+                                                <p className="text-violet-300 font-medium mb-0.5 sm:mb-1 uppercase tracking-wider text-[10px] sm:text-[11px]">Fit Recommendation</p>
+                                                <p className="text-white/60 leading-relaxed text-[11px] sm:text-sm">
+                                                    For the most accurate fit, measure your favorite t-shirt and compare with the chart above. Standard unisex sizing.
                                                 </p>
                                             </div>
                                         </div>

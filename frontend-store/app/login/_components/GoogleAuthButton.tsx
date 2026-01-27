@@ -13,15 +13,11 @@ export default function GoogleAuthButton({
     onError,
     isLoading,
 }: GoogleAuthButtonProps) {
-    // SECURITY: Use the official hook for custom buttons instead of DOM-selector hacks
-    // This is much faster and more reliable in production environments
+    // Use implicit flow with access token (backend supports this)
+    // Authorization code flow would require backend changes
     const login = useGoogleLogin({
         onSuccess: (tokenResponse) => {
             console.warn('✅ Google OAuth Success:', tokenResponse);
-            // NOTE: useGoogleLogin by default returns an access_token response.
-            // If your backend specifically needs an ID Token, you'd usually use the component,
-            // but the hook is more robust for custom UI.
-            // We pass the response to the parent handler.
             onSuccess(tokenResponse);
         },
         onError: (error) => {
@@ -34,6 +30,11 @@ export default function GoogleAuthButton({
             onError();
         },
         onNonOAuthError: (error) => {
+            // Suppress "popup_closed" errors - this is normal user behavior
+            if (error && typeof error === 'object' && 'type' in error && error.type === 'popup_closed') {
+                console.warn('⚠️ User closed Google popup');
+                return; // Don't call onError for normal cancellation
+            }
             console.error('🔴 Google Non-OAuth Error:', error);
             onError();
         },

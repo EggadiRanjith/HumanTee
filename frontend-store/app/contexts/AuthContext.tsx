@@ -57,8 +57,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     data: response.data,
                 });
 
-                // Only set user if refresh was successful (200)
-                if (response.status === 200 && response.data) {
+                // Only set user if refresh was successful (200 or 201)
+                // Backend may return 201 Created instead of 200 OK
+                if ((response.status === 200 || response.status === 201) && response.data) {
                     console.warn('✅ Session restored successfully');
                     // Set access token and user from refresh response
                     setAccessToken(response.data.accessToken);
@@ -71,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     });
                 } else {
                     console.warn('❌ Refresh failed - status:', response.status);
-                    // 401 or other non-200 status = user not logged in
+                    // 401 or other non-success status = user not logged in
                     setUser(null);
                     clearAccessToken();
                 }
