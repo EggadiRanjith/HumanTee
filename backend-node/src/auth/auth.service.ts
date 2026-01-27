@@ -35,18 +35,43 @@ export class AuthService {
         this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
     }
 
-    async googleLogin(idToken: string, ipAddress: string, userAgent: string) {
+    async googleLogin(token: string, ipAddress: string, userAgent: string, isAccessToken: boolean = false) {
         let userId: string | null = null;
         let success = false;
 
         try {
-            // 1️⃣ Verify Google ID Token
-            const ticket = await this.googleClient.verifyIdToken({
-                idToken,
-                audience: process.env.GOOGLE_CLIENT_ID,
-            });
+            let payload: any;
 
-            const payload = ticket.getPayload();
+            if (!isAccessToken) {
+                // 1️⃣ Verify Google ID Token
+                const ticket = await this.googleClient.verifyIdToken({
+                    idToken: token,
+                    audience: process.env.GOOGLE_CLIENT_ID,
+                });
+                payload = ticket.getPayload();
+            } else {
+                // 1️⃣ Verify Access Token (for custom button hooks)
+                // Hits https://oauth2.googleapis.com/tokeninfo
+                const tokenInfo = await this.googleClient.getTokenInfo(token);
+
+                payload = {
+                    sub: tokenInfo.sub,
+                    email: tokenInfo.email,
+                    email_verified: tokenInfo.email_verified,
+                };
+
+                // Fetch extra profile info (name, picture) if available
+                try {
+                    const profileResponse = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`);
+                    if (profileResponse.ok) {
+                        const profileData = await profileResponse.json();
+                        payload.name = profileData.name;
+                        payload.picture = profileData.picture;
+                    }
+                } catch (err) {
+                    this.logger.warn('Failed to fetch additional profile info from Google', err);
+                }
+            }
 
             if (!payload) {
                 throw new UnauthorizedException('Invalid Google token');

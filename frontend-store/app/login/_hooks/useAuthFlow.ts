@@ -143,11 +143,17 @@ export function useAuthFlow() {
 
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+            // Detect if we have an ID Token (from component) or Access Token (from hook)
+            const payload = credentialResponse.credential
+                ? { idToken: credentialResponse.credential }
+                : { access_token: credentialResponse.access_token };
+
             const response = await fetch(`${apiUrl}/auth/google`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ idToken: credentialResponse.credential }),
+                body: JSON.stringify(payload),
             });
 
             if (!response.ok) {

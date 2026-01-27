@@ -1,8 +1,6 @@
-"use client";
-
 import { motion } from "framer-motion";
 import { FcGoogle } from "react-icons/fc";
-import { GoogleLogin } from '@react-oauth/google';
+import { useGoogleLogin } from '@react-oauth/google';
 
 interface GoogleAuthButtonProps {
     onSuccess: (credentialResponse: any) => void;
@@ -15,6 +13,21 @@ export default function GoogleAuthButton({
     onError,
     isLoading,
 }: GoogleAuthButtonProps) {
+    // SECURITY: Use the official hook for custom buttons instead of DOM-selector hacks
+    // This is much faster and more reliable in production environments
+    const login = useGoogleLogin({
+        onSuccess: (tokenResponse) => {
+            // NOTE: useGoogleLogin by default returns an access_token response.
+            // If your backend specifically needs an ID Token, you'd usually use the component,
+            // but the hook is more robust for custom UI.
+            // We pass the response to the parent handler.
+            onSuccess(tokenResponse);
+        },
+        onError: () => {
+            onError();
+        },
+    });
+
     return (
         <>
             {/* Divider */}
@@ -34,11 +47,9 @@ export default function GoogleAuthButton({
                     whileHover={{ scale: isLoading ? 1 : 1.02 }}
                     whileTap={{ scale: isLoading ? 1 : 0.98 }}
                     onClick={() => {
-                        // Trigger the hidden Google button
-                        const googleBtn = document.querySelector(
-                            '[aria-labelledby="button-label"]'
-                        ) as HTMLButtonElement;
-                        if (googleBtn) googleBtn.click();
+                        if (!isLoading) {
+                            login();
+                        }
                     }}
                     disabled={isLoading}
                     type="button"
@@ -52,16 +63,6 @@ export default function GoogleAuthButton({
                         {isLoading ? 'Connecting...' : 'Continue with Google'}
                     </span>
                 </motion.button>
-
-                {/* Hidden Google Login Component */}
-                <div className="absolute opacity-0 pointer-events-none -z-10">
-                    <GoogleLogin
-                        onSuccess={onSuccess}
-                        onError={onError}
-                        useOneTap={false}
-                        auto_select={false}
-                    />
-                </div>
             </div>
         </>
     );

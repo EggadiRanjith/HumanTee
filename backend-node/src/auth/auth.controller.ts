@@ -271,10 +271,18 @@ export class AuthController {
         const ipAddress = req.ip || req.socket.remoteAddress || 'unknown';
         const userAgent = req.headers['user-agent'] || 'unknown';
 
+        const token = googleLoginDto.idToken || googleLoginDto.access_token;
+        const isAccessToken = !!googleLoginDto.access_token;
+
+        if (!token) {
+            throw new UnauthorizedException('No Google token provided');
+        }
+
         const result = await this.authService.googleLogin(
-            googleLoginDto.idToken,
+            token,
             ipAddress,
             userAgent,
+            isAccessToken
         );
 
         // Block admin users from logging in through store
