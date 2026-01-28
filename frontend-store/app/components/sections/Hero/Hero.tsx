@@ -15,12 +15,17 @@ import { isSlideVisible, getSlideContentClasses } from "./utils";
 import { HERO_CONSTANTS, SLIDE_STYLES } from "./constants";
 import { HeroProps } from "./types";
 import { useHeroSettings } from "./hooks/useHeroSettings";
+import { useIsSafari } from "@/app/lib/useIsSafari";
 
 
 
 const Hero = ({ slides: propSlides }: HeroProps = {}) => {
   const shouldReducedMotion = useReducedMotion();
   const isMobile = useIsMobile(768);
+  const isSafari = useIsSafari();
+
+  // On Safari or reduced motion, avoid animating heavy filters
+  const reduceEffects = shouldReducedMotion || isSafari;
 
   // Fetch hero settings from centralized cache
   const { settings: heroSettings, loading } = useHeroSettings();
@@ -59,23 +64,30 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
         return (
           <motion.div
             key={index}
-            initial={{ opacity: 0, scale: 1, filter: isMobile ? "none" : HERO_CONSTANTS.BLUR.INITIAL }}
+            initial={{
+              opacity: 0,
+              scale: 1,
+              filter:
+                isMobile || reduceEffects ? "none" : HERO_CONSTANTS.BLUR.INITIAL,
+            }}
             animate={{
               opacity: currentIndex === index ? 1 : 0,
-              scale: shouldReducedMotion
-                ? 1
-                : currentIndex === index
-                  ? index % 2 === 0
-                    ? HERO_CONSTANTS.ZOOM_SCALE.EVEN
-                    : HERO_CONSTANTS.ZOOM_SCALE.ODD
-                  : index % 2 === 0
-                    ? HERO_CONSTANTS.ZOOM_SCALE.ODD
-                    : HERO_CONSTANTS.ZOOM_SCALE.EVEN,
-              filter: isMobile
-                ? "none"
-                : currentIndex === index
-                  ? HERO_CONSTANTS.BLUR.ACTIVE
-                  : HERO_CONSTANTS.BLUR.INITIAL,
+              scale:
+                reduceEffects
+                  ? 1
+                  : currentIndex === index
+                    ? index % 2 === 0
+                      ? HERO_CONSTANTS.ZOOM_SCALE.EVEN
+                      : HERO_CONSTANTS.ZOOM_SCALE.ODD
+                    : index % 2 === 0
+                      ? HERO_CONSTANTS.ZOOM_SCALE.ODD
+                      : HERO_CONSTANTS.ZOOM_SCALE.EVEN,
+              filter:
+                isMobile || reduceEffects
+                  ? "none"
+                  : currentIndex === index
+                    ? HERO_CONSTANTS.BLUR.ACTIVE
+                    : HERO_CONSTANTS.BLUR.INITIAL,
             }}
             transition={{
               duration: HERO_CONSTANTS.TRANSITION.DURATION,
@@ -84,7 +96,10 @@ const Hero = ({ slides: propSlides }: HeroProps = {}) => {
             }}
             className="absolute inset-0 w-full h-full"
             style={{
-              willChange: isMobile ? "opacity, transform" : "opacity, transform, filter",
+              willChange:
+                isMobile || reduceEffects
+                  ? "opacity, transform"
+                  : "opacity, transform, filter",
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
             }}

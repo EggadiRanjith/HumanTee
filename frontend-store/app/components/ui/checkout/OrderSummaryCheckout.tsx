@@ -5,13 +5,12 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
-import { logError } from '@/lib/logger';
+import { useMemo } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { settingsApi } from '@/lib/api/settings';
+import { useSettings } from '@/app/contexts/SettingsContext';
 import { calculateShipping, type ShippingZone } from '@/lib/app/utils/shippingCalculation';
-import { calculateTax, calculateTotal, type TaxSettings } from '@/lib/app/utils/taxCalculation';
+import { calculateTax, type TaxSettings } from '@/lib/app/utils/taxCalculation';
 
 interface CartItem {
     id: number | string;
@@ -30,41 +29,28 @@ interface OrderSummaryCheckoutProps {
     discountedTotal?: number;
 }
 
+const DEFAULT_TAX: TaxSettings = {
+    enabled: true,
+    rate: 18,
+    label: 'GST',
+    inclusive: true,
+};
+
 export function OrderSummaryCheckout({ items, pincode, appliedDiscount, discountedTotal }: OrderSummaryCheckoutProps) {
-    const [zones, setZones] = useState<ShippingZone[]>([]);
-    const [taxSettings, setTaxSettings] = useState<TaxSettings>({
-        enabled: true,
-        rate: 18,
-        label: 'GST',
-        inclusive: true  // Changed to true - GST is included in price
-    });
-    const [isLoading, setIsLoading] = useState(true);
+    const { settings, loading: isLoading } = useSettings();
 
-    // Calculate total price from items
-    const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const totalPrice = useMemo(
+        () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+        [items]
+    );
 
-    // Fetch shipping zones and tax settings
-    useEffect(() => {
-        const fetchSettings = async () => {
-            try {
-                const data = await settingsApi.getPublicSettings();
-                if (data && data['shipping']) {
-                    if (data['shipping'].zones) {
-                        setZones(data['shipping'].zones);
-                    }
-                    if (data['shipping'].tax) {
-                        setTaxSettings(data['shipping'].tax);
-                    }
-                }
-            } catch (error) {
-                logError(error, 'Failed to load shipping settings');
-            } finally {
-                setIsLoading(false);
-            }
+    const { zones, taxSettings } = useMemo(() => {
+        const s = (settings?.shipping as any) ?? {};
+        return {
+            zones: (s.zones ?? []) as ShippingZone[],
+            taxSettings: (s.tax ?? DEFAULT_TAX) as TaxSettings,
         };
-
-        fetchSettings();
-    }, []);
+    }, [settings]);
 
     // IMPORTANT: Calculate shipping based on ORIGINAL totalPrice (before discount)
     //  This ensures shipping thresholds work correctly

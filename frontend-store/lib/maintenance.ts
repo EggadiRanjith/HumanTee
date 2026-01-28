@@ -1,61 +1,105 @@
 /**
  * Maintenance Mode Utility
- * Checks if maintenance mode is enabled with caching
+ * Single module for maintenance checks – used by proxy, maintenance page, and callers.
  */
 
-// Cache for maintenance status (30 seconds TTL)
-let maintenanceCache: {
-    enabled: boolean;
-    timestamp: number;
-} | null = null;
+const getApiUrl = () =>
+    process.env.NEXT_PUBLIC_API_URL || 'https://humantee.onrender.com';
 
-const CACHE_TTL = 30000; // 30 seconds
+export interface MaintenanceStatus {
+    enabled: boolean;
+    title?: string;
+    message?: string;
+    estimatedTime?: string | null;
+    contactEmail?: string;
+    brandName?: string;
+    logoUrl?: string | null;
+    tagline?: string;
+    [k: string]: unknown;
+}
+
+// Cache for maintenance status (30 seconds TTL)
+let maintenanceCache: { data: MaintenanceStatus; timestamp: number } | null = null;
+
+const CACHE_TTL = 30_000; // 30 seconds
 
 /**
- * Check if maintenance mode is enabled
- * Uses 30-second cache to reduce API calls
+ * Fetch maintenance status from API. Single implementation – no duplicate fetch logic.
+ */
+export async function fetchMaintenanceStatus(): Promise<MaintenanceStatus> {
+    const response = await fetch(`${getApiUrl()}/public-settings/maintenance`, {
+        cache: 'no-store',
+    });
+
+    if (!response.ok) {
+        return { enabled: false };
+    }
+
+    const data = await response.json();
+    return {
+        enabled: data.enabled ?? false,
+        title: data.title,
+        message: data.message,
+        estimatedTime: data.estimatedTime ?? null,
+        contactEmail: data.contactEmail,
+        brandName: data.brandName,
+        logoUrl: data.logoUrl ?? null,
+        tagline: data.tagline,
+        ...data,
+    };
+}
+
+/**
+ * Check if maintenance mode is enabled. Uses 30s cache to reduce API calls.
+ * Fail-open: if API errors, returns false.
  */
 export async function isMaintenanceModeEnabled(): Promise<boolean> {
     const now = Date.now();
 
-    // Return cached value if fresh
-    if (maintenanceCache && (now - maintenanceCache.timestamp) < CACHE_TTL) {
-        return maintenanceCache.enabled;
+    if (maintenanceCache && now - maintenanceCache.timestamp < CACHE_TTL) {
+        return maintenanceCache.data.enabled;
     }
 
-    // Fetch fresh status from API
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://humantee.onrender.com';
-        const response = await fetch(`${apiUrl}/public-settings/maintenance`, {
-            cache: 'no-store',
-            next: { revalidate: 0 },
-        });
-
-        if (!response.ok) {
-            // If API fails, assume maintenance is OFF (fail-open)
-            return false;
-        }
-
-        const data = await response.json();
-        const enabled = data.enabled ?? false;
-
-        // Update cache
-        maintenanceCache = {
-            enabled,
-            timestamp: now,
-        };
-
-        return enabled;
+        const data = await fetchMaintenanceStatus();
+        maintenanceCache = { data, timestamp: now };
+        return data.enabled;
     } catch (error) {
         console.error('[Maintenance] Failed to check status:', error);
-        // Fail-open: if API is down, allow access
         return false;
     }
 }
 
 /**
- * Invalidate maintenance cache (call after admin updates)
+ * Get full maintenance status for display (e.g. maintenance page). Uses 30s cache when available.
  */
+export async function getMaintenanceStatus(): Promise<MaintenanceStatus> {
+    const now = Date.now();
+
+    if (maintenanceCache && now - maintenanceCache.timestamp < CACHE_TTL) {
+        return maintenanceCache.data;
+    }
+
+    try {
+        const data = await fetchMaintenanceStatus();
+        maintenanceCache = { data, timestamp: now };
+        return data;
+    } catch (error) {
+        console.error('[Maintenance] Failed to fetch status:', error);
+        return {
+            enabled: true,
+            title: "We'll Be Right Back",
+            message: "We're making things even better. Check back soon.",
+            estimatedTime: null,
+            contactEmail: 'support@humantee.com',
+            brandName: 'HumanTee',
+            logoUrl: null,
+            tagline: 'Premium Handcrafted T-Shirts Since 1931',
+        };
+    }
+}
+
+/** Invalidate maintenance cache (e.g. after admin updates). */
 export function invalidateMaintenanceCache() {
     maintenanceCache = null;
 }

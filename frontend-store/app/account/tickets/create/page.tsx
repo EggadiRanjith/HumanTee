@@ -16,6 +16,7 @@ import {
 import Link from "next/link";
 import apiClient from "@/lib/api-client";
 import { useAuth } from "@/app/contexts/AuthContext";
+import { useOrder } from "@/app/orders/hooks/useOrder";
 
 const CATEGORIES = [
     { id: 'wrong_item', label: 'Wrong Item Received' },
@@ -34,7 +35,8 @@ function CreateTicketPageContent() {
     const { isAuthenticated, isLoading: authLoading } = useAuth();
 
     const [orderId, setOrderId] = useState<string | null>(searchParams.get('orderId'));
-    const [orderNumber, setOrderNumber] = useState<string | null>(null);
+    const { order, isLoading: orderLoading } = useOrder(orderId ?? "");
+    const orderNumber = order?.orderNumber ?? null;
     const [formData, setFormData] = useState({
         category: '',
         subject: '',
@@ -59,32 +61,27 @@ function CreateTicketPageContent() {
     }, [authLoading, isAuthenticated, router]);
 
     useEffect(() => {
-        const fetchOrderAndCheckActive = async () => {
+        const checkActiveTicket = async () => {
             if (!orderId) {
                 setIsCheckingActive(false);
                 return;
             }
-
             try {
-                // 1. Fetch Order Info
-                const orderRes = await apiClient.get(`/orders/${orderId}`);
-                setOrderNumber(orderRes.data.orderNumber);
-
-                // 2. Check for active ticket
                 const checkRes = await apiClient.get(`/tickets/check/${orderId}`);
                 if (checkRes.data.hasActiveTicket) {
                     setHasActiveTicket(true);
                     setActiveTicketId(checkRes.data.ticketId);
                 }
             } catch (error) {
-                logError(error, "Failed to fetch order/ticket info");
+                logError(error, "Failed to check active ticket");
             } finally {
                 setIsCheckingActive(false);
             }
         };
-
-        if (isAuthenticated) {
-            fetchOrderAndCheckActive();
+        if (isAuthenticated && orderId) {
+            checkActiveTicket();
+        } else {
+            setIsCheckingActive(false);
         }
     }, [isAuthenticated, orderId]);
 
@@ -166,7 +163,7 @@ function CreateTicketPageContent() {
         }
     };
 
-    if (authLoading || isCheckingActive) {
+    if (authLoading || isCheckingActive || (!!orderId && orderLoading)) {
         return (
             <div className="min-h-screen brand-bg-dusk pt-[var(--header-height)] flex items-center justify-center">
                 <FiLoader className="w-8 h-8 animate-spin text-white/40" />

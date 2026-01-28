@@ -36,7 +36,7 @@ function Footer() {
           className="absolute inset-0 opacity-20 pointer-events-none"
           style={{
             background: "radial-gradient(circle at 40% 10%, rgba(140,120,255,0.12), transparent 70%)",
-            filter: "blur(80px)",
+            filter: "blur(40px)",
           }}
           animate={{ opacity: [0.15, 0.28, 0.15] }}
           transition={{ duration: 10, repeat: Infinity }}

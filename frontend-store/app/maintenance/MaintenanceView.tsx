@@ -32,7 +32,7 @@ export default function MaintenanceView({ initialSettings }: { initialSettings: 
                 className="absolute inset-0 opacity-20 sm:opacity-30 pointer-events-none"
                 style={{
                     background: 'radial-gradient(circle at 50% 50%, rgba(140,120,255,0.15), transparent 70%)',
-                    filter: 'blur(80px)',
+                    filter: 'blur(40px)',
                     animation: 'pulse 8s ease-in-out infinite',
                 }}
             />

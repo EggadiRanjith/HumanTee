@@ -50,6 +50,14 @@ interface CartSummaryContextType {
 const CartItemsContext = createContext<CartItemsContextType | undefined>(undefined);
 const CartSummaryContext = createContext<CartSummaryContextType | undefined>(undefined);
 
+const SUGGESTIONS_CACHE_TTL = 60_000; // 1 min
+let suggestionsCache: { key: string; data: DiscountSuggestion[]; ts: number } | null = null;
+
+function suggestionsCacheKey(items: CartItem[], total: number): string {
+  const ids = items.map((i) => `${i.id}:${i.variantId ?? i.id}`).sort();
+  return `${ids.join(",")}|${total.toFixed(2)}`;
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -86,7 +94,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
             const guestItems = JSON.parse(guestCartJson);
 
             if (guestItems.length > 0) {
-              // 2. Merge guest cart with backend cart
               const mergePayload = {
                 items: guestItems.map((item: any) => ({
                   productId: item.id.toString(),
@@ -95,17 +102,34 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 })),
               };
 
-              await apiClient.post('/cart/merge', mergePayload);
+              const mergeRes = await apiClient.post('/cart/merge', mergePayload);
+              const merged = mergeRes?.data?.items ?? mergeRes?.data?.cart?.items;
+              if (Array.isArray(merged) && merged.length > 0) {
+                const newItems = merged.map((item: any) => ({
+                  cartItemId: item.id,
+                  id: item.productId,
+                  title: item.productTitle ?? '',
+                  price: item.price,
+                  currency: item.currency,
+                  image: item.productImage ?? '/images/placeholder.webp',
+                  quantity: item.quantity,
+                  size: item.variantLabel,
+                  variantId: item.variantId,
+                  availableStock: item.availableStock ?? item.stock ?? item.stockQuantity,
+                }));
+                newItems.sort((a: any, b: any) => (a.cartItemId ?? 0) - (b.cartItemId ?? 0));
+                setItems(newItems);
+                setIsLoading(false);
+                localStorage.removeItem("humantee-cart");
+                return;
+              }
             }
           } catch (error) {
             logError(error, 'Failed to merge guest cart');
           }
         }
 
-        // 3. Load merged cart from backend
         await loadBackendCart();
-
-        // 4. Clear localStorage after successful merge
         localStorage.removeItem("humantee-cart");
       } else {
         // Guest → Load from localStorage
@@ -436,16 +460,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [items.length]);
 
-  // Fetch discount suggestions
+  // Fetch discount suggestions (cached by cart fingerprint to reduce API calls)
   const fetchSuggestions = async () => {
-    // ✅ Feature flag: Skip if discounts disabled
     if (!settings?.features?.discountsEnabled) {
       setSuggestions([]);
       return;
     }
-
     if (items.length === 0) {
       setSuggestions([]);
+      return;
+    }
+
+    const key = suggestionsCacheKey(items, totalPrice);
+    const now = Date.now();
+    if (suggestionsCache && suggestionsCache.key === key && now - suggestionsCache.ts < SUGGESTIONS_CACHE_TTL) {
+      setSuggestions(suggestionsCache.data);
+      if (!appliedDiscount && !hasManuallyRemoved && suggestionsCache.data.length > 0) {
+        const best = suggestionsCache.data.find((s) => s.isBest);
+        if (best) {
+          try {
+            await applyDiscount(best.code);
+          } catch (e) {
+            logError(e, 'Failed to auto-apply best discount');
+          }
+        }
+      }
       return;
     }
 
@@ -454,18 +493,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const suggestionsData = await discountsApi.getSuggestions({
         code: '',
         cartTotal: totalPrice,
-        items: items.map(item => ({
+        items: items.map((item) => ({
           productId: item.id.toString(),
           variantId: item.variantId || '',
           quantity: item.quantity,
-          price: item.price
-        }))
+          price: item.price,
+        })),
       });
 
+      suggestionsCache = { key, data: suggestionsData, ts: now };
       setSuggestions(suggestionsData);
 
       if (!appliedDiscount && !hasManuallyRemoved && suggestionsData.length > 0) {
-        const best = suggestionsData.find(s => s.isBest);
+        const best = suggestionsData.find((s) => s.isBest);
         if (best) {
           try {
             await applyDiscount(best.code);

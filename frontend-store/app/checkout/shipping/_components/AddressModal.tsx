@@ -145,12 +145,12 @@ export default function AddressModal({
 
     return (
         <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-md z-[9999] overflow-y-auto py-8 sm:py-12 px-4"
+            className="fixed inset-0 bg-black/60 z-[9999] overflow-y-auto py-8 sm:py-12 px-4"
             onClick={onClose}
         >
             <div
                 onClick={(e) => e.stopPropagation()}
-                className="w-full sm:max-w-lg mx-auto rounded-2xl luxury-glass border border-white/10 bg-black/40 backdrop-blur-2xl p-4 sm:p-6"
+                className="w-full sm:max-w-lg mx-auto rounded-2xl luxury-glass border border-white/10 bg-black/40 p-4 sm:p-6"
             >
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4 sm:mb-6">

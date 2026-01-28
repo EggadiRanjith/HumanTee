@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { logError } from '@/lib/logger';
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import apiClient from "@/lib/api-client";
 import { queryKeys } from "@/lib/queryKeys";
+import { useAddresses } from "@/lib/queries/useAddresses";
 
 interface ShippingAddress {
     id: string;
@@ -54,22 +54,13 @@ export function useShippingData(userId?: string) {
     const [isSavingAddress, setIsSavingAddress] = useState(false);
     const [addressError, setAddressError] = useState('');
 
-    // ✅ OPTIMIZED: Use React Query - checks cache from login payload first
-    const { data: fetchedAddresses, isLoading: isLoadingAddresses } = useQuery({
-        queryKey: queryKeys.addresses(userId || ''),
-        queryFn: async () => {
-            const response = await apiClient.get('/shipping-addresses');
-            return response.data || [];
-        },
-        enabled: !!userId, // Only fetch if user is logged in
-        staleTime: 5 * 60 * 1000, // 5 minutes
-    });
+    // Single source: useAddresses (no duplicate GET /shipping-addresses)
+    const { data: fetchedAddresses, isLoading: isLoadingAddresses } = useAddresses(userId ?? "");
 
     // Sync fetched addresses to local state
     useEffect(() => {
         if (userId && fetchedAddresses) {
             setAddresses(fetchedAddresses);
-            // Auto-select default address
             const defaultAddr = fetchedAddresses.find(
                 (addr: ShippingAddress) => addr.isDefault
             );

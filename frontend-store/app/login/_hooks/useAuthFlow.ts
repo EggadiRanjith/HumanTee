@@ -3,6 +3,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useLoading } from "@/app/contexts/LoadingContext";
 import { logError } from "@/lib/logger";
+import apiClient from "@/lib/api-client";
 
 type AuthStep = 'email' | 'otp';
 
@@ -76,17 +77,7 @@ export function useAuthFlow() {
         setIsLoading(true);
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-            const response = await fetch(`${apiUrl}/auth/send-otp`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to send OTP');
-            }
-
+            await apiClient.post('/auth/send-otp', { email });
             setSuccess("OTP sent! Check your email.");
             // Clear success after a short delay to prevent OTP button from being disabled
             setTimeout(() => setSuccess(""), 1500);
@@ -111,21 +102,13 @@ export function useAuthFlow() {
         setIsLoading(true);
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-            const response = await fetch(`${apiUrl}/auth/verify-otp`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',  // CRITICAL: Required for cookie saving
-                body: JSON.stringify({ email, otp }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Invalid OTP');
-            }
-
-            // ✅ OPTIMIZED: Backend returns profile + addresses in login response
-            const data = await response.json();
-            await authLogin(data.accessToken, data.user, null, data.addresses, data.profile);
+            const { data } = await apiClient.post<{
+                accessToken: string;
+                user: any;
+                addresses?: any[];
+                profile?: any;
+            }>('/auth/verify-otp', { email, otp });
+            await authLogin(data.accessToken, data.user, undefined, data.addresses, data.profile);
 
             setSuccess("Login successful! Redirecting...");
             setTimeout(() => {
@@ -148,29 +131,17 @@ export function useAuthFlow() {
         setError("");
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
-            // Detect if we have an ID Token (from component) or Access Token (from hook)
             const payload = credentialResponse.credential
                 ? { idToken: credentialResponse.credential }
                 : { access_token: credentialResponse.access_token };
 
-            const response = await fetch(`${apiUrl}/auth/google`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify(payload),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                logError(errorData, 'Google login error');
-                throw new Error(errorData.message || 'Google login failed');
-            }
-
-            // ✅ OPTIMIZED: Backend returns profile + addresses in login response
-            const data = await response.json();
-            await authLogin(data.accessToken, data.user, null, data.addresses, data.profile);
+            const { data } = await apiClient.post<{
+                accessToken: string;
+                user: any;
+                addresses?: any[];
+                profile?: any;
+            }>('/auth/google', payload);
+            await authLogin(data.accessToken, data.user, undefined, data.addresses, data.profile);
 
             // Show success message
             setGoogleSuccess("Login successful! Redirecting...");

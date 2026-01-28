@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import apiClient from "@/lib/api-client";
+import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
-import { logError } from "@/lib/logger";
+import { useUser } from "@/lib/queries/useUser";
+import { useAddresses } from "@/lib/queries/useAddresses";
 
 interface UserProfile {
     id: string;
@@ -42,7 +41,42 @@ interface UseProfileDataReturn {
     retryAddresses: () => void;
 }
 
+function normalizeProfile(raw: any): UserProfile | null {
+    if (!raw) return null;
+    const profileData = raw.profile?.profile || raw.profile || {};
+    return {
+        id: raw.id,
+        email: raw.email,
+        role: raw.role,
+        fullName: profileData.fullName ?? raw.fullName,
+        phone: profileData.phone ?? raw.phone,
+        avatarUrl: profileData.avatarUrl ?? raw.avatarUrl,
+        profileComplete: raw.profileComplete ?? profileData.profileComplete,
+    };
+}
 
+function normalizeAddresses(raw: any[]): ShippingAddress[] {
+    if (!Array.isArray(raw) || raw.length === 0) return [];
+    return raw.map((addr: any) => ({
+        id: addr.id,
+        fullName: addr.fullName,
+        phone: addr.phone,
+        email: addr.email,
+        houseNumber: addr.houseNumber,
+        address: addr.address,
+        landmark: addr.landmark ?? "",
+        city: addr.city,
+        state: addr.state,
+        postalCode: addr.postalCode,
+        country: addr.country,
+        isDefault: addr.isDefault,
+    }));
+}
+
+/**
+ * Single source for profile + addresses. Uses useUser and useAddresses
+ * (no duplicate GET /auth/me or GET /shipping-addresses).
+ */
 export function useProfileData(
     userId?: string,
     userEmail?: string,
@@ -50,82 +84,47 @@ export function useProfileData(
 ): UseProfileDataReturn {
     const queryClient = useQueryClient();
 
-    // ✅ OPTIMIZED: Use React Query - checks cache from login payload first
-    const { data: profileData, isLoading: isLoadingProfile, error: profileError, refetch: retryProfile } = useQuery({
-        queryKey: queryKeys.user,
-        queryFn: async () => {
-            const response = await apiClient.get('/auth/me');
-            // Backend returns nested structure: response.data.profile.profile.fullName
-            const profileData = response.data.profile?.profile || response.data.profile || {};
-            return {
-                id: response.data.id,
-                email: response.data.email,
-                role: response.data.role,
-                fullName: profileData.fullName,
-                phone: profileData.phone,
-                avatarUrl: profileData.avatarUrl,
-                profileComplete: response.data.profileComplete,
-            };
-        },
+    const { data: userData, isLoading: isLoadingProfile, error: profileError, refetch: retryProfile } = useUser({
         enabled: !!userId,
-        staleTime: 30 * 60 * 1000, // 30 minutes - profile data doesn't change often
-        gcTime: 60 * 60 * 1000, // 1 hour - keep in memory even when unused
-        refetchOnWindowFocus: false, // Don't refetch when window regains focus
-        refetchOnMount: false, // Don't refetch on component mount if data exists
-        placeholderData: (previousData) => previousData, // ✅ Keep showing old data even when session expires (matches address behavior)
     });
 
-    // ✅ OPTIMIZED: Use React Query - checks cache from login payload first
-    const { data: addressesData, isLoading: isLoadingAddresses, error: addressesError, refetch: retryAddresses } = useQuery({
-        queryKey: queryKeys.addresses(userId || ''),
-        queryFn: async () => {
-            const response = await apiClient.get('/shipping-addresses');
-            if (response.data && response.data.length > 0) {
-                return response.data.map((addr: any) => ({
-                    id: addr.id,
-                    fullName: addr.fullName,
-                    phone: addr.phone,
-                    email: addr.email,
-                    houseNumber: addr.houseNumber,
-                    address: addr.address,
-                    landmark: addr.landmark || '',
-                    city: addr.city,
-                    state: addr.state,
-                    postalCode: addr.postalCode,
-                    country: addr.country,
-                    isDefault: addr.isDefault,
-                }));
-            }
-            return [];
-        },
-        enabled: !!userId,
-        staleTime: 30 * 60 * 1000, // 30 minutes - addresses don't change often
-        gcTime: 60 * 60 * 1000, // 1 hour - keep in memory even when unused
-        refetchOnWindowFocus: false, // Don't refetch when window regains focus
-        refetchOnMount: false, // Don't refetch on component mount if data exists
-        placeholderData: (previousData) => previousData, // Keep showing old data while refetching
-    });
+    const { data: addressesData, isLoading: isLoadingAddresses, error: addressesError, refetch: retryAddresses } =
+        useAddresses(userId ?? "");
+
+    const profile = normalizeProfile(userData) ?? (userId ? {
+        id: userId,
+        email: userEmail ?? "",
+        role: userRole ?? "customer",
+        profileComplete: false,
+    } : null);
+
+    const shippingAddresses = normalizeAddresses(addressesData ?? []);
 
     const updateProfile = (updated: Partial<UserProfile>) => {
-        queryClient.setQueryData(queryKeys.user, (old: any) =>
-            old ? { ...old, ...updated } : null
-        );
+        queryClient.setQueryData(queryKeys.user, (old: any) => {
+            if (!old) return old;
+            const profile = old.profile?.profile || old.profile || {};
+            const merged = { ...profile, ...updated };
+            if (old.fullName != null || old.profile == null) {
+                return { ...old, ...merged };
+            }
+            return {
+                ...old,
+                profile: { ...(old.profile || {}), profile: merged },
+                profileComplete: updated.profileComplete ?? old.profileComplete,
+            };
+        });
     };
 
     const updateAddresses = (addresses: ShippingAddress[]) => {
-        queryClient.setQueryData(queryKeys.addresses(userId || ''), addresses);
+        queryClient.setQueryData(queryKeys.addresses(userId ?? ""), addresses);
     };
 
     return {
-        profile: profileData || (userId ? {
-            id: userId,
-            email: userEmail || '',
-            role: userRole || 'customer',
-            profileComplete: false,
-        } : null),
+        profile,
         isLoadingProfile,
         profileError: !!profileError,
-        shippingAddresses: addressesData || [],
+        shippingAddresses,
         isLoadingAddresses,
         addressesError: !!addressesError,
         updateProfile,

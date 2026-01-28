@@ -1,44 +1,40 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { logError } from '@/lib/logger';
+import { useMemo } from "react";
 import Link from "next/link";
 import { GradientOverlay } from "@/app/components/ui/layout";
-import { settingsApi } from "@/lib/api/settings";
+import { useSettings } from "@/app/contexts/SettingsContext";
 
 type Section = { title: string; points: string[] };
 
-export default function ShippingPolicyPage() {
-  const [settings, setSettings] = useState({
-    effective_date: "",
-    intro_text: "",
-    sections: [] as Section[],
-    contact: {
-      email: "humanteeofficial@gmail.com", // Temporary fallback
-      phone: "+91 7780-661493"      // Temporary fallback
-    }
-  });
+const DEFAULT_CONTACT = { email: "humanteeofficial@gmail.com", phone: "+91 7780-661493" };
 
-  // Fetch settings on mount
-  useEffect(() => {
-    settingsApi.getPublicSettings()
-      .then((data) => {
-        if (data && data['shipping']) {
-          setSettings({
-            effective_date: data['shipping'].effective_date || "",
-            intro_text: data['shipping'].intro_text || "",
-            sections: data['shipping'].sections || [],
-            contact: data['header-footer']?.contact || {
-              email: "humanteeofficial@gmail.com",
-              phone: "+91 7780-661493"
-            }
-          });
-        }
-      })
-      .catch((error) => {
-        logError(error, 'Failed to load shipping settings');
-      });
-  }, []);
+export default function ShippingPolicyPage() {
+  const { settings: raw, loading } = useSettings();
+
+  const settings = useMemo(() => {
+    const s = raw?.shipping as any;
+    if (!s) return {
+      effective_date: "",
+      intro_text: "",
+      sections: [] as Section[],
+      contact: DEFAULT_CONTACT,
+    };
+    return {
+      effective_date: s.effective_date ?? "",
+      intro_text: s.intro_text ?? "",
+      sections: (s.sections ?? []) as Section[],
+      contact: (raw?.["header-footer"] as any)?.contact ?? DEFAULT_CONTACT,
+    };
+  }, [raw]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen brand-bg pb-24 pt-[var(--header-height)] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen brand-bg pb-24 pt-[var(--header-height)]">

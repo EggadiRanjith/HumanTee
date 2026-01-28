@@ -8,11 +8,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://app.humantee.in'}/products/all`, {
-            cache: 'no-store',
+            next: { revalidate: 300 },
         });
 
         if (response.ok) {
-            const products = await response.json();
+            const raw = await response.json();
+            const products = Array.isArray(raw) ? raw : (raw?.data ?? []);
 
             productUrls = products.map((product: any) => ({
                 url: `${baseUrl}/product/${product.handle || product.id}`,

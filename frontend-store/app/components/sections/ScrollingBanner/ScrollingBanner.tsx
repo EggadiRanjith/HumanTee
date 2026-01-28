@@ -57,7 +57,6 @@ const ScrollingBanner = ({ messages: propMessages }: ScrollingBannerProps = {}) 
         .scrolling-banner {
           animation: marquee 50s linear infinite;
           -webkit-animation: marquee 50s linear infinite;
-          will-change: transform;
           -webkit-backface-visibility: hidden;
           backface-visibility: hidden;
         }

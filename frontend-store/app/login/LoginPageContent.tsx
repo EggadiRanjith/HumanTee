@@ -8,6 +8,7 @@ import EmailForm from "./_components/EmailForm";
 import OTPForm from "./_components/OTPForm";
 import GoogleAuthButton from "./_components/GoogleAuthButton";
 import InfoCards from "./_components/InfoCards";
+import { useIsSafari } from "@/app/lib/useIsSafari";
 
 // Lazy load LaserFlow for performance
 const LaserFlow = dynamic(
@@ -33,6 +34,7 @@ export default function LoginPage() {
         handleGoogleLogin,
         handleBackToEmail,
     } = useAuthFlow();
+    const isSafari = useIsSafari();
 
     return (
         <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
@@ -125,7 +127,7 @@ export default function LoginPage() {
                                 transform: "translateX(-50%)",
                                 width: "90%",
                                 height: "500px",
-                                filter: "blur(40px)",
+                                filter: isSafari ? "blur(18px)" : "blur(40px)",
                                 background:
                                     "radial-gradient(circle, rgba(255,121,198,0.6), rgba(255,121,198,0) 70%)",
                                 zIndex: 5,

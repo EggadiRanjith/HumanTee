@@ -1,31 +1,14 @@
 /**
  * Public Settings API Client
- * Fetches settings from public endpoints (no authentication required)
+ * Uses apiClient (single HTTP client). Caching via React Query in SettingsContext.
  */
 
-// Dynamic API URL helper
-const getApiBaseUrl = () => {
-    return process.env.NEXT_PUBLIC_API_URL || 'https://humantee.onrender.com';
-};
-
-// Call getApiBaseUrl() inside functions, not at module level to avoid SSR errors
-
+import apiClient from '@/lib/api-client';
 
 export const publicSettingsApi = {
-    /**
-     * Get all public settings
-     */
     async getAll() {
-        const response = await fetch(`${getApiBaseUrl()}/public/settings`, {
-            next: { revalidate: 300 } // Cache for 5 minutes
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch settings');
-        }
-
-        const result = await response.json();
-        return result.data;
+        const res = await apiClient.get<{ data?: any }>('/public/settings');
+        return res.data?.data ?? res.data;
     },
 
     /**

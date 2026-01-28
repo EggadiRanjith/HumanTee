@@ -10,7 +10,7 @@
 
 import Link from 'next/link';
 import { memo, useRef } from 'react';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } from 'framer-motion';
 import { Product } from '@/app/types/product.types';
 import { Badge, StockIndicator } from '@/app/components/ui/primitives';
 import { SafeImage } from '@/app/components/ui/primitives/SafeImage';
@@ -38,6 +38,16 @@ const ProductCard = ({
     const ref = useRef<HTMLDivElement>(null);
     const x = useMotionValue(0);
     const y = useMotionValue(0);
+    const prefersReducedMotion = useReducedMotion();
+
+    const isMobileSafari =
+        typeof navigator !== "undefined" &&
+        /safari/i.test(navigator.userAgent) &&
+        !/chrome|chromium|android|crios|fxios|edge/i.test(navigator.userAgent) &&
+        typeof window !== "undefined" &&
+        window.innerWidth <= 768;
+
+    const enableTilt = !prefersReducedMotion && !isMobileSafari;
 
     // Smooth spring physics for the tilt
     const springConfig = { damping: 20, stiffness: 300 };
@@ -45,6 +55,7 @@ const ProductCard = ({
     const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-7, 7]), springConfig);
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+        if (!enableTilt) return;
         if (!ref.current) return;
         const rect = ref.current.getBoundingClientRect();
         const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
@@ -75,11 +86,15 @@ const ProductCard = ({
                 onTouchStart={handleMouseMove}
                 onTouchMove={handleMouseMove}
                 onTouchEnd={handleMouseLeave}
-                style={{
-                    rotateX,
-                    rotateY,
-                    transformStyle: "preserve-3d"
-                }}
+                style={
+                    enableTilt
+                        ? {
+                            rotateX,
+                            rotateY,
+                            transformStyle: "preserve-3d",
+                        }
+                        : {}
+                }
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 className="relative perspective-1000"

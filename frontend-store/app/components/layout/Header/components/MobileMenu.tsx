@@ -10,9 +10,11 @@ import Link from "next/link";
 import { useLoading } from "@/app/contexts/LoadingContext";
 import { NAV_LINKS, HEADER_Z_INDEX } from "../constants";
 import type { MobileMenuProps } from "../types";
+import { useIsSafari } from "@/app/lib/useIsSafari";
 
 export default function MobileMenu({ open, onClose, headerHeight }: MobileMenuProps) {
     const { setLoading } = useLoading();
+    const isSafari = useIsSafari();
     const stopPropagation = (e: React.MouseEvent) => e.stopPropagation();
 
     if (!open) return null;
@@ -27,7 +29,7 @@ export default function MobileMenu({ open, onClose, headerHeight }: MobileMenuPr
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.25 }}
-                className="fixed inset-0 md:hidden bg-black/20 backdrop-blur-sm pointer-events-auto"
+                className={`fixed inset-0 md:hidden bg-black/20 ${isSafari ? "" : "backdrop-blur-sm"} pointer-events-auto`}
                 style={{ zIndex: HEADER_Z_INDEX.OVERLAY }}
             />
 

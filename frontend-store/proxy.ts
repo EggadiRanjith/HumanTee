@@ -1,18 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { fetchMaintenanceStatus } from '@/lib/maintenance';
 
-// In-memory cache for maintenance flag (production-grade)
-let maintenanceCache = {
-    enabled: false,
-    lastChecked: 0,
-};
-
-const CACHE_TTL = 30_000; // 30 seconds
+let maintenanceCache = { enabled: false, lastChecked: 0 };
+const CACHE_TTL = 30_000;
 
 export default async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    // 1. Skip logic for static assets and specific ignored paths
     if (
         pathname.startsWith('/_next') ||
         pathname.startsWith('/api/') ||
@@ -23,44 +18,23 @@ export default async function proxy(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // 2. Maintenance Mode Enforcement (Cached)
     const now = Date.now();
     const isAdmin = request.cookies.get('admin_bypass')?.value === 'true';
 
-    // Use cache if fresh (eliminates backend call on every request)
     if (now - maintenanceCache.lastChecked < CACHE_TTL) {
         if (maintenanceCache.enabled && !isAdmin) {
             return NextResponse.redirect(new URL('/maintenance', request.url));
         }
     } else {
-        // Refresh cache (ONLY once per 30s)
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-            const response = await fetch(`${apiUrl}/public-settings/maintenance`, {
-                cache: 'no-store',
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                maintenanceCache = {
-                    enabled: data.enabled,
-                    lastChecked: now,
-                };
-
-                if (data.enabled && !isAdmin) {
-                    return NextResponse.redirect(new URL('/maintenance', request.url));
-                }
+            const data = await fetchMaintenanceStatus();
+            maintenanceCache = { enabled: data.enabled, lastChecked: now };
+            if (data.enabled && !isAdmin) {
+                return NextResponse.redirect(new URL('/maintenance', request.url));
             }
         } catch (error) {
             console.error('[Maintenance] Status check failed:', error);
-
-            // FAIL-CLOSED: If backend is unreachable, show maintenance page
-            // This prevents users from seeing a broken site when backend is down
-            maintenanceCache = {
-                enabled: true, // Treat backend failure as maintenance mode
-                lastChecked: now,
-            };
-
+            maintenanceCache = { enabled: true, lastChecked: now };
             if (!isAdmin) {
                 return NextResponse.redirect(new URL('/maintenance', request.url));
             }

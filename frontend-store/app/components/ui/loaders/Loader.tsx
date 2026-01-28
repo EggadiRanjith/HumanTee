@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
+import { useIsSafari } from "@/app/lib/useIsSafari";
 
 interface LoaderProps {
     size?: "sm" | "md" | "lg" | "xl";
@@ -15,7 +16,9 @@ export default function Loader({
     fullScreen = false,
     message
 }: LoaderProps) {
-
+    const prefersReducedMotion = useReducedMotion();
+    const isSafari = useIsSafari();
+    const simpleBackground = prefersReducedMotion || isSafari;
     const sizeClasses = {
         sm: "w-8 h-8",
         md: "w-12 h-12",
@@ -130,7 +133,7 @@ export default function Loader({
 
     if (fullScreen) {
         return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--bg-dusk)]/95 backdrop-blur-sm">
+            <div className={`fixed inset-0 z-50 flex items-center justify-center bg-[var(--bg-dusk)]/95 ${simpleBackground ? "" : "backdrop-blur-sm"}`}>
                 {content}
             </div>
         );
@@ -142,12 +145,12 @@ export default function Loader({
 // Additional preset loaders for common use cases
 export function PageLoader() {
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--bg-dusk)]/98 backdrop-blur-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--bg-dusk)]/98">
             <div className="relative">
                 {/* Rotating circle border */}
                 <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-white/20 border-t-white animate-spin" />
 
-                {/* T-shirt icon in center - counter-rotating */}
+                {/* T-shirt icon in center */}
                 <motion.div
                     className="absolute inset-0 flex items-center justify-center"
                     animate={{ rotate: -360 }}

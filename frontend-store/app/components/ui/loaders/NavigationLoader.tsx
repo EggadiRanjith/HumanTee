@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useLoading } from "@/app/contexts/LoadingContext";
 import * as Sentry from "@sentry/nextjs";
 import { trackWebVitals } from "@/lib/monitoring/performance";
+import { useIsSafari } from "@/app/lib/useIsSafari";
 
 const TShirtIcon = () => (
     <svg
@@ -31,6 +32,7 @@ function NavigationLoaderContent() {
 
     // Reduced motion detection
     const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+    const isSafari = useIsSafari();
 
     // Focus management
     const loaderRef = useRef<HTMLDivElement>(null);
@@ -165,10 +167,14 @@ function NavigationLoaderContent() {
         trackWebVitals(pathname);
     }, [pathname]);
 
+    const simpleAnimation = prefersReducedMotion || isSafari;
+
     // Critical Fix #1: Timeout error UI - Luxury redesign
     if (hasTimedOut) {
         return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-[#0a0118] via-[#1a0a2e] to-[#0f0520] backdrop-blur-2xl">
+            <div
+                className={`fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-[#0a0118] via-[#1a0a2e] to-[#0f0520] ${simpleAnimation ? "" : "backdrop-blur-2xl"}`}
+            >
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -179,7 +185,9 @@ function NavigationLoaderContent() {
                     <div className="absolute inset-0 bg-gradient-to-r from-violet-600/20 via-fuchsia-600/20 to-pink-600/20 blur-3xl rounded-3xl" />
 
                     {/* Modal card */}
-                    <div className="relative bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 rounded-2xl p-8 sm:p-10 backdrop-blur-xl shadow-2xl">
+                    <div
+                        className={`relative bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 rounded-2xl p-8 sm:p-10 ${simpleAnimation ? "" : "backdrop-blur-xl"} shadow-2xl`}
+                    >
                         {/* Icon */}
                         <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 border border-white/10 flex items-center justify-center">
                             <svg className="w-8 h-8 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -228,7 +236,7 @@ function NavigationLoaderContent() {
             <div
                 ref={loaderRef}
                 tabIndex={-1}
-                className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[var(--bg-dusk)]/95 backdrop-blur-xl"
+                className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-[var(--bg-dusk)]/95 ${simpleAnimation ? "" : "backdrop-blur-xl"}`}
                 aria-label="Loading page"
             >
                 <div className="relative">
@@ -246,13 +254,13 @@ function NavigationLoaderContent() {
                     {/* T-shirt icon with conditional animation */}
                     <motion.div
                         className="absolute inset-0 flex items-center justify-center"
-                        animate={prefersReducedMotion ? {} : { rotateY: [0, 180, 360] }}
-                        transition={prefersReducedMotion ? {} : {
+                        animate={simpleAnimation ? {} : { rotateY: [0, 180, 360] }}
+                        transition={simpleAnimation ? {} : {
                             duration: 1.8,
                             repeat: Infinity,
                             ease: "easeInOut"
                         }}
-                        style={{ transformStyle: "preserve-3d" }}
+                        style={{ transformStyle: simpleAnimation ? "flat" : "preserve-3d" }}
                     >
                         <TShirtIcon />
                     </motion.div>

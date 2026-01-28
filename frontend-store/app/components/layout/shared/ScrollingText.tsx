@@ -140,11 +140,11 @@ export default function ScrollingText() {
             {/* AQUA-GREEN FLOW ANIMATION */}
             <style>{`
                 @keyframes aquaFlow {
-                    0%   { background-position: 0% 50%;   filter: brightness(1); }
-                    40%  { background-position: 80% 60%;  filter: brightness(1.28); }
-                    60%  { background-position: 100% 50%; filter: brightness(1.18); }
-                    80%  { background-position: 40% 40%;  filter: brightness(1.25); }
-                    100% { background-position: 0% 50%;   filter: brightness(1); }
+                    0%   { background-position: 0% 50%;   }
+                    40%  { background-position: 80% 60%;  }
+                    60%  { background-position: 100% 50%; }
+                    80%  { background-position: 40% 40%;  }
+                    100% { background-position: 0% 50%;   }
                 }
 
                 .animate-aquaFlow {

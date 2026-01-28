@@ -271,9 +271,15 @@
   /* GLASS SYSTEM */
   .luxury-glass {
     background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(24px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: var(--shadow-floating);
+  }
+
+  @supports ((-webkit-backdrop-filter: blur(24px)) or (backdrop-filter: blur(24px))) {
+    .luxury-glass {
+      -webkit-backdrop-filter: blur(24px);
+      backdrop-filter: blur(24px);
+    }
   }
 
   /* SHADOW ELEVATION SYSTEM */
