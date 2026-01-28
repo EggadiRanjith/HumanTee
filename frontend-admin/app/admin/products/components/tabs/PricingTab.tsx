@@ -37,8 +37,10 @@ export default function PricingTab({ errors }: PricingTabProps) {
 
     // Trigger autosave on changes
     useEffect(() => {
-        triggerAutosave('current-user-id'); // User ID from auth context
-    }, [price, compareAtPrice, costPerItem, taxable]);
+        const isEditMode = typeof window !== 'undefined' && window.location.pathname.includes('/edit');
+        const productId = isEditMode ? 'editing' : undefined;
+        triggerAutosave('current-user-id', productId); // User ID from auth context
+    }, [price, compareAtPrice, costPerItem, currency, taxable]);
 
     return (
         <div className="space-y-6 sm:space-y-8">

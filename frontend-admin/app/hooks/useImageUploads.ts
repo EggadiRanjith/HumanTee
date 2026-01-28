@@ -24,10 +24,21 @@ export function useImageUploads() {
      * Returns updated images array with Cloudinary URLs
      */
     const uploadPendingImages = async (images: ProductImage[]): Promise<ProductImage[]> => {
+        console.warn('🔍 uploadPendingImages called with:', images);
+        console.warn('🔍 Image details:', images.map(img => ({ 
+            id: img.id, 
+            hasFile: !!img.file, 
+            fileType: typeof img.file,
+            hasCloudinaryUrl: !!img.cloudinaryUrl 
+        })));
+        
         // Find images that need uploading (have File object, no cloudinaryUrl)
         const pendingImages = images.filter(img => img.file && !img.cloudinaryUrl);
+        
+        console.warn('🔍 Pending images to upload:', pendingImages.length);
 
         if (pendingImages.length === 0) {
+            console.warn('⚠️ No pending images found! All already uploaded or no File objects.');
             return images; // All images already uploaded
         }
 

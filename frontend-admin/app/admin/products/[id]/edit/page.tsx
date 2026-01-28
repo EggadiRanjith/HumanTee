@@ -25,6 +25,8 @@ import { useInventoryStore } from '@/domains/product/inventory/inventory.store';
 import { useVariantsStore } from '@/domains/product/variants/variants.store';
 import { useOrganizationStore } from '@/domains/product/organization/organization.store';
 import { aggregateProductData, markAllDomainsClean } from '@/domains/product/autosave/autosave.service';
+import { UploadProgressModal } from '@/app/components/UploadProgressModal';
+import { useImageUploads } from '@/app/hooks/useImageUploads';
 import { toast } from 'sonner';
 
 interface ProductEditPageProps {
@@ -38,6 +40,9 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
     const [isSaving, setIsSaving] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+
+    // Image upload hook for deferred uploads
+    const { uploadItems, isUploading, uploadPendingImages, resetUploads } = useImageUploads();
 
     // Detect mobile viewport
     useEffect(() => {
@@ -130,10 +135,25 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
 
     const handleSave = async () => {
         setIsSaving(true);
+
         try {
             const productData = aggregateProductData();
 
-            // Sanitize data - remove fields backend doesn't accept
+            console.warn('🔍 DEBUG: productData.images:', productData.images);
+            console.warn('🔍 DEBUG: Images with file:', productData.images.filter((img: any) => img.file));
+            console.warn('🔍 DEBUG: About to call uploadPendingImages...');
+
+            // STEP 1: Upload all pending images (shows progress modal)
+            toast.info('Uploading images to Cloudinary...');
+            const imagesWithCloudinaryUrls = await uploadPendingImages(productData.images);
+
+            console.warn('🔍 DEBUG: Upload complete, results:', imagesWithCloudinaryUrls);
+
+            toast.success('Images uploaded successfully!');
+
+            // STEP 2: Save to database with Cloudinary URLs
+            toast.info('Saving product to database...');
+
             const sanitizedData = {
                 name: productData.name,
                 description: productData.description,
@@ -152,14 +172,14 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
                 status: productData.status,
                 isFeatured: productData.isFeatured,
                 collections: productData.collections,
-                // Sanitize images - remove id but keep order
-                images: productData.images.map((img: any, index: number) => ({
+                // Use uploaded Cloudinary URLs - NO BASE64!
+                images: imagesWithCloudinaryUrls.map((img: any, index: number) => ({
                     url: img.cloudinaryUrl || img.url,
                     altText: img.altText,
                     isPrimary: img.isPrimary,
                     order: index,
                 })),
-                // Sanitize variants - remove id, stockQuantity, isActive and rename to stock
+                // Sanitize variants
                 variants: productData.variants.map((v: any) => ({
                     size: v.size,
                     color: v.color,
@@ -168,7 +188,6 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
                     stock: Number(v.stock) || 0,
                     priceOverride: v.priceOverride ? Number(v.priceOverride) : undefined,
                     weight: v.weight ? Number(v.weight) : undefined,
-                    // ⚠️ Strip out backend-only properties:isActive, id, skuLocked
                 })),
             };
 
@@ -315,6 +334,12 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
                     </div>
                 </>
             )}
+
+            {/* Upload Progress Modal */}
+            <UploadProgressModal
+                isOpen={isUploading}
+                items={uploadItems}
+            />
         </div>
     );
 }

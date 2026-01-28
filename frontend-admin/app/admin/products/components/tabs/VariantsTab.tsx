@@ -33,8 +33,10 @@ export default function VariantsTab({ errors }: VariantsTabProps) {
 
     // Trigger autosave
     useEffect(() => {
-        triggerAutosave('current-user-id');
-    }, [enabled, variants]);
+        const isEditMode = typeof window !== 'undefined' && window.location.pathname.includes('/edit');
+        const productId = isEditMode ? 'editing' : undefined;
+        triggerAutosave('current-user-id', productId);
+    }, [variants]);
 
     const totalStock = selectTotalStock(
         enabled ? 'VARIANT' : 'SINGLE',

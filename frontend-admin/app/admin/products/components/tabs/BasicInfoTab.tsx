@@ -23,9 +23,11 @@ export default function BasicInfoTab({ errors }: BasicInfoTabProps) {
     const { name, description, productType, category, setName, setDescription, setProductType, setCategory } =
         useBasicInfoStore();
 
-    // Trigger autosave on changes
+    // Trigger autosave on changes (only for create mode, not edit)
     useEffect(() => {
-        triggerAutosave('current-user-id');
+        const isEditMode = typeof window !== 'undefined' && window.location.pathname.includes('/edit');
+        const productId = isEditMode ? 'editing' : undefined;
+        triggerAutosave('current-user-id', productId);
     }, [name, description, productType, category]);
 
     return (

@@ -20,6 +20,8 @@ import { aggregateProductData, sanitizeProductDataForAPI, markAllDomainsClean } 
 import { discardDraft } from '@/domains/product/autosave/draft.recovery';
 import { toast } from 'sonner';
 import apiClient from '@/lib/api-client';
+import { UploadProgressModal } from '../../../components/UploadProgressModal';
+import { useImageUploads } from '../../../hooks/useImageUploads';
 
 const STEPS = [
     { key: 'basic', label: 'Basic Info', component: BasicInfoTab },
@@ -38,6 +40,9 @@ export default function MobileProductWizard({ productId }: MobileProductWizardPr
     const router = useRouter();
     const [currentStep, setCurrentStep] = useState(0);
     const [isSaving, setIsSaving] = useState(false);
+
+    // Image upload hook for deferred uploads
+    const { uploadItems, isUploading, uploadPendingImages } = useImageUploads();
 
     // Get validation state
     const { name } = useBasicInfoStore();
@@ -90,7 +95,13 @@ export default function MobileProductWizard({ productId }: MobileProductWizardPr
             const productData = aggregateProductData();
 
             if (productId) {
-                // Edit mode - use same sanitization as desktop edit to avoid backend validation errors
+                // STEP 1: Upload images to Cloudinary (shows progress modal)
+                toast.info('Uploading images...');
+                const imagesWithCloudinaryUrls = await uploadPendingImages(productData.images);
+                toast.success('Images uploaded!');
+
+                // STEP 2: Edit mode - save to database
+                toast.info('Saving product...');
                 const sanitizedData = {
                     name: productData.name,
                     description: productData.description,
@@ -109,14 +120,13 @@ export default function MobileProductWizard({ productId }: MobileProductWizardPr
                     status: productData.status,
                     isFeatured: productData.isFeatured,
                     collections: productData.collections,
-                    // Sanitize images - remove id but keep order
-                    images: productData.images.map((img: any, index: number) => ({
+                    // Use Cloudinary URLs - NO BASE64!
+                    images: imagesWithCloudinaryUrls.map((img: any, index: number) => ({
                         url: img.cloudinaryUrl || img.url,
                         altText: img.altText,
                         isPrimary: img.isPrimary,
                         order: index,
                     })),
-                    // Sanitize variants - remove backend-only properties
                     variants: productData.variants.map((v: any) => ({
                         size: v.size,
                         color: v.color,
@@ -125,15 +135,32 @@ export default function MobileProductWizard({ productId }: MobileProductWizardPr
                         stock: Number(v.stock) || 0,
                         priceOverride: v.priceOverride ? Number(v.priceOverride) : undefined,
                         weight: v.weight ? Number(v.weight) : undefined,
-                        // Strips: isActive, id, skuLocked
                     })),
                 };
 
                 await apiClient.put(`/admin/products/${productId}`, sanitizedData);
                 toast.success('Product updated successfully!');
             } else {
-                // Create mode - use existing sanitization
-                const sanitizedData = sanitizeProductDataForAPI(productData);
+                // STEP 1: Upload images to Cloudinary (shows progress modal)
+                toast.info('Uploading images...');
+                const imagesWithCloudinaryUrls = await uploadPendingImages(productData.images);
+                toast.success('Images uploaded!');
+
+                // STEP 2: Create mode - save to database
+                toast.info('Creating product...');
+
+                // Map images to API format (only send url, altText, isPrimary, order)
+                const mappedImages = imagesWithCloudinaryUrls.map((img: any, index: number) => ({
+                    url: img.cloudinaryUrl || img.url,
+                    altText: img.altText,
+                    isPrimary: img.isPrimary,
+                    order: index,
+                }));
+
+                const sanitizedData = sanitizeProductDataForAPI({
+                    ...productData,
+                    images: mappedImages as any, // Type assertion to bypass mismatch
+                });
                 await apiClient.post('/admin/products', sanitizedData);
                 toast.success('Product created successfully!');
                 discardDraft(); // Clear draft from localStorage
@@ -232,6 +259,12 @@ export default function MobileProductWizard({ productId }: MobileProductWizardPr
                     )}
                 </div>
             </div>
+
+            {/* Upload Progress Modal */}
+            <UploadProgressModal
+                isOpen={isUploading}
+                items={uploadItems}
+            />
         </div>
     );
 }

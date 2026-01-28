@@ -49,7 +49,9 @@ export default function ImageUploader({
             const remainingSlots = maxImages - images.length;
             const filesToProcess = Array.from(files).slice(0, remainingSlots);
 
-            // Create preview images immediately (base64) - NO UPLOAD YET
+            // Create preview images with File objects
+            // Autosave EXCLUDES images (they won't be serialized)
+            // Upload to Cloudinary happens when user clicks Save (with progress modal)
             const previewPromises = filesToProcess.map((file, index) => {
                 return new Promise<ProductImage>((resolve) => {
                     if (file.type.startsWith('image/')) {
@@ -57,12 +59,11 @@ export default function ImageUploader({
                         reader.onload = (e: any) => {
                             resolve({
                                 id: `temp-${Date.now()}-${index}`,
-                                url: e.target?.result as string, // Base64 for preview ONLY
-                                file, // Keep file for later upload
+                                url: e.target?.result as string, // Base64 preview
+                                file, // Keep File object for upload on save
                                 altText: file.name.replace(/\.[^/.]+$/, ''),
                                 isPrimary: images.length === 0 && index === 0,
                                 order: images.length + index,
-                                // NO uploadProgress - upload happens on Save
                             });
                         };
                         reader.readAsDataURL(file);
@@ -72,8 +73,9 @@ export default function ImageUploader({
 
             const newImages = await Promise.all(previewPromises);
 
-            // Add images with base64 preview immediately (for UX)
-            //  Cloudinary upload will happen when user clicks Save
+            console.warn('📸 Images ready with File objects. Will upload on save:', newImages.length);
+
+            // Add images - they'll upload when user clicks Save
             onChange([...images, ...newImages]);
         },
         [images, maxImages, onChange]

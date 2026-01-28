@@ -17,7 +17,9 @@ export default function OrganizationTab() {
 
     // Trigger autosave
     useEffect(() => {
-        triggerAutosave('current-user-id');
+        const isEditMode = typeof window !== 'undefined' && window.location.pathname.includes('/edit');
+        const productId = isEditMode ? 'editing' : undefined;
+        triggerAutosave('current-user-id', productId);
     }, [status, isFeatured, collections]);
 
     const handleCollectionToggle = (collection: string, checked: boolean) => {

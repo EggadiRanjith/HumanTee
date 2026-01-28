@@ -40,8 +40,10 @@ export default function InventoryTab() {
 
     // Trigger autosave
     useEffect(() => {
-        triggerAutosave('current-user-id');
-    }, [trackInventory, stock, sku, continueSellingWhenOutOfStock, lowStockThreshold]);
+        const isEditMode = typeof window !== 'undefined' && window.location.pathname.includes('/edit');
+        const productId = isEditMode ? 'editing' : undefined;
+        triggerAutosave('current-user-id', productId);
+    }, [variantsEnabled, trackInventory, stock, sku, continueSellingWhenOutOfStock, lowStockThreshold]);
 
     const totalStock = selectTotalStock(mode, stock, variants);
 

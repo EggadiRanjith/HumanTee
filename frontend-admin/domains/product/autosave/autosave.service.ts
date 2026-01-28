@@ -60,6 +60,9 @@ export const aggregateProductData = (): ProductFormData => {
     const media = useMediaStore.getState();
     const organization = useOrganizationStore.getState();
 
+    console.warn('🔍 DEBUG media.images from store:', media.images);
+    console.warn('🔍 DEBUG file properties:', media.images.map(img => ({ id: img.id, hasFile: !!img.file })));
+
     return {
         // Basic Info
         name: basicInfo.name,
@@ -148,23 +151,10 @@ export const markAllDomainsClean = (): void => {
 export const saveDraftToLocalStorage = (userId: string): void => {
     const data = aggregateProductData();
 
-    // CRITICAL: Strip base64 image data to prevent QuotaExceededError
-    // Base64 images can be 5-10 MB each, localStorage limit is ~10 MB total!
-    // Only save Cloudinary URLs (which are tiny ~100 bytes)
-    const sanitizedImages = data.images
-        .filter(img => img.cloudinaryUrl || (!img.url?.startsWith('data:'))) // Skip base64-only images
-        .map(img => ({
-            id: img.id,
-            url: img.cloudinaryUrl || img.url, // Prefer Cloudinary URL
-            cloudinaryUrl: img.cloudinaryUrl,
-            cloudinaryPublicId: img.cloudinaryPublicId,
-            altText: img.altText,
-            isPrimary: img.isPrimary,
-            order: img.order,
-            status: img.status,
-            uploadedAt: img.uploadedAt,
-            // DO NOT include: file, url (if base64), uploadProgress, uploadError
-        }));
+    // CRITICAL: DO NOT autosave images at all!
+    // Reason: File objects cannot be serialized, causing uploads to fail
+    // Images will only persist when product is explicitly saved
+    const sanitizedImages: any[] = []; // Empty - no image autosave
 
     // Generate UUID compatible with older browsers
     const generateId = () => {
@@ -178,7 +168,7 @@ export const saveDraftToLocalStorage = (userId: string): void => {
         schemaVersion: SCHEMA_VERSION,
         data: {
             ...data,
-            images: sanitizedImages, // Use sanitized images without base64
+            images: sanitizedImages, // Empty array - images not autosaved
         },
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -244,7 +234,12 @@ export const clearDraftFromLocalStorage = (): void => {
 
 let autosaveTimeout: number | null = null;
 
-export const triggerAutosave = (userId: string): void => {
+export const triggerAutosave = (userId: string, productId?: string): void => {
+    // Skip autosave for edit mode - only autosave when creating new products
+    if (productId) {
+        return;
+    }
+
     if (autosaveTimeout) {
         clearTimeout(autosaveTimeout);
     }
