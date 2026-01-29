@@ -49,6 +49,17 @@
             "source": "/home",
             "destination": "/",
             "permanent": true
+        },
+        {
+            "source": "/:path*",
+            "has": [
+                {
+                    "type": "host",
+                    "value": "www.humantee.in"
+                }
+            ],
+            "destination": "https://humantee.in/:path*",
+            "permanent": true
         }
     ]
 }

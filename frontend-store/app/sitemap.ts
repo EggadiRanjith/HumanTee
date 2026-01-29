@@ -7,9 +7,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     let productUrls: MetadataRoute.Sitemap = [];
 
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://app.humantee.in'}/products/all`, {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://app.humantee.in';
+
+        // Add timeout to prevent sitemap generation from hanging
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+        const response = await fetch(`${apiUrl}/products/all`, {
             next: { revalidate: 300 },
+            signal: controller.signal,
         });
+
+        clearTimeout(timeoutId);
 
         if (response.ok) {
             const raw = await response.json();
@@ -21,9 +30,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
                 changeFrequency: 'weekly' as const,
                 priority: 0.8, // Products are high priority for e-commerce
             }));
+        } else {
+            console.warn(`Sitemap: Product API returned ${response.status}`);
         }
     } catch (error) {
+        // Log error but don't fail sitemap generation
         console.error('Failed to fetch products for sitemap:', error);
+        // Return static pages only if product fetch fails
     }
 
     const staticPages: MetadataRoute.Sitemap = [
