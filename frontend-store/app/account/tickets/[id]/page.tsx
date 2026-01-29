@@ -442,35 +442,41 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                     <div className="w-full lg:w-72 space-y-6">
 
                         {/* Order Context */}
-                        <div className="p-5 rounded-2xl luxury-glass border border-white/10 bg-white/5">
-                            <h3 className="text-white/30 text-[10px] uppercase tracking-widest mb-4">Linked Order</h3>
-                            <div className="space-y-3">
-                                <p className="text-white font-light text-sm">{ticket.order?.orderNumber}</p>
-                                <Link href={`/orders/${ticket.orderId}`}>
-                                    <button className="text-[10px] text-violet-400 uppercase tracking-widest hover:text-violet-300 transition-colors">
-                                        View Order Details →
-                                    </button>
-                                </Link>
+                        {ticket.order && (
+                            <div className="p-5 rounded-2xl luxury-glass border border-white/10 bg-white/5">
+                                <h3 className="text-white/30 text-[10px] uppercase tracking-widest mb-4">Linked Order</h3>
+                                <div className="space-y-3">
+                                    <p className="text-white font-light text-sm">{ticket.order.orderNumber || 'N/A'}</p>
+                                    <Link href={`/orders/${ticket.order.orderId || ticket.order.id}`}>
+                                        <button className="text-[10px] text-violet-400 uppercase tracking-widest hover:text-violet-300 transition-colors">
+                                            View Order Details →
+                                        </button>
+                                    </Link>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Recent Activity / Audit Log */}
                         <div className="p-5 rounded-2xl luxury-glass border border-white/10 bg-white/5">
                             <h3 className="text-white/30 text-[10px] uppercase tracking-widest mb-4">Status History</h3>
                             <div className="space-y-4">
-                                {ticket.statusHistory?.map((entry: any) => (
-                                    <div key={entry.id} className="flex gap-3">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-white/20 mt-1.5 flex-shrink-0" />
-                                        <div>
-                                            <p className="text-[11px] text-white/70">
-                                                Status changed to <span className="text-white font-medium">{entry.toStatus?.replace('_', ' ') || entry.toStatus}</span>
-                                            </p>
-                                            <p className="text-[9px] text-white/20 uppercase tracking-widest mt-0.5">
-                                                {new Date(entry.createdAt).toLocaleDateString()}
-                                            </p>
+                                {ticket.statusHistory && ticket.statusHistory.length > 0 ? (
+                                    ticket.statusHistory.map((entry: any) => (
+                                        <div key={entry.id} className="flex gap-3">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-white/20 mt-1.5 flex-shrink-0" />
+                                            <div>
+                                                <p className="text-[11px] text-white/70">
+                                                    Status changed to <span className="text-white font-medium">{entry.toStatus?.replace('_', ' ') || entry.toStatus}</span>
+                                                </p>
+                                                <p className="text-[9px] text-white/20 uppercase tracking-widest mt-0.5">
+                                                    {new Date(entry.createdAt).toLocaleDateString()}
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))
+                                ) : (
+                                    <p className="text-white/40 text-xs">No status changes yet</p>
+                                )}
                             </div>
                         </div>
 

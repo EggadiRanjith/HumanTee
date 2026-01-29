@@ -44,6 +44,14 @@ export function CartItem({ item, index, onUpdateQuantity, onRemove }: CartItemPr
         // Block if already updating (API call in progress)
         if (isUpdating) return;
 
+        // Maximum quantity limit per item
+        const MAX_QUANTITY = 6;
+        if (newQuantity > MAX_QUANTITY) {
+            setStockError(`Maximum ${MAX_QUANTITY} items allowed per product`);
+            setTimeout(() => setStockError(null), 3000);
+            return;
+        }
+
         // Check stock before updating
         if (item.availableStock !== undefined && newQuantity > item.availableStock) {
             setStockError(`Only ${item.availableStock} items available`);
