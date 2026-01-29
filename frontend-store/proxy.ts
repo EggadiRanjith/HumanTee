@@ -6,8 +6,27 @@ let maintenanceCache = { enabled: false, lastChecked: 0 };
 const CACHE_TTL = 30_000;
 
 export default async function proxy(request: NextRequest) {
-    const { pathname } = request.nextUrl;
+    const { protocol, host, pathname, search } = request.nextUrl;
 
+    // 1. URL Canonicalization - Force HTTPS and non-www (SEO)
+    // This consolidates all URLs to https://humantee.in
+    if (process.env.NODE_ENV === 'production') {
+        // Force HTTPS
+        if (protocol === 'http:') {
+            const httpsUrl = new URL(request.url);
+            httpsUrl.protocol = 'https:';
+            return NextResponse.redirect(httpsUrl, 301);
+        }
+
+        // Remove www prefix
+        if (host.startsWith('www.')) {
+            const nonWwwUrl = new URL(request.url);
+            nonWwwUrl.host = host.replace('www.', '');
+            return NextResponse.redirect(nonWwwUrl, 301);
+        }
+    }
+
+    // 2. Skip proxy logic for specific paths
     if (
         pathname.startsWith('/_next') ||
         pathname.startsWith('/api/') ||

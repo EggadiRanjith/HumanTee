@@ -24,7 +24,7 @@ export interface BreadcrumbItem {
  * Used on product detail pages
  */
 export function generateProductSchema(product: Product) {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://humantee.com';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://humantee.in';
 
     return {
         '@context': 'https://schema.org',
@@ -54,7 +54,7 @@ export function generateProductSchema(product: Product) {
  * Used in site footer/layout
  */
 export function generateOrganizationSchema() {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://humantee.com';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://humantee.in';
 
     return {
         '@context': 'https://schema.org',
@@ -97,7 +97,7 @@ export function generateBreadcrumbSchema(items: BreadcrumbItem[]) {
  * Used in main layout
  */
 export function generateWebSiteSchema() {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://humantee.com';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://humantee.in';
 
     return {
         '@context': 'https://schema.org',
