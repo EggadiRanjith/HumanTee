@@ -82,10 +82,6 @@ export const metadata: Metadata = {
   creator: "HumanTee",
   publisher: "HumanTee",
 
-  alternates: {
-    canonical: "https://humantee.in",
-  },
-
   icons: {
     icon: "/metaimages/favicon.png",
     shortcut: "/favicon.ico",

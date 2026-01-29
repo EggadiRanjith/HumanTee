@@ -30,6 +30,6 @@ export const metadata: Metadata = {
         images: ['/images/shop-og.jpg'],
     },
     alternates: {
-        canonical: 'https://humantee.com/shop',
+        canonical: 'https://www.humantee.in/shop',
     },
 };
