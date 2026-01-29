@@ -3,17 +3,20 @@
  * Loading placeholder for product detail page
  */
 
+"use client";
+
 export function ProductDetailSkeleton() {
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 animate-pulse">
             {/* Image Gallery Skeleton */}
             <div className="space-y-4">
-                {/* Main image */}
+                {/* Main image - shimmer always shows, CSS controls speed */}
                 <div className="aspect-square bg-gradient-to-br from-white/10 to-white/5 rounded-lg relative overflow-hidden">
                     <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 </div>
 
-                {/* Thumbnails */}
+                {/* Thumbnails - shimmer always shows, CSS controls speed */}
                 <div className="grid grid-cols-4 gap-2">
                     {Array.from({ length: 4 }).map((_, i) => (
                         <div

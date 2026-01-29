@@ -240,15 +240,29 @@ function NavigationLoaderContent() {
                 aria-label="Loading page"
             >
                 <div className="relative">
-                    {/* Spinning circle */}
-                    <div
+                    {/* Spinning circle - Use Framer Motion instead of CSS animate-spin */}
+                    <motion.div
                         className="
                             w-[26vw] h-[26vw]
                             sm:w-[18vw] sm:h-[18vw]
                             lg:w-[10vw] lg:h-[10vw]
                             max-w-32 max-h-32
-                            rounded-full border-2 border-white/20 border-t-white animate-spin
+                            rounded-full border-2 border-white/20 border-t-white
                         "
+                        animate={{ rotate: 360 }}
+                        transition={
+                            simpleAnimation
+                                ? {
+                                    duration: 3, // Gentle but visible spin for reduce motion
+                                    repeat: Infinity,
+                                    ease: "linear"
+                                }
+                                : {
+                                    duration: 1,
+                                    repeat: Infinity,
+                                    ease: "linear"
+                                }
+                        }
                     />
 
                     {/* T-shirt icon with conditional animation */}

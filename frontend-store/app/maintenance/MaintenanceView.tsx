@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FiInstagram, FiMail } from 'react-icons/fi';
@@ -19,6 +19,19 @@ interface MaintenanceSettings {
 export default function MaintenanceView({ initialSettings }: { initialSettings: MaintenanceSettings }) {
     const [settings] = useState(initialSettings);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+        setPrefersReducedMotion(mediaQuery.matches);
+
+        const handleChange = (e: MediaQueryListEvent) => {
+            setPrefersReducedMotion(e.matches);
+        };
+
+        mediaQuery.addEventListener("change", handleChange);
+        return () => mediaQuery.removeEventListener("change", handleChange);
+    }, []);
 
     const handleRefresh = () => {
         setIsRefreshing(true);
@@ -27,10 +40,13 @@ export default function MaintenanceView({ initialSettings }: { initialSettings: 
 
     return (
         <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#1a0b2e] via-[#2d1b4e] to-black relative overflow-hidden">
-            {/* Animated Background Glow */}
+            {/* Animated Background Glow - Conditionally disable animation */}
             <div
                 className="absolute inset-0 opacity-20 sm:opacity-30 pointer-events-none"
-                style={{
+                style={prefersReducedMotion ? {
+                    background: 'radial-gradient(circle at 50% 50%, rgba(140,120,255,0.15), transparent 70%)',
+                    filter: 'blur(40px)',
+                } : {
                     background: 'radial-gradient(circle at 50% 50%, rgba(140,120,255,0.15), transparent 70%)',
                     filter: 'blur(40px)',
                     animation: 'pulse 8s ease-in-out infinite',

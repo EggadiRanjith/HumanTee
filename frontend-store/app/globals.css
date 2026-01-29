@@ -516,11 +516,39 @@
   animation: glowPulse var(--glow-pulse-duration) ease-in-out infinite;
 }
 
-/* REDUCE MOTION SAFETY */
+/* REDUCE MOTION SAFETY - CRITICAL FIX FOR SAFARI */
 @media (prefers-reduced-motion: reduce) {
-  * {
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Completely disable all keyframe animations EXCEPT shimmer */
+  .cinematic-aurora-animated,
+  .animate-pulseText,
+  .animate-glowPulse,
+  .animate-slide-in-right {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  /* Slow down shimmer for loading feedback, don't disable it */
+  .animate-shimmer {
+    animation: shimmer 6s infinite !important;
+    /* Slower but still visible */
+  }
+
+  /* Disable specific animations by name */
+  [style*="animation: auroraMove"],
+  [style*="animation: pulseText"],
+  [style*="animation: glowPulse"],
+  [style*="animation: slide-in-right"] {
+    animation: none !important;
   }
 }
 

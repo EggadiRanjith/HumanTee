@@ -43,7 +43,15 @@ export default function Loader({
     const SpinnerLoader = () => (
         <div className={`${sizeClasses[size]} relative`}>
             <div className="absolute inset-0 rounded-full border-4 border-white/10"></div>
-            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-white animate-spin"></div>
+            <motion.div
+                className="absolute inset-0 rounded-full border-4 border-transparent border-t-white"
+                animate={{ rotate: 360 }}
+                transition={{
+                    duration: prefersReducedMotion || isSafari ? 3 : 1,
+                    repeat: Infinity,
+                    ease: "linear"
+                }}
+            />
         </div>
     );
 
@@ -144,11 +152,22 @@ export default function Loader({
 
 // Additional preset loaders for common use cases
 export function PageLoader() {
+    const prefersReducedMotion = useReducedMotion();
+    const isSafari = useIsSafari();
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--bg-dusk)]/98">
             <div className="relative">
-                {/* Rotating circle border */}
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+                {/* Rotating circle border - Use Framer Motion */}
+                <motion.div
+                    className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-white/20 border-t-white"
+                    animate={{ rotate: 360 }}
+                    transition={{
+                        duration: prefersReducedMotion || isSafari ? 3 : 1,
+                        repeat: Infinity,
+                        ease: "linear"
+                    }}
+                />
 
                 {/* T-shirt icon in center */}
                 <motion.div

@@ -16,12 +16,33 @@ interface ScrollingBannerProps {
 
 const ScrollingBanner = ({ messages: propMessages }: ScrollingBannerProps = {}) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   // Get banner settings from centralized cache
   const { messages: apiMessages } = useBannerSettings();
 
   // Use prop messages if provided, otherwise use API/fallback messages
   const messages = propMessages && propMessages.length > 0 ? propMessages : (apiMessages || []);
+
+  // Detect reduce motion preference
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      setPrefersReducedMotion(e.matches);
+    };
+
+    // Handle both modern and older Safari versions
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", handleChange);
+      return () => mediaQuery.removeEventListener("change", handleChange);
+    } else {
+      // Fallback for older browsers
+      mediaQuery.addListener(handleChange);
+      return () => mediaQuery.removeListener(handleChange);
+    }
+  }, []);
 
   // Loading state
   useEffect(() => {
@@ -55,10 +76,23 @@ const ScrollingBanner = ({ messages: propMessages }: ScrollingBannerProps = {}) 
         }
 
         .scrolling-banner {
-          animation: marquee 50s linear infinite;
-          -webkit-animation: marquee 50s linear infinite;
+          ${prefersReducedMotion ? '' : `
+            animation: marquee 50s linear infinite;
+            -webkit-animation: marquee 50s linear infinite;
+          `}
           -webkit-backface-visibility: hidden;
           backface-visibility: hidden;
+          will-change: ${prefersReducedMotion ? 'auto' : 'transform'};
+        }
+
+        /* Ensure no animation when reduce motion is preferred */
+        @media (prefers-reduced-motion: reduce) {
+          .scrolling-banner {
+            animation: none !important;
+            -webkit-animation: none !important;
+            transform: translate3d(0, 0, 0) !important;
+            -webkit-transform: translate3d(0, 0, 0) !important;
+          }
         }
       `}</style>
 

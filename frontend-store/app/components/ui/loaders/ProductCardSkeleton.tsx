@@ -3,10 +3,13 @@
  * Loading placeholder that matches ProductCard dimensions
  */
 
+"use client";
+
 export function ProductCardSkeleton() {
+
   return (
     <div className="w-full group relative rounded-lg overflow-hidden bg-white/5 animate-pulse">
-      {/* Image skeleton */}
+      {/* Image skeleton - shimmer always shows, CSS controls speed */}
       <div className="w-full aspect-[4/5] bg-gradient-to-br from-white/5 to-white/10 relative overflow-hidden">
         <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent" />
       </div>
