@@ -144,10 +144,7 @@ function Header() {
             <Link
               href="/"
               prefetch={false}
-              onClick={(e) => {
-                setLoading(true);
-                stopPropagation(e);
-              }}
+              onClick={stopPropagation}
               className="flex items-center gap-2 sm:gap-3 transition-all duration-300 hover:opacity-90 min-w-0 flex-shrink"
             >
               {settings?.logo_url && settings.logo_url.trim() !== '' && (
@@ -199,10 +196,7 @@ function Header() {
                   key={link.href}
                   href={link.href}
                   prefetch={link.href === '/shop' ? true : false}
-                  onClick={(e) => {
-                    setLoading(true);
-                    handleProtectedNavigation(e, link.href);
-                  }}
+                  onClick={(e) => handleProtectedNavigation(e, link.href)}
                   className={`
                 uppercase tracking-[0.20em] transition-all duration-300
                 ${pathname === link.href
@@ -234,10 +228,7 @@ function Header() {
                 <Link
                   href="/cart"
                   prefetch={true}
-                  onClick={(e) => {
-                    setLoading(true);
-                    stopPropagation(e);
-                  }}
+                  onClick={stopPropagation}
                   className="
                 relative p-1 
                 hover:scale-105 transition-transform duration-200
@@ -261,7 +252,7 @@ function Header() {
                 <Link
                   href="/cart"
                   prefetch={true}
-                  onClick={() => setLoading(true)}
+                  onClick={undefined}
                   className="
                 relative transition-all duration-300
                 text-white hover:text-white/90
