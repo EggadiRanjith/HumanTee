@@ -43,7 +43,7 @@ export default function PaymentActions({
                 </button>
             </motion.div>
 
-            {/* Back and Place Order Buttons - Desktop/Mobile Bottom */}
+            {/* Back and Place Order Buttons - Desktop (Second Place Order hidden on Mobile) */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -63,7 +63,7 @@ export default function PaymentActions({
                 <button
                     onClick={onPlaceOrder}
                     disabled={isProcessing}
-                    className="flex-1 py-3.5 sm:py-4 bg-white text-black rounded-full text-sm sm:text-base uppercase tracking-wider font-semibold hover:bg-white/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="hidden sm:block flex-1 py-3.5 sm:py-4 bg-white text-black rounded-full text-sm sm:text-base uppercase tracking-wider font-semibold hover:bg-white/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isProcessing ? (
                         <span className="flex items-center justify-center gap-2">

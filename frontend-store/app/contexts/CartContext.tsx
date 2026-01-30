@@ -205,6 +205,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     onError?: (message: string) => void
   ): Promise<boolean> => {
     const quantity = item.quantity || 1;
+    const MAX_QUANTITY = 6;
 
     // Check stock before adding (both guest and authenticated)
     const existingItem = items.find(
@@ -214,6 +215,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const newQuantity = existingItem
       ? existingItem.quantity + quantity
       : quantity;
+
+    // Check maximum quantity limit
+    if (newQuantity > MAX_QUANTITY) {
+      onError?.(`Maximum ${MAX_QUANTITY} items allowed per product`);
+      return false;
+    }
 
     if (item.availableStock !== undefined && newQuantity > item.availableStock) {
       onError?.(`Only ${item.availableStock} items available in stock`);
@@ -302,9 +309,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
 
   const updateQuantity = async (id: number | string, size: string, quantity: number) => {
+    const MAX_QUANTITY = 6;
+
     if (quantity <= 0) {
       removeFromCart(id, size);
       return;
+    }
+
+    // Enforce maximum quantity limit
+    if (quantity > MAX_QUANTITY) {
+      return; // Silently ignore (UI already handles the error message)
     }
 
     if (isAuthenticated) {

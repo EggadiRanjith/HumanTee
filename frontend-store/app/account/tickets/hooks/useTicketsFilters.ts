@@ -32,7 +32,7 @@ export function useTicketsFilters() {
         Object.entries(newFilters).forEach(([key, value]) => {
             if (value !== undefined && value !== null && value !== '' && value !== 'all') {
                 params.set(key, String(value));
-            } else if (key !== 'orderId') {  // Keep orderId if it exists
+            } else {
                 params.delete(key);
             }
         });
@@ -40,15 +40,10 @@ export function useTicketsFilters() {
         router.push(`${pathname}?${params.toString()}`, { scroll: false });
     }, [searchParams, router, pathname]);
 
-    // Clear all filters (except orderId)
+    // Clear all filters
     const clearFilters = useCallback(() => {
-        const params = new URLSearchParams();
-        if (filters.orderId) {
-            params.set('orderId', filters.orderId);
-        }
-        const queryString = params.toString();
-        router.push(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
-    }, [router, pathname, filters.orderId]);
+        router.push(pathname, { scroll: false });
+    }, [router, pathname]);
 
     // Check if any filters are active
     const hasActiveFilters = !!(

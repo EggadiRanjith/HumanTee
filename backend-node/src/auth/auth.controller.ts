@@ -98,7 +98,7 @@ export class AuthController {
 
         res.cookie('admin_access_token', result.accessToken, {
             httpOnly: true,  // Prevents XSS attacks
-            secure: false,  // Allow HTTP in development
+            secure: isProduction,  // Allow HTTP in development
             sameSite: 'lax',  // Lax allows cross-IP in development
             maxAge: 15 * 60 * 1000,  // 15 minutes
             path: '/',
@@ -106,7 +106,7 @@ export class AuthController {
 
         res.cookie('admin_refresh_token', result.refreshToken, {
             httpOnly: true,
-            secure: false,  // Allow HTTP in development
+            secure: isProduction,  // Allow HTTP in development
             sameSite: 'lax',  // Lax allows cross-IP in development
             maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
             path: '/',
@@ -224,7 +224,7 @@ export class AuthController {
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
             secure: true,  // MUST be true for SameSite=None (both domains are HTTPS)
-            sameSite: 'none',  // REQUIRED for cross-origin cookie setting
+            sameSite: 'lax',  // REQUIRED for cross-origin cookie setting
             domain: '.humantee.in',  // Share cookie across all subdomains (humantee.in, app.humantee.in)
             maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
             path: '/',
@@ -295,10 +295,10 @@ export class AuthController {
 
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
-            secure: isProduction,  // HTTPS only in production
-            sameSite: isProduction ? 'none' : 'lax',  // 'none' for cross-origin in prod
-            domain: isProduction ? '.humantee.in' : undefined,  // Share across subdomains in production
-            maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
+            secure: isProduction,
+            sameSite: 'lax',
+            domain: isProduction ? '.humantee.in' : undefined,
+            maxAge: 7 * 24 * 60 * 60 * 1000,
             path: '/',
         });
 
@@ -348,10 +348,10 @@ export class AuthController {
 
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
-            secure: isProduction,  // HTTPS only in production
-            sameSite: isProduction ? 'none' : 'lax',  // 'none' for cross-origin in prod
-            domain: isProduction ? '.humantee.in' : undefined,  // Share across subdomains in production
-            maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
+            secure: isProduction,
+            sameSite: 'lax',
+            domain: isProduction ? '.humantee.in' : undefined,
+            maxAge: 7 * 24 * 60 * 60 * 1000,
             path: '/',
         });
 
