@@ -140,7 +140,7 @@ const ProductInfoComponent = ({ product }: ProductInfoProps) => {
                         {product.currency} {product.price.toFixed(2)}
                     </div>
                 </div>
-                {(product.originalPrice ?? 0) > 0 && product.originalPrice > product.price && (
+                {(product.originalPrice ?? 0) > 0 && (product.originalPrice ?? 0) > product.price && (
                     <div className="inline-block px-3 py-1 text-[12px] font-bold tracking-wider uppercase bg-gradient-to-r from-violet-500 to-fuchsia-400 text-white rounded-full shadow-glow-violet-medium">
                         Save {product.currency} {((product.originalPrice || 0) - product.price).toFixed(2)}
                     </div>
