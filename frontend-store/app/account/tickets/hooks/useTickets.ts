@@ -15,7 +15,7 @@ export function useTickets(filters: TicketFilters = {}) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
     const [totalPages, setTotalPages] = useState(1);
-    const [retryCount, setRetryCount] = useState(0); // ✅ Add retry trigger
+    const [retryCount, setRetryCount] = useState(0);
 
     useEffect(() => {
         const fetchTickets = async () => {
@@ -23,40 +23,13 @@ export function useTickets(filters: TicketFilters = {}) {
             setError(null);
 
             try {
-                const params = new URLSearchParams();
-
-                // Handle orderId filter
+                // Simplified: Always fetch all user tickets
+                // If orderId is provided, filter by that order's tickets
                 const url = filters.orderId
                     ? `/tickets/order/${filters.orderId}`
                     : '/tickets';
 
-                // Only add filters if NOT fetching for a specific order
-                // (order endpoint returns ALL tickets for that order)
-                if (!filters.orderId) {
-                    if (filters.status && filters.status !== 'all') {
-                        params.append('status', filters.status);
-                    }
-                    if (filters.category && filters.category !== 'all') {
-                        params.append('category', filters.category);
-                    }
-                    if (filters.search) {
-                        params.append('search', filters.search);
-                    }
-                    if (filters.sortBy) {
-                        params.append('sortBy', filters.sortBy);
-                    }
-                    if (filters.page) {
-                        params.append('page', String(filters.page));
-                    }
-                    if (filters.limit) {
-                        params.append('limit', String(filters.limit));
-                    }
-                }
-
-                const queryString = params.toString();
-                const fullUrl = queryString ? `${url}?${queryString}` : url;
-
-                const response = await apiClient.get(fullUrl);
+                const response = await apiClient.get(url);
                 setTickets(response.data.tickets || response.data);
                 setTotalPages(response.data.totalPages || 1);
             } catch (err) {
@@ -68,9 +41,8 @@ export function useTickets(filters: TicketFilters = {}) {
         };
 
         fetchTickets();
-    }, [filters.orderId, filters.status, filters.category, filters.search, filters.sortBy, filters.page, filters.limit, retryCount]); // ✅ Add retryCount to deps
+    }, [filters.orderId, retryCount]);
 
-    // ✅ Fix retry to actually trigger refetch
     const retry = () => {
         setRetryCount(prev => prev + 1);
     };

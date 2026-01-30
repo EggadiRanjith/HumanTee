@@ -19,7 +19,7 @@ export function useUser(options?: UseUserOptions) {
         },
         enabled: options?.enabled !== false,
         staleTime: 30 * 60 * 1000,
-        gcTime: 60 * 60 * 1000,
+        gcTime: Infinity, // Keep profile cached indefinitely even after session expires
         refetchOnWindowFocus: false,
         refetchOnMount: false,
         placeholderData: (previousData) => previousData,

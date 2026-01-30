@@ -82,13 +82,13 @@ function TicketListPageContent() {
                 {/* Header */}
                 <TicketsHeader orderId={filters.orderId} />
 
-                {/* Filters */}
-                <TicketsFilters
+                {/* Filters - Disabled for now (will add in future) */}
+                {/* <TicketsFilters
                     filters={filters}
                     onFilterChange={setFilters}
                     onClearFilters={clearFilters}
                     hasActiveFilters={hasActiveFilters}
-                />
+                /> */}
 
                 {/* Content */}
                 {isLoading ? (

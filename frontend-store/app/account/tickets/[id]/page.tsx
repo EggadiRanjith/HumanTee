@@ -247,11 +247,13 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                 {/* Header Section */}
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
                     <div className="flex items-center gap-3 sm:gap-4">
-                        <Link href={ticket.orderId ? `/orders/${ticket.orderId}` : "/account/tickets"}>
-                            <button className="p-2 sm:p-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all">
-                                <FiArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-                            </button>
-                        </Link>
+                        <button 
+                            onClick={() => router.back()}
+                            className="p-2 sm:p-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
+                            aria-label="Go back"
+                        >
+                            <FiArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </button>
                         <div className="min-w-0">
                             <div className="flex items-center gap-2 sm:gap-3">
                                 <h1 className="text-lg sm:text-xl md:text-2xl font-light text-white tracking-wide truncate">{ticket.ticketNumber}</h1>

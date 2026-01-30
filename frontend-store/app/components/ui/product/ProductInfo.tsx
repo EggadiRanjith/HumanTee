@@ -131,7 +131,7 @@ const ProductInfoComponent = ({ product }: ProductInfoProps) => {
             {/* Price + Badge + Stock - India-tuned */}
             <div className="flex items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
-                    {product.originalPrice && (
+                    {(product.originalPrice ?? 0) > 0 && (
                         <div className="text-white/55 text-[16px] sm:text-[18px] line-through">
                             {product.currency} {product.originalPrice?.toFixed(2)}
                         </div>
@@ -140,7 +140,7 @@ const ProductInfoComponent = ({ product }: ProductInfoProps) => {
                         {product.currency} {product.price.toFixed(2)}
                     </div>
                 </div>
-                {product.originalPrice && product.originalPrice > product.price && (
+                {(product.originalPrice ?? 0) > 0 && product.originalPrice > product.price && (
                     <div className="inline-block px-3 py-1 text-[12px] font-bold tracking-wider uppercase bg-gradient-to-r from-violet-500 to-fuchsia-400 text-white rounded-full shadow-glow-violet-medium">
                         Save {product.currency} {((product.originalPrice || 0) - product.price).toFixed(2)}
                     </div>

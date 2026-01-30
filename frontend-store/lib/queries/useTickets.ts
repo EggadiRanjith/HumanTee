@@ -10,8 +10,9 @@ export function useTickets(userId: string, page: number = 1) {
             return response.data;
         },
         enabled: !!userId,
-        placeholderData: (previousData) => previousData, // Prevents pagination flicker
-        staleTime: 2 * 60 * 1000,
+        placeholderData: (previousData) => previousData,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        gcTime: Infinity, // Keep tickets cached indefinitely to restore list when coming back from detail
     });
 }
 
@@ -23,5 +24,7 @@ export function useTicketDetail(userId: string, ticketId: string) {
             return response.data;
         },
         enabled: !!userId && !!ticketId,
+        staleTime: 2 * 60 * 1000, // 2 minutes
+        gcTime: 10 * 60 * 1000, // 10 minutes
     });
 }

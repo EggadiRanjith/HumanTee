@@ -91,7 +91,12 @@ export function useProfileData(
     const { data: addressesData, isLoading: isLoadingAddresses, error: addressesError, refetch: retryAddresses } =
         useAddresses(userId ?? "");
 
-    const profile = normalizeProfile(userData) ?? (userId ? {
+    // Get cached profile data even if query is disabled (after session expires)
+    const cachedProfile = queryClient.getQueryData(queryKeys.user);
+    const normalizedCached = normalizeProfile(cachedProfile);
+
+    // Use current data if available, otherwise fall back to cached data (stale)
+    const profile = normalizeProfile(userData) ?? normalizedCached ?? (userId ? {
         id: userId,
         email: userEmail ?? "",
         role: userRole ?? "customer",

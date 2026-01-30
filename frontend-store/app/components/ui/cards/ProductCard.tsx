@@ -142,16 +142,14 @@ const ProductCard = ({
                 z-20
               "
                     >
-                        <button
-                            className="w-full py-3 text-step--1 tracking-wide text-white font-bold"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                onQuickView?.(product.id);
-                            }}
+                        <Link
+                            href={`/product/${(product as any).handle || product.id}`}
+                            onClick={() => setLoading(true)}
+                            className="block w-full py-3 text-step--1 tracking-wide text-white font-bold text-center"
                             aria-label={`Quick view ${product.title}`}
                         >
                             QUICK VIEW
-                        </button>
+                        </Link>
                     </div>
                 </Link>
             </motion.div>
