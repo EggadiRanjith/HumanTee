@@ -25,6 +25,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { ContactModule } from './contact/contact.module';
 import { HealthModule } from './health/health.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
+import { DatabaseQueryInterceptor } from './common/interceptors/database-query.interceptor';
 // import { RedisModule } from './redis/redis.module'; // Disabled - Docker not running
 
 
@@ -107,6 +108,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
   controllers: [AppController, ProtectedController],
   providers: [
     AppService,
+    DatabaseQueryInterceptor, // Track DB queries per request
     {
       provide: APP_INTERCEPTOR,
       useClass: AuditInterceptor,

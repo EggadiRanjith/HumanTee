@@ -28,6 +28,7 @@ export default function AccountCard({
             whileHover={!comingSoon ? { scale: 1.02, borderColor: isLogout ? "rgba(239, 68, 68, 0.3)" : "rgba(255, 255, 255, 0.3)" } : {}}
             whileTap={!comingSoon ? { scale: 0.98 } : {}}
             className={`
+                h-full
                 p-5 sm:p-6 rounded-xl luxury-glass transition-all duration-300 group relative overflow-hidden
                 ${comingSoon ? 'opacity-50 cursor-not-allowed border border-white/10' :
                     isLogout ? 'border border-red-500/20 hover:border-red-500/40 cursor-pointer' :

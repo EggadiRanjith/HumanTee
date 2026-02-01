@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import helmet from 'helmet';
 import * as Sentry from '@sentry/nestjs';
+import { DetailedLoggerMiddleware } from './common/middleware/detailed-logger.middleware';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -65,6 +66,11 @@ async function bootstrap() {
   // Cookie parser for refresh tokens
   app.use(cookieParser());
 
+  // PERFORMANCE MONITORING: Detailed request logger
+  // Logs every API request with DB queries, timing, and cost estimation
+  // Logs are written to logs/api-requests.log for analysis
+  app.use(new DetailedLoggerMiddleware().use.bind(new DetailedLoggerMiddleware()));
+  logger.log('📊 Performance monitoring enabled - Logging to logs/api-requests.log');
 
 
   // SECURITY: Helmet - Battle-tested security headers

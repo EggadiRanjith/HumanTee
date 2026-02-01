@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCheckout } from "@/app/contexts/CheckoutContext";
+import { useLoading } from "@/app/contexts/LoadingContext";
 import { GradientOverlay } from "@/app/components/ui/layout";
 import { FiCheck } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,6 +17,7 @@ const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 export default function SuccessPage() {
     const router = useRouter();
     const { orderNumber, shippingData } = useCheckout();
+    const { setLoading } = useLoading();
     const [showSplash, setShowSplash] = useState(true);
     const [isLoadingOrder, setIsLoadingOrder] = useState(false);
 
@@ -195,6 +197,10 @@ export default function SuccessPage() {
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                         onClick={async () => {
+                                            // Show loader immediately
+                                            setIsLoadingOrder(true);
+                                            setLoading(true);
+
                                             // Find order ID if not in context
                                             try {
                                                 const response = await apiClient.get(`/orders?orderNumber=${orderNumber}`);
@@ -206,11 +212,25 @@ export default function SuccessPage() {
                                                 }
                                             } catch {
                                                 router.push("/orders");
+                                            } finally {
+                                                // Navigation loader will auto-hide via pathname change
+                                                setIsLoadingOrder(false);
                                             }
                                         }}
-                                        className="px-5 sm:px-7 py-3 sm:py-3.5 border-2 border-white/20 text-white rounded-full text-[10px] sm:text-xs uppercase tracking-wider hover:bg-white/5 transition-colors min-h-[44px] sm:min-h-[48px]"
+                                        disabled={isLoadingOrder}
+                                        className="px-5 sm:px-7 py-3 sm:py-3.5 border-2 border-white/20 text-white rounded-full text-[10px] sm:text-xs uppercase tracking-wider hover:bg-white/5 transition-colors min-h-[44px] sm:min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
-                                        View Order Details
+                                        {isLoadingOrder ? (
+                                            <>
+                                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Loading...
+                                            </>
+                                        ) : (
+                                            "View Order Details"
+                                        )}
                                     </motion.button>
                                     <motion.button
                                         whileHover={{ scale: 1.02 }}

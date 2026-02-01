@@ -73,15 +73,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     );
                 } else {
                     console.warn('❌ Refresh failed - status:', response.status);
-                    // 401 or other non-success status = user not logged in
+
+                    // TOKEN EXPIRY: Clear auth state but PRESERVE cache
+                    // This implements stale-while-revalidate pattern:
+                    // - User sees cached data (profile, addresses, cart)
+                    // - Next API call will attempt token refresh
+                    // - If refresh succeeds: new data loads
+                    // - If refresh fails: redirect to login
+                    // 
+                    // ✅ DO: Clear access token and user state
                     setUser(null);
                     clearAccessToken();
+
+                    // ❌ DON'T: Clear React Query cache
+                    // Cache clearing only happens on EXPLICIT logout (see logout function)
+                    // This prevents empty UI states when token expires
                 }
             } catch (error) {
                 console.error('❌ Auth check error:', error);
-                // Network error or other failure - user is not logged in
+
+                // NETWORK ERROR: Same as token expiry - preserve cache
                 setUser(null);
                 clearAccessToken();
+                // Cache persists for stale-while-revalidate
             } finally {
                 setIsLoading(false);
             }
@@ -183,7 +197,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             clearAccessToken();
             setUser(null);
 
-            // Phase 2: Clear React Query cache on logout
+            // EXPLICIT LOGOUT: Clear React Query cache
+            // This is INTENTIONAL and ONLY happens on explicit logout
+            // Token expiry does NOT clear cache (see checkAuth above)
             // Prevents next user seeing previous user's data
             queryClient.clear();
 
