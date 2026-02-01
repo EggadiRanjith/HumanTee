@@ -253,4 +253,38 @@ export class ProductsService {
             isActive: variant.is_active,
         };
     }
+
+    /**
+     * 🚀 PHASE 4 OPTIMIZATION: Get related products by category
+     * Returns similar products for "You may also like" sections
+     * Cache: 1 hour (related products change rarely)
+     */
+    async getRelatedProducts(slug: string, limit: number = 4) {
+        return this.cacheService.remember(
+            `related:${slug}`,
+            async () => {
+                // Get current product
+                const product = await this.productRepo.findOne({
+                    where: { slug, status: ProductStatus.ACTIVE }
+                });
+
+                if (!product) return [];
+
+                // Find related by category (exclude current product)
+                const related = await this.productRepo
+                    .createQueryBuilder('product')
+                    .leftJoinAndSelect('product.images', 'images')
+                    .leftJoinAndSelect('product.variants', 'variants')
+                    .where('product.category = :category', { category: product.category })
+                    .andWhere('product.status = :status', { status: ProductStatus.ACTIVE })
+                    .andWhere('product.slug != :slug', { slug })
+                    .andWhere('variants.is_active = :isActive', { isActive: true })
+                    .take(limit)
+                    .getMany();
+
+                return related.map(p => this.transformProductSummary(p));
+            },
+            { ttl: 3600 } // 1 hour
+        );
+    }
 }

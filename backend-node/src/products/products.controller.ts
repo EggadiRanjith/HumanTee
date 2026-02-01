@@ -60,6 +60,33 @@ export class ProductsController {
     }
 
     /**
+     * 🚀 PHASE 4 OPTIMIZATION: GET /products/:slug/complete
+     * Aggregated endpoint that combines product + related products
+     * Reduces 2 API calls → 1 API call (50% reduction)
+     * Parallel execution for optimal performance
+     */
+    @Get(':slug/complete')
+    async getProductComplete(
+        @Param('slug') slug: string,
+    ): Promise<{
+        product: ProductResponseDto;
+        relatedProducts: any[];
+        timestamp: string;
+    }> {
+        // Run in parallel for optimal performance
+        const [product, relatedProducts] = await Promise.all([
+            this.productsService.findBySlug(slug),
+            this.productsService.getRelatedProducts(slug, 4)
+        ]);
+
+        return {
+            product,
+            relatedProducts,
+            timestamp: new Date().toISOString(),
+        };
+    }
+
+    /**
      * GET /products/:slug
      * Get single ACTIVE product by slug
      */
