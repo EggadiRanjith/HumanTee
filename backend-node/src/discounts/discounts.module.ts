@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Discount } from '../entities/discount.entity';
 import { DiscountTargetGroup } from '../entities/discount-target-group.entity';
@@ -11,7 +11,7 @@ import { AuthModule } from '../auth/auth.module';
 
 @Module({
     imports: [
-        AuthModule,
+        forwardRef(() => AuthModule),
         TypeOrmModule.forFeature([
             Discount,
             DiscountTargetGroup,

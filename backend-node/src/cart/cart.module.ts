@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CartController } from './cart.controller';
 import { CartService } from './cart.service';
@@ -10,7 +10,7 @@ import { DiscountsModule } from '../discounts/discounts.module';
     imports: [
         TypeOrmModule.forFeature([Cart, CartItem, ProductVariant]),
         RedisModule,
-        DiscountsModule, // NEW: Enable discount suggestions in cart endpoint
+        forwardRef(() => DiscountsModule), // NEW: Enable discount suggestions in cart endpoint
     ],
     controllers: [CartController],
     providers: [CartService],

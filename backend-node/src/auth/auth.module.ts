@@ -53,7 +53,7 @@ import { RedisModule } from '../redis/redis.module';
             UserAuditLog,
         ]),
         EmailModule,
-        CartModule,
+        forwardRef(() => CartModule),
         ShippingModule,
         RedisModule, // NEW: Enable Redis caching for user profiles
         forwardRef(() => SettingsModule), // Import SettingsModule to access SettingsCacheService
