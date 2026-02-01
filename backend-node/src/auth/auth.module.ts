@@ -27,6 +27,7 @@ import { EmailModule } from '../email/email.module';
 import { CartModule } from '../cart/cart.module';
 import { ShippingModule } from '../shipping/shipping.module';
 import { SettingsModule } from '../settings/settings.module';
+import { RedisModule } from '../redis/redis.module';
 
 @Module({
     imports: [
@@ -54,6 +55,7 @@ import { SettingsModule } from '../settings/settings.module';
         EmailModule,
         CartModule,
         ShippingModule,
+        RedisModule, // NEW: Enable Redis caching for user profiles
         forwardRef(() => SettingsModule), // Import SettingsModule to access SettingsCacheService
     ],
     controllers: [AuthController, AdminUsersController, AuditLogsController, AdminUserAuditController],
