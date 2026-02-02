@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
+import { join } from 'path';
 
 // Support both DATABASE_URL (production) and individual vars (local dev)
 const getDatabaseConfig = () => {
@@ -24,8 +25,8 @@ const getDatabaseConfig = () => {
 
 export const AppDataSource = new DataSource({
     ...getDatabaseConfig(),
-    entities: [__dirname + '/**/*.entity{.ts,.js}'],
-    migrations: [__dirname + '/../migrations/**/*{.ts,.js}'],
+    entities: [join(__dirname, '/**/*.entity{.ts,.js}')],
+    migrations: [join(__dirname, '/../migrations/**/*{.ts,.js}')],
     synchronize: false, // Disabled to use migrations instead
     logging: process.env.NODE_ENV === 'development',
     // PERFORMANCE: Connection pooling
