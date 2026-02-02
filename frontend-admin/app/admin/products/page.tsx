@@ -212,7 +212,7 @@ export default function ProductsPage() {
                                     <img
                                         src={(product.images.find(img => img.isPrimary) || product.images[0]).url}
                                         alt={(product.images.find(img => img.isPrimary) || product.images[0]).altText || product.name}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-contain"
                                     />
                                 ) : (
                                     <div className="absolute inset-0 flex items-center justify-center text-3xl md:text-4xl">
@@ -320,7 +320,7 @@ export default function ProductsPage() {
                                                 <img
                                                     src={(product.images.find(img => img.isPrimary) || product.images[0]).url}
                                                     alt={(product.images.find(img => img.isPrimary) || product.images[0]).altText || product.name}
-                                                    className="w-full h-full object-cover"
+                                                    className="w-full h-full object-contain"
                                                 />
                                             ) : (
                                                 <span className="text-lg">👕</span>

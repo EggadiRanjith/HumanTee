@@ -74,7 +74,7 @@ function ProductImageGalleryPreview({ images, title }: any) {
                     <img
                         src={images[selectedImage]}
                         alt={title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-4xl sm:text-6xl">
@@ -98,7 +98,7 @@ function ProductImageGalleryPreview({ images, title }: any) {
                             <img
                                 src={image}
                                 alt={`${title} ${index + 1}`}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-contain"
                             />
                         </button>
                     ))}

@@ -208,7 +208,7 @@ const ProductImageGalleryComponent = ({ images, title, subtitle, productId }: Pr
                         alt={title}
                         fill
                         sizes="(max-width: 768px) 100vw, 50vw"
-                        className="object-cover transition-all duration-500 ease-out"
+                        className="object-contain transition-all duration-500 ease-out"
                         key={currentImageIndex}
                     />
 
@@ -250,7 +250,7 @@ const ProductImageGalleryComponent = ({ images, title, subtitle, productId }: Pr
                                     alt={`${title} - View ${index + 1}`}
                                     fill
                                     sizes="(max-width: 768px) 25vw, 12.5vw"
-                                    className="object-cover"
+                                    className="object-contain"
                                 />
                             </button>
                         ))}
