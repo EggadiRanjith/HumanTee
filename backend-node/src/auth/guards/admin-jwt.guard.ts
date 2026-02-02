@@ -55,7 +55,8 @@ export class AdminJwtGuard implements CanActivate {
 
             // Attach user to request with proper field mapping
             request['user'] = {
-                userId: payload.sub,  // Map 'sub' to 'userId' for controller compatibility
+                id: payload.sub,  // Use 'id' to match controller expectations
+                userId: payload.sub,  // Keep for backwards compatibility
                 role: payload.role,
                 email: payload.email,
             };
