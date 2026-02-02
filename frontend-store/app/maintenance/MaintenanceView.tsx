@@ -104,7 +104,7 @@ export default function MaintenanceView({ initialSettings }: { initialSettings: 
                     {/* Social Links */}
                     <div className="animate-fade-in-delay-2 flex items-center justify-center gap-3 sm:gap-4 md:gap-6">
                         <Link
-                            href="https://www.instagram.com/humantee"
+                            href="https://www.instagram.com/humanteeofficial"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="group flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 active:scale-95 transition-all duration-300"

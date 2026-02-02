@@ -80,12 +80,14 @@ ${addr.country || 'India'}`.trim();
       name: `${item.productNameSnapshot || item.productName || 'Product'}${item.variantLabelSnapshot ? ' - ' + item.variantLabelSnapshot : ''}`,
       quantity: item.quantity || 1,
       price: parseFloat(item.unitPrice || item.price || 0),
+      imageUrl: item.imageUrlSnapshot || item.imageUrl || '',
     }));
 
     const subtotal = parseFloat(order.subtotal || items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0));
     const shipping = parseFloat(order.shippingAmount || 0);
 
     const html = this.emailTemplateService.generateOrderConfirmation(
+      order.id,
       orderNumber,
       name,
       items,

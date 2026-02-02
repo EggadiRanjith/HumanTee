@@ -64,7 +64,7 @@ export function generateOrganizationSchema() {
         logo: `${baseUrl}/logo.png`,
         description: 'Premium handcrafted t-shirts since 1931',
         sameAs: [
-            'https://www.instagram.com/humantee',
+            'https://www.instagram.com/humanteeofficial',
         ],
         contactPoint: {
             '@type': 'ContactPoint',

@@ -22,7 +22,7 @@ export function OrganizationSchema({ name, url, logo, description }: Organizatio
         "description": description,
         "priceRange": "₹₹",
         "sameAs": [
-            "https://www.instagram.com/humantee", // Update with actual handles
+            "https://www.instagram.com/humanteeofficial",
         ],
     };
 

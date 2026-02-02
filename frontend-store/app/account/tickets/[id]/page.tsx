@@ -34,6 +34,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
 
     const [ticket, setTicket] = useState<any | null>(null);
+    const [messages, setMessages] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [newMessage, setNewMessage] = useState("");
     const [isSending, setIsSending] = useState(false);
@@ -76,7 +77,8 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         const fetchTicket = async () => {
             try {
                 const response = await apiClient.get(`/tickets/${id}`);
-                setTicket(response.data);
+                setTicket(response.data.ticket);
+                setMessages(response.data.messages || []);
                 setIsInitialLoad(false);
             } catch (error) {
                 logError(error, "Failed to fetch ticket");
@@ -106,10 +108,10 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
     // Auto-scroll messages container to bottom ONLY, not the whole page
     useEffect(() => {
         // Scroll to bottom of messages when messages load or new message arrives
-        if (ticket?.messages && !isInitialLoad && messagesEndRef.current) {
+        if (messages.length > 0 && !isInitialLoad && messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
         }
-    }, [ticket?.messages, isInitialLoad]);
+    }, [messages, isInitialLoad]);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -155,10 +157,10 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         setAttachments(prev => prev.filter((_, i) => i !== index));
     };
 
-    const consecutiveUserMessages = ticket?.messages
-        ? [...ticket.messages].reverse().findIndex(msg => msg.isAdminReply) === -1
-            ? ticket.messages.length
-            : [...ticket.messages].reverse().findIndex(msg => msg.isAdminReply)
+    const consecutiveUserMessages = messages
+        ? [...messages].reverse().findIndex(msg => msg.isAdminReply) === -1
+            ? messages.length
+            : [...messages].reverse().findIndex(msg => msg.isAdminReply)
         : 0;
 
     const isLimitReached = consecutiveUserMessages >= 5;
@@ -176,14 +178,14 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                 attachments: attachments.length > 0 ? attachments : undefined
             });
 
-            // Update local ticket state with new message
-            setTicket((prev: any) => ({
+            // Update local messages state
+            setMessages((prev: any[]) => [
                 ...prev,
-                messages: [...prev.messages, {
+                {
                     ...response.data,
                     user: user // Attach current user info for UI
-                }]
-            }));
+                }
+            ]);
             setNewMessage("");
             setAttachments([]);
 
@@ -247,7 +249,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                 {/* Header Section */}
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
                     <div className="flex items-center gap-3 sm:gap-4">
-                        <button 
+                        <button
                             onClick={() => router.back()}
                             className="p-2 sm:p-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
                             aria-label="Go back"
@@ -262,7 +264,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                                 </span>
                             </div>
                             <p className="text-white/40 text-[9px] sm:text-[10px] md:text-xs mt-1 uppercase tracking-widest truncate">
-                                {ticket.category?.replace('_', ' ') || 'General'} • Opened {new Date(ticket.createdAt).toLocaleDateString()}
+                                {ticket.category?.replace('_', ' ') || 'Issue'} - OPENED {ticket.createdAt ? new Date(ticket.createdAt).toLocaleDateString() : 'N/A'}
                             </p>
                         </div>
                     </div>
@@ -286,12 +288,12 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                             ref={messagesContainerRef}
                             className="flex-1 p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 overflow-y-auto"
                             style={{
-                                maxHeight: '600px',
+                                maxHeight: 'calc(100vh - 350px)',
                                 minHeight: '400px',
                                 scrollBehavior: 'auto'
                             }}
                         >
-                            {ticket.messages.map((msg: any) => {
+                            {messages.map((msg: any) => {
                                 const isMe = msg.userId === user?.id && !msg.isAdminReply;
                                 return (
                                     <div

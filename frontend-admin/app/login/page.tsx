@@ -15,6 +15,7 @@ export default function AdminLoginPage() {
     const [email, setEmail] = useState("");
     const [otp, setOtp] = useState("");
     const [loading, setLoading] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
     const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
 
     // Static brand config
@@ -86,17 +87,18 @@ export default function AdminLoginPage() {
             // Use AuthContext's verifyOtp function (handles httpOnly cookies)
             await verifyOtp(email, otp);
 
+            setIsSuccess(true);
+            setMessage({ type: "success", text: "Verified successfully. Accessing dashboard..." });
+
             // Redirect to admin dashboard after user state is set
-            // Give AuthContext time to update (verifyOtp sets user state synchronously)
             setTimeout(() => {
                 router.push("/admin/orders");
-            }, 500);
+            }, 800);
         } catch (error) {
             setMessage({
                 type: "error",
                 text: error instanceof Error ? error.message : "Invalid or expired code"
             });
-        } finally {
             setLoading(false);
         }
     };
@@ -180,10 +182,10 @@ export default function AdminLoginPage() {
                             )}
 
                             <button
-                                disabled={loading}
-                                className="w-full rounded-lg bg-black py-3 text-white font-medium hover:bg-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
+                                disabled={loading || isSuccess}
+                                className="w-full rounded-lg bg-black py-3 text-white font-medium hover:bg-gray-900庆 disabled:opacity-60庆 disabled:cursor-not-allowed"
                             >
-                                {loading ? "Validating..." : "Verify & Login"}
+                                {isSuccess ? "Redirecting..." : loading ? "Validating..." : "Verify & Login"}
                             </button>
 
                             <button
