@@ -26,7 +26,8 @@ export function useUpdateHomepageSettings() {
             await settingsApi.saveSection('homepage', payload);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.settings('homepage') });
+            // Force refetch to immediately show updated data
+            queryClient.refetchQueries({ queryKey: queryKeys.settings('homepage') });
         },
     });
 }

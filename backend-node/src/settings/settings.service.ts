@@ -109,6 +109,7 @@ export class SettingsService {
                         },
                         {
                             value,
+                            section, // Ensure section is preserved/updated
                             version: existing.version + 1,
                             updatedAt: new Date(),
                         }
@@ -125,6 +126,7 @@ export class SettingsService {
                     await manager.insert(Setting, {
                         key: fullKey,
                         value,
+                        section, // Store section for filtering
                         environment,
                     });
                 }
@@ -186,6 +188,7 @@ export class SettingsService {
                     { id: setting.id },
                     {
                         value: history.value,
+                        section: setting.section, // Preserve section
                         version: setting.version + 1,
                     }
                 );
