@@ -94,6 +94,8 @@ export class SettingsService {
                         value: existing.value,
                         environment: existing.environment,
                         changedBy: userId,
+                        adminId: userId, // Match legacy DB column
+                        settings: data,   // Snapshot of current update
                         changeReason: reason,
                         previousVersion: existing.version,
                     });
@@ -225,14 +227,17 @@ export class SettingsService {
     async getSystemFeatures(environment: string = 'production'): Promise<any> {
         const features = await this.getSection('system', environment);
 
-        // Return with defaults if not set
+        // Return with defaults if not set (Disabled by default as per requirement)
         return {
-            auditLogsEnabled: features.auditLogsEnabled ?? true,
-            auditLogsDisabledSince: features.auditLogsDisabledSince ?? null,
-            discountsEnabled: features.discountsEnabled ?? true,
+            adminAuditLogsEnabled: features.adminAuditLogsEnabled ?? false,
+            adminAuditLogsDisabledSince: features.adminAuditLogsDisabledSince ?? null,
+            userAuditLogsEnabled: features.userAuditLogsEnabled ?? false,
+            userAuditLogsDisabledSince: features.userAuditLogsDisabledSince ?? null,
+            discountsEnabled: features.discountsEnabled ?? false,
             discountsDisabledSince: features.discountsDisabledSince ?? null,
-            ticketsEnabled: features.ticketsEnabled ?? true,
+            ticketsEnabled: features.ticketsEnabled ?? false,
             ticketsDisabledSince: features.ticketsDisabledSince ?? null,
+            auditLogsEnabled: features.auditLogsEnabled ?? false, // Legacy fallback
         };
     }
 
@@ -247,31 +252,29 @@ export class SettingsService {
         // Add timestamps for disabled features
         const updates: Record<string, any> = {};
 
+        if (data.adminAuditLogsEnabled !== undefined) {
+            updates.adminAuditLogsEnabled = data.adminAuditLogsEnabled;
+            updates.adminAuditLogsDisabledSince = !data.adminAuditLogsEnabled ? new Date().toISOString() : null;
+        }
+
+        if (data.userAuditLogsEnabled !== undefined) {
+            updates.userAuditLogsEnabled = data.userAuditLogsEnabled;
+            updates.userAuditLogsDisabledSince = !data.userAuditLogsEnabled ? new Date().toISOString() : null;
+        }
+
         if (data.auditLogsEnabled !== undefined) {
             updates.auditLogsEnabled = data.auditLogsEnabled;
-            if (!data.auditLogsEnabled) {
-                updates.auditLogsDisabledSince = new Date().toISOString();
-            } else {
-                updates.auditLogsDisabledSince = null;
-            }
+            updates.auditLogsDisabledSince = !data.auditLogsEnabled ? new Date().toISOString() : null;
         }
 
         if (data.discountsEnabled !== undefined) {
             updates.discountsEnabled = data.discountsEnabled;
-            if (!data.discountsEnabled) {
-                updates.discountsDisabledSince = new Date().toISOString();
-            } else {
-                updates.discountsDisabledSince = null;
-            }
+            updates.discountsDisabledSince = !data.discountsEnabled ? new Date().toISOString() : null;
         }
 
         if (data.ticketsEnabled !== undefined) {
             updates.ticketsEnabled = data.ticketsEnabled;
-            if (!data.ticketsEnabled) {
-                updates.ticketsDisabledSince = new Date().toISOString();
-            } else {
-                updates.ticketsDisabledSince = null;
-            }
+            updates.ticketsDisabledSince = !data.ticketsEnabled ? new Date().toISOString() : null;
         }
 
         await this.updateSection('system', updates, userId, 'System features updated', environment);

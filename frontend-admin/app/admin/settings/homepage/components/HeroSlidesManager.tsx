@@ -5,7 +5,15 @@ import { toast } from 'sonner';
 import { FiTrash2, FiPlus } from 'react-icons/fi';
 import { useCloudinaryUpload } from '@/hooks/useCloudinaryUpload';
 
-type VideoSlide = { type: 'video'; video: string };
+type VideoSlide = {
+    type: 'video';
+    video: string;
+    heading: string;
+    subheading1: string;
+    subheading2: string;
+    buttonText: string;
+    buttonUrl: string;
+};
 type ImageSlide = {
     type: 'image';
     image: string;
@@ -27,8 +35,9 @@ interface Props {
 export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
     const { upload, uploading } = useCloudinaryUpload();
     const [uploadingVideo, setUploadingVideo] = useState(false);
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-    const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleVideoUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -50,7 +59,7 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
                 const formData = new FormData();
                 formData.append('file', file);
 
-                const response = await fetch('http://localhost:3001/upload/video', {
+                const response = await fetch(`${API_URL}/upload/video`, {
                     method: 'POST',
                     body: formData,
                     credentials: 'include',
@@ -64,13 +73,23 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
                 const data = await response.json();
                 const url = data.url;
 
-                const videoSlideIndex = slides.findIndex(s => s.type === 'video');
-                if (videoSlideIndex !== -1) {
-                    const newSlides = [...slides];
-                    (newSlides[videoSlideIndex] as VideoSlide).video = url;
-                    onChange(newSlides);
-                    toast.success('Video uploaded! Remember to save changes.');
+                const newSlides = [...slides];
+                if (index !== -1 && newSlides[index]) {
+                    (newSlides[index] as VideoSlide).video = url;
+                } else {
+                    // Add new video slide if it doesn't exist
+                    newSlides.unshift({
+                        type: 'video',
+                        video: url,
+                        heading: '',
+                        subheading1: '',
+                        subheading2: '',
+                        buttonText: 'Shop Now',
+                        buttonUrl: '/shop'
+                    });
                 }
+                onChange(newSlides);
+                toast.success('Video uploaded! Remember to save changes.');
             } catch (error: any) {
                 toast.error(`Failed to upload: ${error.message}`);
             } finally {
@@ -96,9 +115,9 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
         }
     };
 
-    const updateImageSlide = (index: number, field: keyof ImageSlide, value: string) => {
+    const updateSlide = (index: number, field: string, value: string) => {
         const newSlides = [...slides];
-        (newSlides[index] as ImageSlide)[field] = value as any;
+        (newSlides[index] as any)[field] = value;
         onChange(newSlides);
     };
 
@@ -116,9 +135,12 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
         onChange([...slides, newSlide]);
     };
 
-    const removeImageSlide = (index: number) => {
+    const removeSlide = (index: number) => {
         onChange(slides.filter((_, i) => i !== index));
     };
+
+    const videoSlideIndex = slides.findIndex(s => s.type === 'video');
+    const videoSlide = videoSlideIndex !== -1 ? slides[videoSlideIndex] as VideoSlide : null;
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -128,10 +150,22 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
             </div>
 
             <div className="space-y-8">
-                {/* Video Slide */}
-                {slides.find(s => s.type === 'video') && (
-                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <h3 className="text-sm font-semibold text-gray-800 mb-4">Slide 1 - Video</h3>
+                {/* Video Slide - Always shown as holder */}
+                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-semibold text-gray-800">Featured Video Slide</h3>
+                        {isEditing && videoSlide && (
+                            <button
+                                onClick={() => removeSlide(videoSlideIndex)}
+                                className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-1"
+                            >
+                                <FiTrash2 size={16} />
+                                Remove Video
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Video File (4-7 seconds)
@@ -141,22 +175,72 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
                                     <input
                                         type="file"
                                         accept="video/*"
-                                        onChange={handleVideoUpload}
+                                        onChange={(e) => handleVideoUpload(videoSlideIndex, e)}
                                         className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800"
                                         disabled={uploading || uploadingVideo}
                                     />
                                     <p className="text-xs text-gray-500 mt-1 break-all">
-                                        Current: {(slides.find(s => s.type === 'video') as VideoSlide)?.video || 'No video'}
+                                        {videoSlide?.video ? `Current: ${videoSlide.video}` : 'No video uploaded yet'}
                                     </p>
                                 </div>
                             ) : (
                                 <p className="text-sm text-gray-600 break-all">
-                                    {(slides.find(s => s.type === 'video') as VideoSlide)?.video || 'No video'}
+                                    {videoSlide?.video || 'No video'}
                                 </p>
                             )}
                         </div>
+
+                        {videoSlide && (
+                            <>
+                                <div className="grid grid-cols-1 gap-4">
+                                    <input
+                                        type="text"
+                                        placeholder="Heading"
+                                        value={videoSlide.heading}
+                                        onChange={(e: any) => updateSlide(videoSlideIndex, 'heading', e.target.value)}
+                                        readOnly={!isEditing}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm read-only:bg-gray-50 read-only:text-gray-600"
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Subheading 1"
+                                        value={videoSlide.subheading1}
+                                        onChange={(e: any) => updateSlide(videoSlideIndex, 'subheading1', e.target.value)}
+                                        readOnly={!isEditing}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm read-only:bg-gray-50 read-only:text-gray-600"
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Subheading 2 (optional)"
+                                        value={videoSlide.subheading2}
+                                        onChange={(e: any) => updateSlide(videoSlideIndex, 'subheading2', e.target.value)}
+                                        readOnly={!isEditing}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm read-only:bg-gray-50 read-only:text-gray-600"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <input
+                                        type="text"
+                                        placeholder="Button Text"
+                                        value={videoSlide.buttonText}
+                                        onChange={(e: any) => updateSlide(videoSlideIndex, 'buttonText', e.target.value)}
+                                        readOnly={!isEditing}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm read-only:bg-gray-50 read-only:text-gray-600"
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Button URL"
+                                        value={videoSlide.buttonUrl}
+                                        onChange={(e: any) => updateSlide(videoSlideIndex, 'buttonUrl', e.target.value)}
+                                        readOnly={!isEditing}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm read-only:bg-gray-50 read-only:text-gray-600"
+                                    />
+                                </div>
+                            </>
+                        )}
                     </div>
-                )}
+                </div>
 
                 {/* Image Slides */}
                 {slides.map((slide, index) => {
@@ -167,9 +251,9 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
                         <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-sm font-semibold text-gray-800">Slide {index + 1}</h3>
-                                {isEditing && slides.filter(s => s.type === 'image').length > 1 && (
+                                {isEditing && (
                                     <button
-                                        onClick={() => removeImageSlide(index)}
+                                        onClick={() => removeSlide(index)}
                                         className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-1"
                                     >
                                         <FiTrash2 size={16} />
@@ -215,7 +299,7 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
                                         type="text"
                                         placeholder="Heading"
                                         value={imageSlide.heading}
-                                        onChange={(e: any) => updateImageSlide(index, 'heading', e.target.value)}
+                                        onChange={(e: any) => updateSlide(index, 'heading', e.target.value)}
                                         readOnly={!isEditing}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm read-only:bg-gray-50 read-only:text-gray-600"
                                     />
@@ -223,7 +307,7 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
                                         type="text"
                                         placeholder="Subheading 1"
                                         value={imageSlide.subheading1}
-                                        onChange={(e: any) => updateImageSlide(index, 'subheading1', e.target.value)}
+                                        onChange={(e: any) => updateSlide(index, 'subheading1', e.target.value)}
                                         readOnly={!isEditing}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm read-only:bg-gray-50 read-only:text-gray-600"
                                     />
@@ -231,7 +315,7 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
                                         type="text"
                                         placeholder="Subheading 2 (optional)"
                                         value={imageSlide.subheading2}
-                                        onChange={(e: any) => updateImageSlide(index, 'subheading2', e.target.value)}
+                                        onChange={(e: any) => updateSlide(index, 'subheading2', e.target.value)}
                                         readOnly={!isEditing}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm read-only:bg-gray-50 read-only:text-gray-600"
                                     />
@@ -242,7 +326,7 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
                                         type="text"
                                         placeholder="Button Text"
                                         value={imageSlide.buttonText}
-                                        onChange={(e: any) => updateImageSlide(index, 'buttonText', e.target.value)}
+                                        onChange={(e: any) => updateSlide(index, 'buttonText', e.target.value)}
                                         readOnly={!isEditing}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm read-only:bg-gray-50 read-only:text-gray-600"
                                     />
@@ -250,7 +334,7 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
                                         type="text"
                                         placeholder="Button URL"
                                         value={imageSlide.buttonUrl}
-                                        onChange={(e: any) => updateImageSlide(index, 'buttonUrl', e.target.value)}
+                                        onChange={(e: any) => updateSlide(index, 'buttonUrl', e.target.value)}
                                         readOnly={!isEditing}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm read-only:bg-gray-50 read-only:text-gray-600"
                                     />

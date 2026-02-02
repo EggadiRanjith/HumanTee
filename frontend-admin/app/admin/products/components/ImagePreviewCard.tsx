@@ -49,7 +49,7 @@ export default function ImagePreviewCard({
                 <img
                     src={image.url}
                     alt={image.altText}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                 />
 
                 {/* Upload Progress Overlay */}

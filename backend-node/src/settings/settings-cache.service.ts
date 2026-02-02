@@ -26,8 +26,8 @@ export class SettingsCacheService {
 
         // Fetch from database
         try {
-            const features = await this.settingsService.getSection('features');
-            const isEnabled = features?.[featureKey] ?? true; // Default to enabled for safety
+            const features = await this.settingsService.getSection('system'); // Updated to use system section
+            const isEnabled = features?.[featureKey] ?? false; // Default to disabled as per requirement
 
             // Cache result
             this.cache.set(cacheKey, {
@@ -37,8 +37,8 @@ export class SettingsCacheService {
 
             return isEnabled;
         } catch (error) {
-            console.error(`Failed to check feature ${featureKey}, defaulting to enabled:`, error.message);
-            return true; // Fail-safe: enable by default
+            console.error(`Failed to check feature ${featureKey}, defaulting to disabled:`, error.message);
+            return false; // Fail-safe: disable by default
         }
     }
 

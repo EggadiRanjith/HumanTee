@@ -24,9 +24,10 @@ export default function MaintenanceSettingsPage() {
     });
 
     const [features, setFeatures] = useState({
-        auditLogsEnabled: true,
-        discountsEnabled: true,
-        ticketsEnabled: true
+        adminAuditLogsEnabled: false,
+        userAuditLogsEnabled: false,
+        discountsEnabled: false,
+        ticketsEnabled: false
     });
 
     // Load system features
@@ -35,7 +36,8 @@ export default function MaintenanceSettingsPage() {
             try {
                 const data = await getSystemFeatures();
                 setFeatures({
-                    auditLogsEnabled: data.auditLogsEnabled,
+                    adminAuditLogsEnabled: data.adminAuditLogsEnabled,
+                    userAuditLogsEnabled: data.userAuditLogsEnabled,
                     discountsEnabled: data.discountsEnabled,
                     ticketsEnabled: data.ticketsEnabled
                 });
@@ -211,26 +213,49 @@ export default function MaintenanceSettingsPage() {
                         </div>
 
                         <div className="space-y-3 md:space-y-4">
-                            {/* Audit Logs Toggle */}
+                            {/* Admin Audit Logs Toggle */}
                             <div className="flex items-center justify-between p-3 md:p-4 bg-gray-50 rounded-lg border border-gray-200">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
                                         <FiDatabase className="w-5 h-5 text-blue-600" />
                                     </div>
                                     <div>
-                                        <h4 className="text-sm font-semibold text-gray-900">Audit Logs</h4>
-                                        <p className="text-xs text-gray-600">Track admin and user actions</p>
+                                        <h4 className="text-sm font-semibold text-gray-900">Admin Audit Logs</h4>
+                                        <p className="text-xs text-gray-600">Track sensitive admin modifications</p>
                                     </div>
                                 </div>
                                 <label className={`relative inline-flex items-center ${isEditing ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}>
                                     <input
                                         type="checkbox"
                                         className="sr-only peer"
-                                        checked={features.auditLogsEnabled}
+                                        checked={features.adminAuditLogsEnabled}
                                         disabled={!isEditing}
-                                        onChange={(e) => setFeatures({ ...features, auditLogsEnabled: e.target.checked })}
+                                        onChange={(e) => setFeatures({ ...features, adminAuditLogsEnabled: e.target.checked })}
                                     />
                                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                                </label>
+                            </div>
+
+                            {/* User Audit Logs Toggle */}
+                            <div className="flex items-center justify-between p-3 md:p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                                        <FiDatabase className="w-5 h-5 text-indigo-600" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm font-semibold text-gray-900">User Audit Logs</h4>
+                                        <p className="text-xs text-gray-600">Monitor customer security events</p>
+                                    </div>
+                                </div>
+                                <label className={`relative inline-flex items-center ${isEditing ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}>
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={features.userAuditLogsEnabled}
+                                        disabled={!isEditing}
+                                        onChange={(e) => setFeatures({ ...features, userAuditLogsEnabled: e.target.checked })}
+                                    />
+                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
                                 </label>
                             </div>
 

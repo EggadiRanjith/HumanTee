@@ -20,6 +20,12 @@ export class SettingHistory {
     @Column({ name: 'changed_by', type: 'uuid', nullable: true })
     changedBy: string;
 
+    @Column({ name: 'admin_id', type: 'uuid', nullable: true })
+    adminId: string;
+
+    @Column({ type: 'jsonb', nullable: true })
+    settings: any;
+
     @Column({ name: 'change_reason', type: 'text', nullable: true })
     changeReason: string;
 
