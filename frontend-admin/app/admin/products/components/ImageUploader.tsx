@@ -73,7 +73,7 @@ export default function ImageUploader({
 
             const newImages = await Promise.all(previewPromises);
 
-            console.warn('📸 Images ready with File objects. Will upload on save:', newImages.length);
+
 
             // Add images - they'll upload when user clicks Save
             onChange([...images, ...newImages]);

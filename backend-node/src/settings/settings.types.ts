@@ -44,3 +44,21 @@ export interface TestResult {
     error?: string;
     details?: any;
 }
+
+/**
+ * System Features Toggle
+ */
+export interface SystemFeatures {
+    // Audit Logs
+    auditLogsEnabled: boolean;
+    auditLogsDisabledSince?: string;
+
+    // Discounts
+    discountsEnabled: boolean;
+    discountsDisabledSince?: string;
+
+    // Support Tickets
+    ticketsEnabled: boolean;
+    ticketsDisabledSince?: string;
+}
+

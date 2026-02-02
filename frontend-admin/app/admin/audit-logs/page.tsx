@@ -5,8 +5,10 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useAuditLogs } from '@/lib/queries/useAuditLogs';
+import { FeatureDisabledModal } from '@/components/modals/FeatureDisabledModal';
+import { getSystemFeatures } from '@/lib/api/system-features';
 import {
     ShoppingBag,
     Package,
@@ -44,8 +46,24 @@ export default function AuditLogsPage() {
     const [settingsPageFilter, setSettingsPageFilter] = useState<string>('ALL');
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
+    const [auditLogsEnabled, setAuditLogsEnabled] = useState(true);
+    const [auditLogsDisabledSince, setAuditLogsDisabledSince] = useState<string>();
 
     const { data: auditLogs = [], isLoading } = useAuditLogs({});
+
+    // Check if audit logs are enabled
+    useEffect(() => {
+        async function checkFeatures() {
+            try {
+                const features = await getSystemFeatures();
+                setAuditLogsEnabled(features.auditLogsEnabled);
+                setAuditLogsDisabledSince(features.auditLogsDisabledSince);
+            } catch (error) {
+                // Ignore error, assume enabled
+            }
+        }
+        checkFeatures();
+    }, []);
 
     // Category definitions
     const categories = [
@@ -170,6 +188,16 @@ export default function AuditLogsPage() {
     if (selectedCategory === 'ALL') {
         return (
             <div className="space-y-3 md:space-y-4 lg:space-y-6">
+                {/* Feature Disabled Modal */}
+                {!auditLogsEnabled && (
+                    <FeatureDisabledModal
+                        featureName="Audit Logs"
+                        disabledSince={auditLogsDisabledSince}
+                        message="Audit logging has been disabled. No admin or user actions are being tracked during this period."
+                        settingsPath="/admin/settings/system"
+                    />
+                )}
+
                 {/* Header - Compact Mobile */}
                 <div>
                     <h1 className="text-lg md:text-xl lg:text-2xl font-semibold text-black">Audit Logs</h1>
@@ -180,31 +208,45 @@ export default function AuditLogsPage() {
 
                 {/* Category Cards Grid - Compact Mobile */}
                 <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 md:gap-3 lg:gap-4">
-                    {categories.map((category) => {
-                        const Icon = category.icon;
-                        const count = categoryCounts[category.id] || 0;
-
-                        return (
-                            <button
-                                key={category.id}
-                                onClick={() => setSelectedCategory(category.id)}
-                                className="bg-white rounded-lg border-2 border-gray-200 p-2.5 md:p-3 lg:p-4 hover:border-black hover:shadow-lg transition-all text-left group"
-                            >
+                    {isLoading ? (
+                        // Loading skeleton
+                        Array.from({ length: 6 }).map((_, idx) => (
+                            <div key={idx} className="bg-white rounded-lg border-2 border-gray-200 p-2.5 md:p-3 lg:p-4 animate-pulse">
                                 <div className="flex items-center justify-between mb-2 md:mb-3">
-                                    <div className={`${category.color} p-1.5 md:p-2 lg:p-2.5 rounded-lg`}>
-                                        <Icon className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                                    </div>
-                                    <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all" />
+                                    <div className="bg-gray-200 p-1.5 md:p-2 lg:p-2.5 rounded-lg w-10 h-10"></div>
+                                    <div className="w-4 h-4 bg-gray-200 rounded"></div>
                                 </div>
-                                <h3 className="font-semibold text-gray-900 text-xs md:text-sm mb-1">
-                                    {category.name}
-                                </h3>
-                                <p className="text-2xl font-bold text-gray-900">
-                                    {count}
-                                </p>
-                            </button>
-                        );
-                    })}
+                                <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>
+                                <div className="h-8 bg-gray-200 rounded w-12"></div>
+                            </div>
+                        ))
+                    ) : (
+                        categories.map((category) => {
+                            const Icon = category.icon;
+                            const count = categoryCounts[category.id] || 0;
+
+                            return (
+                                <button
+                                    key={category.id}
+                                    onClick={() => setSelectedCategory(category.id)}
+                                    className="bg-white rounded-lg border-2 border-gray-200 p-2.5 md:p-3 lg:p-4 hover:border-black hover:shadow-lg transition-all text-left group"
+                                >
+                                    <div className="flex items-center justify-between mb-2 md:mb-3">
+                                        <div className={`${category.color} p-1.5 md:p-2 lg:p-2.5 rounded-lg`}>
+                                            <Icon className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                                        </div>
+                                        <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all" />
+                                    </div>
+                                    <h3 className="font-semibold text-gray-900 text-xs md:text-sm mb-1">
+                                        {category.name}
+                                    </h3>
+                                    <p className="text-2xl font-bold text-gray-900">
+                                        {count}
+                                    </p>
+                                </button>
+                            );
+                        })
+                    )}
                 </div>
 
                 {/* Recent Activity - Compact Mobile */}
@@ -213,23 +255,38 @@ export default function AuditLogsPage() {
                         <h2 className="text-sm md:text-base lg:text-lg font-semibold text-black">Recent Activity</h2>
                     </div>
                     <div className="divide-y divide-gray-100">
-                        {auditLogs.slice(0, 10).map((log: AuditLog) => (
-                            <div key={log.id} className="px-3 md:px-4 lg:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition-colors">
-                                <div className="flex items-center justify-between gap-3">
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className={`px-2 py-0.5 text-xs font-medium rounded ${getEventTypeColor(log.eventType)}`}>
-                                                {log.eventType.replace(/_/g, ' ')}
-                                            </span>
+                        {isLoading ? (
+                            // Loading skeleton
+                            Array.from({ length: 5 }).map((_, idx) => (
+                                <div key={idx} className="px-3 md:px-4 lg:px-6 py-2.5 md:py-3 animate-pulse">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="h-6 bg-gray-200 rounded w-32 mb-2"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-48"></div>
                                         </div>
-                                        <p className="text-sm text-gray-900 truncate">{log.adminEmail}</p>
-                                    </div>
-                                    <div className="text-xs text-gray-500 whitespace-nowrap">
-                                        {new Date(log.createdAt).toLocaleDateString()}
+                                        <div className="h-4 bg-gray-200 rounded w-20"></div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))
+                        ) : (
+                            auditLogs.slice(0, 10).map((log: AuditLog) => (
+                                <div key={log.id} className="px-3 md:px-4 lg:px-6 py-2.5 md:py-3 hover:bg-gray-50 transition-colors">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className={`px-2 py-0.5 text-xs font-medium rounded ${getEventTypeColor(log.eventType)}`}>
+                                                    {log.eventType.replace(/_/g, ' ')}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-gray-900 truncate">{log.adminEmail}</p>
+                                        </div>
+                                        <div className="text-xs text-gray-500 whitespace-nowrap">
+                                            {new Date(log.createdAt).toLocaleDateString()}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
             </div>

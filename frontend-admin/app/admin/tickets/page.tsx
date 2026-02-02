@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useAdminTickets } from '@/lib/queries/useTickets';
 import { TicketsHeader, TicketsSkeleton, TicketsEmpty, TicketsError, TicketCard } from './components';
 import { FiSearch, FiFilter, FiLoader, FiAlertCircle, FiRotateCw, FiCheckCircle, FiMessageSquare, FiClock } from 'react-icons/fi';
+import { FeatureDisabledModal } from '@/components/modals/FeatureDisabledModal';
+import { getSystemFeatures } from '@/lib/api/system-features';
 
 export default function TicketsPage() {
     const [statusFilter, setStatusFilter] = useState('ALL');
@@ -12,6 +14,8 @@ export default function TicketsPage() {
     const [searchQuery, setSearchQuery] = useState('');
     // Sanitize search input for security
     const sanitizedSearch = searchQuery.trim().replace(/[<>"']/g, '');
+    const [ticketsEnabled, setTicketsEnabled] = useState(true);
+    const [ticketsDisabledSince, setTicketsDisabledSince] = useState<string>();
 
     // Use React Query hook - automatic caching and loading states
     const { data: tickets = [], isLoading, error, refetch } = useAdminTickets({
@@ -19,6 +23,20 @@ export default function TicketsPage() {
         priority: priorityFilter !== 'ALL' ? priorityFilter.toLowerCase() : undefined,
         search: sanitizedSearch || undefined,
     });
+
+    // Check if tickets are enabled
+    useEffect(() => {
+        async function checkFeatures() {
+            try {
+                const features = await getSystemFeatures();
+                setTicketsEnabled(features.ticketsEnabled);
+                setTicketsDisabledSince(features.ticketsDisabledSince);
+            } catch (error) {
+                // Ignore error, assume enabled
+            }
+        }
+        checkFeatures();
+    }, []);
 
     // Calculate stats - MUST be before conditional returns to maintain hook order
     const stats = useMemo(() => {
@@ -85,6 +103,16 @@ export default function TicketsPage() {
 
     return (
         <div className="space-y-4 md:space-y-6">
+            {/* Feature Disabled Modal */}
+            {!ticketsEnabled && (
+                <FeatureDisabledModal
+                    featureName="Support Tickets"
+                    disabledSince={ticketsDisabledSince}
+                    message="The support ticket system has been disabled. Users cannot create new support tickets."
+                    settingsPath="/admin/settings/system"
+                />
+            )}
+
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 md:gap-4">
                 <div>
                     <h1 className="text-lg md:text-xl lg:text-2xl font-semibold text-black">Support Tickets</h1>

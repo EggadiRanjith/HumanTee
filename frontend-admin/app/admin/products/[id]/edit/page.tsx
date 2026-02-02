@@ -139,15 +139,13 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
         try {
             const productData = aggregateProductData();
 
-            console.warn('🔍 DEBUG: productData.images:', productData.images);
-            console.warn('🔍 DEBUG: Images with file:', productData.images.filter((img: any) => img.file));
-            console.warn('🔍 DEBUG: About to call uploadPendingImages...');
+
 
             // STEP 1: Upload all pending images (shows progress modal)
             toast.info('Uploading images to Cloudinary...');
             const imagesWithCloudinaryUrls = await uploadPendingImages(productData.images);
 
-            console.warn('🔍 DEBUG: Upload complete, results:', imagesWithCloudinaryUrls);
+
 
             toast.success('Images uploaded successfully!');
 
@@ -198,8 +196,7 @@ export default function ProductEditPage({ params }: ProductEditPageProps) {
             // Force page reload to show updated data
             router.push(`/admin/products/${id}?t=${Date.now()}`);
         } catch (error: any) {
-            console.error('Save error:', error);
-            console.error('Error response:', error.response?.data);
+
             toast.error(error.response?.data?.message || 'Failed to update product');
         } finally {
             setIsSaving(false);

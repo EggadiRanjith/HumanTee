@@ -256,19 +256,31 @@ export default function TicketDetailPage() {
                             </div>
                         ) : (
                             <>
-                                <div className="relative">
-                                    <textarea
-                                        value={replyText}
-                                        onChange={(e) => setReplyText(e.target.value)}
-                                        placeholder="Type message..."
-                                        className="w-full pl-1.5 md:pl-4 pr-8 md:pr-12 py-1 md:py-3 bg-gray-50 border border-gray-200 rounded-lg md:rounded-xl text-xs md:text-sm focus:ring-1 md:focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all resize-none min-h-[60px] md:min-h-[100px]"
-                                    />
+                                <div className="flex items-end gap-2 md:gap-3">
+                                    <div className="flex-1 relative">
+                                        <textarea
+                                            value={replyText}
+                                            onChange={(e) => setReplyText(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && !e.shiftKey) {
+                                                    e.preventDefault();
+                                                    if (replyText.trim() && !isActionLoading) {
+                                                        handleSendReply();
+                                                    }
+                                                }
+                                            }}
+                                            placeholder="Type your message..."
+                                            className="w-full px-4 md:px-5 py-3 md:py-4 bg-gray-50 border-2 border-gray-200 rounded-2xl text-sm md:text-base focus:ring-0 focus:border-black outline-none transition-all resize-none placeholder:text-gray-400"
+                                            rows={1}
+                                            style={{ minHeight: '52px', maxHeight: '120px' }}
+                                        />
+                                    </div>
                                     <button
                                         onClick={handleSendReply}
                                         disabled={!replyText.trim() || isActionLoading}
-                                        className="absolute right-1 md:right-3 top-1/2 -translate-y-1/2 md:bottom-3 md:top-auto md:translate-y-0 p-1.5 md:p-3 bg-black text-white rounded-md md:rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-all"
+                                        className="flex-shrink-0 p-3 md:p-4 bg-black text-white rounded-2xl hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl disabled:shadow-none"
                                     >
-                                        {isActionLoading ? <FiLoader className="w-3 h-3 md:w-5 md:h-5 animate-spin" /> : <FiSend className="w-3 h-3 md:w-5 md:h-5" />}
+                                        {isActionLoading ? <FiLoader className="w-5 h-5 md:w-6 md:h-6 animate-spin" /> : <FiSend className="w-5 h-5 md:w-6 md:h-6" />}
                                     </button>
                                 </div>
                                 <div className="mt-1 md:mt-2 flex items-center justify-between px-0.5 md:px-1">
@@ -350,17 +362,7 @@ export default function TicketDetailPage() {
                                     <option value="urgent">Urgent</option>
                                 </select>
                             </div>
-                            <div>
-                                <label className="text-[10px] md:text-[11px] text-gray-500 uppercase tracking-widest mb-1.5 block font-bold">Assign To</label>
-                                <input
-                                    type="text"
-                                    value={assignedTo}
-                                    onChange={(e) => setAssignedTo(e.target.value)}
-                                    placeholder="Admin User ID (UUID)"
-                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 md:px-3 py-1.5 md:py-2 text-xs md:text-sm focus:outline-none focus:border-black transition-all"
-                                />
-                                <p className="text-[9px] md:text-[10px] text-gray-400 mt-1">Enter admin user UUID to assign this ticket</p>
-                            </div>
+
                             <div className="pt-2">
                                 <label className="text-[10px] md:text-[11px] text-gray-500 uppercase tracking-widest mb-1.5 block font-bold">Update Note</label>
                                 <textarea

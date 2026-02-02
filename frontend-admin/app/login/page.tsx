@@ -86,10 +86,11 @@ export default function AdminLoginPage() {
             // Use AuthContext's verifyOtp function (handles httpOnly cookies)
             await verifyOtp(email, otp);
 
-            // Redirect directly to admin dashboard
+            // Redirect to admin dashboard after user state is set
+            // Give AuthContext time to update (verifyOtp sets user state synchronously)
             setTimeout(() => {
-                router.push("/admin");
-            }, 100);
+                router.push("/admin/orders");
+            }, 500);
         } catch (error) {
             setMessage({
                 type: "error",

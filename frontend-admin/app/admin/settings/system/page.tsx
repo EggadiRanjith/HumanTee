@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FiSave, FiAlertTriangle, FiCheckCircle, FiClock, FiMail, FiLayout, FiArrowLeft, FiEdit3 } from 'react-icons/fi';
+import { FiSave, FiAlertTriangle, FiCheckCircle, FiClock, FiMail, FiLayout, FiArrowLeft, FiEdit3, FiDatabase, FiTag, FiMessageSquare } from 'react-icons/fi';
 import { useAdminSettings } from '@/lib/queries/useSettings';
 import { settingsApi } from '@/lib/api/settings';
+import { getSystemFeatures, updateSystemFeatures } from '@/lib/api/system-features';
 
 export default function MaintenanceSettingsPage() {
     const [isSaving, setIsSaving] = useState(false);
@@ -21,6 +22,29 @@ export default function MaintenanceSettingsPage() {
         estimatedTime: '2 hours',
         contactEmail: 'support@humantee.com'
     });
+
+    const [features, setFeatures] = useState({
+        auditLogsEnabled: true,
+        discountsEnabled: true,
+        ticketsEnabled: true
+    });
+
+    // Load system features
+    useEffect(() => {
+        async function loadFeatures() {
+            try {
+                const data = await getSystemFeatures();
+                setFeatures({
+                    auditLogsEnabled: data.auditLogsEnabled,
+                    discountsEnabled: data.discountsEnabled,
+                    ticketsEnabled: data.ticketsEnabled
+                });
+            } catch (error) {
+                // Ignore error
+            }
+        }
+        loadFeatures();
+    }, []);
 
     // Update local state when data loads
     useEffect(() => {
@@ -39,6 +63,7 @@ export default function MaintenanceSettingsPage() {
         setIsSaving(true);
         setMessage(null);
         try {
+            // Save maintenance settings
             await settingsApi.saveSection('maintenance', {
                 enabled: settings.enabled,
                 title: settings.title,
@@ -47,7 +72,10 @@ export default function MaintenanceSettingsPage() {
                 contact_email: settings.contactEmail
             });
 
-            setMessage({ type: 'success', text: 'Maintenance settings updated successfully.' });
+            // Save feature toggles
+            await updateSystemFeatures(features);
+
+            setMessage({ type: 'success', text: 'System settings updated successfully.' });
             setIsEditing(false);
 
             // If maintenance is enabled, set the bypass cookie for the admin
@@ -55,7 +83,7 @@ export default function MaintenanceSettingsPage() {
                 document.cookie = "admin_bypass=true; path=/; max-age=3600";
             }
         } catch (error) {
-            setMessage({ type: 'error', text: 'Failed to update maintenance settings.' });
+            setMessage({ type: 'error', text: 'Failed to update system settings.' });
         } finally {
             setIsSaving(false);
         }
@@ -171,6 +199,87 @@ export default function MaintenanceSettingsPage() {
                                 </div>
                             </div>
                         )}
+                    </div>
+
+                    {/* Feature Toggles Card - Compact Mobile */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 md:p-4 lg:p-6">
+                        <div className="mb-4 md:mb-6">
+                            <h3 className="text-lg font-semibold text-gray-900">System Features</h3>
+                            <p className="text-xs md:text-sm text-gray-600 mt-1">
+                                Enable or disable core system features
+                            </p>
+                        </div>
+
+                        <div className="space-y-3 md:space-y-4">
+                            {/* Audit Logs Toggle */}
+                            <div className="flex items-center justify-between p-3 md:p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                                        <FiDatabase className="w-5 h-5 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm font-semibold text-gray-900">Audit Logs</h4>
+                                        <p className="text-xs text-gray-600">Track admin and user actions</p>
+                                    </div>
+                                </div>
+                                <label className={`relative inline-flex items-center ${isEditing ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}>
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={features.auditLogsEnabled}
+                                        disabled={!isEditing}
+                                        onChange={(e) => setFeatures({ ...features, auditLogsEnabled: e.target.checked })}
+                                    />
+                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                                </label>
+                            </div>
+
+                            {/* Discounts Toggle */}
+                            <div className="flex items-center justify-between p-3 md:p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-lg bg-pink-100 flex items-center justify-center">
+                                        <FiTag className="w-5 h-5 text-pink-600" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm font-semibold text-gray-900">Discounts</h4>
+                                        <p className="text-xs text-gray-600">Allow discount code usage</p>
+                                    </div>
+                                </div>
+                                <label className={`relative inline-flex items-center ${isEditing ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}>
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={features.discountsEnabled}
+                                        disabled={!isEditing}
+                                        onChange={(e) => setFeatures({ ...features, discountsEnabled: e.target.checked })}
+                                    />
+                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-500"></div>
+                                </label>
+                            </div>
+
+                            {/* Tickets Toggle */}
+                            <div className="flex items-center justify-between p-3 md:p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                                        <FiMessageSquare className="w-5 h-5 text-purple-600" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm font-semibold text-gray-900">Support Tickets</h4>
+                                        <p className="text-xs text-gray-600">Allow users to create tickets</p>
+                                    </div>
+                                </div>
+                                <label className={`relative inline-flex items-center ${isEditing ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}>
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={features.ticketsEnabled}
+                                        disabled={!isEditing}
+                                        onChange={(e) => setFeatures({ ...features, ticketsEnabled: e.target.checked })}
+                                    />
+                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Content Customization Card - Compact Mobile */}

@@ -15,7 +15,9 @@ import VariantsTab from './tabs/VariantsTab';
 import InventoryTab from './tabs/InventoryTab';
 import OrganizationTab from './tabs/OrganizationTab';
 import { useBasicInfoStore } from '@/domains/product/basic-info/basic-info.store';
+import { useMediaStore } from '@/domains/product/media/media.store';
 import { usePricingStore } from '@/domains/product/pricing/pricing.store';
+import { useVariantsStore } from '@/domains/product/variants/variants.store';
 import { aggregateProductData, sanitizeProductDataForAPI, markAllDomainsClean } from '@/domains/product/autosave/autosave.service';
 import { discardDraft } from '@/domains/product/autosave/draft.recovery';
 import { toast } from 'sonner';
@@ -44,33 +46,88 @@ export default function MobileProductWizard({ productId }: MobileProductWizardPr
     // Image upload hook for deferred uploads
     const { uploadItems, isUploading, uploadPendingImages } = useImageUploads();
 
-    // Get validation state
-    const { name } = useBasicInfoStore();
+    // Get validation state - subscribe to all fields used in validation
+    const { name, description, productType, category } = useBasicInfoStore();
+    const { images } = useMediaStore();
     const { price } = usePricingStore();
+    const { enabled: variantsEnabled, variants } = useVariantsStore();
 
     const CurrentStepComponent = STEPS[currentStep].component;
     const isFirstStep = currentStep === 0;
     const isLastStep = currentStep === STEPS.length - 1;
     const progress = ((currentStep + 1) / STEPS.length) * 100;
 
-    // Validation for current step
+    // Validation for current step (silent - no toasts)
     const canContinue = () => {
         if (currentStep === 0) {
-            // Basic info validation
-            return name.trim().length > 0;
+            // Basic info validation - ALL 4 fields required
+            const { description, productType, category } = useBasicInfoStore.getState();
+            return !!(name && name.trim() && description && description.trim() && productType && productType.trim() && category && category.trim());
+        }
+        if (currentStep === 1) {
+            // Media validation - At least 1 image required
+            const { images } = useMediaStore.getState();
+            return !!(images && images.length > 0);
         }
         if (currentStep === 2) {
             // Pricing validation
-            return price > 0;
+            return !!(price && price > 0);
         }
-        return true;
+        if (currentStep === 3) {
+            // Variants validation - At least 1 variant with size and SKU
+            const { enabled, variants } = useVariantsStore.getState();
+            if (!enabled || !variants || variants.length === 0) return false;
+            const invalidVariant = variants.find((v: any) => !v.size || !v.sku);
+            return !invalidVariant;
+        }
+        return true; // Inventory and Organization are optional
     };
 
     const handleNext = () => {
-        if (!canContinue()) {
-            toast.error('Please fill in all required fields');
-            return;
+        // Validate and show specific error messages
+        if (currentStep === 0) {
+            const { description, productType, category } = useBasicInfoStore.getState();
+            if (!name || name.trim() === '') {
+                toast.error('Product name is required');
+                return;
+            }
+            if (!description || description.trim() === '') {
+                toast.error('Product description is required');
+                return;
+            }
+            if (!productType || productType.trim() === '') {
+                toast.error('Product type is required');
+                return;
+            }
+            if (!category || category.trim() === '') {
+                toast.error('Product category is required');
+                return;
+            }
+        } else if (currentStep === 1) {
+            const { images } = useMediaStore.getState();
+            if (!images || images.length === 0) {
+                toast.error('At least one product image is required');
+                return;
+            }
+        } else if (currentStep === 2) {
+            if (!price || price <= 0) {
+                toast.error('Valid price is required');
+                return;
+            }
+        } else if (currentStep === 3) {
+            const { enabled, variants } = useVariantsStore.getState();
+            if (!enabled || !variants || variants.length === 0) {
+                toast.error('Please add at least one product variant');
+                return;
+            }
+            const invalidVariant = variants.find((v: any) => !v.size || !v.sku);
+            if (invalidVariant) {
+                toast.error('All variants must have a size and SKU');
+                return;
+            }
         }
+
+        // All validation passed - proceed to next step
         if (currentStep < STEPS.length - 1) {
             setCurrentStep(currentStep + 1);
             window.scrollTo(0, 0);
@@ -170,7 +227,7 @@ export default function MobileProductWizard({ productId }: MobileProductWizardPr
             router.push('/admin/products');
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Failed to save product');
-            console.error(error);
+
         } finally {
             setIsSaving(false);
         }

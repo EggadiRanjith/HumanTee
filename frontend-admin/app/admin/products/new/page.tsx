@@ -50,6 +50,17 @@ export default function NewProductPage() {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
+    // Reset all stores on mount to prevent state pollution from previous edits
+    useEffect(() => {
+        useBasicInfoStore.getState().reset();
+        useMediaStore.getState().reset();
+        usePricingStore.getState().reset();
+        useInventoryStore.getState().reset();
+        useVariantsStore.getState().reset();
+        useOrganizationStore.getState().reset();
+        markAllDomainsClean();
+    }, []);
+
     // Get state from stores for validation
     const { name } = useBasicInfoStore();
     const { price } = usePricingStore();
@@ -614,7 +625,32 @@ export default function NewProductPage() {
                             <TabNavigation
                                 tabs={tabs}
                                 activeTab={activeTab}
-                                onTabChange={setActiveTab}
+                                onTabChange={(newTab) => {
+                                    // Get the index of the new tab
+                                    const newTabIndex = tabs.findIndex(t => t.key === newTab);
+                                    const currentTabIndex = tabs.findIndex(t => t.key === activeTab);
+
+                                    // Allow backward navigation
+                                    if (newTabIndex < currentTabIndex) {
+                                        setActiveTab(newTab);
+                                        return;
+                                    }
+
+                                    // For forward navigation, validate current tab first
+                                    let isValid = false;
+                                    switch (activeTab) {
+                                        case 'basic': isValid = validateBasicInfo(); break;
+                                        case 'media': isValid = validateMedia(); break;
+                                        case 'pricing': isValid = validatePricing(); break;
+                                        case 'variants': isValid = validateVariants(); break;
+                                        case 'inventory': isValid = true; break; // Optional
+                                        case 'organization': isValid = true; break; // Optional
+                                    }
+
+                                    if (isValid) {
+                                        setActiveTab(newTab);
+                                    }
+                                }}
                             />
                         </div>
                     </div>

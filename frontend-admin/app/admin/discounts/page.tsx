@@ -16,6 +16,8 @@ import { discountsApi } from '@/lib/api/discounts';
 import { useAdminDiscounts } from '@/lib/queries/useDiscounts';
 import { DiscountsSkeleton, DiscountsEmpty, DiscountsError, DiscountCard } from './components';
 import { toast } from 'sonner';
+import { FeatureDisabledModal } from '@/components/modals/FeatureDisabledModal';
+import { getSystemFeatures } from '@/lib/api/system-features';
 
 type DiscountType = 'PERCENT' | 'FLAT';
 type DiscountScope = 'GLOBAL' | 'PRODUCT' | 'GROUP';
@@ -42,11 +44,27 @@ export default function DiscountsPage() {
     const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE' | 'SCHEDULED' | 'EXPIRED' | 'DISABLED'>('ALL');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 20;
+    const [discountsEnabled, setDiscountsEnabled] = useState(true);
+    const [discountsDisabledSince, setDiscountsDisabledSince] = useState<string>();
 
     // Use React Query hook
     const discountsQuery = useAdminDiscounts();
     const { data: discounts = [], isLoading, error } = discountsQuery;
     const refetch = discountsQuery.refetch;
+
+    // Check if discounts are enabled
+    useEffect(() => {
+        async function checkFeatures() {
+            try {
+                const features = await getSystemFeatures();
+                setDiscountsEnabled(features.discountsEnabled);
+                setDiscountsDisabledSince(features.discountsDisabledSince);
+            } catch (error) {
+                // Ignore error, assume enabled
+            }
+        }
+        checkFeatures();
+    }, []);
 
     // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
     const handleDelete = async (id: string) => {
@@ -124,6 +142,16 @@ export default function DiscountsPage() {
 
     return (
         <div className="space-y-3 md:space-y-4 lg:space-y-6">
+            {/* Feature Disabled Modal */}
+            {!discountsEnabled && (
+                <FeatureDisabledModal
+                    featureName="Discounts"
+                    disabledSince={discountsDisabledSince}
+                    message="The discount system has been disabled. Users cannot apply discount codes during checkout."
+                    settingsPath="/admin/settings/system"
+                />
+            )}
+
             {/* Header - Compact Mobile */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 md:gap-3">
                 <div>

@@ -145,12 +145,12 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
                                         className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800"
                                         disabled={uploading || uploadingVideo}
                                     />
-                                    <p className="text-xs text-gray-500 mt-1">
+                                    <p className="text-xs text-gray-500 mt-1 break-all">
                                         Current: {(slides.find(s => s.type === 'video') as VideoSlide)?.video || 'No video'}
                                     </p>
                                 </div>
                             ) : (
-                                <p className="text-sm text-gray-600">
+                                <p className="text-sm text-gray-600 break-all">
                                     {(slides.find(s => s.type === 'video') as VideoSlide)?.video || 'No video'}
                                 </p>
                             )}

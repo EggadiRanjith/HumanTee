@@ -63,43 +63,20 @@ const formatStatus = (status: OrderStatus) => {
 export default function OrdersPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<OrderStatus | 'ALL'>('ALL');
-    const [sortBy, setSortBy] = useState<'date' | 'total'>('date');
-    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 20;
 
-    // Use React Query hook - automatic caching, refetching, loading states
+    // Use React Query hook with server-side pagination
     const { data, isLoading, error, refetch } = useAdminOrders({
         status: statusFilter !== 'ALL' ? statusFilter : undefined,
         search: searchQuery || undefined,
+        page: currentPage,
     });
 
+    // Backend returns: { orders, total, page, totalPages }
     const orders = data?.orders || [];
-
-    // Sort orders (backend already filtered by status)
-    const sortedOrders = useMemo(() => {
-        let sorted = [...orders];
-
-        // Sort
-        sorted = sorted.sort((a, b) => {
-            let comparison = 0;
-            if (sortBy === 'date') {
-                comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-            } else {
-                comparison = Number(a.totalAmount) - Number(b.totalAmount);
-            }
-            return sortOrder === 'asc' ? comparison : -comparison;
-        });
-
-        return sorted;
-    }, [orders, sortBy, sortOrder]);
-
-    // Paginated orders
-    const totalPages = Math.ceil(sortedOrders.length / itemsPerPage);
-    const paginatedOrders = sortedOrders.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
+    const totalPages = data?.totalPages || 1;
+    const totalOrders = data?.total || 0;
 
     // Reset to page 1 when filters change
     useEffect(() => {
@@ -113,7 +90,7 @@ export default function OrdersPage() {
     if (error) return <OrdersError error={error} onRetry={() => refetch()} />;
 
     // Empty state
-    if (sortedOrders.length === 0 && !searchQuery && statusFilter === 'ALL') {
+    if (orders.length === 0 && !searchQuery && statusFilter === 'ALL') {
         return <OrdersEmpty />;
     }
 
@@ -125,7 +102,7 @@ export default function OrdersPage() {
 
             {/* Filters & Search - Compact Mobile */}
             <div className="bg-white rounded-lg border border-gray-200 p-2.5 md:p-3 lg:p-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3">
                     {/* Search */}
                     <input
                         type="text"
@@ -148,28 +125,12 @@ export default function OrdersPage() {
                         <option value="delivered">Delivered</option>
                         <option value="cancelled">Cancelled</option>
                     </select>
-
-                    {/* Sort */}
-                    <select
-                        value={`${sortBy}-${sortOrder}`}
-                        onChange={(e: any) => {
-                            const [sort, order] = e.target.value.split('-');
-                            setSortBy(sort as typeof sortBy);
-                            setSortOrder(order as typeof sortOrder);
-                        }}
-                        className="px-3 py-1.5 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-black focus:border-black outline-none"
-                    >
-                        <option value="date-desc">Newest First</option>
-                        <option value="date-asc">Oldest First</option>
-                        <option value="total-desc">Highest Value</option>
-                        <option value="total-asc">Lowest Value</option>
-                    </select>
                 </div>
             </div>
 
             {/* Orders Cards (Mobile) - Compact */}
             <div className="lg:hidden space-y-2.5 md:space-y-3">
-                {paginatedOrders.map((order) => (
+                {orders.map((order: Order) => (
                     <Link
                         key={order.id}
                         href={`/admin/orders/${order.id}`}
@@ -185,10 +146,10 @@ export default function OrdersPage() {
                             </div>
                             <div className="flex flex-col gap-1 items-end">
                                 <span className={`px-2 py-1 text-[10px] md:text-xs font-medium rounded ${getStatusColor(order.status)}`}>
-                                    {formatStatus(order.status)}
+                                    {formatStatus(order.status as OrderStatus)}
                                 </span>
                                 <span className={`px-2 py-1 text-[10px] md:text-xs font-medium rounded ${getPaymentStatusColor(order.payments?.[0]?.status || 'initiated')}`}>
-                                    {order.payments?.[0]?.status === 'captured' ? '✅ ' : ''}{formatStatus(order.payments?.[0]?.status || 'initiated')}
+                                    {order.payments?.[0]?.status === 'captured' ? '✅ ' : ''}{formatStatus((order.payments?.[0]?.status || 'initiated') as OrderStatus)}
                                 </span>
                             </div>
                         </div>
@@ -234,7 +195,7 @@ export default function OrdersPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                        {paginatedOrders.map((order) => (
+                        {orders.map((order: Order) => (
                             <tr key={order.id} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4 font-mono text-sm text-black">{order.orderNumber}</td>
                                 <td className="px-6 py-4">
@@ -243,13 +204,13 @@ export default function OrdersPage() {
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(order.status)}`}>
-                                        {formatStatus(order.status)}
+                                        {formatStatus(order.status as OrderStatus)}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="flex flex-col gap-1">
                                         <span className={`px-2 py-1 text-xs font-medium rounded ${getPaymentStatusColor(order.payments?.[0]?.status || 'initiated')}`}>
-                                            {order.payments?.[0]?.status === 'captured' ? '✅ ' : ''}{formatStatus(order.payments?.[0]?.status || 'initiated')}
+                                            {order.payments?.[0]?.status === 'captured' ? '✅ ' : ''}{formatStatus((order.payments?.[0]?.status || 'initiated') as OrderStatus)}
                                         </span>
                                         {order.payments?.[0]?.providerPaymentId && (
                                             <code className="text-[10px] text-gray-500 font-mono">
@@ -283,7 +244,7 @@ export default function OrdersPage() {
             {totalPages > 1 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-lg border border-gray-200 p-2.5 md:p-4 gap-3 sm:gap-0">
                     <div className="text-xs md:text-sm text-gray-600 hidden sm:block">
-                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, sortedOrders.length)} of {sortedOrders.length} orders
+                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalOrders)} of {totalOrders} orders
                     </div>
                     <div className="flex gap-2">
                         <button
@@ -334,7 +295,7 @@ export default function OrdersPage() {
 
             {/* Empty State */}
             {
-                sortedOrders.length === 0 && !isLoading && (
+                orders.length === 0 && !isLoading && (
                     <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
                         <div className="text-4xl mb-4">🔍</div>
                         <h3 className="text-lg font-medium text-black mb-2">No orders found</h3>

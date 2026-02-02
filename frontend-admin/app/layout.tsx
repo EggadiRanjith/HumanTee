@@ -5,7 +5,7 @@ import { QueryProvider } from "./context/QueryProvider";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Toaster } from "sonner";
 import localFont from "next/font/local";
-import { getBrandName, BRAND_CONFIG } from "@/lib/config/brand";
+import { BRAND_CONFIG } from "@/lib/config/brand";
 
 // Geist font (matching store)
 const geist = localFont({
@@ -18,14 +18,11 @@ const geist = localFont({
   display: "swap",
 });
 
-// Generate metadata with dynamic brand name
-export async function generateMetadata(): Promise<Metadata> {
-  const brandName = await getBrandName();
-  return {
-    title: `${brandName} ${BRAND_CONFIG.adminSuffix}`,
-    description: `${brandName} admin operations panel`,
-  };
-}
+// Static metadata - no network calls during SSR
+export const metadata: Metadata = {
+  title: `${BRAND_CONFIG.fallback} ${BRAND_CONFIG.adminSuffix}`,
+  description: `${BRAND_CONFIG.fallback} admin operations panel`,
+};
 
 export default function RootLayout({
   children,

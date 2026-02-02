@@ -218,4 +218,62 @@ export class SettingsService {
             return acc;
         }, {});
     }
+
+    /**
+     * Get system features (audit logs, discounts, tickets)
+     */
+    async getSystemFeatures(environment: string = 'production'): Promise<any> {
+        const features = await this.getSection('system', environment);
+
+        // Return with defaults if not set
+        return {
+            auditLogsEnabled: features.auditLogsEnabled ?? true,
+            auditLogsDisabledSince: features.auditLogsDisabledSince ?? null,
+            discountsEnabled: features.discountsEnabled ?? true,
+            discountsDisabledSince: features.discountsDisabledSince ?? null,
+            ticketsEnabled: features.ticketsEnabled ?? true,
+            ticketsDisabledSince: features.ticketsDisabledSince ?? null,
+        };
+    }
+
+    /**
+     * Update system features
+     */
+    async updateSystemFeatures(
+        data: Partial<any>,
+        userId?: string,
+        environment: string = 'production'
+    ): Promise<void> {
+        // Add timestamps for disabled features
+        const updates: Record<string, any> = {};
+
+        if (data.auditLogsEnabled !== undefined) {
+            updates.auditLogsEnabled = data.auditLogsEnabled;
+            if (!data.auditLogsEnabled) {
+                updates.auditLogsDisabledSince = new Date().toISOString();
+            } else {
+                updates.auditLogsDisabledSince = null;
+            }
+        }
+
+        if (data.discountsEnabled !== undefined) {
+            updates.discountsEnabled = data.discountsEnabled;
+            if (!data.discountsEnabled) {
+                updates.discountsDisabledSince = new Date().toISOString();
+            } else {
+                updates.discountsDisabledSince = null;
+            }
+        }
+
+        if (data.ticketsEnabled !== undefined) {
+            updates.ticketsEnabled = data.ticketsEnabled;
+            if (!data.ticketsEnabled) {
+                updates.ticketsDisabledSince = new Date().toISOString();
+            } else {
+                updates.ticketsDisabledSince = null;
+            }
+        }
+
+        await this.updateSection('system', updates, userId, 'System features updated', environment);
+    }
 }

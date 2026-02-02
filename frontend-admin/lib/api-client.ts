@@ -70,7 +70,7 @@ apiClient.interceptors.response.use(
         if (error.response?.status === 403) {
             const errorData = error.response.data as any;
             if (errorData?.message?.includes('CSRF')) {
-                console.error('CSRF token invalid or missing');
+
             }
             return Promise.reject(error);
         }
@@ -86,14 +86,14 @@ export default apiClient;
  * Kept for backward compatibility, but they do nothing
  */
 export function getAccessToken(): string | null {
-    console.warn('getAccessToken() is deprecated - using httpOnly cookies');
+
     return null;
 }
 
 export function setAccessToken(token: string | null) {
-    console.warn('setAccessToken() is deprecated - using httpOnly cookies');
+
 }
 
 export function clearAccessToken() {
-    console.warn('clearAccessToken() is deprecated - using httpOnly cookies');
+
 }

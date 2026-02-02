@@ -14,7 +14,7 @@ export function useAnalytics(timeRange: string = '7d') {
             const response = await apiClient.get('/admin/analytics', {
                 params: { dateRange: timeRange } // Fixed: backend expects 'dateRange' not 'timeRange'
             });
-            console.log('Analytics data:', response.data); // Debug logging
+
             return response.data;
         },
         staleTime: 2 * 60 * 1000, // 2 minutes

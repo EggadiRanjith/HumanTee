@@ -45,7 +45,7 @@ export default function MediaTab({ errors }: MediaTabProps) {
         (updatedImages: ProductImage[] | any) => {
             // Safety check: ensure updatedImages is an array
             if (!Array.isArray(updatedImages)) {
-                console.error('updatedImages is not an array:', updatedImages);
+
                 return;
             }
 

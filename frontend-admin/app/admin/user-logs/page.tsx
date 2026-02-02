@@ -5,8 +5,10 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useUserAuditLogs } from '@/lib/queries/useUserLogs';
+import { FeatureDisabledModal } from '@/components/modals/FeatureDisabledModal';
+import { getSystemFeatures } from '@/lib/api/system-features';
 import {
     User,
     ShoppingBag,
@@ -44,9 +46,25 @@ export default function UserAuditLogsPage() {
     const [eventTypeFilter, setEventTypeFilter] = useState<string>('ALL');
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
+    const [auditLogsEnabled, setAuditLogsEnabled] = useState(true);
+    const [auditLogsDisabledSince, setAuditLogsDisabledSince] = useState<string>();
 
     // Use React Query hook for user audit logs
     const { data: logs = [], isLoading, error, refetch } = useUserAuditLogs();
+
+    // Check if audit logs are enabled
+    useEffect(() => {
+        async function checkFeatures() {
+            try {
+                const features = await getSystemFeatures();
+                setAuditLogsEnabled(features.auditLogsEnabled);
+                setAuditLogsDisabledSince(features.auditLogsDisabledSince);
+            } catch (error) {
+                // Ignore error, assume enabled
+            }
+        }
+        checkFeatures();
+    }, []);
 
     // Category definitions
     const categories = [
@@ -195,6 +213,16 @@ export default function UserAuditLogsPage() {
     if (selectedCategory === 'ALL') {
         return (
             <div className="space-y-3 md:space-y-4 lg:space-y-6">
+                {/* Feature Disabled Modal */}
+                {!auditLogsEnabled && (
+                    <FeatureDisabledModal
+                        featureName="Audit Logs"
+                        disabledSince={auditLogsDisabledSince}
+                        message="Audit logging has been disabled. No user actions are being tracked during this period."
+                        settingsPath="/admin/settings/system"
+                    />
+                )}
+
                 {/* Header - Compact Mobile */}
                 <div>
                     <h1 className="text-lg md:text-xl lg:text-2xl font-semibold text-black">User Activity Logs</h1>

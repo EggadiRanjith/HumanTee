@@ -258,7 +258,7 @@ export default function CreateDiscountPage() {
                                 <input
                                     type="number"
                                     value={value}
-                                    onChange={(e: any) => setValue(e.target.value === '' ? '' : Number(e.target.value))}
+                                    onChange={(e: any) => setValue(e.target.value)}
                                     placeholder={type === 'PERCENT' ? '20' : '500'}
                                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none"
                                 />
@@ -273,7 +273,7 @@ export default function CreateDiscountPage() {
                                 <input
                                     type="number"
                                     value={priority}
-                                    onChange={(e: any) => setPriority(e.target.value === '' ? '' : Number(e.target.value))}
+                                    onChange={(e: any) => setPriority(e.target.value)}
                                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none"
                                 />
                             </div>
@@ -332,7 +332,7 @@ export default function CreateDiscountPage() {
                                     <input
                                         type="number"
                                         value={minOrder}
-                                        onChange={(e: any) => setMinOrder(e.target.value === '' ? '' : Number(e.target.value))}
+                                        onChange={(e: any) => setMinOrder(e.target.value)}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-black outline-none"
                                     />
                                 </div>
@@ -344,7 +344,7 @@ export default function CreateDiscountPage() {
                                         <input
                                             type="number"
                                             value={minUserOrders}
-                                            onChange={(e: any) => setMinUserOrders(e.target.value === '' ? '' : Number(e.target.value))}
+                                            onChange={(e: any) => setMinUserOrders(e.target.value)}
                                             placeholder="e.g., 5"
                                             className="w-full px-4 py-2 border border-blue-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none bg-blue-50/30"
                                         />
@@ -358,7 +358,7 @@ export default function CreateDiscountPage() {
                                         <input
                                             type="number"
                                             value={minUserLtv}
-                                            onChange={(e: any) => setMinUserLtv(e.target.value === '' ? '' : Number(e.target.value))}
+                                            onChange={(e: any) => setMinUserLtv(e.target.value)}
                                             placeholder="e.g., 10000"
                                             className="w-full px-4 py-2 border border-blue-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none bg-blue-50/30"
                                         />
@@ -374,7 +374,7 @@ export default function CreateDiscountPage() {
                                     <input
                                         type="number"
                                         value={globalLimit}
-                                        onChange={(e: any) => setGlobalLimit(e.target.value === '' ? '' : Number(e.target.value))}
+                                        onChange={(e: any) => setGlobalLimit(e.target.value)}
                                         placeholder="No limit"
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-black outline-none"
                                     />
@@ -386,7 +386,7 @@ export default function CreateDiscountPage() {
                                     <input
                                         type="number"
                                         value={perUserLimit}
-                                        onChange={(e: any) => setPerUserLimit(e.target.value === '' ? '' : Number(e.target.value))}
+                                        onChange={(e: any) => setPerUserLimit(e.target.value)}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-black outline-none"
                                     />
                                 </div>

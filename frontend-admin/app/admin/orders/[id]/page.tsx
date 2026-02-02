@@ -147,7 +147,7 @@ export default function OrderDetailPage() {
         try {
             await apiClient.patch(`/admin/orders/${orderId}/status`, { status: newStatus });
             // Invalidate orders list cache so list page shows updated status
-            await queryClient.invalidateQueries({ queryKey: ['orders'] });
+            await queryClient.invalidateQueries({ queryKey: ['admin', 'orders'] });
             await refetch();
             setShowStatusModal(false);
         } catch (err: any) {

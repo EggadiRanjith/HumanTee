@@ -60,8 +60,7 @@ export const aggregateProductData = (): ProductFormData => {
     const media = useMediaStore.getState();
     const organization = useOrganizationStore.getState();
 
-    console.warn('🔍 DEBUG media.images from store:', media.images);
-    console.warn('🔍 DEBUG file properties:', media.images.map(img => ({ id: img.id, hasFile: !!img.file })));
+
 
     return {
         // Basic Info
@@ -178,7 +177,7 @@ export const saveDraftToLocalStorage = (userId: string): void => {
         localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
     } catch (error: any) {
         if (error.name === 'QuotaExceededError') {
-            console.error('❌ localStorage quota exceeded! Clearing old drafts and retrying...');
+
             // Clear draft and try again with minimal data
             clearDraftFromLocalStorage();
 
@@ -193,9 +192,8 @@ export const saveDraftToLocalStorage = (userId: string): void => {
 
             try {
                 localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(minimalDraft));
-                console.warn('⚠️ Saved draft WITHOUT images due to quota limits');
             } catch (retryError) {
-                console.error('❌ Failed to save even minimal draft:', retryError);
+                // Failed to save even minimal draft
             }
         } else {
             throw error; // Re-throw non-quota errors
@@ -212,14 +210,14 @@ export const loadDraftFromLocalStorage = (): ProductDraft | null => {
 
         // Check schema version
         if (draft.schemaVersion !== SCHEMA_VERSION) {
-            console.warn('Draft schema version mismatch. Migration needed.');
+
             // TODO: Implement schema migration
             return null;
         }
 
         return draft;
     } catch (error) {
-        console.error('Failed to load draft:', error);
+
         return null;
     }
 };
@@ -247,7 +245,7 @@ export const triggerAutosave = (userId: string, productId?: string): void => {
     autosaveTimeout = window.setTimeout(() => {
         if (observeHasUnsavedChanges()) {
             saveDraftToLocalStorage(userId);
-            console.log('✅ Draft autosaved');
+
         }
     }, AUTOSAVE_DEBOUNCE_MS);
 };

@@ -74,4 +74,28 @@ export class SettingsController {
     async getAll() {
         return this.settingsService.getAll();
     }
+
+    /**
+     * Get system features (audit logs, discounts, tickets)
+     * GET /admin/settings/system-features
+     */
+    @Get('system-features')
+    async getSystemFeatures() {
+        return this.settingsService.getSystemFeatures();
+    }
+
+    /**
+     * Update system features
+     * POST /admin/settings/system-features
+     * Body: { auditLogsEnabled: true, discountsEnabled: false, ... }
+     */
+    @Post('system-features')
+    async updateSystemFeatures(
+        @Body() data: any,
+        @Req() req: any
+    ) {
+        const userId = req.user?.id;
+        await this.settingsService.updateSystemFeatures(data, userId);
+        return { message: 'System features updated successfully' };
+    }
 }

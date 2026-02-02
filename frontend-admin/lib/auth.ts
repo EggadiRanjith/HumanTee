@@ -11,7 +11,7 @@ export async function logout(): Promise<void> {
             credentials: 'include',
         });
     } catch (error) {
-        console.error('Logout failed:', error);
+
     }
 }
 
@@ -52,7 +52,7 @@ export async function getServerUser(): Promise<User | null> {
         const user = await response.json();
         return user;
     } catch (error) {
-        console.error('Failed to get server user:', error);
+
         return null;
     }
 }
