@@ -7,6 +7,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useLoading } from "@/app/contexts/LoadingContext";
 import { NAV_LINKS, HEADER_Z_INDEX } from "../constants";
 import type { MobileMenuProps } from "../types";
@@ -14,6 +15,7 @@ import { useIsSafari } from "@/app/lib/useIsSafari";
 
 export default function MobileMenu({ open, onClose, headerHeight }: MobileMenuProps) {
     const { setLoading } = useLoading();
+    const pathname = usePathname();
     const isSafari = useIsSafari();
     const stopPropagation = (e: React.MouseEvent) => e.stopPropagation();
 
@@ -64,7 +66,9 @@ export default function MobileMenu({ open, onClose, headerHeight }: MobileMenuPr
                             href={link.href}
                             prefetch={link.href === '/shop' ? true : false}
                             onClick={() => {
-                                setLoading(true);
+                                if (pathname !== link.href) {
+                                    setLoading(true);
+                                }
                                 onClose();
                             }}
                             className="px-3 py-3 text-sm hover:text-white hover:bg-white/5 rounded-lg transition-colors"

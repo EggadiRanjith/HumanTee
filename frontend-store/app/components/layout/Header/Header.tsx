@@ -121,7 +121,9 @@ function Header() {
           <>
             {/* MOBILE MENU BUTTON */}
             <button
-              onClick={handleMenuToggle}
+              onClick={(e) => {
+                handleMenuToggle(e);
+              }}
               className="
             md:hidden p-2.5 sm:p-3 text-white 
             hover:text-white/90 hover:bg-white/5 rounded-lg
@@ -196,7 +198,12 @@ function Header() {
                   key={link.href}
                   href={link.href}
                   prefetch={link.href === '/shop' ? true : false}
-                  onClick={(e) => handleProtectedNavigation(e, link.href)}
+                  onClick={(e) => {
+                    handleProtectedNavigation(e, link.href);
+                    if (!e.defaultPrevented && pathname !== link.href) {
+                      setLoading(true);
+                    }
+                  }}
                   className={`
                 uppercase tracking-[0.20em] transition-all duration-300
                 ${pathname === link.href

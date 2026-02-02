@@ -7,6 +7,7 @@
 
 import Link from "next/link";
 import { FiUser } from "react-icons/fi";
+import { usePathname } from "next/navigation";
 import { useLoading } from "@/app/contexts/LoadingContext";
 
 interface AuthStatusProps {
@@ -16,13 +17,18 @@ interface AuthStatusProps {
 
 export function AuthStatus({ isAuthenticated, customerName }: AuthStatusProps) {
     const { setLoading } = useLoading();
+    const pathname = usePathname();
+
+    const handleNav = (href: string) => {
+        if (pathname !== href) setLoading(true);
+    };
 
     if (!isAuthenticated) {
         return (
             <Link
                 href="/login"
                 prefetch={false}
-                onClick={() => setLoading(true)}
+                onClick={() => handleNav("/login")}
                 className="
           transition-all duration-300
           text-white hover:text-white/90
@@ -41,7 +47,7 @@ export function AuthStatus({ isAuthenticated, customerName }: AuthStatusProps) {
         <Link
             href="/account"
             prefetch={false}
-            onClick={() => setLoading(true)}
+            onClick={() => handleNav("/account")}
             className="
         transition-all duration-300
         text-white hover:text-white/90
@@ -59,17 +65,22 @@ export function AuthStatus({ isAuthenticated, customerName }: AuthStatusProps) {
 
 export function AuthStatusMobile({ isAuthenticated, customerName }: AuthStatusProps) {
     const { setLoading } = useLoading();
+    const pathname = usePathname();
+
+    const handleNav = (href: string) => {
+        if (pathname !== href) setLoading(true);
+    };
 
     if (!isAuthenticated) {
         return (
-            <Link href="/login" prefetch={false} onClick={() => setLoading(true)} className="text-white hover:text-white/90 transition-colors">
+            <Link href="/login" prefetch={false} onClick={() => handleNav("/login")} className="text-white hover:text-white/90 transition-colors">
                 <FiUser size={22} className="text-white" />
             </Link>
         );
     }
 
     return (
-        <Link href="/account" prefetch={false} onClick={() => setLoading(true)} className="relative text-white hover:text-white/90 transition-colors">
+        <Link href="/account" prefetch={false} onClick={() => handleNav("/account")} className="relative text-white hover:text-white/90 transition-colors">
             <FiUser size={22} className="text-white" />
         </Link>
     );

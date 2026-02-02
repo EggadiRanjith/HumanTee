@@ -27,6 +27,18 @@ function NavigationLoaderContent() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
+    // Safety backup: Kill loader if stuck for too long
+    useEffect(() => {
+        if (!isLoading) return;
+
+        const safetyTimer = setTimeout(() => {
+            console.warn("NavigationLoader: Safety timeout triggered. Resetting loader.");
+            setLoading(false);
+        }, 8000); // 8 seconds safety net
+
+        return () => clearTimeout(safetyTimer);
+    }, [isLoading, pathname, searchParams, setLoading]);
+
     // Timeout error state
     const [hasTimedOut, setHasTimedOut] = useState(false);
 
