@@ -1,14 +1,18 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, UseInterceptors, Req } from '@nestjs/common';
 import { DiscountsService } from './discounts.service';
 import { AdminJwtGuard } from '../auth/guards/admin-jwt.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { AuditInterceptor } from '../common/interceptors/audit.interceptor';
+import { AdminAuditService } from '../auth/admin-audit.service';
 
 @Controller('admin/discounts')
 @UseGuards(AdminJwtGuard, AdminGuard)
 @UseInterceptors(AuditInterceptor)
 export class DiscountsController {
-    constructor(private readonly discountsService: DiscountsService) { }
+    constructor(
+        private readonly discountsService: DiscountsService,
+        private readonly adminAuditService: AdminAuditService,
+    ) { }
 
     @Get()
     async findAll() {
@@ -16,8 +20,23 @@ export class DiscountsController {
     }
 
     @Post()
-    async create(@Body() data: any) {
-        return this.discountsService.create(data);
+    async create(@Body() data: any, @Req() req: any) {
+        const discount = await this.discountsService.create(data);
+
+        // Audit log
+        await this.adminAuditService.logAction({
+            adminId: req.user?.id,
+            adminEmail: req.user?.email,
+            eventType: 'DISCOUNT_CREATE',
+            entityType: 'discount',
+            entityId: discount.id,
+            entityName: discount.code,
+            after: { code: discount.code, type: discount.type, value: discount.value },
+            ipAddress: req.ip,
+            userAgent: req.headers['user-agent'],
+        });
+
+        return discount;
     }
 
     @Get('validate/:code')
@@ -31,13 +50,45 @@ export class DiscountsController {
     }
 
     @Put(':id')
-    async update(@Param('id') id: string, @Body() data: any) {
-        return this.discountsService.update(id, data);
+    async update(@Param('id') id: string, @Body() data: any, @Req() req: any) {
+        const before = await this.discountsService.findOne(id);
+        const discount = await this.discountsService.update(id, data);
+
+        // Audit log
+        await this.adminAuditService.logAction({
+            adminId: req.user?.id,
+            adminEmail: req.user?.email,
+            eventType: 'DISCOUNT_UPDATE',
+            entityType: 'discount',
+            entityId: id,
+            entityName: discount.code,
+            before: { code: before.code, type: before.type, value: before.value, isActive: before.isActive },
+            after: { code: discount.code, type: discount.type, value: discount.value, isActive: discount.isActive },
+            changes: this.adminAuditService.calculateChanges(before, discount),
+            ipAddress: req.ip,
+            userAgent: req.headers['user-agent'],
+        });
+
+        return discount;
     }
 
     @Delete(':id')
-    async delete(@Param('id') id: string) {
-        return this.discountsService.delete(id);
+    async delete(@Param('id') id: string, @Req() req: any) {
+        const discount = await this.discountsService.findOne(id);
+        await this.discountsService.delete(id);
+
+        // Audit log
+        await this.adminAuditService.logAction({
+            adminId: req.user?.id,
+            adminEmail: req.user?.email,
+            eventType: 'DISCOUNT_DELETE',
+            entityType: 'discount',
+            entityId: id,
+            entityName: discount.code,
+            before: { code: discount.code, type: discount.type, value: discount.value },
+            ipAddress: req.ip,
+            userAgent: req.headers['user-agent'],
+        });
     }
 }
 

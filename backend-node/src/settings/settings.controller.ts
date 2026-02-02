@@ -3,6 +3,7 @@ import { SettingsService } from './settings.service';
 import { SettingsCacheService } from './settings-cache.service';
 import { AdminJwtGuard } from '../auth/guards/admin-jwt.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
+import { AdminAuditService } from '../auth/admin-audit.service';
 
 @Controller('admin/settings')
 @UseGuards(AdminJwtGuard, AdminGuard)
@@ -10,6 +11,7 @@ export class SettingsController {
     constructor(
         private readonly settingsService: SettingsService,
         private readonly settingsCacheService: SettingsCacheService,
+        private readonly adminAuditService: AdminAuditService,
     ) { }
 
     /**
@@ -33,7 +35,26 @@ export class SettingsController {
         @Req() req: any
     ) {
         const userId = req.user?.id;
+
+        // Get before state
+        const before = await this.settingsService.getSection(section);
+
         await this.settingsService.updateSection(section, data, userId, 'Admin update');
+
+        // Audit log
+        await this.adminAuditService.logAction({
+            adminId: userId,
+            adminEmail: req.user?.email,
+            eventType: 'SETTINGS_UPDATE',
+            entityType: 'settings',
+            entityId: section,
+            entityName: `${section} settings`,
+            before,
+            after: data,
+            changes: this.adminAuditService.calculateChanges(before, data),
+            ipAddress: req.ip,
+            userAgent: req.headers['user-agent'],
+        });
 
         // Clear feature cache when features are updated
         if (section === 'features') {
@@ -95,7 +116,27 @@ export class SettingsController {
         @Req() req: any
     ) {
         const userId = req.user?.id;
+
+        // Get before state
+        const before = await this.settingsService.getSystemFeatures();
+
         await this.settingsService.updateSystemFeatures(data, userId);
+
+        // Audit log
+        await this.adminAuditService.logAction({
+            adminId: userId,
+            adminEmail: req.user?.email,
+            eventType: 'SYSTEM_FEATURES_UPDATE',
+            entityType: 'settings',
+            entityId: 'system-features',
+            entityName: 'System Features',
+            before,
+            after: data,
+            changes: this.adminAuditService.calculateChanges(before, data),
+            ipAddress: req.ip,
+            userAgent: req.headers['user-agent'],
+        });
+
         return { message: 'System features updated successfully' };
     }
 }

@@ -19,6 +19,7 @@ import { AdminJwtGuard } from '../auth/guards/admin-jwt.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { Throttle } from '@nestjs/throttler';
 import { AuditInterceptor } from '../common/interceptors/audit.interceptor';
+import { AdminAuditService } from '../auth/admin-audit.service';
 
 @Controller('tickets')
 @UseGuards(JwtAuthGuard)
@@ -90,7 +91,10 @@ export class TicketsController {
 @UseGuards(AdminJwtGuard, AdminGuard)
 @UseInterceptors(AuditInterceptor)
 export class AdminTicketsController {
-    constructor(private readonly ticketsService: TicketsService) { }
+    constructor(
+        private readonly ticketsService: TicketsService,
+        private readonly adminAuditService: AdminAuditService,
+    ) { }
 
     /**
      * Get all tickets with filters
@@ -132,7 +136,28 @@ export class AdminTicketsController {
         @Request() req,
         @Body() updateTicketDto: UpdateTicketDto,
     ) {
-        return this.ticketsService.updateTicket(ticketId, req.user.userId, updateTicketDto);
+        const beforeData = await this.ticketsService.getTicketDetail(ticketId, null as any, 1, 1);
+        const ticket = await this.ticketsService.updateTicket(ticketId, req.user.userId, updateTicketDto);
+
+        // Audit log
+        await this.adminAuditService.logAction({
+            adminId: req.user?.id,
+            adminEmail: req.user?.email,
+            eventType: 'TICKET_UPDATE',
+            entityType: 'ticket',
+            entityId: ticketId,
+            entityName: `Ticket #${ticketId.slice(0, 8)}`,
+            before: { status: beforeData.ticket.status, priority: beforeData.ticket.priority },
+            after: { status: ticket.status, priority: ticket.priority },
+            changes: this.adminAuditService.calculateChanges(
+                { status: beforeData.ticket.status, priority: beforeData.ticket.priority },
+                { status: ticket.status, priority: ticket.priority }
+            ),
+            ipAddress: req.ip,
+            userAgent: req.headers['user-agent'],
+        });
+
+        return ticket;
     }
 
     /**
@@ -145,6 +170,21 @@ export class AdminTicketsController {
         @Request() req,
         @Body() body: { message: string; attachments?: any[] },
     ) {
-        return this.ticketsService.adminReply(ticketId, req.user.userId, body.message, body.attachments);
+        const result = await this.ticketsService.adminReply(ticketId, req.user.userId, body.message, body.attachments);
+
+        // Audit log
+        await this.adminAuditService.logAction({
+            adminId: req.user?.id,
+            adminEmail: req.user?.email,
+            eventType: 'TICKET_REPLY',
+            entityType: 'ticket',
+            entityId: ticketId,
+            entityName: `Ticket #${ticketId.slice(0, 8)}`,
+            after: { message: body.message },
+            ipAddress: req.ip,
+            userAgent: req.headers['user-agent'],
+        });
+
+        return result;
     }
 }
