@@ -5,16 +5,11 @@ import { toast } from 'sonner';
 import { FiTrash2, FiPlus } from 'react-icons/fi';
 import { useCloudinaryUpload } from '@/hooks/useCloudinaryUpload';
 
-type VideoSlide = {
+export type VideoSlide = {
     type: 'video';
-    video: string;
-    heading: string;
-    subheading1: string;
-    subheading2: string;
-    buttonText: string;
-    buttonUrl: string;
+    video: string; // Cloudinary URL or base64 data URL
 };
-type ImageSlide = {
+export type ImageSlide = {
     type: 'image';
     image: string;
     mobileImage?: string;
@@ -24,7 +19,7 @@ type ImageSlide = {
     buttonText: string;
     buttonUrl: string;
 };
-type HeroSlide = VideoSlide | ImageSlide;
+export type HeroSlide = VideoSlide | ImageSlide;
 
 interface Props {
     slides: HeroSlide[];
@@ -37,7 +32,7 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
     const [uploadingVideo, setUploadingVideo] = useState(false);
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-    const handleVideoUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleVideoSelect = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -54,65 +49,40 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
                 return;
             }
 
-            setUploadingVideo(true);
-            try {
-                const formData = new FormData();
-                formData.append('file', file);
-
-                const response = await fetch(`${API_URL}/upload/video`, {
-                    method: 'POST',
-                    body: formData,
-                    credentials: 'include',
-                    headers: {
-                        'Authorization': `Bearer ${document.cookie.match(/auth_token=([^;]+)/)?.[1]}`
-                    }
-                });
-
-                if (!response.ok) throw new Error('Upload failed');
-
-                const data = await response.json();
-                const url = data.url;
-
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const base64 = e.target?.result as string;
                 const newSlides = [...slides];
                 if (index !== -1 && newSlides[index]) {
-                    (newSlides[index] as VideoSlide).video = url;
+                    (newSlides[index] as VideoSlide).video = base64;
                 } else {
-                    // Add new video slide if it doesn't exist
                     newSlides.unshift({
                         type: 'video',
-                        video: url,
-                        heading: '',
-                        subheading1: '',
-                        subheading2: '',
-                        buttonText: 'Shop Now',
-                        buttonUrl: '/shop'
+                        video: base64,
                     });
                 }
                 onChange(newSlides);
-                toast.success('Video uploaded! Remember to save changes.');
-            } catch (error: any) {
-                toast.error(`Failed to upload: ${error.message}`);
-            } finally {
-                setUploadingVideo(false);
-            }
+                toast.success('Video selected. Remember to click Save to upload.');
+            };
+            reader.readAsDataURL(file);
         };
 
         video.src = URL.createObjectURL(file);
     };
 
-    const handleImageUpload = async (slideIndex: number, field: 'image' | 'mobileImage', e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageSelect = (slideIndex: number, field: 'image' | 'mobileImage', e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        try {
-            const url = await upload(file);
-            if (!url) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const base64 = e.target?.result as string;
             const newSlides = [...slides];
-            (newSlides[slideIndex] as ImageSlide)[field] = url;
+            (newSlides[slideIndex] as ImageSlide)[field] = base64;
             onChange(newSlides);
-        } catch (error) {
-            toast.error('Failed to upload image');
-        }
+            toast.success('Image selected. Remember to click Save to upload.');
+        };
+        reader.readAsDataURL(file);
     };
 
     const updateSlide = (index: number, field: string, value: string) => {
@@ -175,70 +145,33 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
                                     <input
                                         type="file"
                                         accept="video/*"
-                                        onChange={(e) => handleVideoUpload(videoSlideIndex, e)}
+                                        onChange={(e) => handleVideoSelect(videoSlideIndex, e)}
                                         className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800"
-                                        disabled={uploading || uploadingVideo}
+                                        disabled={uploading}
                                     />
                                     <p className="text-xs text-gray-500 mt-1 break-all">
-                                        {videoSlide?.video ? `Current: ${videoSlide.video}` : 'No video uploaded yet'}
+                                        {videoSlide?.video && !videoSlide.video.startsWith('data:')
+                                            ? `Current: ${videoSlide.video}`
+                                            : videoSlide?.video
+                                                ? 'Video selected (not uploaded)'
+                                                : 'No video uploaded yet'}
                                     </p>
+                                    {videoSlide?.video.startsWith('data:') && (
+                                        <div className="mt-2 text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-200 inline-block">
+                                            Not uploaded yet. Click Save to upload.
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
-                                <p className="text-sm text-gray-600 break-all">
-                                    {videoSlide?.video || 'No video'}
-                                </p>
+                                <div className="space-y-1">
+                                    <p className="text-sm text-gray-600 break-all">
+                                        {videoSlide?.video?.startsWith('data:')
+                                            ? 'Video selected (pending save)'
+                                            : videoSlide?.video || 'No video'}
+                                    </p>
+                                </div>
                             )}
                         </div>
-
-                        {videoSlide && (
-                            <>
-                                <div className="grid grid-cols-1 gap-4">
-                                    <input
-                                        type="text"
-                                        placeholder="Heading"
-                                        value={videoSlide.heading}
-                                        onChange={(e: any) => updateSlide(videoSlideIndex, 'heading', e.target.value)}
-                                        readOnly={!isEditing}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm read-only:bg-gray-50 read-only:text-gray-600"
-                                    />
-                                    <input
-                                        type="text"
-                                        placeholder="Subheading 1"
-                                        value={videoSlide.subheading1}
-                                        onChange={(e: any) => updateSlide(videoSlideIndex, 'subheading1', e.target.value)}
-                                        readOnly={!isEditing}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm read-only:bg-gray-50 read-only:text-gray-600"
-                                    />
-                                    <input
-                                        type="text"
-                                        placeholder="Subheading 2 (optional)"
-                                        value={videoSlide.subheading2}
-                                        onChange={(e: any) => updateSlide(videoSlideIndex, 'subheading2', e.target.value)}
-                                        readOnly={!isEditing}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm read-only:bg-gray-50 read-only:text-gray-600"
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <input
-                                        type="text"
-                                        placeholder="Button Text"
-                                        value={videoSlide.buttonText}
-                                        onChange={(e: any) => updateSlide(videoSlideIndex, 'buttonText', e.target.value)}
-                                        readOnly={!isEditing}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm read-only:bg-gray-50 read-only:text-gray-600"
-                                    />
-                                    <input
-                                        type="text"
-                                        placeholder="Button URL"
-                                        value={videoSlide.buttonUrl}
-                                        onChange={(e: any) => updateSlide(videoSlideIndex, 'buttonUrl', e.target.value)}
-                                        readOnly={!isEditing}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm read-only:bg-gray-50 read-only:text-gray-600"
-                                    />
-                                </div>
-                            </>
-                        )}
                     </div>
                 </div>
 
@@ -270,12 +203,15 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
                                             <input
                                                 type="file"
                                                 accept="image/*"
-                                                onChange={(e: any) => handleImageUpload(index, 'image', e)}
+                                                onChange={(e: any) => handleImageSelect(index, 'image', e)}
                                                 className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800"
                                                 disabled={uploading}
                                             />
+                                            {imageSlide.image.startsWith('data:') && (
+                                            <div className="mt-1 text-[10px] font-semibold text-amber-600">Pending upload</div>
+                                        )}
                                         ) : (
-                                            <p className="text-xs text-gray-600 break-all">{imageSlide.image || 'No image'}</p>
+                                        <p className="text-xs text-gray-600 break-all">{imageSlide.image || 'No image'}</p>
                                         )}
                                     </div>
                                     <div>
@@ -284,12 +220,15 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
                                             <input
                                                 type="file"
                                                 accept="image/*"
-                                                onChange={(e: any) => handleImageUpload(index, 'mobileImage', e)}
+                                                onChange={(e: any) => handleImageSelect(index, 'mobileImage', e)}
                                                 className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800"
                                                 disabled={uploading}
                                             />
+                                            {imageSlide.mobileImage?.startsWith('data:') && (
+                                            <div className="mt-1 text-[10px] font-semibold text-amber-600">Pending upload</div>
+                                        )}
                                         ) : (
-                                            <p className="text-xs text-gray-600 break-all">{imageSlide.mobileImage || 'No image'}</p>
+                                        <p className="text-xs text-gray-600 break-all">{imageSlide.mobileImage || 'No image'}</p>
                                         )}
                                     </div>
                                 </div>

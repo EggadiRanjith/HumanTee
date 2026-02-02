@@ -7,6 +7,9 @@ import { FiX, FiPlusCircle, FiList, FiAlertCircle, FiChevronRight, FiLoader } fr
 import { useRouter } from "next/navigation";
 import apiClient from "@/lib/api-client";
 import { useSettings } from "@/app/contexts/SettingsContext";
+import { useAuth } from "@/app/contexts/AuthContext";
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface HelpActionModalProps {
     isOpen: boolean;
@@ -17,6 +20,8 @@ interface HelpActionModalProps {
 
 export function HelpActionModal({ isOpen, onClose, orderId, orderNumber }: HelpActionModalProps) {
     const router = useRouter();
+    const queryClient = useQueryClient();
+    const { user } = useAuth();
     const [isChecking, setIsChecking] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -54,6 +59,11 @@ export function HelpActionModal({ isOpen, onClose, orderId, orderNumber }: HelpA
         try {
             // Check for active ticket first
             const response = await apiClient.get(`/tickets/check/${orderId}`);
+
+            // CRITICAL: Invalidate tickets cache before navigation to ensure fresh data
+            if (user?.id) {
+                queryClient.invalidateQueries({ queryKey: queryKeys.allTickets(user.id) });
+            }
 
             if (response.data.hasActiveTicket) {
                 // If active ticket exists, redirect to it

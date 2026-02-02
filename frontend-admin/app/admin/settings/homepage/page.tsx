@@ -10,18 +10,24 @@ import { toast } from 'sonner';
 import Link from 'next/link';
 import { FiArrowLeft } from 'react-icons/fi';
 import { useHomepageSettings, useUpdateHomepageSettings } from '@/lib/queries/useHomepageSettings';
-import { HeroSlidesManager } from './components/HeroSlidesManager';
+import { HeroSlidesManager, type HeroSlide, type VideoSlide, type ImageSlide } from './components/HeroSlidesManager';
 import { BannerMessagesManager } from './components/BannerMessagesManager';
 import { ReviewsManager } from './components/ReviewsManager';
 import SettingsBackButton from '../_components/SettingsBackButton';
+import { UploadProgressModal, type UploadItem } from '@/app/components/UploadProgressModal';
+import apiClient from '@/lib/api-client';
 
 export default function HomepageSettings() {
     const [isEditing, setIsEditing] = useState(false);
     const { data, isLoading } = useHomepageSettings();
     const updateMutation = useUpdateHomepageSettings();
 
+    // Upload states
+    const [uploadModalOpen, setUploadModalOpen] = useState(false);
+    const [uploadItems, setUploadItems] = useState<UploadItem[]>([]);
+
     // Local state for editing
-    const [heroSlides, setHeroSlides] = useState<any[]>([]);
+    const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
     const [bannerMessages, setBannerMessages] = useState<string[]>([]);
     const [reviews, setReviews] = useState<any[]>([]);
     const [reviewsEnabled, setReviewsEnabled] = useState(true);
@@ -37,8 +43,100 @@ export default function HomepageSettings() {
     }, [data]);
 
     const handleSave = async () => {
+        // 1. Identify media that needs uploading
+        const uploads: Array<{ id: string, file: Blob, isVideo: boolean, slideIndex: number, field?: 'image' | 'mobileImage' }> = [];
+
+        for (let i = 0; i < heroSlides.length; i++) {
+            const slide = heroSlides[i];
+            if (slide.type === 'video' && slide.video.startsWith('data:')) {
+                const blob = await fetch(slide.video).then(r => r.blob());
+                uploads.push({ id: `video-${i}`, file: blob, isVideo: true, slideIndex: i });
+            } else if (slide.type === 'image') {
+                if (slide.image.startsWith('data:')) {
+                    const blob = await fetch(slide.image).then(r => r.blob());
+                    uploads.push({ id: `image-${i}`, file: blob, isVideo: false, slideIndex: i, field: 'image' });
+                }
+                if (slide.mobileImage?.startsWith('data:')) {
+                    const blob = await fetch(slide.mobileImage).then(r => r.blob());
+                    uploads.push({ id: `mobile-${i}`, file: blob, isVideo: false, slideIndex: i, field: 'mobileImage' });
+                }
+            }
+        }
+
+        // 2. Perform uploads if needed
+        let finalSlides = [...heroSlides];
+        if (uploads.length > 0) {
+            setUploadItems(uploads.map(u => ({
+                id: u.id,
+                fileName: u.isVideo ? `Video Slide` : `Image Slide ${u.slideIndex + 1} (${u.field})`,
+                progress: 0,
+                status: 'pending'
+            })));
+            setUploadModalOpen(true);
+
+            for (const uploadItem of uploads) {
+                setUploadItems(prev => prev.map(item =>
+                    item.id === uploadItem.id ? { ...item, status: 'uploading' } : item
+                ));
+
+                try {
+                    const formData = new FormData();
+                    formData.append('file', uploadItem.file);
+
+                    const endpoint = uploadItem.isVideo ? '/upload/video' : '/upload/image';
+                    const response = await apiClient.post(endpoint, formData, {
+                        onUploadProgress: (progressEvent) => {
+                            const percentCompleted = Math.round(
+                                (progressEvent.loaded * 100) / (progressEvent.total || 1)
+                            );
+                            setUploadItems(prev => prev.map(item =>
+                                item.id === uploadItem.id ? { ...item, progress: percentCompleted } : item
+                            ));
+                        }
+                    });
+
+                    const url = response.data.url;
+                    if (uploadItem.isVideo) {
+                        (finalSlides[uploadItem.slideIndex] as VideoSlide).video = url;
+                    } else {
+                        (finalSlides[uploadItem.slideIndex] as ImageSlide)[uploadItem.field!] = url;
+                    }
+
+                    setUploadItems(prev => prev.map(item =>
+                        item.id === uploadItem.id ? { ...item, status: 'success', progress: 100 } : item
+                    ));
+                } catch (error: any) {
+                    setUploadItems(prev => prev.map(item =>
+                        item.id === uploadItem.id ? { ...item, status: 'error', error: error.message || 'Upload failed' } : item
+                    ));
+                    toast.error(`Upload failed for ${uploadItem.id}`);
+                    // Give user time to see error
+                    setTimeout(() => setUploadModalOpen(false), 3000);
+                    return;
+                }
+            }
+
+            // Sync with local state
+            setHeroSlides(finalSlides);
+            // Brief pause to show 100% completion
+            await new Promise(r => setTimeout(r, 800));
+            setUploadModalOpen(false);
+        }
+
+        // 3. Final validation: Prevent base64 from entering DB
+        const hasBase64 = finalSlides.some(slide => {
+            if (slide.type === 'video') return slide.video.startsWith('data:');
+            return slide.image.startsWith('data:') || slide.mobileImage?.startsWith('data:');
+        });
+
+        if (hasBase64) {
+            toast.error('Some media files failed to upload. Please try again.');
+            return;
+        }
+
+        // 4. Save settings
         const payload = {
-            hero_slides: { slides: heroSlides },
+            hero_slides: { slides: finalSlides },
             banner_messages: { messages: bannerMessages },
             reviews: { reviews },
             reviews_settings: { enabled: reviewsEnabled }
@@ -150,6 +248,13 @@ export default function HomepageSettings() {
                     />
                 </div>
             </div>
+
+            {/* Upload Progress Modal */}
+            <UploadProgressModal
+                isOpen={uploadModalOpen}
+                items={uploadItems}
+                onComplete={() => setUploadModalOpen(false)}
+            />
         </div>
     );
 }

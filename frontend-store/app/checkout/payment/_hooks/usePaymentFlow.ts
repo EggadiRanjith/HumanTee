@@ -5,6 +5,8 @@ import { useCheckout, type PaymentMethod } from "@/app/contexts/CheckoutContext"
 import { useLoading } from "@/app/contexts/LoadingContext";
 import apiClient from "@/lib/api-client";
 import * as Sentry from '@sentry/nextjs';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 
 // Extend Window interface for Razorpay
 declare global {
@@ -15,6 +17,7 @@ declare global {
 
 export function usePaymentFlow() {
     const router = useRouter();
+    const queryClient = useQueryClient();
     const { items, clearCart, appliedDiscount, discountedTotal } = useCart();
     const { paymentMethod, setPaymentMethod, setOrderNumber, shippingData } = useCheckout();
     const { setLoading } = useLoading();
@@ -145,6 +148,9 @@ export function usePaymentFlow() {
 
                         // Set order number from confirmation
                         setOrderNumber(confirmResponse.data.orderNumber);
+
+                        // CRITICAL: Invalidate orders cache so /account/orders shows fresh data
+                        queryClient.invalidateQueries({ queryKey: queryKeys.orders });
 
                         // Clear cart and redirect
                         clearCart();

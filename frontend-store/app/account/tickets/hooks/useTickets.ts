@@ -1,27 +1,26 @@
 /**
  * Tickets Hook
- * Manages ticket fetching and state
+ * ✅ OPTIMIZED: Migrated to React Query for cache management and invalidation
  */
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/app/contexts/AuthContext';
 import apiClient from '@/lib/api-client';
 import { logError } from '@/lib/logger';
 import { Ticket, TicketFilters } from '../types';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function useTickets(filters: TicketFilters = {}) {
-    const [tickets, setTickets] = useState<Ticket[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
-    const [totalPages, setTotalPages] = useState(1);
-    const [retryCount, setRetryCount] = useState(0);
+    const { user } = useAuth();
+    const userId = user?.id || '';
 
-    useEffect(() => {
-        const fetchTickets = async () => {
-            setIsLoading(true);
-            setError(null);
-
+    const { data, isLoading, error, refetch } = useQuery({
+        queryKey: filters.orderId
+            ? queryKeys.ticketsByOrder(userId, filters.orderId)
+            : queryKeys.allTickets(userId),
+        queryFn: async () => {
             try {
                 // Simplified: Always fetch all user tickets
                 // If orderId is provided, filter by that order's tickets
@@ -30,22 +29,26 @@ export function useTickets(filters: TicketFilters = {}) {
                     : '/tickets';
 
                 const response = await apiClient.get(url);
-                setTickets(response.data.tickets || response.data);
-                setTotalPages(response.data.totalPages || 1);
+                return {
+                    tickets: response.data.tickets || response.data,
+                    totalPages: response.data.totalPages || 1
+                };
             } catch (err) {
                 logError(err, 'Failed to fetch tickets');
-                setError(err as Error);
-            } finally {
-                setIsLoading(false);
+                throw err;
             }
-        };
+        },
+        enabled: !!userId,
+        staleTime: 30 * 1000, // 30 seconds - tickets don't change frequently
+        gcTime: 5 * 60 * 1000, // 5 minutes - keep in cache for navigation
+        retry: 2,
+    });
 
-        fetchTickets();
-    }, [filters.orderId, retryCount]);
-
-    const retry = () => {
-        setRetryCount(prev => prev + 1);
+    return {
+        tickets: data?.tickets || [],
+        totalPages: data?.totalPages || 1,
+        isLoading,
+        error: error as Error | null,
+        retry: refetch
     };
-
-    return { tickets, isLoading, error, totalPages, retry };
 }

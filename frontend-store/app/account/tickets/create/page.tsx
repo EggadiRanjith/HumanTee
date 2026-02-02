@@ -17,6 +17,8 @@ import Link from "next/link";
 import apiClient from "@/lib/api-client";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useOrder } from "@/app/orders/hooks/useOrder";
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 
 const CATEGORIES = [
     { id: 'wrong_item', label: 'Wrong Item Received' },
@@ -32,7 +34,8 @@ const MAX_IMAGES = 5;
 function CreateTicketPageContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const { isAuthenticated, isLoading: authLoading } = useAuth();
+    const queryClient = useQueryClient();
+    const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
     const [orderId, setOrderId] = useState<string | null>(searchParams.get('orderId'));
     const { order, isLoading: orderLoading } = useOrder(orderId ?? "");
@@ -148,6 +151,12 @@ function CreateTicketPageContent() {
                 description: formData.description,
                 attachments: attachments.length > 0 ? attachments : undefined
             });
+
+            // CRITICAL: Invalidate tickets cache so ticket list shows fresh data
+            if (user?.id) {
+                queryClient.invalidateQueries({ queryKey: queryKeys.allTickets(user.id) });
+                queryClient.invalidateQueries({ queryKey: queryKeys.ticketDetail(user.id, response.data.id) });
+            }
 
             setSuccess(true);
             // Scroll to top to show success message

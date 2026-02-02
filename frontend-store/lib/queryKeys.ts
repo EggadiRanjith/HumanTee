@@ -15,6 +15,8 @@ export const queryKeys = {
     order: (orderId: string) => ['order', orderId] as const, // Single order detail
     orderDetail: (userId: string, orderId: string) => ['user', userId, 'order', orderId] as const,
     tickets: (userId: string, page: number) => ['user', userId, 'tickets', page] as const,
+    allTickets: (userId: string) => ['user', userId, 'tickets'] as const, // For invalidating all tickets
+    ticketsByOrder: (userId: string, orderId: string) => ['user', userId, 'tickets', 'order', orderId] as const,
     ticketDetail: (userId: string, ticketId: string) => ['user', userId, 'ticket', ticketId] as const,
     cart: (userId: string) => ['user', userId, 'cart'] as const,
 } as const;
