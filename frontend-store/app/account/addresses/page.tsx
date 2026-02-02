@@ -24,7 +24,7 @@ export default function AddressesPage() {
         updateAddresses,
         retryProfile,
         retryAddresses,
-    } = useProfileData(user?.id, user?.email, user?.role);
+    } = useProfileData(user?.id, user?.email, user?.role, !authLoading);
 
     // Redirect if not authenticated
     useEffect(() => {

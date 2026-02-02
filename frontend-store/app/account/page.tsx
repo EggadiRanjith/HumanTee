@@ -19,7 +19,7 @@ export default function AccountPage() {
         profile,
         isLoadingProfile,
         profileError,
-    } = useProfileData(user?.id, user?.email, user?.role);
+    } = useProfileData(user?.id, user?.email, user?.role, !authLoading);
 
     // Redirect if not authenticated
     useEffect(() => {

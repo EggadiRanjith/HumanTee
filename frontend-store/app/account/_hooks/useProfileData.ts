@@ -80,12 +80,13 @@ function normalizeAddresses(raw: any[]): ShippingAddress[] {
 export function useProfileData(
     userId?: string,
     userEmail?: string,
-    userRole?: string
+    userRole?: string,
+    authReady?: boolean // NEW: Wait for AuthContext to finish loading
 ): UseProfileDataReturn {
     const queryClient = useQueryClient();
 
     const { data: userData, isLoading: isLoadingProfile, error: profileError, refetch: retryProfile } = useUser({
-        enabled: !!userId,
+        enabled: !!userId && authReady !== false, // Only enable when auth is ready
     });
 
     const { data: addressesData, isLoading: isLoadingAddresses, error: addressesError, refetch: retryAddresses } =
