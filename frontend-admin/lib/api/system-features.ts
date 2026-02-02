@@ -1,8 +1,10 @@
 import apiClient from '../api-client';
 
 export interface SystemFeatures {
-    auditLogsEnabled: boolean;
-    auditLogsDisabledSince?: string;
+    adminAuditLogsEnabled: boolean;
+    adminAuditLogsDisabledSince?: string;
+    userAuditLogsEnabled: boolean;
+    userAuditLogsDisabledSince?: string;
     discountsEnabled: boolean;
     discountsDisabledSince?: string;
     ticketsEnabled: boolean;

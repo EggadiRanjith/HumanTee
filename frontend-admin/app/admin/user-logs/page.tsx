@@ -57,8 +57,8 @@ export default function UserAuditLogsPage() {
         async function checkFeatures() {
             try {
                 const features = await getSystemFeatures();
-                setAuditLogsEnabled(features.auditLogsEnabled);
-                setAuditLogsDisabledSince(features.auditLogsDisabledSince);
+                setAuditLogsEnabled(features.userAuditLogsEnabled);
+                setAuditLogsDisabledSince(features.userAuditLogsDisabledSince);
             } catch (error) {
                 // Ignore error, assume enabled
             }
