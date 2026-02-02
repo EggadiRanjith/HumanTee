@@ -25,7 +25,7 @@ export class ContactService {
             );
 
             await this.emailService.sendEmail({
-                to: process.env.SUPPORT_EMAIL || 'humanteeofficial@gmail.com',
+                to: process.env.SUPPORT_EMAIL || 'humanteeteam@gmail.com',
                 subject: `[Contact Form] ${subject}`,
                 html: supportEmailHtml,
             });
@@ -50,7 +50,7 @@ export class ContactService {
             };
         } catch (error) {
             this.logger.error(`Failed to send contact form email: ${error.message}`, error.stack);
-            throw new Error('Failed to send message. Please try again later or contact us directly at humanteeofficial@gmail.com');
+            throw new Error('Failed to send message. Please try again later or contact us directly at humanteeteam@gmail.com');
         }
     }
 }

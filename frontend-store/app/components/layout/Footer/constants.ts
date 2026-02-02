@@ -19,7 +19,7 @@ export const FOOTER_NAV_SECTIONS: NavSection[] = [
             { name: 'Shipping', url: '/shipping' },
             { name: 'Terms & Privacy', url: '/terms-privacy' },
             { name: '+91 7780-661493', url: 'tel:+917780661493' },
-            { name: 'humanteeofficial@gmail.com', url: 'mailto:humanteeofficial@gmail.com' },
+            { name: 'humanteeteam@gmail.com', url: 'mailto:humanteeteam@gmail.com' },
         ],
     },
 ] as const;

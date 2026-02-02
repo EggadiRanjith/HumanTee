@@ -7,7 +7,7 @@ import { useSettings } from "@/app/contexts/SettingsContext";
 
 type Section = { title: string; points: string[] };
 
-const DEFAULT_CONTACT = { email: "humanteeofficial@gmail.com", phone: "+91 7780-661493" };
+const DEFAULT_CONTACT = { email: "humanteeteam@gmail.com", phone: "+91 7780-661493" };
 
 export default function ShippingPolicyPage() {
   const { settings: raw, loading } = useSettings();

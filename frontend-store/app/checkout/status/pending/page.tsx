@@ -230,10 +230,10 @@ export default function PendingPage() {
                                         Need help? Contact our support team
                                     </p>
                                     <a
-                                        href="mailto:humanteeofficial@gmail.com"
+                                        href="mailto:humanteeteam@gmail.com"
                                         className="text-amber-400 text-[10px] sm:text-xs hover:text-amber-300 transition-colors break-all"
                                     >
-                                        humanteeofficial@gmail.com
+                                        humanteeteam@gmail.com
                                     </a>
                                 </motion.div>
                             </div>

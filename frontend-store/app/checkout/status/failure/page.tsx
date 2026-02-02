@@ -217,10 +217,10 @@ export default function FailurePage() {
                                     </p>
                                     <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3 text-[9px] sm:text-[10px]">
                                         <a
-                                            href="mailto:humanteeofficial@gmail.com"
+                                            href="mailto:humanteeteam@gmail.com"
                                             className="text-white/70 hover:text-white transition-colors break-all"
                                         >
-                                            humanteeofficial@gmail.com
+                                            humanteeteam@gmail.com
                                         </a>
                                         <span className="hidden sm:inline text-white/30">|</span>
                                         <a
