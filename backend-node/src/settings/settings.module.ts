@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SettingsController } from './settings.controller';
 import { PublicSettingsController } from './public-settings.controller';
@@ -7,6 +7,7 @@ import { SettingsCacheService } from './settings-cache.service';
 import { Setting } from '../entities/setting.entity';
 import { SettingHistory } from '../entities/setting-history.entity';
 import { SettingsVersion } from '../entities/settings-version.entity';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
     imports: [
@@ -15,6 +16,7 @@ import { SettingsVersion } from '../entities/settings-version.entity';
             SettingHistory,
             SettingsVersion,
         ]),
+        forwardRef(() => AuthModule), // Import AuthModule for AdminAuditService
     ],
     controllers: [SettingsController, PublicSettingsController],
     providers: [SettingsService, SettingsCacheService],

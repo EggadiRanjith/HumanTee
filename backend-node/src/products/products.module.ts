@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
@@ -13,6 +13,7 @@ import { AdminProductsService } from './admin/admin-products.service';
 import { AdminVariantsService } from './admin/admin-variants.service';
 import { AdminProductsController } from './admin/admin-products.controller';
 import { AdminVariantsController } from './admin/admin-variants.controller';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
     imports: [
@@ -28,6 +29,7 @@ import { AdminVariantsController } from './admin/admin-variants.controller';
             secret: process.env.JWT_SECRET || 'your-secret-key',
             signOptions: { expiresIn: '15m' },
         }),
+        forwardRef(() => AuthModule), // Import AuthModule for AdminAuditService
     ],
     controllers: [
         ProductsController,
