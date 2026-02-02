@@ -9,6 +9,7 @@ import {
     HttpCode,
     HttpStatus,
     UseGuards,
+    Req,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AdminJwtGuard } from '../../auth/guards/admin-jwt.guard';
@@ -16,13 +17,17 @@ import { AdminGuard } from '../../auth/guards/admin.guard';
 import { AdminProductsService } from './admin-products.service';
 import { CreateProductDto, UpdateProductDto } from './dto/create-product.dto';
 import { ProductResponseDto } from './dto/product-response.dto';
+import { AdminAuditService } from '../../auth/admin-audit.service';
 
 // SECURITY FIX: Rate limiting to prevent mass destruction
 @Controller('admin/products')
 @Throttle({ default: { limit: 30, ttl: 60000 } }) // 30 requests per minute
 @UseGuards(AdminJwtGuard, AdminGuard) // Fixed: Removed PermissionsGuard
 export class AdminProductsController {
-    constructor(private readonly adminProductsService: AdminProductsService) { }
+    constructor(
+        private readonly adminProductsService: AdminProductsService,
+        private readonly adminAuditService: AdminAuditService,
+    ) { }
 
     /**
      * Create new product
@@ -33,8 +38,24 @@ export class AdminProductsController {
     @HttpCode(HttpStatus.CREATED)
     async createProduct(
         @Body() createProductDto: CreateProductDto,
+        @Req() req: any,
     ): Promise<ProductResponseDto> {
-        return this.adminProductsService.createProduct(createProductDto);
+        const product = await this.adminProductsService.createProduct(createProductDto);
+
+        // Audit log
+        await this.adminAuditService.logAction({
+            adminId: req.user?.id,
+            adminEmail: req.user?.email,
+            eventType: 'PRODUCT_CREATE',
+            entityType: 'product',
+            entityId: product.id,
+            entityName: product.name,
+            after: { name: product.name, price: product.basePrice, status: product.status },
+            ipAddress: req.ip,
+            userAgent: req.headers['user-agent'],
+        });
+
+        return product;
     }
 
     /**
@@ -86,8 +107,35 @@ export class AdminProductsController {
     async updateProduct(
         @Param('id') id: string,
         @Body() updateProductDto: UpdateProductDto,
+        @Req() req: any,
     ): Promise<ProductResponseDto> {
-        return this.adminProductsService.updateProduct(id, updateProductDto);
+        // Get before state
+        const before = await this.adminProductsService.getProductById(id);
+
+        const product = await this.adminProductsService.updateProduct(id, updateProductDto);
+
+        // Calculate changes
+        const changes = this.adminAuditService.calculateChanges(
+            { name: before.name, price: before.basePrice, status: before.status },
+            { name: product.name, price: product.basePrice, status: product.status },
+        );
+
+        // Audit log
+        await this.adminAuditService.logAction({
+            adminId: req.user?.id,
+            adminEmail: req.user?.email,
+            eventType: 'PRODUCT_UPDATE',
+            entityType: 'product',
+            entityId: product.id,
+            entityName: product.name,
+            before: { name: before.name, price: before.basePrice, status: before.status },
+            after: { name: product.name, price: product.basePrice, status: product.status },
+            changes,
+            ipAddress: req.ip,
+            userAgent: req.headers['user-agent'],
+        });
+
+        return product;
     }
 
     /**
@@ -99,7 +147,26 @@ export class AdminProductsController {
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 deletions per minute
-    async deleteProduct(@Param('id') id: string): Promise<void> {
-        return this.adminProductsService.deleteProduct(id);
+    async deleteProduct(
+        @Param('id') id: string,
+        @Req() req: any,
+    ): Promise<void> {
+        // Get product before deletion
+        const product = await this.adminProductsService.getProductById(id);
+
+        await this.adminProductsService.deleteProduct(id);
+
+        // Audit log
+        await this.adminAuditService.logAction({
+            adminId: req.user?.id,
+            adminEmail: req.user?.email,
+            eventType: 'PRODUCT_DELETE',
+            entityType: 'product',
+            entityId: id,
+            entityName: product.name,
+            before: { name: product.name, price: product.basePrice, status: product.status },
+            ipAddress: req.ip,
+            userAgent: req.headers['user-agent'],
+        });
     }
 }

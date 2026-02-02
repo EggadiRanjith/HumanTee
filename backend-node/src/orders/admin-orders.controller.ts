@@ -21,6 +21,7 @@ import { OrderService } from './order.service';
 import { UpdateOrderStatusDto, AddShipmentDto, OrderFiltersDto } from './dto/admin-order.dto';
 import { RefundOrderDto } from './dto/refund-order.dto';
 import { AuditInterceptor } from '../common/interceptors/audit.interceptor';
+import { AdminAuditService } from '../auth/admin-audit.service';
 
 /**
  * AdminOrdersController
@@ -32,7 +33,10 @@ import { AuditInterceptor } from '../common/interceptors/audit.interceptor';
 @UseGuards(AdminJwtGuard, AdminGuard) // BlastRadiusGuard temporarily disabled
 @UseInterceptors(AuditInterceptor)
 export class AdminOrdersController {
-    constructor(private readonly orderService: OrderService) { }
+    constructor(
+        private readonly orderService: OrderService,
+        private readonly adminAuditService: AdminAuditService,
+    ) { }
 
     /**
      * GET /admin/orders - List all orders with filters and pagination
@@ -89,12 +93,30 @@ export class AdminOrdersController {
         @Body() dto: UpdateOrderStatusDto,
         @Req() req: any
     ) {
+        // Get before state
+        const beforeOrder = await this.orderService.findOrderByIdAdmin(orderId);
+
         const order = await this.orderService.updateOrderStatus(
             orderId,
             dto.status,
             req.user.userId,
             dto.reason
         );
+
+        // Audit log
+        await this.adminAuditService.logAction({
+            adminId: req.user?.id,
+            adminEmail: req.user?.email,
+            eventType: 'ORDER_STATUS_UPDATE',
+            entityType: 'order',
+            entityId: orderId,
+            entityName: `Order #${orderId.slice(0, 8)}`,
+            before: { status: beforeOrder.status },
+            after: { status: order.status },
+            changes: { status: { from: beforeOrder.status, to: order.status } },
+            ipAddress: req.ip,
+            userAgent: req.headers['user-agent'],
+        });
 
         return {
             success: true,
@@ -151,6 +173,19 @@ export class AdminOrdersController {
                 adminEmail: req.user.email,
             }
         );
+
+        // Audit log
+        await this.adminAuditService.logAction({
+            adminId: req.user?.id,
+            adminEmail: req.user?.email,
+            eventType: 'ORDER_REFUND',
+            entityType: 'order',
+            entityId: orderId,
+            entityName: `Order #${orderId.slice(0, 8)}`,
+            after: { amount: dto.amount, reason: dto.reason },
+            ipAddress: req.ip,
+            userAgent: req.headers['user-agent'],
+        });
 
         return {
             success: true,
