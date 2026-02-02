@@ -13,6 +13,7 @@ import { useHomepageSettings, useUpdateHomepageSettings } from '@/lib/queries/us
 import { HeroSlidesManager } from './components/HeroSlidesManager';
 import { BannerMessagesManager } from './components/BannerMessagesManager';
 import { ReviewsManager } from './components/ReviewsManager';
+import SettingsBackButton from '../_components/SettingsBackButton';
 
 export default function HomepageSettings() {
     const [isEditing, setIsEditing] = useState(false);
@@ -81,14 +82,8 @@ export default function HomepageSettings() {
     return (
         <div className="min-h-screen bg-gray-50 p-3 md:p-4 lg:p-6 xl:p-8">
             <div className="max-w-4xl mx-auto">
-                {/* Back Button - Compact Mobile */}
-                <Link
-                    href="/admin/settings"
-                    className="inline-flex items-center gap-1.5 md:gap-2 text-gray-600 hover:text-black mb-4 md:mb-6 transition-colors"
-                >
-                    <FiArrowLeft size={18} className="md:w-5 md:h-5" />
-                    <span className="text-xs md:text-sm font-medium">Back to Settings</span>
-                </Link>
+                {/* Back Button */}
+                <SettingsBackButton />
 
                 {/* Header - Compact Mobile */}
                 <div className="mb-4 md:mb-6 lg:mb-8 flex items-center justify-between">
