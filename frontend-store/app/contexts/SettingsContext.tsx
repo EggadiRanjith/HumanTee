@@ -43,7 +43,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
             return data;
         },
-        staleTime: Infinity, // Never consider data stale - settings rarely change
+        staleTime: 5 * 60 * 1000, // 5 minutes - balanced freshness and performance
         gcTime: 24 * 60 * 60 * 1000, // 24 hours - keep in cache even when unused
         refetchOnMount: false, // Don't refetch on component mount
         refetchOnWindowFocus: false, // Don't refetch on window focus

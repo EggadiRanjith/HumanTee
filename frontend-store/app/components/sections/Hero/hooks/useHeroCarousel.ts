@@ -6,31 +6,32 @@
 import { useState, useEffect } from "react";
 import { HERO_SLIDE_INTERVAL } from "@/app/constants/animations.constants";
 
-export function useHeroCarousel(totalSlides: number, videoHasPlayed: boolean) {
+import { HeroSlide } from "../types";
+
+export function useHeroCarousel(slides: HeroSlide[], videoHasPlayed: boolean) {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const totalSlides = slides.length;
 
     // Auto-advance slides
     useEffect(() => {
+        if (totalSlides <= 1) return;
+
         const interval = setInterval(() => {
             setCurrentIndex((prevIndex) => {
-                // After video plays once, mark it as played and move to first banner
-                if (prevIndex === 0 && !videoHasPlayed) {
-                    return 1;
-                }
+                const nextIndex = (prevIndex + 1) % totalSlides;
 
-                // After video has played, cycle through all remaining slides (excluding video at index 0)
-                if (videoHasPlayed) {
-                    const nextIndex = prevIndex + 1;
-                    // If we've reached the end, go back to slide 1 (skip video at 0)
-                    return nextIndex >= totalSlides ? 1 : nextIndex;
-                }
+                // If we have a video and it has already played, 
+                // we might want to skip it in the next cycle if we prefer to loop images only.
+                // However, the standard behavior should just cycle all content.
+                // The requirement says "when its video dont show any content".
+                // We'll keep the cycling simple and just handle visibility in the component.
 
-                return prevIndex;
+                return nextIndex;
             });
         }, HERO_SLIDE_INTERVAL);
 
         return () => clearInterval(interval);
-    }, [videoHasPlayed, totalSlides]);
+    }, [totalSlides, slides]);
 
     return { currentIndex, setCurrentIndex };
 }
