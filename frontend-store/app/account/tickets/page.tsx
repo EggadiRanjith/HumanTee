@@ -1,5 +1,6 @@
 /**
  * Support Tickets Page
+ * Displays all user support tickets with pagination
  */
 
 "use client";
@@ -17,19 +18,8 @@ import {
   TicketsError,
 } from "./components";
 
-/**
- * 🔧 LOCAL TYPE — MUST MATCH TicketCard PROPS
- * This is why the previous build failed.
- */
-type Ticket = {
-  id: string;
-  ticketNumber: string;
-  subject: string;
-  category: string;
-  status: string;
-  createdAt: string;
-  updatedAt?: string;
-};
+// ✅ IMPORT THE REAL TYPE (NO LOCAL TYPES, NO DUPLICATES)
+import type { Ticket } from "./types";
 
 function TicketListPageContent() {
   const router = useRouter();
@@ -38,6 +28,7 @@ function TicketListPageContent() {
   const { filters, setFilters } = useTicketsFilters();
   const { tickets, isLoading, error, totalPages, retry } = useTickets(filters);
 
+  // Disable browser scroll restoration
   useEffect(() => {
     if ("scrollRestoration" in window.history) {
       window.history.scrollRestoration = "manual";
@@ -51,6 +42,7 @@ function TicketListPageContent() {
     };
   }, []);
 
+  // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       router.push("/login?redirect=/account/tickets");
@@ -82,12 +74,14 @@ function TicketListPageContent() {
           <TicketsEmpty orderId={filters.orderId} />
         ) : (
           <>
+            {/* Ticket Cards */}
             <div className="grid gap-4">
-              {(tickets as Ticket[]).map((ticket) => (
+              {tickets.map((ticket: Ticket) => (
                 <TicketCard key={ticket.id} ticket={ticket} />
               ))}
             </div>
 
+            {/* Pagination */}
             {totalPages > 1 && (
               <div className="mt-10">
                 <Pagination
