@@ -1,7 +1,5 @@
 /**
  * Support Tickets Page
- * FANG-Level Refactored with URL-based state and modular architecture
- * Displays all user support tickets with filtering, sorting, and search
  */
 
 "use client";
@@ -20,26 +18,26 @@ import {
 } from "./components";
 
 /**
- * 🔧 LOCAL TYPE FIX
- * Minimal, ugly, effective.
- * This exists ONLY to satisfy TypeScript in THIS file.
+ * 🔧 LOCAL TYPE — MUST MATCH TicketCard PROPS
+ * This is why the previous build failed.
  */
 type Ticket = {
   id: string;
-  [key: string]: unknown;
+  ticketNumber: string;
+  subject: string;
+  category: string;
+  status: string;
+  createdAt: string;
+  updatedAt?: string;
 };
 
 function TicketListPageContent() {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
-  // URL-based filters
   const { filters, setFilters } = useTicketsFilters();
-
-  // Fetch tickets
   const { tickets, isLoading, error, totalPages, retry } = useTickets(filters);
 
-  // Force scroll to top
   useEffect(() => {
     if ("scrollRestoration" in window.history) {
       window.history.scrollRestoration = "manual";
@@ -53,7 +51,6 @@ function TicketListPageContent() {
     };
   }, []);
 
-  // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       router.push("/login?redirect=/account/tickets");
@@ -77,24 +74,20 @@ function TicketListPageContent() {
   return (
     <div className="min-h-screen brand-bg-dusk pt-[var(--header-height)]">
       <div className="max-w-screen-lg mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-8">
-        {/* Header */}
         <TicketsHeader orderId={filters.orderId} />
 
-        {/* Content */}
         {error ? (
           <TicketsError onRetry={retry} />
         ) : tickets.length === 0 ? (
           <TicketsEmpty orderId={filters.orderId} />
         ) : (
           <>
-            {/* Ticket Cards */}
             <div className="grid gap-4">
-              {(tickets as Ticket[]).map((ticket: Ticket) => (
+              {(tickets as Ticket[]).map((ticket) => (
                 <TicketCard key={ticket.id} ticket={ticket} />
               ))}
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="mt-10">
                 <Pagination
