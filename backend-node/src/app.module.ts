@@ -24,6 +24,7 @@ import { ObservabilityModule } from './common/observability.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ContactModule } from './contact/contact.module';
 import { HealthModule } from './health/health.module';
+import { WebhooksModule } from './webhooks/webhooks.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 import { DatabaseQueryInterceptor } from './common/interceptors/database-query.interceptor';
 // import { RedisModule } from './redis/redis.module'; // Disabled - Docker not running
@@ -103,6 +104,7 @@ import { DatabaseQueryInterceptor } from './common/interceptors/database-query.i
     AnalyticsModule, // Admin analytics
     ContactModule, // Public contact form
     HealthModule, // Health check endpoint
+    WebhooksModule, // Razorpay webhook handlers
     // RedisModule, // Disabled - Docker not running
   ],
   controllers: [AppController, ProtectedController],
