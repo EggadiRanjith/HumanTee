@@ -223,10 +223,10 @@ export class AuthController {
 
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
-            secure: true,  // MUST be true for SameSite=None (both domains are HTTPS)
-            sameSite: 'lax',  // REQUIRED for cross-origin cookie setting
-            domain: '.humantee.in',  // Share cookie across all subdomains (humantee.in, app.humantee.in)
-            maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
+            secure: true,
+            sameSite: 'none',
+            domain: '.humantee.in',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
             path: '/',
         });
 
@@ -296,7 +296,7 @@ export class AuthController {
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
             secure: isProduction,
-            sameSite: 'lax',
+            sameSite: isProduction ? 'none' : 'lax',
             domain: isProduction ? '.humantee.in' : undefined,
             maxAge: 7 * 24 * 60 * 60 * 1000,
             path: '/',
@@ -349,7 +349,7 @@ export class AuthController {
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
             secure: isProduction,
-            sameSite: 'lax',
+            sameSite: isProduction ? 'none' : 'lax',
             domain: isProduction ? '.humantee.in' : undefined,
             maxAge: 7 * 24 * 60 * 60 * 1000,
             path: '/',
