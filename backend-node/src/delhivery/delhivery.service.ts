@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Shipment, ShipmentStatus } from '../entities/shipment.entity';
@@ -24,7 +24,6 @@ export class DelhiveryService {
     private readonly originPincode: string;
     private readonly warehouseName: string;
     private readonly isConfigured: boolean;
-    private readonly isEnabled: boolean;
 
     constructor(
         @InjectRepository(Shipment)
@@ -34,7 +33,6 @@ export class DelhiveryService {
         this.baseUrl = process.env.DELHIVERY_BASE_URL || 'https://track.delhivery.com';
         this.originPincode = process.env.DELHIVERY_ORIGIN_PINCODE || '';
         this.warehouseName = process.env.DELHIVERY_WAREHOUSE_NAME || 'HumanTee-Primary';
-        this.isEnabled = process.env.DELHIVERY_ENABLED !== 'false';
 
         if (!this.token || !this.originPincode) {
             this.isConfigured = false;
@@ -138,9 +136,6 @@ export class DelhiveryService {
         address: OrderAddress,
         items: Array<{ productNameSnapshot: string; quantity: number }>,
     ): Promise<{ success: boolean; awb?: string; error?: string }> {
-        if (!this.isEnabled) {
-            return { success: true, awb: 'TEST-MODE' };
-        }
         if (!this.isConfigured) {
             return { success: false, error: 'Delhivery not configured' };
         }
@@ -291,9 +286,6 @@ export class DelhiveryService {
         cod: boolean;
         error?: string;
     }> {
-        if (!this.isEnabled) {
-            return { serviceable: true, prepaid: true, cod: false };
-        }
         if (!this.isConfigured) {
             return { serviceable: false, prepaid: false, cod: false, error: 'Not configured' };
         }
