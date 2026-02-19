@@ -49,6 +49,27 @@ export class OrderController {
     }
 
     /**
+     * Get shipping rate estimate
+     * GET /orders/shipping-estimate?pincode=505001&cartTotal=1500
+     * Public endpoint — used by order summary to show shipping cost before Place Order
+     */
+    @Get('shipping-estimate')
+    @Throttle({ default: { limit: 30, ttl: 60000 } })
+    async getShippingEstimate(
+        @Query('pincode') pincode: string,
+        @Query('cartTotal') cartTotal: string,
+    ) {
+        if (!pincode || pincode.length !== 6 || !/^\d{6}$/.test(pincode)) {
+            throw new BadRequestException('Valid 6-digit pincode is required');
+        }
+
+        const total = parseFloat(cartTotal) || 0;
+        const shippingCost = await this.orderService.getShippingEstimate(pincode, total);
+
+        return { shippingCost };
+    }
+
+    /**
      * Prepare order - Calculate and create Razorpay order WITHOUT saving to DB
      * POST /orders/prepare
      * SECURITY: Strict rate limit to prevent payment abuse

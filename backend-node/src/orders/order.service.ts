@@ -62,6 +62,14 @@ export class OrderService {
     }
 
     /**
+     * Public wrapper for shipping rate estimate
+     * Used by the /orders/shipping-estimate endpoint for order summary display
+     */
+    async getShippingEstimate(postalCode: string, cartTotal: number): Promise<number> {
+        return this.calculateShipping(postalCode, cartTotal);
+    }
+
+    /**
      * Calculate shipping cost based on pincode and cart total
      * Phase 3: Tries Delhivery rate API first, falls back to zone table
      */

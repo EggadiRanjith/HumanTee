@@ -1,16 +1,15 @@
 /**
  * Order Summary for Checkout
  * Displays cart items and order totals in checkout flow
+ * Shipping cost fetched from backend (Delhivery rate / zone table)
  */
 
 "use client";
 
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { useSettings } from '@/app/contexts/SettingsContext';
-import { calculateShipping, type ShippingZone } from '@/lib/app/utils/shippingCalculation';
-import { calculateTax, type TaxSettings } from '@/lib/app/utils/taxCalculation';
+import apiClient from '@/lib/api-client';
 
 interface CartItem {
     id: number | string;
@@ -24,48 +23,57 @@ interface CartItem {
 
 interface OrderSummaryCheckoutProps {
     items: CartItem[];
-    pincode?: string; // Optional: only available after address selection
+    pincode?: string;
     appliedDiscount?: { code: string; discountAmount: number } | null;
     discountedTotal?: number;
 }
 
-const DEFAULT_TAX: TaxSettings = {
-    enabled: true,
-    rate: 18,
-    label: 'GST',
-    inclusive: true,
-};
-
 export function OrderSummaryCheckout({ items, pincode, appliedDiscount, discountedTotal }: OrderSummaryCheckoutProps) {
-    const { settings, loading: isLoading } = useSettings();
+    const [shippingCost, setShippingCost] = useState<number | null>(null);
+    const [shippingLoading, setShippingLoading] = useState(false);
 
     const totalPrice = useMemo(
         () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
         [items]
     );
 
-    const { zones, taxSettings } = useMemo(() => {
-        const s = (settings?.shipping as any) ?? {};
-        return {
-            zones: (s.zones ?? []) as ShippingZone[],
-            taxSettings: (s.tax ?? DEFAULT_TAX) as TaxSettings,
-        };
-    }, [settings]);
+    // Fetch shipping rate from backend when pincode is available
+    useEffect(() => {
+        if (!pincode || pincode.length !== 6) {
+            setShippingCost(null);
+            return;
+        }
 
-    // IMPORTANT: Calculate shipping based on ORIGINAL totalPrice (before discount)
-    //  This ensures shipping thresholds work correctly
-    const shipping = pincode && zones.length > 0
-        ? calculateShipping(pincode, totalPrice, zones)
-        : null;
+        let cancelled = false;
+        setShippingLoading(true);
 
-    // Calculate tax on original price (GST is on MRP, not discounted price)
-    const tax = calculateTax(totalPrice, taxSettings);
+        apiClient.get('/orders/shipping-estimate', {
+            params: { pincode, cartTotal: totalPrice },
+        })
+            .then((res) => {
+                if (!cancelled) {
+                    setShippingCost(res.data.shippingCost ?? 0);
+                }
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setShippingCost(null);
+                }
+            })
+            .finally(() => {
+                if (!cancelled) {
+                    setShippingLoading(false);
+                }
+            });
 
-    // Calculate final total correctly:
-    // Start with original price, add shipping, add tax (if not inclusive), THEN subtract discount
+        return () => { cancelled = true; };
+    }, [pincode, totalPrice]);
+
+    const isFreeShipping = shippingCost === 0;
+
+    // Calculate final total
     let finalTotal = totalPrice;
-    if (shipping) finalTotal += shipping.cost;
-    if (!tax.isInclusive) finalTotal += tax.amount;
+    if (shippingCost !== null) finalTotal += shippingCost;
     if (appliedDiscount) finalTotal -= appliedDiscount.discountAmount;
 
     return (
@@ -122,26 +130,24 @@ export function OrderSummaryCheckout({ items, pincode, appliedDiscount, discount
                     {/* Shipping */}
                     <div className="flex justify-between text-[12px] sm:text-[13px]">
                         <span className="text-white/60">Shipping</span>
-                        {isLoading ? (
-                            <span className="text-white/40 text-[12px]">Loading...</span>
-                        ) : shipping ? (
-                            shipping.isFree ? (
+                        {shippingLoading ? (
+                            <span className="text-white/40 text-[12px]">Calculating...</span>
+                        ) : shippingCost !== null ? (
+                            isFreeShipping ? (
                                 <span className="text-green-400">FREE</span>
                             ) : (
-                                <span className="text-white">₹{shipping.cost.toFixed(2)}</span>
+                                <span className="text-white">₹{shippingCost.toFixed(2)}</span>
                             )
                         ) : (
                             <span className="text-white/55 text-[12px]">Select address to calculate</span>
                         )}
                     </div>
 
-                    {/* Tax - Only show if not inclusive or has explicit amount */}
-                    {(!tax.isInclusive && tax.amount > 0) && (
-                        <div className="flex justify-between text-xs sm:text-sm">
-                            <span className="text-white/60">Tax ({tax.label})</span>
-                            <span className="text-white">₹{tax.amount.toFixed(2)}</span>
-                        </div>
-                    )}
+                    {/* Tax - GST is inclusive in MRP */}
+                    <div className="flex justify-between text-[11px] sm:text-xs">
+                        <span className="text-white/40">Tax (GST)</span>
+                        <span className="text-white/40">All taxes included</span>
+                    </div>
 
                     <div className="flex justify-between text-base sm:text-lg font-light pt-2 border-t border-white/10">
                         <span className="text-white">Total</span>
