@@ -46,6 +46,9 @@ export interface Order {
     address?: Address;
     payments?: Payment[];
     trackingNumber?: string;
+    shipmentStatus?: string;
+    shippedAt?: string;
+    deliveredAt?: string;
     subtotal?: number;
     shippingAmount?: number;
     taxAmount?: number;

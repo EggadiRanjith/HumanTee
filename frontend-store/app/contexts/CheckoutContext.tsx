@@ -24,6 +24,8 @@ interface CheckoutContextType {
     setPaymentMethod: (method: PaymentMethod) => void;
     orderNumber: string;
     setOrderNumber: (orderNum: string) => void;
+    paymentId: string;
+    setPaymentId: (id: string) => void;
     clearCheckoutData: () => void;
 }
 
@@ -64,6 +66,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     });
 
     const [orderNumber, setOrderNumber] = useState("");
+    const [paymentId, setPaymentId] = useState("");
 
     // Persist shipping data to sessionStorage
     useEffect(() => {
@@ -83,6 +86,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
         setShippingData(initialShippingData);
         setPaymentMethod("razorpay");
         setOrderNumber("");
+        setPaymentId("");
 
         // Clear from sessionStorage
         if (typeof window !== 'undefined') {
@@ -100,6 +104,8 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
                 setPaymentMethod,
                 orderNumber,
                 setOrderNumber,
+                paymentId,
+                setPaymentId,
                 clearCheckoutData,
             }}
         >

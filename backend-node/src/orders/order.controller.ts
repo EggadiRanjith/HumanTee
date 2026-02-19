@@ -5,6 +5,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { UserAuditService } from '../auth/user-audit.service';
 import { RedisService } from '../redis/redis.service';
+import { DelhiveryService } from '../delhivery/delhivery.service';
 
 @Controller('orders')
 @Throttle({ default: { limit: 20, ttl: 60000 } }) // 20 requests per minute
@@ -13,7 +14,36 @@ export class OrderController {
         private readonly orderService: OrderService,
         private readonly userAuditService: UserAuditService,
         private readonly redisService: RedisService,
+        private readonly delhiveryService: DelhiveryService,
     ) { }
+
+    /**
+     * Check pincode serviceability via Delhivery
+     * GET /orders/check-serviceability?pincode=110001
+     * Public endpoint — no auth required (pre-checkout UX)
+     * Cached in Redis for 24 hours per pincode
+     */
+    @Get('check-serviceability')
+    @Throttle({ default: { limit: 30, ttl: 60000 } }) // 30 per minute
+    async checkServiceability(@Query('pincode') pincode: string) {
+        if (!pincode || pincode.length !== 6 || !/^\d{6}$/.test(pincode)) {
+            throw new BadRequestException('Valid 6-digit pincode is required');
+        }
+
+        // Check Redis cache first (24h TTL)
+        const cacheKey = `serviceability:${pincode}`;
+        const cached = await this.redisService.get<any>(cacheKey);
+        if (cached) {
+            return { ...cached, cached: true };
+        }
+
+        const result = await this.delhiveryService.checkPincodeServiceability(pincode);
+
+        // Cache for 24 hours (86400 seconds)
+        await this.redisService.set(cacheKey, result, 86400);
+
+        return { ...result, cached: false };
+    }
 
     /**
      * Prepare order - Calculate and create Razorpay order WITHOUT saving to DB
@@ -175,6 +205,7 @@ export class OrderController {
                     quantity: item.quantity,
                     lineTotal: item.lineTotal,
                 })),
+                trackingNumber: (order as any).shipments?.[0]?.trackingNumber || null,
             })),
             total: result.total,
             page: result.page,
@@ -234,8 +265,13 @@ export class OrderController {
                 paymentMethod: p.provider,
                 status: p.status,
                 amount: parseFloat(p.amount.toString())
-            }))
+            })),
+            trackingNumber: order.shipments?.[0]?.trackingNumber || null,
+            shipmentStatus: order.shipments?.[0]?.status || null,
+            shippedAt: order.shipments?.[0]?.shippedAt || null,
+            deliveredAt: order.shipments?.[0]?.deliveredAt || null,
         };
+
     }
 
     /**

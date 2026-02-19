@@ -44,7 +44,8 @@ export class ProductVariant {
     @Column({ type: 'int', default: 0 })
     stock_quantity: number;
 
-
+    @Column({ type: 'int', default: 300, name: 'weight_grams' })
+    weight_grams: number; // Weight in grams (default 300g for t-shirts)
 
     @Column({ type: 'boolean', default: true })
     is_active: boolean;

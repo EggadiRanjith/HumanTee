@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FiX } from "react-icons/fi";
+import { usePincodeLookup } from "@/lib/hooks/usePincodeLookup";
 
 interface ShippingAddress {
     id?: string;
@@ -48,6 +49,13 @@ export default function AddressModal({
             country: 'India',
         };
     });
+
+    // Pincode auto-fill
+    const handleAutoFill = useCallback((data: { city: string; state: string }) => {
+        setFormData(prev => ({ ...prev, city: data.city, state: data.state }));
+    }, []);
+
+    const { lookupPincode, isLooking, pendingOverwrite, acceptOverwrite, rejectOverwrite } = usePincodeLookup(handleAutoFill);
 
     // Reset form data when modal opens or editingAddress changes
     useEffect(() => {
@@ -284,20 +292,47 @@ export default function AddressModal({
                             <input
                                 type="text"
                                 value={formData.postalCode}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        postalCode: e.target.value
-                                            .replace(/\D/g, '')
-                                            .slice(0, 6),
-                                    })
-                                }
+                                onChange={(e) => {
+                                    const pincode = e.target.value.replace(/\D/g, '').slice(0, 6);
+                                    setFormData({ ...formData, postalCode: pincode });
+                                    if (pincode.length === 6) {
+                                        lookupPincode(pincode, formData.city, formData.state);
+                                    }
+                                }}
                                 placeholder="400001"
                                 maxLength={6}
                                 className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
                             />
+                            {isLooking && (
+                                <p className="text-white/40 text-[10px] mt-1">Looking up pincode...</p>
+                            )}
                         </div>
                     </div>
+
+                    {/* Pincode Overwrite Confirmation */}
+                    {pendingOverwrite && (
+                        <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                            <p className="text-amber-200 text-xs sm:text-sm mb-2">
+                                Pincode suggests: <span className="font-medium">{pendingOverwrite.city}, {pendingOverwrite.state}</span>. Update city &amp; state?
+                            </p>
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={acceptOverwrite}
+                                    className="px-3 py-1 text-xs rounded bg-white/10 text-white hover:bg-white/20 transition-colors"
+                                >
+                                    Yes, update
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={rejectOverwrite}
+                                    className="px-3 py-1 text-xs rounded bg-white/5 text-white/60 hover:bg-white/10 transition-colors"
+                                >
+                                    No, keep mine
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Country */}
                     <div>

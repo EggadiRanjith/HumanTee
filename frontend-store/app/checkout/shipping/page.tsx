@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
@@ -12,8 +12,10 @@ import { CheckoutProgress, OrderSummaryCheckout } from "@/app/components/ui/chec
 import { GradientOverlay } from "@/app/components/ui/layout";
 import { useShippingData } from "./_hooks/useShippingData";
 import AddressSelector from "./_components/AddressSelector";
+import AddressConfirmModal from "./_components/AddressConfirmModal";
 import ShippingActions from "./_components/ShippingActions";
 import { ShippingSkeleton } from "./_components/ShippingSkeleton";
+import apiClient from "@/lib/api-client";
 
 // Lazy-load modal (Phase 1.1 - Runtime optimization)
 const AddressModal = dynamic(() => import("./_components/AddressModal"), { ssr: false });
@@ -43,6 +45,44 @@ export default function ShippingPage() {
     // Track which address is being edited
     const [editingAddress, setEditingAddress] = useState<any | null>(null);
 
+    // Address confirmation modal
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+    // Pincode serviceability check
+    const [serviceability, setServiceability] = useState<{
+        checked: boolean;
+        serviceable: boolean;
+        checking: boolean;
+    }>({ checked: false, serviceable: true, checking: false });
+
+    const checkServiceability = useCallback(async (pincode: string) => {
+        if (!pincode || pincode.length !== 6) return;
+        setServiceability(prev => ({ ...prev, checking: true }));
+        try {
+            const res = await apiClient.get(`/orders/check-serviceability?pincode=${pincode}`);
+            setServiceability({
+                checked: true,
+                serviceable: res.data?.serviceable !== false,
+                checking: false,
+            });
+        } catch {
+            // Graceful degradation — don't block checkout on API failure
+            setServiceability({ checked: true, serviceable: true, checking: false });
+        }
+    }, []);
+
+    // Check serviceability when address is selected
+    useEffect(() => {
+        if (selectedAddressId) {
+            const addr = addresses.find(a => a.id === selectedAddressId);
+            if (addr?.postalCode) {
+                checkServiceability(addr.postalCode);
+            }
+        } else {
+            setServiceability({ checked: false, serviceable: true, checking: false });
+        }
+    }, [selectedAddressId, addresses, checkServiceability]);
+
     // Optional redirect to login has been removed for guest checkout support
 
     const handleContinueToPayment = () => {
@@ -54,14 +94,26 @@ export default function ShippingPage() {
             return;
         }
 
+        // Show confirmation modal instead of proceeding directly
+        setShowConfirmModal(true);
+    };
+
+    const handleConfirmAddress = () => {
+        const selectedAddress = addresses.find(
+            (addr) => addr.id === selectedAddressId
+        );
+        if (!selectedAddress) return;
+
+        setShowConfirmModal(false);
+
         // Populate shipping data - MATCH BACKEND DTO STRUCTURE
         setShippingData({
             fullName: selectedAddress.fullName,
             email: selectedAddress.email,
             phone: selectedAddress.phone,
-            address: `${selectedAddress.houseNumber}, ${selectedAddress.address}`, // For display
-            addressLine1: `${selectedAddress.houseNumber}, ${selectedAddress.address}`, // For backend
-            addressLine2: selectedAddress.landmark || '', // Optional
+            address: `${selectedAddress.houseNumber}, ${selectedAddress.address}`,
+            addressLine1: `${selectedAddress.houseNumber}, ${selectedAddress.address}`,
+            addressLine2: selectedAddress.landmark || '',
             city: selectedAddress.city,
             state: selectedAddress.state,
             postalCode: selectedAddress.postalCode,
@@ -143,11 +195,21 @@ export default function ShippingPage() {
                                     isLoading={isLoadingAddresses}
                                 />
 
+                                {/* Serviceability Warning */}
+                                {serviceability.checked && !serviceability.serviceable && (
+                                    <div className="mt-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30">
+                                        <p className="text-red-300 text-xs sm:text-sm">
+                                            ⚠️ We don&apos;t currently deliver to this pincode. Please select a different address.
+                                        </p>
+                                    </div>
+                                )}
+
                                 <ShippingActions
                                     selectedAddressId={selectedAddressId}
                                     onContinue={handleContinueToPayment}
                                     onAddAddress={openAddressModal}
                                     onBackToCart={handleBackToCart}
+                                    isBlocked={serviceability.checking || (serviceability.checked && !serviceability.serviceable)}
                                 />
                             </div>
                         </motion.div>
@@ -186,6 +248,20 @@ export default function ShippingPage() {
                     }
                 />
             )}
+
+            {/* Address Confirmation Modal */}
+            {showConfirmModal && selectedAddressId && (() => {
+                const addr = addresses.find(a => a.id === selectedAddressId);
+                if (!addr) return null;
+                return (
+                    <AddressConfirmModal
+                        isOpen={showConfirmModal}
+                        address={addr}
+                        onConfirm={handleConfirmAddress}
+                        onEdit={() => setShowConfirmModal(false)}
+                    />
+                );
+            })()}
         </div>
     );
 }

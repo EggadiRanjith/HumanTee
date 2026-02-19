@@ -13,11 +13,13 @@ import { useAuth } from "@/app/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { HelpActionModal } from "@/app/components/orders/HelpActionModal";
 import { LazyMotion, domAnimation } from "framer-motion";
-import { FiArrowLeft, FiHelpCircle } from "react-icons/fi";
+import { FiArrowLeft, FiHelpCircle, FiDownload } from "react-icons/fi";
+import { generateInvoice } from '@/lib/generateInvoice';
 import {
   OrderHeader,
   OrderItems,
   OrderSummary,
+  OrderTimeline,
   OrderDetailSkeleton
 } from './components';
 import { useSettings } from "@/app/contexts/SettingsContext";
@@ -98,6 +100,15 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
           status={order.status}
         />
 
+        {/* Order Timeline */}
+        <OrderTimeline
+          status={order.status}
+          createdAt={order.createdAt}
+          shipmentStatus={order.shipmentStatus}
+          shippedAt={order.shippedAt}
+          deliveredAt={order.deliveredAt}
+        />
+
         {/* Order Summary (Shipping & Payment) */}
         <OrderSummary
           address={order.address}
@@ -112,21 +123,38 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
         {/* Order Items */}
         <OrderItems items={order.items} />
 
-        {/* Need Help Button - Only show if tickets feature enabled */}
-        {settings?.features?.ticketsEnabled && (
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-3 mt-6">
+          {/* Download Invoice */}
           <button
-            onClick={() => setIsHelpModalOpen(true)}
+            onClick={() => generateInvoice(order)}
             className="
-              w-full flex items-center justify-center gap-2
-              px-6 py-3 rounded-xl mt-6
+              flex-1 flex items-center justify-center gap-2
+              px-6 py-3 rounded-xl
               luxury-glass border border-white/10 
               text-white/70 hover:text-white hover:bg-white/10
               transition-all text-sm uppercase tracking-[0.18em]
             "
           >
-            <FiHelpCircle className="w-4 h-4" /> Need Help?
+            <FiDownload className="w-4 h-4" /> Download Invoice
           </button>
-        )}
+
+          {/* Need Help Button - Only show if tickets feature enabled */}
+          {settings?.features?.ticketsEnabled && (
+            <button
+              onClick={() => setIsHelpModalOpen(true)}
+              className="
+                flex-1 flex items-center justify-center gap-2
+                px-6 py-3 rounded-xl
+                luxury-glass border border-white/10 
+                text-white/70 hover:text-white hover:bg-white/10
+                transition-all text-sm uppercase tracking-[0.18em]
+              "
+            >
+              <FiHelpCircle className="w-4 h-4" /> Need Help?
+            </button>
+          )}
+        </div>
 
         {/* Help Modal */}
         <LazyMotion features={domAnimation}>

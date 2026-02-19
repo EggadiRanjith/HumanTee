@@ -21,6 +21,8 @@ import { AuthModule } from '../auth/auth.module';
 import { RedisModule } from '../redis/redis.module';
 import { EmailModule } from '../email/email.module';
 import { SettingsModule } from '../settings/settings.module';
+import { DelhiveryModule } from '../delhivery/delhivery.module';
+
 
 @Module({
     imports: [
@@ -29,7 +31,9 @@ import { SettingsModule } from '../settings/settings.module';
         RedisModule,
         EmailModule,
         SettingsModule,
+        DelhiveryModule,
         PassportModule,
+
         JwtModule.register({
             secret: process.env.JWT_SECRET || 'your-secret-key',
             signOptions: { expiresIn: '15m' },

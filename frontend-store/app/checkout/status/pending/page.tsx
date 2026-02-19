@@ -13,15 +13,15 @@ const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 export default function PendingPage() {
     const router = useRouter();
-    const { orderNumber, shippingData } = useCheckout();
+    const { orderNumber, paymentId, shippingData } = useCheckout();
     const [showSplash, setShowSplash] = useState(true);
 
     useEffect(() => {
-        // If no order number, redirect to checkout
-        if (!orderNumber) {
+        // If no order number AND no payment ID, redirect to checkout
+        if (!orderNumber && !paymentId) {
             router.push("/checkout");
         }
-    }, [orderNumber, router]);
+    }, [orderNumber, paymentId, router]);
 
     useEffect(() => {
         // Hide splash screen after 3 seconds
@@ -49,7 +49,7 @@ export default function PendingPage() {
         };
     }, [showSplash]);
 
-    if (!orderNumber) {
+    if (!orderNumber && !paymentId) {
         return null;
     }
 
@@ -154,8 +154,17 @@ export default function PendingPage() {
                                     animate={{ opacity: 1 }}
                                     transition={{ delay: 0.4 }}
                                 >
-                                    <p className="text-white/60 mb-1 text-[9px] sm:text-[10px] uppercase tracking-wider">Order Number</p>
-                                    <p className="text-white text-base sm:text-lg md:text-xl font-light mb-3 sm:mb-5">{orderNumber}</p>
+                                    {orderNumber ? (
+                                        <>
+                                            <p className="text-white/60 mb-1 text-[9px] sm:text-[10px] uppercase tracking-wider">Order Number</p>
+                                            <p className="text-white text-base sm:text-lg md:text-xl font-light mb-3 sm:mb-5">{orderNumber}</p>
+                                        </>
+                                    ) : paymentId ? (
+                                        <>
+                                            <p className="text-white/60 mb-1 text-[9px] sm:text-[10px] uppercase tracking-wider">Payment Reference</p>
+                                            <p className="text-white text-xs sm:text-sm font-mono mb-3 sm:mb-5 break-all">{paymentId}</p>
+                                        </>
+                                    ) : null}
                                 </motion.div>
 
                                 <motion.p

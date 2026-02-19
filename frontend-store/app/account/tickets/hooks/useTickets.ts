@@ -45,7 +45,7 @@ export function useTickets(filters: TicketFilters = {}) {
     });
 
     return {
-        tickets: data?.tickets || [],
+        tickets: (data?.tickets || []) as Ticket[],
         totalPages: data?.totalPages || 1,
         isLoading,
         error: error as Error | null,

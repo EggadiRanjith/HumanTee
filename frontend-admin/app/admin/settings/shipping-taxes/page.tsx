@@ -184,7 +184,7 @@ export default function ShippingTaxesSettings() {
                 {/* Shipping Zones Section - Compact Mobile */}
                 <div className="space-y-4 md:space-y-6">
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 md:p-4 lg:p-6">
-                        <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center justify-between mb-4">
                             <div>
                                 <h2 className="text-lg font-semibold text-gray-900">Shipping Zones</h2>
                                 <p className="text-sm text-gray-600 mt-1">Manage pincode-based shipping rates</p>
@@ -198,6 +198,15 @@ export default function ShippingTaxesSettings() {
                                     Add Zone
                                 </button>
                             )}
+                        </div>
+
+                        {/* Delhivery Integration Notice */}
+                        <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p className="text-sm text-blue-800">
+                                <span className="font-medium">ℹ️ Delhivery Integration Active:</span>{' '}
+                                Shipping rates are automatically calculated via Delhivery API when configured.
+                                These zones serve as the <span className="font-medium">fallback</span> when Delhivery is unavailable.
+                            </p>
                         </div>
 
                         {/* Zones Table */}

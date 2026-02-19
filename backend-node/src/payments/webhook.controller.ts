@@ -1,10 +1,9 @@
 import {
     Controller,
     Post,
-    Body,
     Headers,
-    UnauthorizedException,
-    NotFoundException,
+    Logger,
+    HttpCode,
     Req,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,6 +18,8 @@ import type { Request } from 'express';
  */
 @Controller('payments/webhook')
 export class WebhookController {
+    private readonly logger = new Logger(WebhookController.name);
+
     constructor(
         @InjectRepository(Payment)
         private paymentRepo: Repository<Payment>,
@@ -29,66 +30,86 @@ export class WebhookController {
 
     /**
      * Razorpay webhook handler
-     * CORRECTED: Proper signature verification + enforced idempotency
+     * CRITICAL: Always returns HTTP 200. Razorpay retries on non-200 → crash loops.
+     * Invalid/unprocessable webhooks are logged and silently acknowledged.
      */
     @Post('razorpay')
+    @HttpCode(200)
     async handleRazorpayWebhook(
         @Req() req: Request,
-        @Headers('x-razorpay-signature') signature: string
+        @Headers('x-razorpay-signature') signature: string,
     ) {
-        // 1. CORRECTED: Verify webhook signature with raw body
-        const rawBody = JSON.stringify(req.body);
-        const isValid = this.razorpayService.verifyWebhookSignature(
-            rawBody,
-            signature
-        );
+        const correlationId = `wh-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
-        if (!isValid) {
-            throw new UnauthorizedException('Invalid signature');
+        try {
+            // 1. Verify webhook signature using preserved raw body.
+            // rawBody is set by the middleware in main.ts before JSON parsing.
+            // Falls back to re-serialized JSON if rawBody is missing (should not happen in production).
+            const rawBody = (req as any).rawBody ?? JSON.stringify(req.body);
+            const isValid = this.razorpayService.verifyWebhookSignature(rawBody, signature);
+
+            if (!isValid) {
+                // NEVER throw here — throwing causes a retry loop for genuinely bad requests.
+                // Log and acknowledge with 200 so Razorpay stops retrying invalid calls.
+                this.logger.error(`[${correlationId}] Invalid webhook signature — acknowledging to prevent retry loop`);
+                return { status: 'ok', message: 'Acknowledged' };
+            }
+
+            const payload = req.body;
+            const event = payload.event;
+            const paymentEntity = payload.payload?.payment?.entity;
+
+            if (!paymentEntity) {
+                this.logger.error(`[${correlationId}] Malformed webhook payload — missing payment entity`);
+                return { status: 'ok', message: 'Acknowledged - malformed payload' };
+            }
+
+            this.logger.log(`[${correlationId}] Webhook received: ${event} | payment: ${paymentEntity.id}`);
+
+            // 2. Idempotency check — database level
+            const existingPayment = await this.paymentRepo.findOne({
+                where: { providerPaymentId: paymentEntity.id },
+            });
+
+            if (existingPayment && existingPayment.status !== PaymentStatus.INITIATED) {
+                this.logger.log(`[${correlationId}] Already processed — idempotent ack`);
+                return { status: 'ok', message: 'Already processed' };
+            }
+
+            // 3. Find order
+            const order = await this.orderRepo.findOne({
+                where: { paymentOrderId: paymentEntity.order_id },
+            });
+
+            if (!order) {
+                // NEVER throw NotFoundException here — that returns 404 → Razorpay retries → infinite loop.
+                // Log as CRITICAL for manual intervention and return 200 to stop retries.
+                this.logger.error(
+                    `🚨 [${correlationId}] CRITICAL: Order not found for razorpay_order_id=${paymentEntity.order_id}, ` +
+                    `payment_id=${paymentEntity.id}, event=${event}. Manual intervention required.`,
+                );
+                return { status: 'ok', message: 'Acknowledged - order not found, logged for manual review' };
+            }
+
+            // 4. Handle events
+            if (event === 'payment.captured') {
+                await this.handlePaymentSuccess(order.id, paymentEntity.id, payload);
+                this.logger.log(`[${correlationId}] Order ${order.id} marked PROCESSING`);
+            } else if (event === 'payment.failed') {
+                await this.handlePaymentFailure(order.id, paymentEntity.id, payload);
+                this.logger.log(`[${correlationId}] Order ${order.id} marked PAYMENT_FAILED`);
+            } else {
+                this.logger.log(`[${correlationId}] Unhandled event type: ${event} — acking`);
+            }
+
+            return { status: 'ok' };
+
+        } catch (error) {
+            // Catch-all: log the error but always return 200.
+            // A non-200 would cause Razorpay to retry, potentially causing duplicate processing.
+            this.logger.error(`[${correlationId}] Unexpected error in webhook handler: ${error.message}`, error.stack);
+            return { status: 'ok', message: 'Acknowledged - internal error logged' };
         }
-
-        const payload = req.body;
-        const event = payload.event;
-        const paymentEntity = payload.payload.payment.entity;
-
-        // 2. CORRECTED: Idempotency check enforced in code
-        const existingPayment = await this.paymentRepo.findOne({
-            where: { providerPaymentId: paymentEntity.id },
-        });
-
-        if (
-            existingPayment &&
-            existingPayment.status !== PaymentStatus.INITIATED
-        ) {
-            // Already processed - return 200 (idempotent)
-            return { status: 'ok', message: 'Already processed' };
-        }
-
-        // 3. Find order
-        const order = await this.orderRepo.findOne({
-            where: { paymentOrderId: paymentEntity.order_id },
-        });
-
-        if (!order) {
-            throw new NotFoundException('Order not found');
-        }
-
-        // 4. Update payment and order
-        if (event === 'payment.captured') {
-            await this.handlePaymentSuccess(
-                order.id,
-                paymentEntity.id,
-                payload
-            );
-        } else if (event === 'payment.failed') {
-            await this.handlePaymentFailure(
-                order.id,
-                paymentEntity.id,
-                payload
-            );
-        }
-
-        return { status: 'ok' };
     }
 
     /**

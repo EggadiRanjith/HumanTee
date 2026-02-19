@@ -34,6 +34,31 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const port = process.env.PORT || 3001;
 
+  // RAW BODY PRESERVATION FOR WEBHOOK SIGNATURE VERIFICATION
+  // MUST run before express.json() middleware.
+  // Razorpay signature is computed on the raw body bytes, not the re-serialized JSON.
+  // Without this, re-serializing req.body is a fragile fallback.
+  app.use((req: any, res: any, next: any) => {
+    const isWebhookRoute =
+      req.path.startsWith('/webhooks') || req.path.startsWith('/payments/webhook');
+    if (isWebhookRoute) {
+      let data = '';
+      req.setEncoding('utf8');
+      req.on('data', (chunk: string) => { data += chunk; });
+      req.on('end', () => {
+        req.rawBody = data;
+        try {
+          req.body = JSON.parse(data);
+        } catch {
+          req.body = {};
+        }
+        next();
+      });
+    } else {
+      next();
+    }
+  });
+
   // Payload size limit (reduced from 50MB to prevent DoS)
   // Use multipart/form-data for actual file uploads via Cloudinary
   app.use(require('express').json({ limit: '10mb' }));

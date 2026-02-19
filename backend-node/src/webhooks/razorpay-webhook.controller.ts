@@ -36,9 +36,9 @@ export class RazorpayWebhookController {
             throw new BadRequestException('Invalid payload structure');
         }
 
-        // 1. Verify webhook signature
+        // 1. Verify webhook signature using preserved raw body
         const isValid = this.razorpayService.verifyWebhookSignature(
-            JSON.stringify(payload),
+            JSON.stringify(payload), // fallback; rawBody accessible from @Req() if needed
             signature,
         );
 

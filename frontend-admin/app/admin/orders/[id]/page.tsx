@@ -445,6 +445,53 @@ export default function OrderDetailPage() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Shipment Info */}
+                    {order.shipments && order.shipments.length > 0 && (
+                        <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+                            <h2 className="text-lg font-semibold text-black mb-4">Shipment Info</h2>
+                            {order.shipments.map((shipment: any) => (
+                                <div key={shipment.id} className="space-y-3">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-gray-600">Status</span>
+                                        <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${shipment.status === 'delivered' ? 'bg-green-100 text-green-800 border-green-200' :
+                                                shipment.status === 'in_transit' || shipment.status === 'shipped' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                                                    shipment.status === 'out_for_delivery' ? 'bg-purple-100 text-purple-800 border-purple-200' :
+                                                        shipment.status === 'picked_up' ? 'bg-indigo-100 text-indigo-800 border-indigo-200' :
+                                                            shipment.status === 'failed' || shipment.status === 'rto' ? 'bg-red-100 text-red-800 border-red-200' :
+                                                                'bg-yellow-100 text-yellow-800 border-yellow-200'
+                                            }`}>
+                                            {formatStatus(shipment.status)}
+                                        </span>
+                                    </div>
+                                    {shipment.carrier && (
+                                        <div className="flex justify-between">
+                                            <span className="text-sm text-gray-600">Carrier</span>
+                                            <span className="text-sm font-medium text-black">{shipment.carrier}</span>
+                                        </div>
+                                    )}
+                                    {shipment.trackingNumber && (
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-xs text-gray-500">Tracking Number</span>
+                                            <div className="flex items-center gap-2">
+                                                <code className="text-sm font-mono text-black bg-gray-50 px-2 py-1 rounded flex-1 truncate">{shipment.trackingNumber}</code>
+                                                <button
+                                                    onClick={() => navigator.clipboard.writeText(shipment.trackingNumber!)}
+                                                    className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded flex-shrink-0"
+                                                    title="Copy Tracking Number"
+                                                >
+                                                    📋
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="text-xs text-gray-500 pt-2 border-t border-gray-100">
+                                        Created {new Date(shipment.createdAt).toLocaleString()}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 

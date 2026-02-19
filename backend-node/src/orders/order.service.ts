@@ -21,6 +21,7 @@ import { OrderDiscount } from '../entities/order-discount.entity';
 import { RazorpayService } from '../payments/razorpay.service';
 import { EmailService } from '../email/email.service';
 import { SettingsService } from '../settings/settings.service';
+import { DelhiveryService } from '../delhivery/delhivery.service';
 import { randomBytes } from 'crypto';
 
 @Injectable()
@@ -40,6 +41,7 @@ export class OrderService {
         private emailService: EmailService,
         private settingsService: SettingsService,
         @Optional() @Inject(RedisService) private redisService?: RedisService,
+        @Optional() private delhiveryService?: DelhiveryService,
     ) { }
 
     /**
@@ -61,11 +63,40 @@ export class OrderService {
 
     /**
      * Calculate shipping cost based on pincode and cart total
-     * Matches frontend logic in shippingCalculation.ts
+     * Phase 3: Tries Delhivery rate API first, falls back to zone table
      */
-    private async calculateShipping(postalCode: string, cartTotal: number): Promise<number> {
+    private async calculateShipping(
+        postalCode: string,
+        cartTotal: number,
+        totalWeightGrams: number = 300,
+    ): Promise<number> {
+        // Phase 3: Try Delhivery live rate first (cached 1h per pincode+weight combo)
+        if (this.delhiveryService) {
+            try {
+                const cacheKey = `shipping_rate:${postalCode}:${totalWeightGrams}`;
+                const cachedRate = await this.redisService?.get<number>(cacheKey);
+                if (cachedRate !== null && cachedRate !== undefined) {
+                    this.logger.log(`Shipping rate (cached): ${postalCode} / ${totalWeightGrams}g = ₹${cachedRate}`);
+                    return cachedRate;
+                }
+
+                const delhiveryRate = await this.delhiveryService.calculateShippingRate(
+                    postalCode,
+                    totalWeightGrams,
+                );
+
+                if (delhiveryRate !== null) {
+                    // Cache for 1 hour (rates change less frequently than pincodes)
+                    await this.redisService?.set(cacheKey, delhiveryRate, 3600);
+                    return delhiveryRate;
+                }
+            } catch (error) {
+                this.logger.warn(`Delhivery rate failed, falling back to zone table: ${error.message}`);
+            }
+        }
+
+        // Fallback: Static zone table from settings
         try {
-            // Fetch shipping zones from settings
             const shippingSettings = await this.settingsService.getSection('shipping');
             const zones = shippingSettings?.zones || [];
 
@@ -95,6 +126,7 @@ export class OrderService {
         } catch (error) {
             this.logger.error(`Error calculating shipping: ${error.message}`, error.stack);
             return 0; // Graceful fallback to free shipping on error
+
         }
     }
 
@@ -198,6 +230,13 @@ export class OrderService {
 
         // 🚀 CRITICAL OPTIMIZATION: Run discount validation and shipping calculation in PARALLEL
         // This reduces response time from 3.2s to ~800ms (75% faster)
+
+        // Calculate total weight for Delhivery rate calculation
+        const totalWeightGrams = validatedItems.reduce((sum, item) => {
+            const variant = variants.find(v => v.id === item.variantId);
+            return sum + (variant?.weight_grams || 300) * item.quantity;
+        }, 0);
+
         const [discountResult, shippingAmount] = await Promise.all([
             // 3. Calculate discounts (if code provided) - Run in parallel
             orderData.discountCode
@@ -221,12 +260,14 @@ export class OrderService {
                 })
                 : Promise.resolve({ discountAmount: 0, discountId: null }),
 
-            // 4. Calculate shipping - Run in parallel
+            // 4. Calculate shipping - Run in parallel (now with weight for Delhivery rate)
             this.calculateShipping(
                 orderData.shippingAddress.postalCode,
-                subtotal
+                subtotal,
+                totalWeightGrams,
             ),
         ]);
+
 
         const { discountAmount, discountId } = discountResult;
 
@@ -422,240 +463,21 @@ export class OrderService {
             this.emailService.sendAdminOrderNotification(orderWithData, shippingAddress.email, shippingAddress.fullName)
                 .catch(err => this.logger.error('Failed to send admin notification email', err));
 
+            // Trigger Delhivery shipment creation (async, non-blocking)
+            if (this.delhiveryService) {
+                this.delhiveryService.createShipment(order, address, orderItems.map(i => ({
+                    productNameSnapshot: i.productNameSnapshot,
+                    quantity: i.quantity,
+                })))
+                    .catch(err => this.logger.error(`[Order ${order.id}] Delhivery shipment creation failed`, err));
+            }
+
             return order;
         });
     }
 
-    /**
-     * Create order with atomic transaction
-     * SECURITY: Server-side price calculation (frontend prices ignored)
-     */
-    async createOrder(userId: string | null, orderData: CreateOrderDto): Promise<Order> {
-        return await this.dataSource.transaction(async (manager) => {
-            // 1. Fetch products and variants from database
-            const productIds = orderData.items.map(i => i.productId);
-            const variantIds = orderData.items.map(i => i.variantId);
 
-            const variants = await manager.find(ProductVariant, {
-                where: { id: In(variantIds) },
-                relations: ['product'],
-            });
 
-            if (variants.length !== orderData.items.length) {
-                throw new BadRequestException('Some products or variants not found');
-            }
-
-            // 2. Calculate prices SERVER-SIDE (ignore frontend prices)
-            let subtotal = 0;
-            const validatedItems = orderData.items.map(item => {
-                const variant = variants.find(v => v.id === item.variantId);
-                if (!variant) {
-                    throw new BadRequestException(`Variant ${item.variantId} not found`);
-                }
-
-                // Check stock
-                if (variant.stock_quantity < item.quantity) {
-                    throw new BadRequestException(`Insufficient stock for ${variant.product.name}`);
-                }
-
-                const lineTotal = Number(variant.price) * item.quantity;
-                subtotal += lineTotal;
-
-                return {
-                    ...item,
-                    unitPrice: Number(variant.price),
-                    lineTotal,
-                    productNameSnapshot: variant.product.name,
-                    variantLabelSnapshot: variant.size,
-                    skuSnapshot: variant.sku,
-                };
-            });
-
-            // 3. Calculate discounts (if code provided) - Matches prepareOrder logic
-            let discountAmount = 0;
-
-            if (orderData.discountCode) {
-                try {
-                    const discount = await this.discountsService.validateCode(
-                        orderData.discountCode,
-                        userId,
-                        subtotal,
-                        validatedItems
-                    );
-
-                    // Calculate discount amount based on type
-                    discountAmount = discount.type === 'PERCENT'
-                        ? Math.round((subtotal * discount.value) / 100)
-                        : Math.min(discount.value, subtotal);
-
-                    this.logger.log(`Discount "${orderData.discountCode}" applied: ₹${discountAmount}`);
-                } catch (err) {
-                    // If discount invalid/expired, proceed without it (graceful degradation)
-                    this.logger.warn(`Discount validation failed: ${err.message}`);
-                }
-            }
-
-            // 4. Calculate totals
-            // GST is INCLUSIVE in product prices (as per Indian MRP law)
-            const taxAmount = 0; // GST already included in product MRP
-            const shippingAmount = 0; // Free shipping
-            const totalAmount = subtotal + taxAmount + shippingAmount - discountAmount;
-
-            // 5. Generate secure order number
-            const orderNumber = this.generateSecureOrderNumber();
-
-            // 6. Create Razorpay order (skip if payment bypass enabled)
-            let razorpayOrderId: string;
-            let initialStatus: OrderStatus;
-            let paymentStatus: PaymentStatus;
-
-            const paymentBypassEnabled = process.env.PAYMENT_BYPASS_ENABLED === 'true';
-
-            if (paymentBypassEnabled) {
-                // Payment bypass mode: Skip payment, mark as paid
-                razorpayOrderId = `dev_${Date.now()}`;
-                initialStatus = OrderStatus.PROCESSING; // Skip payment, go straight to processing
-                paymentStatus = PaymentStatus.CAPTURED; // Use CAPTURED instead of COMPLETED
-                this.logger.log(`⚠️  Payment bypass enabled - Order will auto-complete`);
-            } else {
-                // Production mode: Create Razorpay order
-                razorpayOrderId = await this.razorpayService.createOrder(totalAmount);
-                initialStatus = OrderStatus.PENDING_PAYMENT;
-                paymentStatus = PaymentStatus.INITIATED;
-            }
-
-            // 7. Create order
-            const order = manager.create(Order, {
-                orderNumber,
-                userId,
-                status: initialStatus,
-                subtotal,
-                taxAmount,
-                shippingAmount,
-                discountAmount,
-                totalAmount,
-                currency: 'INR',
-                paymentOrderId: razorpayOrderId,
-                completedAt: process.env.NODE_ENV === 'development' ? new Date() : undefined,
-            });
-            await manager.save(Order, order);
-
-            // 8. Create order items (with server-calculated prices)
-            const items = validatedItems.map((item) =>
-                manager.create(OrderItem, {
-                    orderId: order.id,
-                    productId: item.productId,
-                    variantId: item.variantId,
-                    productNameSnapshot: item.productNameSnapshot,
-                    variantLabelSnapshot: item.variantLabelSnapshot,
-                    skuSnapshot: item.skuSnapshot,
-                    imageUrlSnapshot: item.imageUrlSnapshot || '',
-                    quantity: item.quantity,
-                    unitPrice: item.unitPrice,
-                    taxAmount: 0,
-                    discountAmount: 0,
-                    lineTotal: item.lineTotal,
-                }),
-            );
-            await manager.save(OrderItem, items);
-
-            // 9. CRITICAL: Atomic stock decrement with validation
-            // Prevents race condition where two concurrent orders can oversell
-            for (const item of validatedItems) {
-                const result = await manager
-                    .createQueryBuilder()
-                    .update(ProductVariant)
-                    .set({ stock_quantity: () => `stock_quantity - ${item.quantity}` })
-                    .where('id = :id AND stock_quantity >= :required', {
-                        id: item.variantId,
-                        required: item.quantity
-                    })
-                    .execute();
-
-                if (result.affected === 0) {
-                    // Either variant doesn't exist OR insufficient stock
-                    // This is an edge case - stock was available during validation but sold out during order creation
-                    const variant = await manager.findOne(ProductVariant, { where: { id: item.variantId } });
-                    if (!variant) {
-                        throw new BadRequestException(`Variant ${item.variantId} not found`);
-                    }
-                    throw new ConflictException(
-                        `Only ${variant.stock_quantity} items available for ${item.productNameSnapshot} (${item.variantLabelSnapshot})`
-                    );
-                }
-            }
-
-            // 10. Create shipping address snapshot
-            const address = manager.create(OrderAddress, {
-                orderId: order.id,
-                fullName: orderData.shippingAddress.fullName,
-                email: orderData.shippingAddress.email,
-                phone: orderData.shippingAddress.phone,
-                addressLine1: orderData.shippingAddress.addressLine1,
-                addressLine2: orderData.shippingAddress.addressLine2,
-                landmark: orderData.shippingAddress.landmark,
-                city: orderData.shippingAddress.city,
-                state: orderData.shippingAddress.state,
-                postalCode: orderData.shippingAddress.postalCode,
-                country: orderData.shippingAddress.country,
-            });
-            await manager.save(OrderAddress, address);
-
-            // 11. Create payment record
-            const payment = manager.create(Payment, {
-                orderId: order.id,
-                amount: totalAmount,
-                currency: 'INR',
-                status: paymentStatus,
-                provider: process.env.NODE_ENV === 'development' ? 'DEVELOPMENT' : 'RAZORPAY',
-                providerOrderId: razorpayOrderId,
-                providerPaymentId: process.env.NODE_ENV === 'development' ? `dev_payment_${Date.now()}` : undefined,
-                completedAt: process.env.NODE_ENV === 'development' ? new Date() : undefined,
-            });
-            await manager.save(Payment, payment);
-
-            // 12. Record discount usage (Production Hardened)
-            if (orderData.discountCode) {
-                const discount = await this.discountsService.validateCode(
-                    orderData.discountCode,
-                    userId,
-                    orderData.subtotal
-                );
-
-                // Record usage (Prevents race conditions if checked again)
-                await this.discountsService.recordUsage(discount.id, order.id, userId);
-
-                // Save Snapshot (Audit Trail)
-                const snapshot = manager.create(OrderDiscount, {
-                    orderId: order.id,
-                    discountId: discount.id,
-                    discountCode: discount.code,
-                    discountType: discount.type,
-                    discountValue: discount.value,
-                    appliedAmount: orderData.discountAmount || 0,
-                });
-                await manager.save(OrderDiscount, snapshot);
-            }
-
-            // 13. Create status history entry
-            const history = manager.create(OrderStatusHistory, {
-                orderId: order.id,
-                fromStatus: undefined,
-                toStatus: initialStatus,
-                changedBy: userId || 'GUEST',
-                reason: process.env.NODE_ENV === 'development'
-                    ? 'Order created and auto-paid (development mode)'
-                    : 'Order created, awaiting payment',
-            });
-            await manager.save(OrderStatusHistory, history);
-
-            // Return order with Razorpay details
-            return {
-                ...order,
-                razorpayOrderId,
-            } as any;
-        });
-    }
 
     /**
      * Mark order as PAID (called by webhook)
@@ -676,6 +498,24 @@ export class OrderService {
                 reason: `Payment confirmed: ${paymentId}`,
             });
             await manager.save(OrderStatusHistory, history);
+
+            // Trigger Delhivery shipment creation (async, non-blocking)
+            if (this.delhiveryService) {
+                const order = await manager.findOne(Order, {
+                    where: { id: orderId },
+                    relations: ['items', 'address'],
+                });
+                if (order && order.address) {
+                    this.delhiveryService.createShipment(
+                        order,
+                        order.address,
+                        (order.items || []).map(i => ({
+                            productNameSnapshot: i.productNameSnapshot,
+                            quantity: i.quantity,
+                        })),
+                    ).catch(err => this.logger.error(`[Order ${orderId}] Delhivery shipment creation failed (webhook path)`, err));
+                }
+            }
         });
     }
 
@@ -714,7 +554,7 @@ export class OrderService {
 
         const [orders, total] = await this.orderRepository.findAndCount({
             where,
-            relations: ['items', 'address', 'payments'],
+            relations: ['items', 'address', 'payments', 'shipments'],
             order: { createdAt: 'DESC' },
             skip,
             take: limit,

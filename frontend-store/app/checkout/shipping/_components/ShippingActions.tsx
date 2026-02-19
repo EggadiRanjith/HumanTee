@@ -8,6 +8,7 @@ interface ShippingActionsProps {
     onContinue: () => void;
     onAddAddress: () => void;
     onBackToCart: () => void;
+    isBlocked?: boolean;
 }
 
 export default function ShippingActions({
@@ -15,6 +16,7 @@ export default function ShippingActions({
     onContinue,
     onAddAddress,
     onBackToCart,
+    isBlocked = false,
 }: ShippingActionsProps) {
     return (
         <>
@@ -32,7 +34,7 @@ export default function ShippingActions({
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
                 onClick={onContinue}
-                disabled={!selectedAddressId}
+                disabled={!selectedAddressId || isBlocked}
                 className="w-full mt-4 py-3.5 sm:py-4 bg-white text-black rounded-full text-sm sm:text-base uppercase tracking-wider font-medium hover:bg-white/90 transition-colors min-h-[48px] sm:min-h-[52px] disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 Continue to Payment

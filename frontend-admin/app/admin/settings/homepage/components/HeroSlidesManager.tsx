@@ -200,35 +200,39 @@ export function HeroSlidesManager({ slides, onChange, isEditing }: Props) {
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Desktop Image</label>
                                         {isEditing ? (
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={(e: any) => handleImageSelect(index, 'image', e)}
-                                                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800"
-                                                disabled={uploading}
-                                            />
-                                            {imageSlide.image.startsWith('data:') && (
-                                            <div className="mt-1 text-[10px] font-semibold text-amber-600">Pending upload</div>
-                                        )}
+                                            <>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e: any) => handleImageSelect(index, 'image', e)}
+                                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800"
+                                                    disabled={uploading}
+                                                />
+                                                {imageSlide.image.startsWith('data:') && (
+                                                    <div className="mt-1 text-[10px] font-semibold text-amber-600">Pending upload</div>
+                                                )}
+                                            </>
                                         ) : (
-                                        <p className="text-xs text-gray-600 break-all">{imageSlide.image || 'No image'}</p>
+                                            <p className="text-xs text-gray-600 break-all">{imageSlide.image || 'No image'}</p>
                                         )}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Mobile Image</label>
                                         {isEditing ? (
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={(e: any) => handleImageSelect(index, 'mobileImage', e)}
-                                                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800"
-                                                disabled={uploading}
-                                            />
-                                            {imageSlide.mobileImage?.startsWith('data:') && (
-                                            <div className="mt-1 text-[10px] font-semibold text-amber-600">Pending upload</div>
-                                        )}
+                                            <>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e: any) => handleImageSelect(index, 'mobileImage', e)}
+                                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800"
+                                                    disabled={uploading}
+                                                />
+                                                {imageSlide.mobileImage?.startsWith('data:') && (
+                                                    <div className="mt-1 text-[10px] font-semibold text-amber-600">Pending upload</div>
+                                                )}
+                                            </>
                                         ) : (
-                                        <p className="text-xs text-gray-600 break-all">{imageSlide.mobileImage || 'No image'}</p>
+                                            <p className="text-xs text-gray-600 break-all">{imageSlide.mobileImage || 'No image'}</p>
                                         )}
                                     </div>
                                 </div>

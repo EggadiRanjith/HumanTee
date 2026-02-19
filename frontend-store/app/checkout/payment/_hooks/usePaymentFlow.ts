@@ -19,7 +19,7 @@ export function usePaymentFlow() {
     const router = useRouter();
     const queryClient = useQueryClient();
     const { items, clearCart, appliedDiscount, discountedTotal } = useCart();
-    const { paymentMethod, setPaymentMethod, setOrderNumber, shippingData } = useCheckout();
+    const { paymentMethod, setPaymentMethod, setOrderNumber, setPaymentId, shippingData } = useCheckout();
     const { setLoading } = useLoading();
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
@@ -161,11 +161,19 @@ export function usePaymentFlow() {
                             tags: { feature: 'payment', step: 'confirmation' },
                             extra: {
                                 context: 'order_confirmation',
-                                correlationId: correlationId.current
+                                correlationId: correlationId.current,
+                                razorpayPaymentId: response.razorpay_payment_id,
                             }
                         });
-                        setError('Order confirmation failed. Please contact support with your payment ID.');
-                        setIsProcessing(false);
+
+                        // CRITICAL: Payment was captured but order confirmation failed.
+                        // The webhook safety net will create the order.
+                        // Redirect user to pending page — DON'T leave them stuck.
+                        setPaymentId(response.razorpay_payment_id);
+                        clearCart();
+                        queryClient.invalidateQueries({ queryKey: queryKeys.orders });
+                        setLoading(true);
+                        router.push("/checkout/status/pending");
                     }
                 },
                 modal: {
