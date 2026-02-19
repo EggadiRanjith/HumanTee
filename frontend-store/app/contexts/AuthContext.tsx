@@ -42,6 +42,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         const checkAuth = async () => {
             try {
+                // Skip refresh if we already have an access token in memory
+                // This prevents a double-refresh race condition when the page remounts
+                // right after login (e.g. redirect back from OAuth flow)
+                if (getAccessToken()) {
+                    setIsLoading(false);
+                    return;
+                }
 
                 // Try to refresh session using httpOnly cookie
                 const response = await apiClient.post('/auth/refresh', {}, {
@@ -65,26 +72,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 } else {
 
                     // TOKEN EXPIRY: Clear auth state but PRESERVE cache
-                    // This implements stale-while-revalidate pattern:
-                    // - User sees cached data (profile, addresses, cart)
-                    // - Next API call will attempt token refresh
-                    // - If refresh succeeds: new data loads
-                    // - If refresh fails: redirect to login
-                    // 
-                    // ✅ DO: Clear access token and user state
                     setUser(null);
                     clearAccessToken();
-
-                    // ❌ DON'T: Clear React Query cache
-                    // Cache clearing only happens on EXPLICIT logout (see logout function)
-                    // This prevents empty UI states when token expires
                 }
             } catch (error) {
 
                 // NETWORK ERROR: Same as token expiry - preserve cache
                 setUser(null);
                 clearAccessToken();
-                // Cache persists for stale-while-revalidate
             } finally {
                 setIsLoading(false);
             }
@@ -204,8 +199,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                 // Manually clear refresh token cookie (NO domain = current hostname only)
                 // This prevents session fixation via subdomain attacks
-                document.cookie = `refreshToken=; path=/; max-age=0; SameSite=Lax`;
-                document.cookie = `auth_token=; path=/; max-age=0; SameSite=Lax`;
+                // Clear refresh token cookie — must include domain to match how it was set
+                document.cookie = `refreshToken=; path=/; max-age=0; domain=.humantee.in; SameSite=None; Secure`;
+                document.cookie = `auth_token=; path=/; max-age=0`;
+                // Fallback: also clear without domain (for localhost dev)
+                document.cookie = `refreshToken=; path=/; max-age=0`;
+                document.cookie = `auth_token=; path=/; max-age=0`;
             }
 
             // PRODUCTION: Broadcast logout to all tabs
