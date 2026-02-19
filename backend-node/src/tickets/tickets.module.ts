@@ -3,11 +3,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TicketsController, AdminTicketsController } from './tickets.controller';
 import { TicketsService } from './tickets.service';
 import { Ticket, TicketMessage, TicketStatusHistory } from '../entities';
+import { Order } from '../entities/order.entity';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Ticket, TicketMessage, TicketStatusHistory]),
+        TypeOrmModule.forFeature([Ticket, TicketMessage, TicketStatusHistory, Order]),
         AuthModule,
     ],
     controllers: [TicketsController, AdminTicketsController],
