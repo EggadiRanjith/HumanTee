@@ -39,8 +39,11 @@ export class OrderController {
 
         const result = await this.delhiveryService.checkPincodeServiceability(pincode);
 
-        // Cache for 24 hours (86400 seconds)
-        await this.redisService.set(cacheKey, result, 86400);
+        // Only cache successful responses — never cache API errors (e.g. 401, timeouts)
+        // Caching errors would lock users out of checkout for 24 hours after any API hiccup
+        if (!result.error) {
+            await this.redisService.set(cacheKey, result, 86400);
+        }
 
         return { ...result, cached: false };
     }
