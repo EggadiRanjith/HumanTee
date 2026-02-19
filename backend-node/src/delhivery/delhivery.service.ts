@@ -29,10 +29,10 @@ export class DelhiveryService {
         @InjectRepository(Shipment)
         private shipmentRepository: Repository<Shipment>,
     ) {
-        this.token = process.env.DELHIVERY_API_TOKEN || '';
-        this.baseUrl = process.env.DELHIVERY_BASE_URL || 'https://track.delhivery.com';
-        this.originPincode = process.env.DELHIVERY_ORIGIN_PINCODE || '';
-        this.warehouseName = process.env.DELHIVERY_WAREHOUSE_NAME || 'HumanTee-Primary';
+        this.token = (process.env.DELHIVERY_API_TOKEN || '').trim();
+        this.baseUrl = (process.env.DELHIVERY_BASE_URL || 'https://track.delhivery.com').trim();
+        this.originPincode = (process.env.DELHIVERY_ORIGIN_PINCODE || '').trim();
+        this.warehouseName = (process.env.DELHIVERY_WAREHOUSE_NAME || 'HumanTee-Primary').trim();
 
         if (!this.token || !this.originPincode) {
             this.isConfigured = false;
