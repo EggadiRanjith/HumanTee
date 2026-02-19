@@ -218,8 +218,9 @@ export class AuthController {
             userAgent,
         );
 
-        // SECURITY: Set refresh token cookie (cross-origin compatible)
-        // MUST use sameSite: 'none' for cross-origin POST (Vercel → Render)
+        // SECURITY: Clear any stale refreshToken cookies (prevents duplicates from attribute changes)
+        res.clearCookie('refreshToken', { domain: '.humantee.in', path: '/' });
+        res.clearCookie('refreshToken', { path: '/' });
 
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
@@ -290,8 +291,10 @@ export class AuthController {
             throw new UnauthorizedException('Admin users must login through the admin panel');
         }
 
-        // SECURITY: Set refresh token cookie (adapt to environment)
+        // SECURITY: Clear any stale refreshToken cookies (prevents duplicates from attribute changes)
         const isProduction = process.env.NODE_ENV === 'production';
+        res.clearCookie('refreshToken', { domain: isProduction ? '.humantee.in' : undefined, path: '/' });
+        res.clearCookie('refreshToken', { path: '/' });
 
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
@@ -343,8 +346,10 @@ export class AuthController {
             userAgent,
         );
 
-        // SECURITY: Set new refresh token (adapt to environment)
+        // SECURITY: Clear any stale refreshToken cookies before setting new one
         const isProduction = process.env.NODE_ENV === 'production';
+        res.clearCookie('refreshToken', { domain: isProduction ? '.humantee.in' : undefined, path: '/' });
+        res.clearCookie('refreshToken', { path: '/' });
 
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
