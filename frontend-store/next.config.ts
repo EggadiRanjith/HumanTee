@@ -83,7 +83,7 @@ const nextConfig: NextConfig = {
               img-src 'self' data: https:;
               font-src 'self' data: https://fonts.gstatic.com;
               media-src 'self' https://res.cloudinary.com;
-              connect-src 'self' ${apiUrl} https://sentry.io https://api.razorpay.com https://accounts.google.com;
+              connect-src 'self' ${apiUrl} https://sentry.io https://api.razorpay.com https://accounts.google.com https://api.postalpincode.in;
               frame-src 'self' https://api.razorpay.com https://accounts.google.com;
               report-uri /api/csp-report;
             `.replace(/\s+/g, ' ').trim(),

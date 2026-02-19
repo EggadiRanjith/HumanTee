@@ -70,12 +70,6 @@ export default function MediaTab({ errors }: MediaTabProps) {
 
                 if (!existing) {
                     // New image - pass cloudinaryUrl for proper storage
-                    console.warn('🗂️ MediaTab: Adding new image to store:', {
-                        id: img.id,
-                        hasFile: !!img.file,
-                        hasCloudinaryUrl: !!img.cloudinaryUrl,
-                        url: img.url?.substring(0, 50)
-                    });
                     addImage({
                         id: img.id,
                         url: img.url,

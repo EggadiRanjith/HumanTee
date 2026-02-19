@@ -24,7 +24,6 @@ export class DetailedLoggerMiddleware implements NestMiddleware {
 
         if (!fs.existsSync(this.logsDir)) {
             fs.mkdirSync(this.logsDir, { recursive: true });
-            this.logger.log(`📁 Created logs directory: ${this.logsDir}`);
         }
     }
 
@@ -103,26 +102,13 @@ export class DetailedLoggerMiddleware implements NestMiddleware {
             const reset = '\x1b[0m';
             const icon = duration < 500 ? '✅' : duration < 1000 ? '⚠️' : '🔴';
 
-            console.log(
-                `${color}${icon} [${requestId.substr(-6)}] ${req.method} ${req.path} - ${duration}ms, ${(req as any).dbQueryCount} queries, $${completeLog.cost.total}${reset}`
-            );
-
             // Warn on slow requests or too many queries
             if (duration > 1000 || (req as any).dbQueryCount > 5) {
-                console.warn(`\n⚠️  SLOW REQUEST DETECTED:`);
-                console.warn(`   Request ID: ${requestId}`);
-                console.warn(`   Path: ${req.method} ${req.path}`);
-                console.warn(`   Duration: ${duration}ms`);
-                console.warn(`   DB Queries: ${(req as any).dbQueryCount} (${(req as any).dbQueryTime}ms)`);
-                console.warn(`   Cost: $${completeLog.cost.total}`);
 
                 if ((req as any).dbQueries.length > 0) {
-                    console.warn(`   Top queries:`);
                     (req as any).dbQueries.slice(0, 3).forEach((q: any, i: number) => {
-                        console.warn(`     ${i + 1}. ${q.duration} - ${q.query.substring(0, 80)}...`);
                     });
                 }
-                console.warn('');
             }
 
             // Clear global context

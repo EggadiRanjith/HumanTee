@@ -28,7 +28,6 @@ export class EmailService {
         const smtpPort = process.env.SMTP_PORT;
 
         if (!smtpHost || !smtpPort) {
-            this.logger.warn('⚠️  SMTP not configured. Email features will be unavailable.');
             this.transporter = null;
             return;
         }
@@ -54,7 +53,6 @@ export class EmailService {
         const templatesDir = path.join(__dirname, 'templates');
 
         if (!fs.existsSync(templatesDir)) {
-            this.logger.warn('⚠️  Email templates directory not found');
             return;
         }
 
@@ -76,7 +74,6 @@ export class EmailService {
      */
     async sendOrderConfirmation(order: Order, user: AuthUser): Promise<void> {
         if (!this.transporter) {
-            this.logger.warn('⚠️  Email not configured, skipping order confirmation');
             return;
         }
 
@@ -89,14 +86,12 @@ export class EmailService {
         });
 
         if (existing) {
-            this.logger.log(`Order confirmation already sent for order ${order.id}`);
             return; // Idempotent - skip
         }
 
         // Get template
         const template = this.templates.get('order-confirmation');
         if (!template) {
-            this.logger.error('Order confirmation template not found');
             return;
         }
 
@@ -131,8 +126,6 @@ export class EmailService {
             recipient: user.email,
         });
         await this.notificationRepo.save(notification);
-
-        this.logger.log(`Order confirmation sent to ${user.email} for order ${order.id}`);
     }
 
     /**
@@ -140,7 +133,6 @@ export class EmailService {
      */
     async sendOrderFulfilled(order: Order, user: AuthUser): Promise<void> {
         if (!this.transporter) {
-            this.logger.warn('⚠️  Email not configured, skipping order fulfilled notification');
             return;
         }
 
@@ -153,14 +145,12 @@ export class EmailService {
         });
 
         if (existing) {
-            this.logger.log(`Order fulfilled email already sent for order ${order.id}`);
             return; // Idempotent - skip
         }
 
         // Get template
         const template = this.templates.get('order-fulfilled');
         if (!template) {
-            this.logger.error('Order fulfilled template not found');
             return;
         }
 
@@ -186,7 +176,5 @@ export class EmailService {
             recipient: user.email,
         });
         await this.notificationRepo.save(notification);
-
-        this.logger.log(`Order fulfilled email sent to ${user.email} for order ${order.id}`);
     }
 }

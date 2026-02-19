@@ -26,7 +26,6 @@ export function MonitoredJob(jobName: string, jobType: JobType = JobType.CRON) {
             const jobMonitor: JobMonitorService = this.jobMonitor || this.jobMonitorService;
 
             if (!jobMonitor) {
-                console.error(`JobMonitorService not found in ${target.constructor.name}`);
                 // Still execute the job
                 return originalMethod.apply(this, args);
             }

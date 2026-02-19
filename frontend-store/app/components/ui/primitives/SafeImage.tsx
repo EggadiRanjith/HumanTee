@@ -35,7 +35,6 @@ export function SafeImage({
     const [loading, setLoading] = useState(true);
 
     const handleError = () => {
-        console.warn(`Image failed to load: ${src}`);
         setError(true);
         setLoading(false);
     };

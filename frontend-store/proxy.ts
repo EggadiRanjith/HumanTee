@@ -52,7 +52,6 @@ export default async function proxy(request: NextRequest) {
                 return NextResponse.redirect(new URL('/maintenance', request.url));
             }
         } catch (error) {
-            console.error('[Maintenance] Status check failed:', error);
             maintenanceCache = { enabled: true, lastChecked: now };
             if (!isAdmin) {
                 return NextResponse.redirect(new URL('/maintenance', request.url));

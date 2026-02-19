@@ -17,25 +17,16 @@ export default function GoogleAuthButton({
     // Authorization code flow would require backend changes
     const login = useGoogleLogin({
         onSuccess: (tokenResponse) => {
-            console.warn('✅ Google OAuth Success:', tokenResponse);
             onSuccess(tokenResponse);
         },
         onError: (error) => {
-            console.error('❌ Google OAuth Error:', error);
-            console.error('Error details:', {
-                error,
-                clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-                origin: window.location.origin,
-            });
             onError();
         },
         onNonOAuthError: (error) => {
             // Suppress "popup_closed" errors - this is normal user behavior
             if (error && typeof error === 'object' && 'type' in error && error.type === 'popup_closed') {
-                console.warn('⚠️ User closed Google popup');
                 return; // Don't call onError for normal cancellation
             }
-            console.error('🔴 Google Non-OAuth Error:', error);
             onError();
         },
     });
@@ -59,14 +50,10 @@ export default function GoogleAuthButton({
                     whileHover={{ scale: isLoading ? 1 : 1.02 }}
                     whileTap={{ scale: isLoading ? 1 : 0.98 }}
                     onClick={() => {
-                        console.warn('🔵 Google button clicked');
-                        console.warn('Client ID:', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
-                        console.warn('Origin:', window.location.origin);
                         if (!isLoading) {
                             try {
                                 login();
                             } catch (err) {
-                                console.error('❌ Login function error:', err);
                             }
                         }
                     }}

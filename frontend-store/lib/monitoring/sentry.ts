@@ -12,7 +12,6 @@ import { clientEnv } from '@/lib/config/client-env';
  */
 export function initSentry() {
     if (!clientEnv.NEXT_PUBLIC_SENTRY_DSN) {
-        console.warn('Sentry DSN not configured - error tracking disabled');
         return;
     }
 

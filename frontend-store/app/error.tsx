@@ -22,7 +22,6 @@ export default function ErrorPage({
 
     // Also log to console in dev
     if (process.env.NODE_ENV === 'development') {
-      console.error('Global error caught:', error);
     }
   }, [error]);
 

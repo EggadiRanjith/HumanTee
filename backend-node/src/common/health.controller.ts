@@ -65,7 +65,6 @@ export class HealthController {
             await this.dataSource.query('SELECT 1');
             return true;
         } catch (error) {
-            this.logger.error('Database health check failed:', error);
             return false;
         }
     }

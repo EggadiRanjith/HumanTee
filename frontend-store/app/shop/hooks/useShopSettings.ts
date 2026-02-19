@@ -65,7 +65,6 @@ export function useShopSettings() {
                     });
                 }
             } catch (err) {
-                console.warn("⚠️ Failed to fetch shop settings, using config:", err);
                 setError(err as Error);
                 // Keep config settings (already set in initial state)
             } finally {

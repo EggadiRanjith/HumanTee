@@ -65,7 +65,6 @@ export async function isMaintenanceModeEnabled(): Promise<boolean> {
         maintenanceCache = { data, timestamp: now };
         return data.enabled;
     } catch (error) {
-        console.error('[Maintenance] Failed to check status:', error);
         return false;
     }
 }
@@ -85,7 +84,6 @@ export async function getMaintenanceStatus(): Promise<MaintenanceStatus> {
         maintenanceCache = { data, timestamp: now };
         return data;
     } catch (error) {
-        console.error('[Maintenance] Failed to fetch status:', error);
         return {
             enabled: true,
             title: "We'll Be Right Back",

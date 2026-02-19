@@ -45,7 +45,6 @@ export const discountsApi = {
             const response = await apiClient.post('/discounts/suggestions', data);
             return response.data.suggestions || [];
         } catch (error: any) {
-            console.error('Failed to fetch discount suggestions:', error);
             return []; // Return empty array on error
         }
     }

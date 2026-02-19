@@ -37,7 +37,6 @@ export class SettingsCacheService {
 
             return isEnabled;
         } catch (error) {
-            console.error(`Failed to check feature ${featureKey}, defaulting to disabled:`, error.message);
             return false; // Fail-safe: disable by default
         }
     }
@@ -54,6 +53,5 @@ export class SettingsCacheService {
                 cleared++;
             }
         }
-        console.log(`✅ Cleared ${cleared} feature cache entries`);
     }
 }

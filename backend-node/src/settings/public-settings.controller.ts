@@ -28,7 +28,6 @@ export class PublicSettingsController {
                 data: sections
             };
         } catch (error) {
-            this.logger.error('Failed to load public settings:', error);
             return {
                 success: false,
                 error: 'Failed to load settings'

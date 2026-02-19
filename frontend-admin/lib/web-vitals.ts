@@ -8,7 +8,6 @@ import { onCLS, onINP, onFCP, onLCP, onTTFB, type Metric } from 'web-vitals';
 function sendToAnalytics(metric: Metric) {
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
-        console.log(`[Web Vitals] ${metric.name}:`, metric.value, metric.rating);
     }
 
     // Send to analytics service (e.g., Google Analytics, Sentry)

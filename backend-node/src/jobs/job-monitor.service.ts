@@ -42,7 +42,6 @@ export class JobMonitorService {
         const job = await this.jobRepo.findOne({ where: { id: jobId } });
 
         if (!job) {
-            this.logger.error(`Job ${jobId} not found`);
             return;
         }
 
@@ -65,7 +64,6 @@ export class JobMonitorService {
         const job = await this.jobRepo.findOne({ where: { id: jobId } });
 
         if (!job) {
-            this.logger.error(`Job ${jobId} not found`);
             return;
         }
 

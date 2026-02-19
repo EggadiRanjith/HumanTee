@@ -26,7 +26,6 @@ export class HealthController {
             databaseLatency = Date.now() - start;
             databaseStatus = 'up';
         } catch (error) {
-            this.logger.error('Database health check failed:', error);
         }
 
         // Check Redis
@@ -38,7 +37,6 @@ export class HealthController {
             redisLatency = Date.now() - start;
             redisStatus = 'up';
         } catch (error) {
-            this.logger.error('Redis health check failed:', error);
         }
 
         const overallStatus = databaseStatus === 'up' && redisStatus === 'up' ? 'healthy' : 'degraded';

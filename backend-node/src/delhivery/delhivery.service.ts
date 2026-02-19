@@ -19,12 +19,12 @@ import { OrderAddress } from '../entities/order-address.entity';
  */
 @Injectable()
 export class DelhiveryService {
-    private readonly logger = new Logger(DelhiveryService.name);
     private readonly baseUrl: string;
     private readonly token: string;
     private readonly originPincode: string;
     private readonly warehouseName: string;
     private readonly isConfigured: boolean;
+    private readonly isEnabled: boolean;
 
     constructor(
         @InjectRepository(Shipment)
@@ -34,15 +34,12 @@ export class DelhiveryService {
         this.baseUrl = process.env.DELHIVERY_BASE_URL || 'https://track.delhivery.com';
         this.originPincode = process.env.DELHIVERY_ORIGIN_PINCODE || '';
         this.warehouseName = process.env.DELHIVERY_WAREHOUSE_NAME || 'HumanTee-Primary';
+        this.isEnabled = process.env.DELHIVERY_ENABLED !== 'false';
 
         if (!this.token || !this.originPincode) {
-            this.logger.warn(
-                '⚠️  Delhivery credentials not configured. Set DELHIVERY_API_TOKEN and DELHIVERY_ORIGIN_PINCODE in .env',
-            );
             this.isConfigured = false;
         } else {
             this.isConfigured = true;
-            this.logger.log(`Delhivery configured — origin pincode: ${this.originPincode}`);
         }
     }
 
@@ -88,11 +85,8 @@ export class DelhiveryService {
                     return_country: warehouseData.country || 'India',
                 }),
             });
-
-            this.logger.log(`Warehouse registered: ${warehouseData.name}`);
             return { success: true, data: response };
         } catch (error) {
-            this.logger.error(`Warehouse registration failed: ${error.message}`, error.stack);
             return { success: false, error: error.message };
         }
     }
@@ -107,7 +101,6 @@ export class DelhiveryService {
      */
     async fetchWaybill(): Promise<string | null> {
         if (!this.isConfigured) {
-            this.logger.warn('Delhivery not configured — cannot fetch waybill');
             return null;
         }
 
@@ -127,11 +120,8 @@ export class DelhiveryService {
             if (response?.waybill) {
                 return response.waybill;
             }
-
-            this.logger.error('Unexpected waybill response format', JSON.stringify(response));
             return null;
         } catch (error) {
-            this.logger.error(`Failed to fetch waybill: ${error.message}`, error.stack);
             return null;
         }
     }
@@ -148,8 +138,10 @@ export class DelhiveryService {
         address: OrderAddress,
         items: Array<{ productNameSnapshot: string; quantity: number }>,
     ): Promise<{ success: boolean; awb?: string; error?: string }> {
+        if (!this.isEnabled) {
+            return { success: true, awb: 'TEST-MODE' };
+        }
         if (!this.isConfigured) {
-            this.logger.warn(`[Order ${order.id}] Delhivery not configured — shipment not created`);
             return { success: false, error: 'Delhivery not configured' };
         }
 
@@ -159,9 +151,6 @@ export class DelhiveryService {
         });
 
         if (existingShipment?.delhiveryAwb) {
-            this.logger.warn(
-                `[Order ${order.id}] Shipment already exists with AWB: ${existingShipment.delhiveryAwb}`,
-            );
             return { success: true, awb: existingShipment.delhiveryAwb };
         }
 
@@ -169,7 +158,6 @@ export class DelhiveryService {
             // 1. Fetch waybill
             const waybill = await this.fetchWaybill();
             if (!waybill) {
-                this.logger.error(`[Order ${order.id}] Failed to fetch waybill — shipment not created`);
                 return { success: false, error: 'Failed to fetch waybill' };
             }
 
@@ -244,16 +232,8 @@ export class DelhiveryService {
                 await this.shipmentRepository.save(shipment);
             }
 
-            this.logger.log(
-                `[Order ${order.id}] Delhivery shipment created — AWB: ${waybill}`,
-            );
-
             return { success: true, awb: waybill };
         } catch (error) {
-            this.logger.error(
-                `[Order ${order.id}] Delhivery shipment creation failed: ${error.message}`,
-                error.stack,
-            );
             return { success: false, error: error.message };
         }
     }
@@ -292,21 +272,11 @@ export class DelhiveryService {
             if (Array.isArray(rates) && rates.length > 0) {
                 const totalCharge = rates[0]?.total_amount;
                 if (typeof totalCharge === 'number' && totalCharge > 0) {
-                    this.logger.log(
-                        `Delhivery rate: ${destinationPincode} / ${weightGrams}g = ₹${totalCharge}`,
-                    );
                     return Math.ceil(totalCharge); // Round up to nearest rupee
                 }
             }
-
-            this.logger.warn(
-                `Unexpected Delhivery rate response for ${destinationPincode}: ${JSON.stringify(response)}`,
-            );
             return null;
         } catch (error) {
-            this.logger.error(
-                `Delhivery rate calculation failed for ${destinationPincode}: ${error.message}`,
-            );
             return null; // Caller falls back to zone table
         }
     }
@@ -321,6 +291,9 @@ export class DelhiveryService {
         cod: boolean;
         error?: string;
     }> {
+        if (!this.isEnabled) {
+            return { serviceable: true, prepaid: true, cod: false };
+        }
         if (!this.isConfigured) {
             return { serviceable: false, prepaid: false, cod: false, error: 'Not configured' };
         }
@@ -342,7 +315,6 @@ export class DelhiveryService {
                 cod: pinInfo.cod === 'Y',
             };
         } catch (error) {
-            this.logger.error(`Pincode check failed for ${pincode}: ${error.message}`);
             return { serviceable: false, prepaid: false, cod: false, error: error.message };
         }
     }
@@ -361,7 +333,6 @@ export class DelhiveryService {
                 { method: 'GET' },
             );
         } catch (error) {
-            this.logger.error(`Tracking failed for AWB ${awb}: ${error.message}`);
             return { error: error.message };
         }
     }

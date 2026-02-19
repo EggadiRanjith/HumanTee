@@ -44,24 +44,12 @@ export class LoginAggregationService {
         // Batch fetch user data (cart + addresses + profile) in parallel
         const [cart, addresses, profile] = await Promise.all([
             this.cartService.getActiveCart(user.id).catch((err) => {
-                this.logger.warn('[LOGIN_AGGREGATION] Cart fetch failed', {
-                    userId: user.id,
-                    error: err.message,
-                });
                 return { items: [] };
             }),
             this.shippingService.findAll(user.id).catch((err) => {
-                this.logger.warn('[LOGIN_AGGREGATION] Address fetch failed', {
-                    userId: user.id,
-                    error: err.message,
-                });
                 return [];
             }),
             this.fetchProfile(user.id).catch((err) => {
-                this.logger.warn('[LOGIN_AGGREGATION] Profile fetch failed', {
-                    userId: user.id,
-                    error: err.message,
-                });
                 return null;
             }),
         ]);

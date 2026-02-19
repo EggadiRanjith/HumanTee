@@ -58,7 +58,6 @@ export class UserAuditService {
             await this.auditLogRepository.save(log);
         } catch (error) {
             // Log error but don't throw - audit logging should never break the main flow
-            console.error('Failed to log user audit action:', error);
         }
     }
 

@@ -25,7 +25,6 @@ export async function POST(request: NextRequest) {
 
         // Only log if we have actual violation data
         if (violation.violatedDirective || violation.blockedUri) {
-            console.error('[CSP Violation]', violation);
 
             // Send to Sentry in production
             if (process.env.NODE_ENV === 'production') {
@@ -41,7 +40,6 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ received: true }, { status: 200 });
     } catch (error) {
-        console.error('Failed to process CSP report:', error);
         return NextResponse.json({ error: 'Invalid report' }, { status: 400 });
     }
 }

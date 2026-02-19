@@ -36,13 +36,11 @@ export function configureRetry(client: AxiosInstance) {
 
             // NEVER retry dangerous endpoints (prevents duplicate payments/orders)
             if (DANGEROUS_ENDPOINTS.some(endpoint => url.includes(endpoint))) {
-                console.warn(`[Retry Guard] Blocked retry for dangerous endpoint: ${url}`);
                 return false;
             }
 
             // Only retry idempotent methods
             if (!method || !IDEMPOTENT_METHODS.includes(method)) {
-                console.warn(`[Retry Guard] Blocked retry for non-idempotent method: ${method}`);
                 return false;
             }
 

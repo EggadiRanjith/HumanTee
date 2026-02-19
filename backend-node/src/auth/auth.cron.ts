@@ -13,12 +13,9 @@ export class AuthCronService {
      */
     @Cron(CronExpression.EVERY_DAY_AT_2AM)
     async handleOtpCleanup() {
-        this.logger.log('Running OTP cleanup cron job...');
         try {
             const count = await this.authService.cleanupExpiredOtps();
-            this.logger.log(`OTP cleanup completed: ${count} records deleted`);
         } catch (error) {
-            this.logger.error(`OTP cleanup failed: ${error.message}`);
         }
     }
 }

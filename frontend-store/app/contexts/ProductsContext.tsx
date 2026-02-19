@@ -30,7 +30,6 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
                 setProducts(adaptedProducts);
             } catch (err: any) {
                 setError(err.message);
-                console.error('Failed to load products:', err);
             } finally {
                 setLoading(false);
             }

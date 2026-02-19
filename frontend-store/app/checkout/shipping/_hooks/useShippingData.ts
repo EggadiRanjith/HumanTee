@@ -82,7 +82,6 @@ export function useShippingData(userId?: string) {
                     setAddresses([parsed]);
                     setSelectedAddressId(parsed.id);
                 } catch (e) {
-                    console.error('Failed to parse guest address', e);
                 }
             }
         }
@@ -198,12 +197,6 @@ export function useShippingData(userId?: string) {
             setShowAddressModal(false);
             return true;
         } catch (error: any) {
-            console.error('❌ Save Address Error:', {
-                message: error.message,
-                response: error.response?.data,
-                status: error.response?.status,
-                fullError: error
-            });
             setAddressError(
                 error.response?.data?.message || `Failed to ${isEditing ? 'update' : 'save'} address`
             );

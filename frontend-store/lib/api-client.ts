@@ -75,12 +75,9 @@ configureRetry(apiClient);
 apiClient.interceptors.request.use(
     (config) => {
         const token = getAccessToken();
-        console.log('🔑 API Request:', config.url, 'Token exists:', !!token);
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
-            console.log('✅ Authorization header added');
         } else {
-            console.warn('⚠️ No access token available!');
         }
         return config;
     },

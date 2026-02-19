@@ -20,11 +20,9 @@ export class EmailService {
           pass: process.env.SMTP_PASSWORD,
         },
       });
-      this.logger.log('✅ SMTP transport initialized (fallback)');
     }
 
     if (this.canUseBrevo()) {
-      this.logger.log('✅ Brevo API available (primary)');
     }
   }
 
@@ -102,8 +100,6 @@ ${addr.country || 'India'}`.trim();
       subject: `Order Confirmation - #${orderNumber}`,
       html,
     });
-
-    this.logger.log(`📧 Order confirmation sent to ${email} for order ${order.id || orderNumber}`);
   }
 
   async sendAdminOrderNotification(order: any, customerEmail: string, customerName: string): Promise<void> {
@@ -147,8 +143,6 @@ ${addr.country || 'India'}`.trim();
       subject: `🛒 New Order #${orderNumber} - ₹${totalAmount.toLocaleString()}`,
       html,
     });
-
-    this.logger.log(`📧 Admin notification sent to ${adminEmail} for order ${order.id || orderNumber}`);
   }
 
   async sendAdminTicketNotification(ticket: any, customerName: string, customerEmail: string, orderNumber: string): Promise<void> {
@@ -170,8 +164,6 @@ ${addr.country || 'India'}`.trim();
       subject: `🎫 New Support Ticket #${ticket.ticketNumber} - ${ticket.subject}`,
       html,
     });
-
-    this.logger.log(`📧 Admin ticket notification sent to ${adminEmail} for ticket ${ticket.id}`);
   }
 
   async sendEmail(options: {
@@ -186,7 +178,6 @@ ${addr.country || 'India'}`.trim();
         await this.sendViaBrevo(options);
         return;
       } catch (err) {
-        this.logger.warn('Brevo API failed, trying SMTP fallback...', err.message);
       }
     }
 
@@ -196,13 +187,11 @@ ${addr.country || 'India'}`.trim();
         await this.sendViaSMTP(options);
         return;
       } catch (err) {
-        this.logger.error('SMTP also failed!', err.message);
         throw new Error('All email delivery methods failed');
       }
     }
 
     // No email provider configured
-    this.logger.error('❌ No email provider configured (Brevo or SMTP)');
     throw new Error('Email not configured');
   }
 
@@ -218,8 +207,6 @@ ${addr.country || 'India'}`.trim();
       html: options.html,
       text: options.text,
     });
-
-    this.logger.log(`✅ SMTP email sent to ${options.to}`);
   }
 
   private async sendViaBrevo(options: any) {
@@ -243,7 +230,5 @@ ${addr.country || 'India'}`.trim();
         timeout: 5000,
       },
     );
-
-    this.logger.log(`✅ Brevo API email sent to ${options.to}`);
   }
 }

@@ -53,11 +53,8 @@ export class DelhiveryWebhookController {
         const statusCode = statusObj?.Status || payload?.status;
 
         if (!awb) {
-            this.logger.warn('Delhivery webhook received without AWB — ignoring');
             return { success: false, error: 'Missing AWB' };
         }
-
-        this.logger.log(`Delhivery webhook: AWB ${awb} → ${statusCode}`);
 
         // Find shipment by AWB
         const shipment = await this.shipmentRepository.findOne({
@@ -65,14 +62,12 @@ export class DelhiveryWebhookController {
         });
 
         if (!shipment) {
-            this.logger.warn(`Delhivery webhook: Unknown AWB ${awb} — ignoring`);
             return { success: false, error: 'Unknown AWB' };
         }
 
         // Map Delhivery status to internal ShipmentStatus
         const mappedStatus = this.mapDelhiveryStatus(statusCode);
         if (!mappedStatus) {
-            this.logger.log(`Delhivery webhook: Unmapped status "${statusCode}" for AWB ${awb}`);
             return { success: true, message: 'Status not mapped — no action taken' };
         }
 
@@ -114,8 +109,6 @@ export class DelhiveryWebhookController {
                 }
             }
         });
-
-        this.logger.log(`Shipment ${awb} updated: ${shipment.status} → ${mappedStatus}`);
 
         return { success: true, awb, status: mappedStatus };
     }

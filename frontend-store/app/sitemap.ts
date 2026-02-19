@@ -31,11 +31,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
                 priority: 0.8, // Products are high priority for e-commerce
             }));
         } else {
-            console.warn(`Sitemap: Product API returned ${response.status}`);
         }
     } catch (error) {
         // Log error but don't fail sitemap generation
-        console.error('Failed to fetch products for sitemap:', error);
         // Return static pages only if product fetch fails
     }
 

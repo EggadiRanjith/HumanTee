@@ -426,11 +426,8 @@ export class AdminProductsService {
 
             // Clear shop filter caches (all permutations)
             await this.cacheService.forgetByPattern('shop:*');
-
-            console.log(`✅ Cleared product cache for: ${productSlug}`);
         } catch (error) {
             // Don't fail the operation if cache clearing fails
-            console.error('⚠️  Failed to clear product cache:', error.message);
         }
     }
 }

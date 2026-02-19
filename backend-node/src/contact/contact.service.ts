@@ -42,14 +42,11 @@ export class ContactService {
                 html: confirmationEmailHtml,
             });
 
-            this.logger.log(`Contact form submitted by ${email}`);
-
             return {
                 success: true,
                 message: 'Thank you! Your message has been sent successfully. We\'ll get back to you within 24 hours.',
             };
         } catch (error) {
-            this.logger.error(`Failed to send contact form email: ${error.message}`, error.stack);
             throw new Error('Failed to send message. Please try again later or contact us directly at humanteeteam@gmail.com');
         }
     }

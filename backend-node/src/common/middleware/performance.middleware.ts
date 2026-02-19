@@ -57,13 +57,7 @@ export class PerformanceMiddleware implements NestMiddleware {
 
             // Log if slow or has many queries
             if (metrics.duration > 1000 || metrics.dbQueries! > 5) {
-                console.warn(
-                    `⚠️ SLOW REQUEST: ${metrics.method} ${metrics.path} - ${metrics.duration}ms, ${metrics.dbQueries} DB queries (${metrics.dbQueryTime}ms)`
-                );
             } else {
-                console.log(
-                    `✅ ${metrics.method} ${metrics.path} - ${metrics.duration}ms, ${metrics.dbQueries} DB queries`
-                );
             }
 
             // Clear current request

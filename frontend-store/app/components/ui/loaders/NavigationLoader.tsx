@@ -32,7 +32,6 @@ function NavigationLoaderContent() {
         if (!isLoading) return;
 
         const safetyTimer = setTimeout(() => {
-            console.warn("NavigationLoader: Safety timeout triggered. Resetting loader.");
             setLoading(false);
         }, 8000); // 8 seconds safety net
 

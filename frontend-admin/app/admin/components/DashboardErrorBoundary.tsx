@@ -27,7 +27,6 @@ export class DashboardErrorBoundary extends Component<Props, State> {
     }
 
     componentDidCatch(error: Error, errorInfo: any) {
-        console.error('Dashboard Error:', error, errorInfo);
         // TODO: Send to error tracking service (Sentry, etc.)
     }
 

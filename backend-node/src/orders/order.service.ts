@@ -76,7 +76,6 @@ export class OrderService {
                 const cacheKey = `shipping_rate:${postalCode}:${totalWeightGrams}`;
                 const cachedRate = await this.redisService?.get<number>(cacheKey);
                 if (cachedRate !== null && cachedRate !== undefined) {
-                    this.logger.log(`Shipping rate (cached): ${postalCode} / ${totalWeightGrams}g = ₹${cachedRate}`);
                     return cachedRate;
                 }
 
@@ -91,7 +90,6 @@ export class OrderService {
                     return delhiveryRate;
                 }
             } catch (error) {
-                this.logger.warn(`Delhivery rate failed, falling back to zone table: ${error.message}`);
             }
         }
 
@@ -101,7 +99,6 @@ export class OrderService {
             const zones = shippingSettings?.zones || [];
 
             if (!zones || zones.length === 0) {
-                this.logger.warn('No shipping zones configured, defaulting to ₹0');
                 return 0;
             }
 
@@ -112,7 +109,6 @@ export class OrderService {
             });
 
             if (!matchedZone) {
-                this.logger.warn(`No shipping zone found for pincode ${postalCode}, defaulting to ₹0`);
                 return 0;
             }
 
@@ -121,10 +117,8 @@ export class OrderService {
                 cartTotal >= matchedZone.freeShippingThreshold;
 
             const cost = isFree ? 0 : (matchedZone.rate || 0);
-            this.logger.log(`Shipping for ${postalCode}: ₹${cost} (zone: ${matchedZone.name}, free: ${isFree})`);
             return cost;
         } catch (error) {
-            this.logger.error(`Error calculating shipping: ${error.message}`, error.stack);
             return 0; // Graceful fallback to free shipping on error
 
         }
@@ -178,12 +172,10 @@ export class OrderService {
             try {
                 const cached = await this.redisService?.get(cacheKey);
                 if (cached) {
-                    this.logger.warn(`Idempotent request detected: ${orderData.idempotencyKey}`);
                     return cached; // Redis auto-deserializes JSON
                 }
             } catch (err) {
                 // Redis unavailable - continue without idempotency (graceful degradation)
-                this.logger.warn('Redis unavailable for idempotency check');
             }
         }
 
@@ -250,12 +242,9 @@ export class OrderService {
                     const discountAmount = discount.type === 'PERCENT'
                         ? Math.round((subtotal * discount.value) / 100)
                         : Math.min(discount.value, subtotal);
-
-                    this.logger.log(`Discount "${orderData.discountCode}" applied: ₹${discountAmount}`);
                     return { discountAmount, discountId: discount.id };
                 }).catch(err => {
                     // If discount invalid/expired, proceed without it (graceful degradation)
-                    this.logger.warn(`Discount validation failed: ${err.message}`);
                     return { discountAmount: 0, discountId: null };
                 })
                 : Promise.resolve({ discountAmount: 0, discountId: null }),
@@ -307,11 +296,8 @@ export class OrderService {
                 // This allows webhook to find order data if frontend fails after payment
                 const reverseCacheKey = `order:razorpay:${razorpayOrderId}`;
                 await this.redisService?.set(reverseCacheKey, response, 1800);
-
-                this.logger.log(`✅ Prepared order cached with keys: ${cacheKey} and ${reverseCacheKey}`);
             } catch (err) {
                 // Non-critical if cache fails
-                this.logger.warn('Failed to cache prepared order');
             }
         }
 
@@ -341,7 +327,6 @@ export class OrderService {
             }
         } else {
             // Signature not provided - assuming this is called from webhook
-            this.logger.log('⚠️  Signature verification skipped (webhook call)');
         }
 
         // 2. Now save order to database in transaction
@@ -932,8 +917,6 @@ export class OrderService {
         });
         await this.dataSource.getRepository(OrderStatusHistory).save(statusHistory);
 
-        this.logger.log(`Order ${order.orderNumber} refunded by ${refundData.adminEmail}`);
-
         return {
             orderId: order.id,
             orderNumber: order.orderNumber,
@@ -968,13 +951,11 @@ export class OrderService {
         if (this.redisService) {
             const cached = await this.redisService.get<any>(cacheKey);
             if (cached) {
-                this.logger.debug('✅ Dashboard stats served from Redis cache');
                 return cached;
             }
         }
 
         // Cache miss - calculate from database
-        this.logger.debug('🔍 Cache miss - calculating dashboard stats from DB');
 
         // Use SQL COUNT queries - much faster than fetching all rows
         const [
@@ -1032,7 +1013,6 @@ export class OrderService {
         // Store in Redis cache for 5 minutes (300 seconds)
         if (this.redisService) {
             await this.redisService.set(cacheKey, stats, 300);
-            this.logger.debug('💾 Dashboard stats cached in Redis (5min TTL)');
         }
 
         return stats;
@@ -1050,13 +1030,11 @@ export class OrderService {
         if (this.redisService) {
             const cached = await this.redisService.get<Order[]>(cacheKey);
             if (cached) {
-                this.logger.debug(`✅ Recent orders (${limit}) served from Redis cache`);
                 return cached;
             }
         }
 
         // Cache miss - fetch from database
-        this.logger.debug(`🔍 Cache miss - fetching recent orders (${limit}) from DB`);
 
         const orders = await this.orderRepository.find({
             relations: ['address', 'payments', 'items'],
@@ -1067,7 +1045,6 @@ export class OrderService {
         // Store in Redis cache for 2 minutes (120 seconds)
         if (this.redisService) {
             await this.redisService.set(cacheKey, orders, 120);
-            this.logger.debug(`💾 Recent orders cached in Redis (2min TTL)`);
         }
 
         return orders;
@@ -1090,10 +1067,7 @@ export class OrderService {
                 this.redisService.del('dashboard:recent-orders:5'),
                 this.redisService.del('dashboard:recent-orders:10'),
             ]);
-
-            this.logger.debug('🗑️  Dashboard cache invalidated');
         } catch (error) {
-            this.logger.warn('Failed to invalidate dashboard cache:', error);
             // Graceful degradation - cache will expire naturally
         }
     }

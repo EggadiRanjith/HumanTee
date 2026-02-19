@@ -38,12 +38,10 @@ export class CacheService {
         // Try cache first
         const cached = await this.redis.get<T>(cacheKey);
         if (cached !== null) {
-            this.logger.debug(`✅ Cache HIT: ${cacheKey}`);
             return cached;
         }
 
         // Cache miss - fetch from source
-        this.logger.debug(`❌ Cache MISS: ${cacheKey}`);
         const value = await factory();
 
         // Store in cache
@@ -58,7 +56,6 @@ export class CacheService {
     async forget(key: string, prefix?: string): Promise<void> {
         const cacheKey = this.buildKey(key, prefix);
         await this.redis.del(cacheKey);
-        this.logger.debug(`🗑️  Cache INVALIDATED: ${cacheKey}`);
     }
 
     /**
@@ -70,7 +67,6 @@ export class CacheService {
         const keys = await this.redis.scanKeys(pattern);
         if (keys.length > 0) {
             await this.redis.del(...keys);
-            this.logger.debug(`🗑️  Cache INVALIDATED: ${keys.length} keys matching ${pattern}`);
         }
     }
 
@@ -87,7 +83,6 @@ export class CacheService {
 
     async invalidateProduct(productId: string): Promise<void> {
         await this.redis.del(`product:${productId}`);
-        this.logger.log(`Product ${productId} cache invalidated`);
     }
 
     /**
@@ -103,7 +98,6 @@ export class CacheService {
 
     async invalidateUserSession(userId: string): Promise<void> {
         await this.redis.del(`session:${userId}`);
-        this.logger.log(`User ${userId} session invalidated`);
     }
 
     /**

@@ -88,7 +88,6 @@ export function usePincodeLookup(
         } catch (err: any) {
             if (err.name !== 'AbortError') {
                 // Silently fail — user can type manually
-                console.warn('Pincode lookup failed:', err.message);
             }
         } finally {
             setIsLooking(false);

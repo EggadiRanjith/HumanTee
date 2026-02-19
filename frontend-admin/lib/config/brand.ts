@@ -19,7 +19,6 @@ export async function getBrandName(): Promise<string> {
         const data = await response.json();
         return data?.brand_name || BRAND_FALLBACK;
     } catch (error) {
-        console.warn('Failed to fetch brand name, using fallback:', error);
         return BRAND_FALLBACK;
     }
 }

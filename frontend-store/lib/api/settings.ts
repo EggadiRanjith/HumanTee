@@ -26,7 +26,6 @@ export const settingsApi = {
             });
 
             if (!response.ok) {
-                console.warn('Settings API failed, using fallback configuration');
                 return fallbackSettings as unknown as AppSettings;
             }
 
@@ -39,11 +38,9 @@ export const settingsApi = {
                     ...result.data,
                 } as unknown as AppSettings;
             } else {
-                console.warn('Settings API returned error, using fallback configuration');
                 return fallbackSettings as unknown as AppSettings;
             }
         } catch (error) {
-            console.error('Settings API error, using fallback configuration:', error);
             return fallbackSettings as unknown as AppSettings; // Return fallback on error
         }
     }

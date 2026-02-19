@@ -40,7 +40,6 @@ export class LoginAuditService {
             await this.loginAuditRepository.save(log);
         } catch (error) {
             // Log error but don't throw - audit logging should never break the main flow
-            console.error('Failed to log login audit:', error);
         }
     }
 

@@ -21,23 +21,18 @@ export class RedisService implements OnModuleDestroy {
 
     private setupEventHandlers() {
         this.redis.on('connect', () => {
-            this.logger.log('✅ Redis connected');
         });
 
         this.redis.on('ready', () => {
-            this.logger.log('✅ Redis ready');
         });
 
         this.redis.on('error', (err) => {
-            this.logger.error(`❌ Redis error: ${err.message}`);
         });
 
         this.redis.on('close', () => {
-            this.logger.warn('⚠️  Redis connection closed');
         });
 
         this.redis.on('reconnecting', () => {
-            this.logger.log('🔄 Redis reconnecting...');
         });
     }
 
@@ -55,7 +50,6 @@ export class RedisService implements OnModuleDestroy {
                 return value as any;
             }
         } catch (error) {
-            this.logger.error(`Failed to get key ${key}:`, error);
             return null;
         }
     }
@@ -73,7 +67,6 @@ export class RedisService implements OnModuleDestroy {
                 await this.redis.set(key, serialized);
             }
         } catch (error) {
-            this.logger.warn(`Redis unavailable, skipping cache set: ${key}`);
             // Graceful degradation - don't throw, app continues without cache
         }
     }
@@ -85,7 +78,6 @@ export class RedisService implements OnModuleDestroy {
         try {
             return await this.redis.del(...keys);
         } catch (error) {
-            this.logger.warn(`Redis unavailable, skipping cache delete: ${keys.join(', ')}`);
             // Graceful degradation - return 0 (no keys deleted)
             return 0;
         }
@@ -98,7 +90,6 @@ export class RedisService implements OnModuleDestroy {
         try {
             return (await this.redis.exists(key)) === 1;
         } catch (error) {
-            this.logger.error(`Failed to check existence of key ${key}:`, error);
             return false;
         }
     }
@@ -179,6 +170,5 @@ export class RedisService implements OnModuleDestroy {
 
     async onModuleDestroy() {
         await this.redis.quit();
-        this.logger.log('Redis connection closed gracefully');
     }
 }

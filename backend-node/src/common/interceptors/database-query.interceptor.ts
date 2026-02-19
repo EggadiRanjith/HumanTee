@@ -56,7 +56,5 @@ export class DatabaseQueryInterceptor implements OnModuleInit {
                 throw error;
             }
         };
-
-        this.logger.log('✅ Database query interceptor enabled');
     }
 }

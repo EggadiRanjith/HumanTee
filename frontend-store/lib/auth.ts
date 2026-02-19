@@ -9,7 +9,6 @@ export async function logout(): Promise<void> {
     try {
         await apiClient.post('/auth/logout');
     } catch (error) {
-        console.error('Logout failed:', error);
     }
 }
 
@@ -47,7 +46,6 @@ export async function getServerUser(): Promise<User | null> {
         const user = await response.json();
         return user;
     } catch (error) {
-        console.error('Failed to get server user:', error);
         return null;
     }
 }

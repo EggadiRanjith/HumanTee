@@ -19,7 +19,6 @@ export class RazorpayService {
 
         // Gracefully handle missing credentials
         if (!keyId || !keySecret) {
-            this.logger.warn('⚠️  Razorpay credentials not configured. Payment features will be unavailable.');
             this.isConfigured = false;
             this.razorpay = null;
             this.webhookSecret = '';
@@ -61,7 +60,6 @@ export class RazorpayService {
      */
     verifyWebhookSignature(rawBody: string, signature: string): boolean {
         if (!this.isConfigured || !this.webhookSecret) {
-            this.logger.warn('⚠️  Razorpay webhook secret not configured. Signature verification skipped.');
             return false;
         }
 

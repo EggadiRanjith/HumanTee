@@ -83,7 +83,6 @@ export class TicketsService {
 
             // Send admin notification email (async, don't block response)
             this.sendAdminNotification(savedTicket).catch(err => {
-                console.error('Failed to send admin ticket notification:', err.message);
             });
 
             return savedTicket;
@@ -351,11 +350,8 @@ export class TicketsService {
 
             // Clear user's ticket list cache
             await this.cacheService.forget(`tickets:user:${userId}`);
-
-            console.log(`✅ Cleared ticket cache for: ${ticketId}`);
         } catch (error) {
             // Don't fail the operation if cache clearing fails
-            console.error('⚠️  Failed to clear ticket cache:', error.message);
         }
     }
 
@@ -381,7 +377,6 @@ export class TicketsService {
             });
 
             if (!order) {
-                console.error('Order not found for ticket notification');
                 return;
             }
 
@@ -397,7 +392,6 @@ export class TicketsService {
             );
         } catch (error) {
             // Log but don't throw - ticket creation should succeed even if email fails
-            console.error('Failed to send admin ticket notification:', error.message);
         }
     }
 

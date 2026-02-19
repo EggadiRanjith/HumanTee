@@ -34,7 +34,6 @@ export class TokenBlacklistService {
             this.tokenBlacklist.set(token, decoded.exp * 1000);
         } catch (error) {
             // Log error but don't throw - revocation failure shouldn't break logout
-            console.error('Token revocation failed:', error);
         }
     }
 

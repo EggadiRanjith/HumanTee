@@ -71,7 +71,6 @@ export class AuthService {
                         payload.picture = profileData.picture;
                     }
                 } catch (err) {
-                    this.logger.warn('Failed to fetch additional profile info from Google', err);
                 }
             }
 
@@ -96,7 +95,6 @@ export class AuthService {
             if (oauthAccount) {
                 // Case A — Existing OAuth account
                 authUser = oauthAccount.user;
-                this.logger.log(`✅ GOOGLE LOGIN - Existing user: ${email} | Role: ${authUser.role} | ID: ${authUser.id}`);
             } else {
                 // Check if user exists with this email
                 const existingUser = await this.authUserRepository.findOne({
@@ -106,7 +104,6 @@ export class AuthService {
                 if (existingUser) {
                     // Case B — Existing email, OAuth not linked
                     authUser = existingUser;
-                    this.logger.log(`✅ GOOGLE LOGIN - Linking Google to existing user: ${email} | Role: ${authUser.role} | ID: ${authUser.id}`);
 
                     // Create OAuth account link
                     oauthAccount = this.oauthAccountRepository.create({
@@ -125,7 +122,6 @@ export class AuthService {
                         role: 'USER',
                     });
                     await this.authUserRepository.save(authUser);
-                    this.logger.log(`🆕 GOOGLE LOGIN - New user created: ${email} | Role: ${authUser.role} | ID: ${authUser.id}`);
 
                     // Create user profile
                     const userProfile = this.userProfileRepository.create({
@@ -147,7 +143,6 @@ export class AuthService {
                     // Send welcome email (async, don't wait)
                     this.emailService.sendWelcomeEmail(email, payload.name).catch(err => {
                         // Log but don't fail login
-                        this.logger.error('Welcome email failed:', err);
                     });
                 }
             }
@@ -477,7 +472,6 @@ export class AuthService {
 
             if (recentOtp) {
                 // Silently accept but don't resend (protects Gmail account)
-                this.logger.log(`OTP resend blocked (cool-down): ${normalizedEmail.substring(0, 3)}***`);
                 return { message: 'If the email exists, an OTP has been sent.' };
             }
 
@@ -509,7 +503,6 @@ export class AuthService {
 
 
         } catch (error) {
-            this.logger.error(`Send OTP failed: ${error.message}`);
             // Don't reveal error details
         }
 
@@ -586,7 +579,6 @@ export class AuthService {
                     role: 'USER',
                 });
                 await queryRunner.manager.save(authUser);
-                this.logger.log(`🆕 EMAIL OTP LOGIN - New user created: ${normalizedEmail} | Role: ${authUser.role} | ID: ${authUser.id}`);
 
                 // Create profile with email username as default
                 const userProfile = this.userProfileRepository.create({
@@ -597,10 +589,8 @@ export class AuthService {
 
                 // Send welcome email (async, don't wait) - no name for OTP users
                 this.emailService.sendWelcomeEmail(normalizedEmail).catch(err => {
-                    this.logger.error('Welcome email failed:', err);
                 });
             } else {
-                this.logger.log(`✅ EMAIL OTP LOGIN - Existing user: ${normalizedEmail} | Role: ${authUser.role} | ID: ${authUser.id}`);
             }
             // Existing users: Allow login regardless of original auth_provider
             // This ensures Google users can also login with OTP and vice versa

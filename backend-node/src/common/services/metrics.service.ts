@@ -145,6 +145,5 @@ export class MetricsService {
             webhooks: { total: 0, replays: 0 },
             performance: { avgResponseTime: 0, p95ResponseTime: 0, requests: [] },
         };
-        this.logger.log('Metrics reset');
     }
 }

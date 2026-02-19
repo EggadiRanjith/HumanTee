@@ -25,7 +25,6 @@ import { SessionService } from './session.service';
 
                 // DEVELOPMENT: Skip Redis connection if explicitly disabled
                 if (skipConnection) {
-                    console.log('⚠️  Redis: SKIP_CONNECTION enabled - using minimal config (graceful degradation)');
                     return {
                         type: 'single',
                         options: {

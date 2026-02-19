@@ -42,8 +42,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                console.warn('🔍 Auth check starting...');
-                console.warn('Cookies:', document.cookie);
 
                 // Try to refresh session using httpOnly cookie
                 const response = await apiClient.post('/auth/refresh', {}, {
@@ -51,16 +49,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     validateStatus: (status) => status < 500,
                 });
 
-                console.warn('🔍 Refresh response:', {
-                    status: response.status,
-                    hasData: !!response.data,
-                    data: response.data,
-                });
-
                 // Only set user if refresh was successful (200 or 201)
                 // Backend may return 201 Created instead of 200 OK
                 if ((response.status === 200 || response.status === 201) && response.data) {
-                    console.warn('✅ Session restored successfully');
 
                     // Use the existing login function to ensure complete state hydration
                     // (Profile, Cart, Addresses, Sentry, Tab sync)
@@ -72,7 +63,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         response.data.profile
                     );
                 } else {
-                    console.warn('❌ Refresh failed - status:', response.status);
 
                     // TOKEN EXPIRY: Clear auth state but PRESERVE cache
                     // This implements stale-while-revalidate pattern:
@@ -90,7 +80,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     // This prevents empty UI states when token expires
                 }
             } catch (error) {
-                console.error('❌ Auth check error:', error);
 
                 // NETWORK ERROR: Same as token expiry - preserve cache
                 setUser(null);

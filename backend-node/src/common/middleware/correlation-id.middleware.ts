@@ -21,15 +21,6 @@ export class CorrelationIdMiddleware implements NestMiddleware {
         res.setHeader('x-correlation-id', correlationId);
 
         // Log request start
-        this.logger.log({
-            event: 'request_start',
-            correlationId,
-            method: req.method,
-            path: req.path,
-            ip: req.ip,
-            userAgent: req.headers['user-agent'],
-            timestamp: new Date().toISOString(),
-        });
 
         // Measure response time
         const startTime = Date.now();
@@ -37,16 +28,6 @@ export class CorrelationIdMiddleware implements NestMiddleware {
         // Log response on finish
         res.on('finish', () => {
             const duration = Date.now() - startTime;
-
-            this.logger.log({
-                event: 'request_complete',
-                correlationId,
-                method: req.method,
-                path: req.path,
-                statusCode: res.statusCode,
-                duration: `${duration}ms`,
-                timestamp: new Date().toISOString(),
-            });
         });
 
         next();

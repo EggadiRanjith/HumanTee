@@ -166,12 +166,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // CRITICAL FIX: Check cache first (eliminates 12→1 calls)
       const now = Date.now();
       if (cartCache && (now - cartCache.ts) < CART_CACHE_TTL) {
-        console.log('✅ Cart cache HIT - skipping API call');
         setItems(cartCache.data);
         return;
       }
-
-      console.log('❌ Cart cache MISS - fetching from API');
 
       // NEW: Use aggregated endpoint that returns cart + suggestions
       // Even if we don't use suggestions yet, this reduces backend load
@@ -212,7 +209,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         // If quota exceeded, clear old cart and try again
         if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-          console.warn('localStorage quota exceeded, clearing cart');
           localStorage.removeItem("humantee-cart");
         }
       }

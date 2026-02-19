@@ -8,9 +8,7 @@
 export const logError = (error: unknown, context?: string) => {
     if (process.env.NODE_ENV === 'development') {
         if (context) {
-            console.error(`[${context}]`, error);
         } else {
-            console.error(error);
         }
     }
 
@@ -23,9 +21,7 @@ export const logError = (error: unknown, context?: string) => {
 export const logWarning = (message: string, context?: string) => {
     if (process.env.NODE_ENV === 'development') {
         if (context) {
-            console.warn(`[${context}]`, message);
         } else {
-            console.warn(message);
         }
     }
 };
