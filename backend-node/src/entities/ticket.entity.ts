@@ -102,6 +102,9 @@ export class Ticket {
     @Column({ type: 'timestamp', nullable: true, name: 'closed_at' })
     closedAt: Date | null;
 
+    @Column({ type: 'timestamp', nullable: true, name: 'first_viewed_at' })
+    firstViewedAt: Date | null;
+
     // Relations
     @OneToMany(() => TicketMessage, (message) => message.ticket, { cascade: true })
     messages: TicketMessage[];

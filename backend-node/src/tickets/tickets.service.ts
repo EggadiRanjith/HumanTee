@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, Like } from 'typeorm';
-import { Ticket, TicketMessage, TicketStatusHistory, TicketStatus } from '../entities';
+import { Repository, In, Like, IsNull } from 'typeorm';
+import { Ticket, TicketMessage, TicketStatusHistory, TicketStatus, Order } from '../entities';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { AddMessageDto } from './dto/add-message.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { CacheService } from '../redis/cache.service';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class TicketsService {
@@ -16,7 +17,10 @@ export class TicketsService {
         private messageRepository: Repository<TicketMessage>,
         @InjectRepository(TicketStatusHistory)
         private statusHistoryRepository: Repository<TicketStatusHistory>,
+        @InjectRepository(Order)
+        private orderRepository: Repository<Order>,
         private readonly cacheService: CacheService,
+        private readonly emailService: EmailService,
     ) { }
 
     /**
@@ -77,6 +81,11 @@ export class TicketsService {
                 note: 'Ticket created',
             });
 
+            // Send admin notification email (async, don't block response)
+            this.sendAdminNotification(savedTicket).catch(err => {
+                console.error('Failed to send admin ticket notification:', err.message);
+            });
+
             return savedTicket;
         } catch (error) {
             // Handle unique constraint violation (duplicate active ticket)
@@ -105,7 +114,7 @@ export class TicketsService {
      */
     async getTicketDetail(
         ticketId: string,
-        userId: string,
+        userId: string | null,
         page: number = 1,
         limit: number = 20
     ): Promise<{
@@ -119,13 +128,25 @@ export class TicketsService {
         };
     }> {
         // Fetch ticket without messages first
+        // userId can be null for admin access
+        const whereClause: any = { id: ticketId };
+        if (userId !== null) {
+            whereClause.userId = userId;
+        }
+
         const ticket = await this.ticketRepository.findOne({
-            where: { id: ticketId, userId },
+            where: whereClause,
             relations: ['user', 'user.profile', 'statusHistory', 'statusHistory.changedByUser', 'order'],
         });
 
         if (!ticket) {
             throw new NotFoundException('Ticket not found');
+        }
+
+        // Mark as viewed if admin is viewing (userId is null)
+        if (userId === null && ticket.firstViewedAt === null) {
+            await this.markTicketAsViewed(ticketId);
+            ticket.firstViewedAt = new Date(); // Update local object
         }
 
         // Fetch messages separately with pagination
@@ -336,5 +357,59 @@ export class TicketsService {
             // Don't fail the operation if cache clearing fails
             console.error('⚠️  Failed to clear ticket cache:', error.message);
         }
+    }
+
+    /**
+     * Mark ticket as viewed by admin (set first_viewed_at timestamp)
+     */
+    private async markTicketAsViewed(ticketId: string): Promise<void> {
+        await this.ticketRepository.update(
+            { id: ticketId, firstViewedAt: IsNull() },
+            { firstViewedAt: new Date() }
+        );
+    }
+
+    /**
+     * Send admin notification email when ticket is created
+     */
+    private async sendAdminNotification(ticket: Ticket): Promise<void> {
+        try {
+            // Fetch order and user details for email
+            const order = await this.orderRepository.findOne({
+                where: { id: ticket.orderId },
+                relations: ['user', 'user.profile']
+            });
+
+            if (!order) {
+                console.error('Order not found for ticket notification');
+                return;
+            }
+
+            const customerName = order.user?.profile?.full_name || 'Customer';
+            const customerEmail = order.user?.email || 'unknown@email.com';
+            const orderNumber = order.orderNumber || ticket.orderId.substring(0, 8).toUpperCase();
+
+            await this.emailService.sendAdminTicketNotification(
+                ticket,
+                customerName,
+                customerEmail,
+                orderNumber
+            );
+        } catch (error) {
+            // Log but don't throw - ticket creation should succeed even if email fails
+            console.error('Failed to send admin ticket notification:', error.message);
+        }
+    }
+
+    /**
+     * Get count of unviewed tickets (for dashboard)
+     */
+    async getUnviewedTicketsCount(): Promise<number> {
+        return this.ticketRepository.count({
+            where: {
+                firstViewedAt: IsNull(),
+                status: In([TicketStatus.OPEN, TicketStatus.IN_PROGRESS, TicketStatus.WAITING_ON_CUSTOMER])
+            }
+        });
     }
 }

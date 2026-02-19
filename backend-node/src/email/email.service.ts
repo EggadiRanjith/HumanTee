@@ -106,6 +106,74 @@ ${addr.country || 'India'}`.trim();
     this.logger.log(`📧 Order confirmation sent to ${email} for order ${order.id || orderNumber}`);
   }
 
+  async sendAdminOrderNotification(order: any, customerEmail: string, customerName: string): Promise<void> {
+    const orderNumber = order.orderNumber || order.id.substring(0, 8).toUpperCase();
+    const totalAmount = parseFloat(order.totalAmount || 0);
+
+    // Build shipping address string
+    const addr = order.address || order.shippingAddress || {};
+    const shippingAddress = `${addr.fullName || customerName}
+${addr.addressLine1 || addr.address || ''}${addr.addressLine2 ? '\n' + addr.addressLine2 : ''}${addr.landmark ? '\n' + addr.landmark : ''}
+${addr.city || ''}, ${addr.state || ''} ${addr.postalCode || ''}
+${addr.country || 'India'}`.trim();
+
+    // Map order items (without images for admin email)
+    const orderItems = order.items || order.orderItems || [];
+    const items = orderItems.map((item: any) => ({
+      name: `${item.productNameSnapshot || item.productName || 'Product'}${item.variantLabelSnapshot ? ' - ' + item.variantLabelSnapshot : ''}`,
+      quantity: item.quantity || 1,
+      price: parseFloat(item.unitPrice || item.price || 0),
+    }));
+
+    const subtotal = parseFloat(order.subtotal || items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0));
+    const shipping = parseFloat(order.shippingAmount || 0);
+
+    const html = this.emailTemplateService.generateAdminOrderNotification(
+      order.id,
+      orderNumber,
+      customerName,
+      customerEmail,
+      items,
+      subtotal,
+      shipping,
+      totalAmount,
+      shippingAddress
+    );
+
+    const adminEmail = process.env.ADMIN_EMAIL || 'humanteeteam@gmail.com';
+
+    await this.sendEmail({
+      to: adminEmail,
+      subject: `🛒 New Order #${orderNumber} - ₹${totalAmount.toLocaleString()}`,
+      html,
+    });
+
+    this.logger.log(`📧 Admin notification sent to ${adminEmail} for order ${order.id || orderNumber}`);
+  }
+
+  async sendAdminTicketNotification(ticket: any, customerName: string, customerEmail: string, orderNumber: string): Promise<void> {
+    const html = this.emailTemplateService.generateAdminTicketNotification(
+      ticket.id,
+      ticket.ticketNumber,
+      ticket.category,
+      ticket.subject,
+      ticket.description,
+      customerName,
+      customerEmail,
+      orderNumber
+    );
+
+    const adminEmail = process.env.ADMIN_EMAIL || 'humanteeteam@gmail.com';
+
+    await this.sendEmail({
+      to: adminEmail,
+      subject: `🎫 New Support Ticket #${ticket.ticketNumber} - ${ticket.subject}`,
+      html,
+    });
+
+    this.logger.log(`📧 Admin ticket notification sent to ${adminEmail} for ticket ${ticket.id}`);
+  }
+
   async sendEmail(options: {
     to: string;
     subject: string;

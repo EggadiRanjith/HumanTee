@@ -354,4 +354,132 @@ export class EmailTemplateService {
             ctaUrl: `mailto:${this.escapeHtml(email)}?subject=Re: ${encodeURIComponent(subject)}`
         });
     }
+
+    generateAdminOrderNotification(
+        orderId: string,
+        orderNumber: string,
+        customerName: string,
+        customerEmail: string,
+        items: Array<{ name: string; quantity: number; price: number }>,
+        subtotal: number,
+        shipping: number,
+        total: number,
+        shippingAddress: string,
+    ): string {
+        const itemsHtml = items.map(item => `
+            <tr class="item-row">
+                <td style="padding: 16px 0; border-bottom: 1px solid ${this.LIGHT_BORDER};">
+                    <div style="color: ${this.LIGHT_TEXT}; font-weight: 600; font-size: 14px;">${this.escapeHtml(item.name)}</div>
+                    <div style="color: ${this.LIGHT_MUTED}; font-size: 13px; margin-top: 2px;">Qty: ${item.quantity}</div>
+                </td>
+                <td style="padding: 16px 0; border-bottom: 1px solid ${this.LIGHT_BORDER}; text-align: right; color: ${this.LIGHT_TEXT}; font-weight: 700; font-size: 14px;">
+                    ₹${item.price.toLocaleString()}
+                </td>
+            </tr>
+        `).join('');
+
+        return this.generateEmail({
+            title: '🛒 New Order Received!',
+            preheader: `Order #${orderNumber} from ${customerName} - ₹${total.toLocaleString()}`,
+            content: `
+                <div class="card" style="background: ${this.ACCENT_GRADIENT}; padding: 24px; border-radius: 16px; margin: 32px 0; text-align: center;">
+                    <div style="color: #FFFFFF; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9;">New Order</div>
+                    <div style="color: #FFFFFF; font-size: 28px; font-weight: 800; margin-top: 8px;">#${this.escapeHtml(orderNumber)}</div>
+                    <div style="color: #FFFFFF; font-size: 20px; font-weight: 700; margin-top: 12px;">₹${total.toLocaleString()}</div>
+                </div>
+
+                <h3>Customer Information</h3>
+                <div class="card" style="background-color: #F9FAFB; border: 1px solid ${this.LIGHT_BORDER}; border-radius: 16px; padding: 20px; margin-bottom: 24px;">
+                    <div style="margin-bottom: 8px;"><strong style="color: ${this.LIGHT_TEXT};">Name:</strong> ${this.escapeHtml(customerName)}</div>
+                    <div style="margin-bottom: 8px;"><strong style="color: ${this.LIGHT_TEXT};">Email:</strong> ${this.escapeHtml(customerEmail)}</div>
+                    <div><strong style="color: ${this.LIGHT_TEXT};">Order ID:</strong> <code style="background-color: #E5E7EB; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${this.escapeHtml(orderId)}</code></div>
+                </div>
+
+                <h3>Order Items</h3>
+                <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                    ${itemsHtml}
+                    <tr>
+                        <td style="padding: 16px 0 8px; color: ${this.LIGHT_MUTED}; font-size: 14px;">Subtotal</td>
+                        <td style="padding: 16px 0 8px; text-align: right; color: ${this.LIGHT_TEXT}; font-size: 14px; font-weight: 600;">₹${subtotal.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; color: ${this.LIGHT_MUTED}; font-size: 14px;">Shipping</td>
+                        <td style="padding: 8px 0; text-align: right; color: ${this.LIGHT_TEXT}; font-size: 14px; font-weight: 600;">₹${shipping.toLocaleString()}</td>
+                    </tr>
+                    <tr class="divider">
+                        <td style="padding: 20px 0; color: ${this.LIGHT_TEXT}; font-size: 18px; font-weight: 800; border-top: 2px solid ${this.LIGHT_TEXT};">Total Paid</td>
+                        <td style="padding: 20px 0; text-align: right; color: ${this.LIGHT_TEXT}; font-size: 22px; font-weight: 800; border-top: 2px solid ${this.LIGHT_TEXT};">₹${total.toLocaleString()}</td>
+                    </tr>
+                </table>
+
+                <h3>Shipping Address</h3>
+                <div class="card" style="background-color: #F9FAFB; border: 1px solid ${this.LIGHT_BORDER}; border-radius: 16px; padding: 20px; color: ${this.LIGHT_MUTED}; font-size: 14px; line-height: 1.6;">
+                    ${this.escapeHtml(shippingAddress).replace(/\n/g, '<br/>')}
+                </div>
+
+                <p style="margin-top: 32px; color: ${this.LIGHT_MUTED}; font-size: 14px;"><strong>Action Required:</strong> Process this order and update the status in the admin dashboard.</p>
+            `,
+            ctaText: 'View in Admin Dashboard',
+            ctaUrl: `https://admin.humantee.in/orders/${orderId}`,
+            footerText: 'Payment has been confirmed via Razorpay.'
+        });
+    }
+
+    generateAdminTicketNotification(
+        ticketId: string,
+        ticketNumber: string,
+        category: string,
+        subject: string,
+        description: string,
+        customerName: string,
+        customerEmail: string,
+        orderNumber: string,
+    ): string {
+        const categoryLabels: Record<string, string> = {
+            wrong_item: 'Wrong Item Received',
+            damaged_product: 'Damaged Product',
+            late_delivery: 'Late Delivery',
+            missing_items: 'Missing Items',
+            quality_issue: 'Quality Issue',
+            other: 'Other Issue',
+        };
+
+        const categoryLabel = categoryLabels[category] || category;
+
+        return this.generateEmail({
+            title: '🎫 New Support Ticket',
+            preheader: `${ticketNumber}: ${subject}`,
+            content: `
+                <div class="card" style="background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); padding: 24px; border-radius: 16px; margin: 32px 0; text-align: center;">
+                    <div style="color: #FFFFFF; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9;">New Support Ticket</div>
+                    <div style="color: #FFFFFF; font-size: 28px; font-weight: 800; margin-top: 8px;">${this.escapeHtml(ticketNumber)}</div>
+                    <div style="color: #FFFFFF; font-size: 16px; font-weight: 600; margin-top: 12px; opacity: 0.95;">${this.escapeHtml(categoryLabel)}</div>
+                </div>
+
+                <h3>Ticket Details</h3>
+                <div class="card" style="background-color: #F9FAFB; border: 1px solid ${this.LIGHT_BORDER}; border-radius: 16px; padding: 20px; margin-bottom: 24px;">
+                    <div style="margin-bottom: 12px;"><strong style="color: ${this.LIGHT_TEXT};">Subject:</strong> ${this.escapeHtml(subject)}</div>
+                    <div style="margin-bottom: 12px;"><strong style="color: ${this.LIGHT_TEXT};">Category:</strong> ${this.escapeHtml(categoryLabel)}</div>
+                    <div style="margin-bottom: 12px;"><strong style="color: ${this.LIGHT_TEXT};">Order:</strong> #${this.escapeHtml(orderNumber)}</div>
+                    <div><strong style="color: ${this.LIGHT_TEXT};">Ticket ID:</strong> <code style="background-color: #E5E7EB; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${this.escapeHtml(ticketId)}</code></div>
+                </div>
+
+                <h3>Customer Information</h3>
+                <div class="card" style="background-color: #F9FAFB; border: 1px solid ${this.LIGHT_BORDER}; border-radius: 16px; padding: 20px; margin-bottom: 24px;">
+                    <div style="margin-bottom: 8px;"><strong style="color: ${this.LIGHT_TEXT};">Name:</strong> ${this.escapeHtml(customerName)}</div>
+                    <div><strong style="color: ${this.LIGHT_TEXT};">Email:</strong> <a href="mailto:${this.escapeHtml(customerEmail)}" style="color: ${this.BRAND_COLOR}; text-decoration: none;">${this.escapeHtml(customerEmail)}</a></div>
+                </div>
+
+                <h3>Customer Message</h3>
+                <div class="card" style="background-color: #FFFFFF; border: 2px solid ${this.LIGHT_BORDER}; border-radius: 16px; padding: 20px; white-space: pre-wrap; color: ${this.LIGHT_TEXT}; line-height: 1.6;">
+${this.escapeHtml(description)}
+                </div>
+
+                <p style="margin-top: 32px; color: ${this.LIGHT_MUTED}; font-size: 14px;"><strong>⚡ Action Required:</strong> Please respond to this ticket within 24 hours to maintain customer satisfaction.</p>
+            `,
+            ctaText: 'View & Reply to Ticket',
+            ctaUrl: `https://admin.humantee.in/tickets/${ticketId}`,
+            footerText: 'Customer is waiting for your response.'
+        });
+    }
 }

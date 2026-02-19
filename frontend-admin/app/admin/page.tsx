@@ -14,6 +14,7 @@ import { DashboardStats } from './components/DashboardStats';
 import { RecentOrdersList } from './components/RecentOrdersList';
 import { QuickActions } from './components/QuickActions';
 import { DashboardSkeleton } from './components/DashboardSkeleton';
+import { PendingTicketsWidget } from './components/PendingTicketsWidget';
 
 export default function DashboardPage() {
     const { data, isLoading, error, refetch, isFetching } = useDashboardData();
@@ -167,6 +168,9 @@ export default function DashboardPage() {
                     </div>
                 </div>
             )}
+
+            {/* Pending Tickets Alert */}
+            <PendingTicketsWidget />
 
             {/* Stats Grid */}
             <DashboardStats stats={stats} />

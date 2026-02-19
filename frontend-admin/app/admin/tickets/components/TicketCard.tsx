@@ -20,10 +20,15 @@ export function TicketCard({ ticket, getStatusStyle, getPriorityStyle, getTimeAg
                 {/* Header */}
                 <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 mb-1">
+                        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                             <span className="text-sm font-bold font-mono text-black">
                                 {ticket.ticketNumber}
                             </span>
+                            {!ticket.firstViewedAt && (
+                                <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide">
+                                    NEW
+                                </span>
+                            )}
                             <span className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded border ${getStatusStyle(ticket.status)}`}>
                                 {ticket.status.replace(/_/g, ' ')}
                             </span>

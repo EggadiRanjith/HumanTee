@@ -240,7 +240,14 @@ export default function TicketsPage() {
                                     <tr key={t.id} className="hover:bg-gray-50/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col">
-                                                <span className="text-sm font-bold text-black font-mono">{t.ticketNumber}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm font-bold text-black font-mono">{t.ticketNumber}</span>
+                                                    {!t.firstViewedAt && (
+                                                        <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                                                            NEW
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <span className="text-sm text-gray-600 mt-0.5 line-clamp-1">{t.subject}</span>
                                                 <span className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider">Order: {t.order?.orderNumber || 'N/A'}</span>
                                             </div>

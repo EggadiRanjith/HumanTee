@@ -418,6 +418,10 @@ export class OrderService {
             this.emailService.sendOrderConfirmation(orderWithData, shippingAddress.email, shippingAddress.fullName)
                 .catch(err => this.logger.error('Failed to send order confirmation email', err));
 
+            // Send admin notification email (async, don't block response)
+            this.emailService.sendAdminOrderNotification(orderWithData, shippingAddress.email, shippingAddress.fullName)
+                .catch(err => this.logger.error('Failed to send admin notification email', err));
+
             return order;
         });
     }

@@ -97,6 +97,16 @@ export class AdminTicketsController {
     ) { }
 
     /**
+     * Get count of unviewed tickets
+     * GET /admin/tickets/stats/unviewed
+     */
+    @Get('stats/unviewed')
+    async getUnviewedCount() {
+        const count = await this.ticketsService.getUnviewedTicketsCount();
+        return { count };
+    }
+
+    /**
      * Get all tickets with filters
      * GET /admin/tickets?status=open&priority=high&search=TKT-001
      */
