@@ -20,9 +20,9 @@ export class RazorpayWebhookController {
 
     /**
      * Razorpay Payment Success Webhook
-     * POST /webhooks/razorpay/payment
+     * POST /webhooks/razorpay
      */
-    @Post('payment')
+    @Post()
     async handlePaymentWebhook(
         @Body() payload: RazorpayWebhookPayload,
         @Headers('x-razorpay-signature') signature: string,

@@ -84,13 +84,13 @@ export function OrderTimeline({
             isCompleted: orderIsConfirmed,
             isCurrent: status === 'confirmed' && shipmentLevel === 0,
         },
-        // 3. Processing — shown if processing+, current if no shipment pickup
+        // 3. Processing — current only when no shipment yet (level 0)
         {
             title: 'Processing',
             subtitle: shipmentLevel >= 1 ? 'Shipment manifested' : 'Preparing your order',
             icon: <FiPackage className="w-3.5 h-3.5" />,
-            isCompleted: orderIsProcessing,
-            isCurrent: orderIsProcessing && shipmentLevel < 2 && !isDelivered,
+            isCompleted: orderIsProcessing && shipmentLevel >= 1,
+            isCurrent: orderIsProcessing && shipmentLevel === 0 && !isDelivered,
         },
     ];
 
@@ -180,10 +180,10 @@ export function OrderTimeline({
                             {/* Content */}
                             <div className="pt-0.5">
                                 <p className={`text-sm font-medium ${step.isCompleted
-                                        ? 'text-white'
-                                        : step.isCurrent
-                                            ? 'text-amber-400'
-                                            : 'text-white/40'
+                                    ? 'text-white'
+                                    : step.isCurrent
+                                        ? 'text-amber-400'
+                                        : 'text-white/40'
                                     }`}>
                                     {step.title}
                                     {step.isCurrent && (

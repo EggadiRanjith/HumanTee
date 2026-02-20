@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Shipment, ShipmentStatus } from '../entities/shipment.entity';
@@ -19,6 +19,7 @@ import { OrderAddress } from '../entities/order-address.entity';
  */
 @Injectable()
 export class DelhiveryService {
+    private readonly logger = new Logger(DelhiveryService.name);
     private readonly baseUrl: string;
     private readonly token: string;
     private readonly originPincode: string;
@@ -36,8 +37,10 @@ export class DelhiveryService {
 
         if (!this.token || !this.originPincode) {
             this.isConfigured = false;
+            this.logger.warn('Delhivery NOT configured — missing DELHIVERY_API_TOKEN or DELHIVERY_ORIGIN_PINCODE');
         } else {
             this.isConfigured = true;
+            this.logger.log(`Delhivery configured — warehouse: ${this.warehouseName}, origin: ${this.originPincode}`);
         }
     }
 
@@ -99,6 +102,7 @@ export class DelhiveryService {
      */
     async fetchWaybill(): Promise<string | null> {
         if (!this.isConfigured) {
+            this.logger.warn('[fetchWaybill] Skipped — Delhivery not configured');
             return null;
         }
 
@@ -111,15 +115,20 @@ export class DelhiveryService {
             // Delhivery returns { "cash_count": 0, "prepaid_count": 1, ... }
             // or a string waybill directly depending on version
             if (typeof response === 'string') {
-                return response.trim();
+                const awb = response.trim();
+                this.logger.log(`[fetchWaybill] Got AWB: ${awb}`);
+                return awb;
             }
 
             // Handle JSON response format
             if (response?.waybill) {
+                this.logger.log(`[fetchWaybill] Got AWB: ${response.waybill}`);
                 return response.waybill;
             }
+            this.logger.error(`[fetchWaybill] Unexpected response format: ${JSON.stringify(response)}`);
             return null;
         } catch (error) {
+            this.logger.error(`[fetchWaybill] API call failed: ${error.message}`);
             return null;
         }
     }
@@ -136,7 +145,10 @@ export class DelhiveryService {
         address: OrderAddress,
         items: Array<{ productNameSnapshot: string; quantity: number }>,
     ): Promise<{ success: boolean; awb?: string; error?: string }> {
+        this.logger.log(`[createShipment] Starting for order ${order.orderNumber} (${order.id})`);
+
         if (!this.isConfigured) {
+            this.logger.error(`[createShipment] SKIPPED — Delhivery not configured (missing token or pincode)`);
             return { success: false, error: 'Delhivery not configured' };
         }
 
@@ -146,6 +158,7 @@ export class DelhiveryService {
         });
 
         if (existingShipment?.delhiveryAwb) {
+            this.logger.log(`[createShipment] Shipment already exists for order ${order.orderNumber}, AWB: ${existingShipment.delhiveryAwb}`);
             return { success: true, awb: existingShipment.delhiveryAwb };
         }
 
@@ -153,6 +166,7 @@ export class DelhiveryService {
             // 1. Fetch waybill
             const waybill = await this.fetchWaybill();
             if (!waybill) {
+                this.logger.error(`[createShipment] FAILED — could not fetch waybill for order ${order.orderNumber}`);
                 return { success: false, error: 'Failed to fetch waybill' };
             }
 
@@ -191,6 +205,8 @@ export class DelhiveryService {
                 },
             };
 
+            this.logger.log(`[createShipment] Manifesting order ${order.orderNumber} with AWB ${waybill}, pickup: ${this.warehouseName}`);
+
             // 3. Call Delhivery Shipment Manifestation API
             const formData = `format=json&data=${encodeURIComponent(JSON.stringify(shipmentPayload))}`;
 
@@ -202,6 +218,8 @@ export class DelhiveryService {
                     body: formData,
                 },
             );
+
+            this.logger.log(`[createShipment] Delhivery API response: ${JSON.stringify(response)}`);
 
             // 4. Save shipment record
             const delhiveryShipmentId = response?.upload_wbn || response?.rmk || null;
@@ -227,8 +245,10 @@ export class DelhiveryService {
                 await this.shipmentRepository.save(shipment);
             }
 
+            this.logger.log(`[createShipment] SUCCESS — order ${order.orderNumber}, AWB: ${waybill}`);
             return { success: true, awb: waybill };
         } catch (error) {
+            this.logger.error(`[createShipment] FAILED for order ${order.orderNumber}: ${error.message}`, error.stack);
             return { success: false, error: error.message };
         }
     }
