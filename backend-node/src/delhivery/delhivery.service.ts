@@ -221,11 +221,21 @@ export class DelhiveryService {
 
             this.logger.log(`[createShipment] Delhivery API response: ${JSON.stringify(response)}`);
 
-            // 4. Save shipment record
-            const delhiveryShipmentId = response?.upload_wbn || response?.rmk || null;
+            // 4. Validate Delhivery response before saving
+            const packageResult = response?.packages?.[0];
+            const packageStatus = packageResult?.status;
+            const packageRemarks = packageResult?.remarks || [];
+
+            if (response?.success === false || packageStatus === 'Fail') {
+                const errorDetail = packageRemarks.join('; ') || response?.rmk || 'Unknown Delhivery error';
+                this.logger.error(`[createShipment] REJECTED by Delhivery for order ${order.orderNumber} (AWB: ${waybill}): ${errorDetail}`);
+                return { success: false, error: `Delhivery rejected: ${errorDetail}` };
+            }
+
+            // 5. Save shipment record only on confirmed success
+            const delhiveryShipmentId = response?.upload_wbn || null;
 
             if (existingShipment) {
-                // Update existing shipment record
                 existingShipment.delhiveryAwb = waybill;
                 existingShipment.delhiveryShipmentId = delhiveryShipmentId;
                 existingShipment.carrier = 'Delhivery';
@@ -233,7 +243,6 @@ export class DelhiveryService {
                 existingShipment.status = ShipmentStatus.MANIFESTED;
                 await this.shipmentRepository.save(existingShipment);
             } else {
-                // Create new shipment record
                 const shipment = this.shipmentRepository.create({
                     orderId: order.id,
                     carrier: 'Delhivery',
