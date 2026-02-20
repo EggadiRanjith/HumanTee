@@ -185,6 +185,7 @@ export function usePaymentFlow() {
                         });
                         setIsProcessing(false);
                         setOrderLock(null); // ← CRITICAL: Clear lock so user can retry
+                        idempotencyKey.current = generateUUID(); // Fresh key for retry
                     }
                 },
                 prefill: {
@@ -198,6 +199,30 @@ export function usePaymentFlow() {
             };
 
             const razorpay = new window.Razorpay(options);
+
+            // CRITICAL: Handle payment failures inside the Razorpay modal
+            // ondismiss only fires on manual close, NOT on payment.failed
+            razorpay.on('payment.failed', function (response: any) {
+                Sentry.captureException(new Error('Razorpay payment failed'), {
+                    tags: { feature: 'payment', step: 'razorpay_failed' },
+                    extra: {
+                        correlationId: correlationId.current,
+                        errorCode: response.error?.code,
+                        errorDescription: response.error?.description,
+                        errorReason: response.error?.reason,
+                    },
+                });
+
+                setError(
+                    response.error?.description ||
+                    'Payment failed. Please try again or use a different payment method.'
+                );
+                setIsProcessing(false);
+                setOrderLock(null);
+                // Generate new idempotency key so retry creates a fresh order
+                idempotencyKey.current = generateUUID();
+            });
+
             razorpay.open();
 
         } catch (err: any) {
